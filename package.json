@@ -1,0 +1,30 @@
+{
+  "name": "writeboard",
+  "version": "0.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "build": "tsc",
+    "build-example": "npm run tsc-example & npm run browserify-example & npm run copy-example-public",
+    "tsc-example": "tsc -p ./example",
+    "browserify-example": "browserify ./example/dist/index.js -o ./example/dist/bundle.js",
+    "copy-example-public": "copyfiles -f ./example/public/*.* ./example/dist"
+  },
+  "author": "Gim",
+  "license": "Apache License 2.0",
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "comment-json": "^4.2.3",
+    "gulp": "^4.0.2",
+    "gulp-connect": "^5.7.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "copyfiles": "^2.4.1",
+    "mocha": "^10.0.0",
+    "typescript": "^4.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/gimholg/writeboard.git"
+  }
+}
