@@ -1,22 +1,52 @@
-# whiteboard
+# writeboard
 
-#### 介绍
+#### 介绍 Instruction
 
 可扩展的书写用白板，不依赖任何第三方库。
 
+Extensible whiteboard for writing with minimal reliance on third-party libraries.
+
 DEMO：https://gimholg.gitee.io/writeboard
 
-#### 软件架构
+#### 安装教程 Installation
 
-#### 安装教程
+```
+npm install --save writeboard
+```
 
-#### 使用说明
+#### 使用说明 Usage
 
-#### 参与贡献
+```js
+import { WhiteBoard } from 'writeboard'
 
-1. Fork 本仓库
-2. 新建 Feat_xxx 分支
-3. 提交代码
-4. 新建 Pull Request
+const whiteBoardWidth = 500;
+const whiteBoardHeight = 500;
 
-#### 特技
+/**
+ * @type {HTMLCanvasElement}
+ */
+const onscreenCanvas = document.getElementById("on-screen-canvas");
+onscreenCanvas.width = whiteBoardWidth;
+onscreenCanvas.height = whiteBoardHeight;
+
+/**
+ * @type {HTMLCanvasElement}
+ */
+const offscreenCanvas = document.createElement('canvas');
+offscreenCanvas.width = onscreenCanvas.width;
+offscreenCanvas.height = onscreenCanvas.height;
+
+const factory = FactoryMgr.createFactory(FactoryEnum.Default);
+const whiteboard = factory.newWhiteBoard({
+  onscreen: onscreenCanvas,
+  offscreenCanvas: offscreenCanvas
+});
+
+```
+
+#### 参与贡献 Participate
+
+1. fork.
+2. new branch: feat/xxx, fix/xxx
+3. commit & push
+4. pull Request
