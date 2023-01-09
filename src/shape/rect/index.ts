@@ -1,3 +1,3 @@
-export { RectData } from "./Data";
-export { ShapeRect } from "./Shape";
-export { RectTool } from "./Tool";
+export * from "./Data";
+export * from "./Shape";
+export * from "./Tool";

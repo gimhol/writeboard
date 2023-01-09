@@ -1,3 +1,3 @@
-export { PenData } from "./Data";
-export { ShapePen } from "./Shape";
-export { PenTool } from "./Tool";
+export * from "./Data";
+export * from "./Shape";
+export * from "./Tool";

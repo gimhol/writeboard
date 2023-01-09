@@ -1,3 +1,3 @@
-export { OvalData } from "./Data";
-export { ShapeOval } from "./Shape";
-export { OvalTool } from "./Tool";
+export * from "./Data";
+export * from "./Shape";
+export * from "./Tool";

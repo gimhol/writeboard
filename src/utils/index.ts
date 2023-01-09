@@ -4,8 +4,12 @@ export function getValue<T = any>(v: ValueOrSetter<T>, prev: T) {
   return typeof v !== 'function' ? v : (v as Setter<T>)(prev)
 }
 
-import { IRect, Rect } from "./Rect"
-export { IRect, Rect }
+export * from "./Array"
+export * from "./BinaryRange"
+export * from "./BinaryTree"
+export * from "./Dot"
+export * from "./ITree"
+export * from "./QuadTree"
+export * from "./Rect"
+export * from "./Vector"
 
-import { IDot } from "./Dot"
-export { IDot }

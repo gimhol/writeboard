@@ -1,4 +1,4 @@
-export { IFactory, Factory } from "./Factory"
-export { FactoryEnum, FactoryType, getFactoryName } from "./FactoryEnum"
-export { FactoryMgr } from "./FactoryMgr"
-export { IShapesMgr, ShapesMgr } from "./ShapesMgr"
+export * from "./Factory"
+export * from "./FactoryEnum"
+export * from "./FactoryMgr"
+export * from "./ShapesMgr"

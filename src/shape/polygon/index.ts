@@ -1,3 +1,3 @@
-export { PolygonData } from "./Data";
-export { ShapePolygon } from "./Shape";
-export { PolygonTool } from "./Tool";
+export * from "./Data";
+export * from "./Shape";
+export * from "./Tool";

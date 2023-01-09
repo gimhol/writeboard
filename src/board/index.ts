@@ -1,1 +1,1 @@
-export { WhiteBoard } from "./WhiteBoard";
+export * from "./WhiteBoard";
