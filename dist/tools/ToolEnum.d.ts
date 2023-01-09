@@ -7,5 +7,5 @@ export declare enum ToolEnum {
     Text = "TOOL_TEXT",
     Polygon = "TOOL_Polygon"
 }
-export declare type ToolType = ToolEnum | string;
+export type ToolType = ToolEnum | string;
 export declare function getToolName(type: ToolType): string;

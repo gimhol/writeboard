@@ -6,5 +6,5 @@ export declare enum ShapeEnum {
     Text = 4,
     Polygon = 5
 }
-export declare type ShapeType = ShapeEnum | string;
+export type ShapeType = ShapeEnum | string;
 export declare function getShapeName(type: ShapeType): string;

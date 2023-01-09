@@ -1,6 +1,6 @@
 import { BinaryRange, IBinaryRange } from "./BinaryRange";
 import { ITree } from "./ITree";
-export declare type BinaryTreeOptions<T = any> = {
+export type BinaryTreeOptions<T = any> = {
     range: IBinaryRange;
     getItemRange: (item: T) => IBinaryRange;
     getTree?: (item: T) => BinaryTree<T> | undefined;

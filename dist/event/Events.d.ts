@@ -69,7 +69,7 @@ export declare enum ShapesChangedEnum {
     Moved = 2,
     Resized = 3
 }
-export declare type ShapesChangedType = ShapesChangedEnum | string;
+export type ShapesChangedType = ShapesChangedEnum | string;
 export interface IShapesChangedEventDetail<T extends Partial<IShapeData> = Partial<IShapeData>> {
     shapeDatas: [T, T][];
 }

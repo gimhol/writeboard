@@ -1,7 +1,7 @@
 import { ValueOrSetter } from "../utils";
 import { EventData } from "./EventData";
 import { EventType } from "./EventType";
-export declare type EventDataCreateOptions<T = any> = {
+export type EventDataCreateOptions<T = any> = {
     type: EventType;
     operator: string;
     timeStamp: number;

@@ -1,5 +1,5 @@
 import { EventType } from "./EventType";
-export declare type EventData<T = any> = {
+export type EventData<T = any> = {
     a: EventType;
     b: string;
     c: number;

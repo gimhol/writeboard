@@ -1,8 +1,8 @@
 import { BaseEvent } from "./Events";
 import { Listener } from "./Observer";
-export declare type Options = boolean | EventListenerOptions;
-export declare type Callback = EventListenerOrEventListenerObject;
-export declare type ListenersMap = {
+export type Options = boolean | EventListenerOptions;
+export type Callback = EventListenerOrEventListenerObject;
+export type ListenersMap = {
     [key in string]?: (Listener)[];
 };
 export interface IEmitter extends EventTarget {

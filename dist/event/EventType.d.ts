@@ -5,4 +5,4 @@ export declare enum EventEnum {
     ShapesChanged = "SHAPES_CHANGED",
     ToolChanged = "TOOL_CHANGED"
 }
-export declare type EventType = EventEnum | string;
+export type EventType = EventEnum | string;

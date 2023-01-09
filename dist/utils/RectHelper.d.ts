@@ -8,7 +8,7 @@ export declare enum LockMode {
     Square = 1,
     Circle = 2
 }
-export declare type GenOptions = {
+export type GenOptions = {
     genMode: GenMode;
     lockMode: LockMode;
 };

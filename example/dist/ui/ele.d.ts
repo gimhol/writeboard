@@ -1,7 +1,7 @@
-export declare type EleMap = HTMLElementTagNameMap;
-export declare type EleMapKey = keyof EleMap;
-export declare type EleHandler<T> = (ele: T, prev?: T) => void;
-export declare type UIState = {
+export type EleMap = HTMLElementTagNameMap;
+export type EleMapKey = keyof EleMap;
+export type EleHandler<T> = (ele: T, prev?: T) => void;
+export type UIState = {
     [key in string]?: any;
 };
 export interface UIRenderFunc<S extends UIState> {

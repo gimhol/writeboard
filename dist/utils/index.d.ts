@@ -1,5 +1,5 @@
-export declare type Setter<T = any> = (v: T) => T;
-export declare type ValueOrSetter<T = any> = T | ((v: T) => T);
+export type Setter<T = any> = (v: T) => T;
+export type ValueOrSetter<T = any> = T | ((v: T) => T);
 export declare function getValue<T = any>(v: ValueOrSetter<T>, prev: T): T;
 import { IRect, Rect } from "./Rect";
 export { IRect, Rect };

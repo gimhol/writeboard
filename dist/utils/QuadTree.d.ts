@@ -1,6 +1,6 @@
 import { ITree } from "./ITree";
 import { IRect, Rect } from "./Rect";
-export declare type QuadTreeOptions<T = any> = {
+export type QuadTreeOptions<T = any> = {
     rect: IRect;
     getItemRect: (item: T) => IRect;
     maxItems?: number;
