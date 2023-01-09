@@ -1,4 +1,4 @@
-const { Vector } = require('../build/whiteBoard/utils/Vector')
+const { Vector } = require('../dist/utils/Vector')
 
 const assert = require('assert');
 describe('class Vector', () => {
