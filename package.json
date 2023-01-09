@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha",
     "build": "tsc",
+    "dev": "tsc --watch",
     "build-example": "npm run tsc-example & npm run browserify-example & npm run copy-example-public",
     "tsc-example": "tsc -p ./example",
     "browserify-example": "browserify ./example/dist/index.js -o ./example/dist/bundle.js",
