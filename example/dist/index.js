@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,7 +19,6 @@ var dist_1 = require("../../dist");
 var ColorPalette_1 = require("./colorPalette/ColorPalette");
 var demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
 var demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
-var utils_1 = require("../../dist/utils");
 var whiteBoard;
 var factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 var _recorder;
@@ -62,7 +72,8 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
             });
             ui.dynamic('button', {
                 className: 'tool_button',
-                innerText: '随机加1000个圆', onclick: function () {
+                innerText: '随机加1000个圆',
+                onclick: function () {
                     var items = [];
                     for (var i = 0; i < 1000; ++i) {
                         var item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Oval);
@@ -182,132 +193,11 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
         ui.dynamic('div', {
             className: 'blackboard'
         }, function (div) {
-            var offscreen = ui.static('canvas', {
-                width: ui.state.width,
-                height: ui.state.height,
-                offscreen: true
-            });
             ui.static('canvas', function (onscreen) {
-                onscreen.width = offscreen.width;
-                onscreen.height = offscreen.height;
                 onscreen.style.position = 'relative';
                 onscreen.style.touchAction = 'none';
-                whiteBoard = factory.newWhiteBoard({ onscreen: onscreen, offscreen: offscreen });
+                whiteBoard = factory.newWhiteBoard(__assign({ onscreen: onscreen }, ui.state));
                 whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
-                var _loop_1 = function (key) {
-                    var v = dist_1.EventEnum[key];
-                    whiteBoard.on(v, function (e) { return console.log(v, e); });
-                };
-                for (var key in dist_1.EventEnum) {
-                    _loop_1(key);
-                }
-                var pickRect = new utils_1.Rect(Math.ceil(Math.random() * (onscreen.width - 20) / 2), Math.ceil(Math.random() * (onscreen.height - 20) / 2), Math.ceil(Math.random() * (onscreen.width) / 2), Math.ceil(Math.random() * (onscreen.height) / 2));
-                var pickRange = { from: pickRect.top, to: pickRect.bottom };
-                var ctx = onscreen.getContext('2d');
-                // class RectInTree extends Rect {
-                //   tree: BinaryTree<RectInTree> | undefined
-                // }
-                // const tree = new BinaryTree<RectInTree>({
-                //   range: new BinaryRange(0, onscreen.height),
-                //   getItemRange: v => new BinaryRange(v.top, v.bottom),
-                //   onTreeChanged(item, from, to) {
-                //     item.tree = to
-                //   },
-                //   getTree: v => v.tree
-                // })
-                // const drawTreeNode = (tree: BinaryTree<RectInTree>) => {
-                //   if (!ctx) return
-                //   ctx.lineWidth = 1
-                //   if (tree.range.hit(pickRange))
-                //     ctx.strokeStyle = 'yellow'
-                //   else
-                //     ctx.strokeStyle = 'white'
-                //   ctx.strokeRect(
-                //     0,
-                //     tree.range.from - .5,
-                //     onscreen.width,
-                //     tree.range.to - tree.range.from)
-                //   if (tree.range.hit(pickRange)) {
-                //     ctx.strokeStyle = 'green'
-                //     ctx.fillStyle = 'red'
-                //     tree.items.forEach(v => {
-                //       if (v.hit(pickRect))
-                //         ctx.fillRect(v.x, v.y, v.w, v.h)
-                //       else
-                //         ctx.strokeRect(v.x, v.y, v.w, v.h)
-                //     })
-                //   } else {
-                //     ctx.strokeStyle = 'gray'
-                //     tree.items.forEach(v => ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h))
-                //   }
-                //   tree.child0 && drawTreeNode(tree.child0)
-                //   tree.child1 && drawTreeNode(tree.child1)
-                // }
-                // class RectInTree extends Rect {
-                //   tree: QuadTree<RectInTree> | undefined
-                // }
-                // const tree = new QuadTree<RectInTree>({
-                //   rect: new Rect(0, 0, onscreen.width, onscreen.height),
-                //   getItemRect: v => v,
-                //   onTreeChanged(item, from, to) {
-                //     item.tree = to
-                //   },
-                //   getTree: v => v.tree
-                // })
-                // const drawTreeNode = (tree: QuadTree<RectInTree>) => {
-                //   if (!ctx) return
-                //   ctx.lineWidth = 1
-                //   if (tree.rect.hit(pickRect))
-                //     ctx.strokeStyle = 'yellow'
-                //   else
-                //     ctx.strokeStyle = 'white'
-                //   ctx.strokeRect(tree.rect.x - .5, tree.rect.y - .5, tree.rect.w, tree.rect.h)
-                //   if (tree.rect.hit(pickRect)) {
-                //     ctx.strokeStyle = 'green'
-                //     ctx.fillStyle = 'red'
-                //     tree.items.forEach(v => {
-                //       if (v.hit(pickRect))
-                //         ctx.fillRect(v.x, v.y, v.w, v.h)
-                //       else
-                //         ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h)
-                //     })
-                //   } else {
-                //     ctx.strokeStyle = 'gray'
-                //     tree.items.forEach(v => ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h))
-                //   }
-                //   tree.child0 && drawTreeNode(tree.child0)
-                //   tree.child1 && drawTreeNode(tree.child1)
-                //   tree.child2 && drawTreeNode(tree.child2)
-                //   tree.child3 && drawTreeNode(tree.child3)
-                // }
-                // drawTreeNode(tree)
-                // const rects: RectInTree[] = []
-                // const ttt = setInterval(() => {
-                //   for (let i = 0; i < 1; ++i) {
-                //     const rect = new RectInTree(
-                //       Math.ceil(Math.random() * (onscreen.width - 50)),
-                //       Math.ceil(Math.random() * (onscreen.height - 50)),
-                //       Math.ceil(5 + Math.random() * 50),
-                //       Math.ceil(5 + Math.random() * 50)
-                //     )
-                //     rects.push(rect)
-                //     rect.tree = tree.insert(rect)
-                //     if (rect.tree.items.indexOf(rect) < 0) {
-                //       alert('!')
-                //     }
-                //   }
-                //   ctx?.clearRect(0, 0, onscreen.width, onscreen.height)
-                //   console.log(tree.itemCount)
-                //   drawTreeNode(tree)
-                //   if (ctx) {
-                //     ctx.lineWidth = 1
-                //     ctx.strokeStyle = 'blue'
-                //     ctx.strokeRect(pickRect.x - 0.5, pickRect.y - 0.5, pickRect.w, pickRect.h)
-                //   }
-                //   if (tree.itemCount > 9999) {
-                //     clearInterval(ttt)
-                //   }
-                // }, 1)
             });
         });
     });

@@ -50,15 +50,51 @@ var WhiteBoard = /** @class */ (function () {
         };
         this._factory = factory;
         this._shapesMgr = this._factory.newShapesMgr();
-        this._offscreen = options.offscreen;
         this._onscreen = options.onscreen;
+        if (options.offscreen) {
+            this._offscreen = options.offscreen;
+        }
+        else {
+            this._offscreen = document.createElement('canvas');
+            this._offscreen.width = options.onscreen.width;
+            this._offscreen.height = options.onscreen.height;
+        }
+        if (options.width) {
+            this.width = options.width;
+        }
+        if (options.height) {
+            this.height = options.height;
+        }
         this._dirty = { x: 0, y: 0, w: options.onscreen.width, h: options.onscreen.height };
         this.listenTo(this._onscreen, 'pointerdown', this.pointerdown, undefined);
         this.listenTo(this._onscreen, 'pointermove', this.pointermove, undefined);
         this.listenTo(this._onscreen, 'pointerup', this.pointerup, undefined);
         this._onscreen.addEventListener('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); });
         this.render();
+        this.toolType = tools_1.ToolEnum.Rect;
     }
+    Object.defineProperty(WhiteBoard.prototype, "width", {
+        get: function () {
+            return this._onscreen.width;
+        },
+        set: function (v) {
+            this._onscreen.width = v;
+            this._offscreen.width = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(WhiteBoard.prototype, "height", {
+        get: function () {
+            return this._onscreen.height;
+        },
+        set: function (v) {
+            this._onscreen.height = v;
+            this._offscreen.height = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
     WhiteBoard.prototype.finds = function (ids) {
         return this._shapesMgr.finds(ids);
     };
@@ -304,12 +340,24 @@ var WhiteBoard = /** @class */ (function () {
 }());
 exports.WhiteBoard = WhiteBoard;
 
-},{"../event":8,"../tools":42,"../utils":48}],2:[function(require,module,exports){
+},{"../event":10,"../tools":53,"../utils":65}],2:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WhiteBoard = void 0;
-var WhiteBoard_1 = require("./WhiteBoard");
-Object.defineProperty(exports, "WhiteBoard", { enumerable: true, get: function () { return WhiteBoard_1.WhiteBoard; } });
+__exportStar(require("./WhiteBoard"), exports);
 
 },{"./WhiteBoard":1}],3:[function(require,module,exports){
 "use strict";
@@ -375,7 +423,11 @@ var Emitter = /** @class */ (function () {
 }());
 exports.Emitter = Emitter;
 
-},{"../utils/Array":44}],4:[function(require,module,exports){
+},{"../utils/Array":56}],4:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventDataVisitor = void 0;
@@ -424,7 +476,7 @@ var EventDataVisitor = /** @class */ (function () {
 }());
 exports.EventDataVisitor = EventDataVisitor;
 
-},{"../utils":48,"./EventType":5}],5:[function(require,module,exports){
+},{"../utils":65,"./EventType":6}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventEnum = void 0;
@@ -437,7 +489,7 @@ var EventEnum;
     EventEnum["ToolChanged"] = "TOOL_CHANGED";
 })(EventEnum = exports.EventEnum || (exports.EventEnum = {}));
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -670,7 +722,11 @@ var ToolChangedEvent = /** @class */ (function (_super) {
 }(BaseEvent));
 exports.ToolChangedEvent = ToolChangedEvent;
 
-},{"./EventDataVisitor":4,"./EventType":5}],7:[function(require,module,exports){
+},{"./EventDataVisitor":5,"./EventType":6}],8:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Observer = void 0;
@@ -697,25 +753,32 @@ var Observer = /** @class */ (function () {
 }());
 exports.Observer = Observer;
 
-},{"./Emitter":3}],8:[function(require,module,exports){
+},{"./Emitter":3}],10:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventDataVisitor = exports.Observer = exports.Emitter = exports.EventEnum = exports.ShapesRemovedEvent = exports.ShapesAddedEvent = exports.ToolChangedEvent = exports.BaseEvent = void 0;
-var Events_1 = require("./Events");
-Object.defineProperty(exports, "BaseEvent", { enumerable: true, get: function () { return Events_1.BaseEvent; } });
-Object.defineProperty(exports, "ToolChangedEvent", { enumerable: true, get: function () { return Events_1.ToolChangedEvent; } });
-Object.defineProperty(exports, "ShapesAddedEvent", { enumerable: true, get: function () { return Events_1.ShapesAddedEvent; } });
-Object.defineProperty(exports, "ShapesRemovedEvent", { enumerable: true, get: function () { return Events_1.ShapesRemovedEvent; } });
-var EventType_1 = require("./EventType");
-Object.defineProperty(exports, "EventEnum", { enumerable: true, get: function () { return EventType_1.EventEnum; } });
-var Emitter_1 = require("./Emitter");
-Object.defineProperty(exports, "Emitter", { enumerable: true, get: function () { return Emitter_1.Emitter; } });
-var Observer_1 = require("./Observer");
-Object.defineProperty(exports, "Observer", { enumerable: true, get: function () { return Observer_1.Observer; } });
-var EventDataVisitor_1 = require("../event/EventDataVisitor");
-Object.defineProperty(exports, "EventDataVisitor", { enumerable: true, get: function () { return EventDataVisitor_1.EventDataVisitor; } });
+__exportStar(require("./Emitter"), exports);
+__exportStar(require("./EventData"), exports);
+__exportStar(require("./EventDataVisitor"), exports);
+__exportStar(require("./Events"), exports);
+__exportStar(require("./EventType"), exports);
+__exportStar(require("./IEventDataMaker"), exports);
+__exportStar(require("./Observer"), exports);
 
-},{"../event/EventDataVisitor":4,"./Emitter":3,"./EventType":5,"./Events":6,"./Observer":7}],9:[function(require,module,exports){
+},{"./Emitter":3,"./EventData":4,"./EventDataVisitor":5,"./EventType":6,"./Events":7,"./IEventDataMaker":8,"./Observer":9}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
@@ -796,7 +859,7 @@ var Player = /** @class */ (function () {
 }());
 exports.Player = Player;
 
-},{"../event":8}],10:[function(require,module,exports){
+},{"../event":10}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recorder = void 0;
@@ -846,47 +909,58 @@ var Recorder = /** @class */ (function () {
 }());
 exports.Recorder = Recorder;
 
-},{"../event":8,"../event/EventDataVisitor":4}],11:[function(require,module,exports){
+},{"../event":10,"../event/EventDataVisitor":5}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Observer = exports.Emitter = exports.BaseEvent = exports.EventEnum = exports.Player = exports.Recorder = exports.WhiteBoard = exports.ToolEnum = exports.FactoryMgr = exports.FactoryEnum = exports.ShapeText = exports.TextData = exports.ShapeOval = exports.OvalData = exports.ShapeRect = exports.RectData = exports.ShapePen = exports.PenData = exports.Shape = exports.ShapeData = exports.getShapeName = exports.ShapeEnum = void 0;
-require("./tools");
-var ShapeEnum_1 = require("./shape/ShapeEnum");
-Object.defineProperty(exports, "ShapeEnum", { enumerable: true, get: function () { return ShapeEnum_1.ShapeEnum; } });
-Object.defineProperty(exports, "getShapeName", { enumerable: true, get: function () { return ShapeEnum_1.getShapeName; } });
-var base_1 = require("./shape/base");
-Object.defineProperty(exports, "ShapeData", { enumerable: true, get: function () { return base_1.ShapeData; } });
-Object.defineProperty(exports, "Shape", { enumerable: true, get: function () { return base_1.Shape; } });
-var pen_1 = require("./shape/pen");
-Object.defineProperty(exports, "PenData", { enumerable: true, get: function () { return pen_1.PenData; } });
-Object.defineProperty(exports, "ShapePen", { enumerable: true, get: function () { return pen_1.ShapePen; } });
-var rect_1 = require("./shape/rect");
-Object.defineProperty(exports, "RectData", { enumerable: true, get: function () { return rect_1.RectData; } });
-Object.defineProperty(exports, "ShapeRect", { enumerable: true, get: function () { return rect_1.ShapeRect; } });
-var oval_1 = require("./shape/oval");
-Object.defineProperty(exports, "OvalData", { enumerable: true, get: function () { return oval_1.OvalData; } });
-Object.defineProperty(exports, "ShapeOval", { enumerable: true, get: function () { return oval_1.ShapeOval; } });
-var text_1 = require("./shape/text");
-Object.defineProperty(exports, "TextData", { enumerable: true, get: function () { return text_1.TextData; } });
-Object.defineProperty(exports, "ShapeText", { enumerable: true, get: function () { return text_1.ShapeText; } });
-var mgr_1 = require("./mgr");
-Object.defineProperty(exports, "FactoryEnum", { enumerable: true, get: function () { return mgr_1.FactoryEnum; } });
-Object.defineProperty(exports, "FactoryMgr", { enumerable: true, get: function () { return mgr_1.FactoryMgr; } });
-var tools_1 = require("./tools");
-Object.defineProperty(exports, "ToolEnum", { enumerable: true, get: function () { return tools_1.ToolEnum; } });
-var WhiteBoard_1 = require("./board/WhiteBoard");
-Object.defineProperty(exports, "WhiteBoard", { enumerable: true, get: function () { return WhiteBoard_1.WhiteBoard; } });
-var Recorder_1 = require("./features/Recorder");
-Object.defineProperty(exports, "Recorder", { enumerable: true, get: function () { return Recorder_1.Recorder; } });
-var Player_1 = require("./features/Player");
-Object.defineProperty(exports, "Player", { enumerable: true, get: function () { return Player_1.Player; } });
-var event_1 = require("./event");
-Object.defineProperty(exports, "EventEnum", { enumerable: true, get: function () { return event_1.EventEnum; } });
-Object.defineProperty(exports, "BaseEvent", { enumerable: true, get: function () { return event_1.BaseEvent; } });
-Object.defineProperty(exports, "Emitter", { enumerable: true, get: function () { return event_1.Emitter; } });
-Object.defineProperty(exports, "Observer", { enumerable: true, get: function () { return event_1.Observer; } });
 
-},{"./board/WhiteBoard":1,"./event":8,"./features/Player":9,"./features/Recorder":10,"./mgr":16,"./shape/ShapeEnum":17,"./shape/base":21,"./shape/oval":25,"./shape/pen":29,"./shape/rect":33,"./shape/text":38,"./tools":42}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./Player"), exports);
+__exportStar(require("./Recorder"), exports);
+__exportStar(require("./Screenplay"), exports);
+
+},{"./Player":11,"./Recorder":12,"./Screenplay":13}],15:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+require("./tools");
+__exportStar(require("./board"), exports);
+__exportStar(require("./event"), exports);
+__exportStar(require("./features"), exports);
+__exportStar(require("./mgr"), exports);
+__exportStar(require("./shape"), exports);
+__exportStar(require("./tools"), exports);
+__exportStar(require("./utils"), exports);
+
+},{"./board":2,"./event":10,"./features":14,"./mgr":20,"./shape":26,"./tools":53,"./utils":65}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Factory = void 0;
@@ -973,7 +1047,7 @@ var Factory = /** @class */ (function () {
 exports.Factory = Factory;
 FactoryMgr_1.FactoryMgr.registerFactory(FactoryEnum_1.FactoryEnum.Default, function () { return new Factory(); }, { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":2,"../shape/base/Data":18,"../shape/base/Shape":19,"../tools/base/InvalidTool":40,"./FactoryEnum":13,"./FactoryMgr":14,"./ShapesMgr":15}],13:[function(require,module,exports){
+},{"../board":2,"../shape/base/Data":22,"../shape/base/Shape":23,"../tools/base/InvalidTool":49,"./FactoryEnum":17,"./FactoryMgr":18,"./ShapesMgr":19}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -991,7 +1065,7 @@ function getFactoryName(type) {
 }
 exports.getFactoryName = getFactoryName;
 
-},{}],14:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -1067,7 +1141,7 @@ var FactoryMgr = /** @class */ (function () {
 }());
 exports.FactoryMgr = FactoryMgr;
 
-},{"../shape/ShapeEnum":17,"../tools/ToolEnum":39}],15:[function(require,module,exports){
+},{"../shape/ShapeEnum":21,"../tools/ToolEnum":48}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapesMgr = void 0;
@@ -1161,21 +1235,29 @@ var ShapesMgr = /** @class */ (function () {
 }());
 exports.ShapesMgr = ShapesMgr;
 
-},{"../utils/Array":44,"../utils/Rect":45}],16:[function(require,module,exports){
+},{"../utils/Array":56,"../utils/Rect":62}],20:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShapesMgr = exports.FactoryMgr = exports.getFactoryName = exports.FactoryEnum = exports.Factory = void 0;
-var Factory_1 = require("./Factory");
-Object.defineProperty(exports, "Factory", { enumerable: true, get: function () { return Factory_1.Factory; } });
-var FactoryEnum_1 = require("./FactoryEnum");
-Object.defineProperty(exports, "FactoryEnum", { enumerable: true, get: function () { return FactoryEnum_1.FactoryEnum; } });
-Object.defineProperty(exports, "getFactoryName", { enumerable: true, get: function () { return FactoryEnum_1.getFactoryName; } });
-var FactoryMgr_1 = require("./FactoryMgr");
-Object.defineProperty(exports, "FactoryMgr", { enumerable: true, get: function () { return FactoryMgr_1.FactoryMgr; } });
-var ShapesMgr_1 = require("./ShapesMgr");
-Object.defineProperty(exports, "ShapesMgr", { enumerable: true, get: function () { return ShapesMgr_1.ShapesMgr; } });
+__exportStar(require("./Factory"), exports);
+__exportStar(require("./FactoryEnum"), exports);
+__exportStar(require("./FactoryMgr"), exports);
+__exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":12,"./FactoryEnum":13,"./FactoryMgr":14,"./ShapesMgr":15}],17:[function(require,module,exports){
+},{"./Factory":16,"./FactoryEnum":17,"./FactoryMgr":18,"./ShapesMgr":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -1201,7 +1283,7 @@ function getShapeName(type) {
 }
 exports.getShapeName = getShapeName;
 
-},{}],18:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
@@ -1443,7 +1525,7 @@ var ShapeData = /** @class */ (function () {
 }());
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":17}],19:[function(require,module,exports){
+},{"../ShapeEnum":21}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = void 0;
@@ -1609,7 +1691,7 @@ var Shape = /** @class */ (function () {
 }());
 exports.Shape = Shape;
 
-},{"../../utils/Rect":45}],20:[function(require,module,exports){
+},{"../../utils/Rect":62}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1663,18 +1745,53 @@ var ShapeNeedPath = /** @class */ (function (_super) {
 }(Shape_1.Shape));
 exports.ShapeNeedPath = ShapeNeedPath;
 
-},{"./Shape":19}],21:[function(require,module,exports){
+},{"./Shape":23}],25:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShapeNeedPath = exports.Shape = exports.ShapeData = void 0;
-var Data_1 = require("./Data");
-Object.defineProperty(exports, "ShapeData", { enumerable: true, get: function () { return Data_1.ShapeData; } });
-var Shape_1 = require("./Shape");
-Object.defineProperty(exports, "Shape", { enumerable: true, get: function () { return Shape_1.Shape; } });
-var ShapeNeedPath_1 = require("./ShapeNeedPath");
-Object.defineProperty(exports, "ShapeNeedPath", { enumerable: true, get: function () { return ShapeNeedPath_1.ShapeNeedPath; } });
+__exportStar(require("./Data"), exports);
+__exportStar(require("./Shape"), exports);
+__exportStar(require("./ShapeNeedPath"), exports);
 
-},{"./Data":18,"./Shape":19,"./ShapeNeedPath":20}],22:[function(require,module,exports){
+},{"./Data":22,"./Shape":23,"./ShapeNeedPath":24}],26:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./base"), exports);
+__exportStar(require("./oval"), exports);
+__exportStar(require("./pen"), exports);
+__exportStar(require("./polygon"), exports);
+__exportStar(require("./rect"), exports);
+__exportStar(require("./ShapeEnum"), exports);
+__exportStar(require("./text"), exports);
+
+},{"./ShapeEnum":21,"./base":25,"./oval":30,"./pen":34,"./polygon":38,"./rect":42,"./text":47}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1712,7 +1829,7 @@ var OvalData = /** @class */ (function (_super) {
 }(base_1.ShapeData));
 exports.OvalData = OvalData;
 
-},{"../ShapeEnum":17,"../base":21}],23:[function(require,module,exports){
+},{"../ShapeEnum":21,"../base":25}],28:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1757,7 +1874,7 @@ var ShapeOval = /** @class */ (function (_super) {
 exports.ShapeOval = ShapeOval;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Oval, function () { return new Data_1.OvalData; }, function (d) { return new ShapeOval(d); });
 
-},{"../../mgr/FactoryMgr":14,"../ShapeEnum":17,"../base/ShapeNeedPath":20,"./Data":22}],24:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":18,"../ShapeEnum":21,"../base/ShapeNeedPath":24,"./Data":27}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
@@ -1768,18 +1885,28 @@ var SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "OvalTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Oval, function () { return new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Oval, ShapeEnum_1.ShapeEnum.Oval); }, { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/FactoryMgr":14,"../../tools/ToolEnum":39,"../../tools/base/SimpleTool":41,"../ShapeEnum":17}],25:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":18,"../../tools/ToolEnum":48,"../../tools/base/SimpleTool":50,"../ShapeEnum":21}],30:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OvalTool = exports.ShapeOval = exports.OvalData = void 0;
-var Data_1 = require("./Data");
-Object.defineProperty(exports, "OvalData", { enumerable: true, get: function () { return Data_1.OvalData; } });
-var Shape_1 = require("./Shape");
-Object.defineProperty(exports, "ShapeOval", { enumerable: true, get: function () { return Shape_1.ShapeOval; } });
-var Tool_1 = require("./Tool");
-Object.defineProperty(exports, "OvalTool", { enumerable: true, get: function () { return Tool_1.OvalTool; } });
+__exportStar(require("./Data"), exports);
+__exportStar(require("./Shape"), exports);
+__exportStar(require("./Tool"), exports);
 
-},{"./Data":22,"./Shape":23,"./Tool":24}],26:[function(require,module,exports){
+},{"./Data":27,"./Shape":28,"./Tool":29}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1854,7 +1981,7 @@ var PenData = /** @class */ (function (_super) {
 }(base_1.ShapeData));
 exports.PenData = PenData;
 
-},{"../ShapeEnum":17,"../base":21}],27:[function(require,module,exports){
+},{"../ShapeEnum":21,"../base":25}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2018,7 +2145,7 @@ var ShapePen = /** @class */ (function (_super) {
 exports.ShapePen = ShapePen;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Pen, function () { return new Data_1.PenData; }, function (d) { return new ShapePen(d); });
 
-},{"../../mgr/FactoryMgr":14,"../ShapeEnum":17,"../base":21,"./Data":26}],28:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":18,"../ShapeEnum":21,"../base":25,"./Data":31}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
@@ -2106,18 +2233,120 @@ var PenTool = /** @class */ (function () {
 exports.PenTool = PenTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Pen, function () { return new PenTool(); }, { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event/Events":6,"../../mgr/FactoryMgr":14,"../../tools/ToolEnum":39,"../ShapeEnum":17,"./Data":26}],29:[function(require,module,exports){
+},{"../../event/Events":7,"../../mgr/FactoryMgr":18,"../../tools/ToolEnum":48,"../ShapeEnum":21,"./Data":31}],34:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"./Data":31,"./Shape":32,"./Tool":33,"dup":30}],35:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PolygonData = void 0;
+var ShapeEnum_1 = require("../ShapeEnum");
+var base_1 = require("../base");
+var PolygonData = /** @class */ (function (_super) {
+    __extends(PolygonData, _super);
+    function PolygonData() {
+        var _this = _super.call(this) || this;
+        _this.dots = [];
+        _this.type = ShapeEnum_1.ShapeEnum.Polygon;
+        _this.fillStyle = '#ff0000';
+        _this.strokeStyle = '#000000';
+        _this.lineWidth = 2;
+        return _this;
+    }
+    PolygonData.prototype.copyFrom = function (other) {
+        _super.prototype.copyFrom.call(this, other);
+        if ('dots' in other)
+            this.dots = other.dots.map(function (v) { return (__assign({}, v)); });
+        return this;
+    };
+    PolygonData.prototype.copy = function () {
+        return new PolygonData().copyFrom(this);
+    };
+    return PolygonData;
+}(base_1.ShapeData));
+exports.PolygonData = PolygonData;
+
+},{"../ShapeEnum":21,"../base":25}],36:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ShapePolygon = void 0;
+var ShapeEnum_1 = require("../ShapeEnum");
+var FactoryMgr_1 = require("../../mgr/FactoryMgr");
+var Data_1 = require("./Data");
+var ShapeNeedPath_1 = require("../base/ShapeNeedPath");
+var ShapePolygon = /** @class */ (function (_super) {
+    __extends(ShapePolygon, _super);
+    function ShapePolygon() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    ShapePolygon.prototype.path = function (ctx) {
+        var _a = this.drawingRect(), x = _a.x, y = _a.y, w = _a.w, h = _a.h;
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.closePath();
+    };
+    return ShapePolygon;
+}(ShapeNeedPath_1.ShapeNeedPath));
+exports.ShapePolygon = ShapePolygon;
+FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Polygon, function () { return new Data_1.PolygonData; }, function (d) { return new ShapePolygon(d); });
+
+},{"../../mgr/FactoryMgr":18,"../ShapeEnum":21,"../base/ShapeNeedPath":24,"./Data":35}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PenTool = exports.ShapePen = exports.PenData = void 0;
-var Data_1 = require("./Data");
-Object.defineProperty(exports, "PenData", { enumerable: true, get: function () { return Data_1.PenData; } });
-var Shape_1 = require("./Shape");
-Object.defineProperty(exports, "ShapePen", { enumerable: true, get: function () { return Shape_1.ShapePen; } });
-var Tool_1 = require("./Tool");
-Object.defineProperty(exports, "PenTool", { enumerable: true, get: function () { return Tool_1.PenTool; } });
+exports.PolygonTool = void 0;
+var FactoryMgr_1 = require("../../mgr/FactoryMgr");
+var ShapeEnum_1 = require("../ShapeEnum");
+var ToolEnum_1 = require("../../tools/ToolEnum");
+var SimpleTool_1 = require("../../tools/base/SimpleTool");
+Object.defineProperty(exports, "PolygonTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
+var desc = {
+    name: 'Polygon', desc: 'Polygon Drawer', shape: ShapeEnum_1.ShapeEnum.Polygon
+};
+FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Polygon, function () { return new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon); }, desc);
 
-},{"./Data":26,"./Shape":27,"./Tool":28}],30:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":18,"../../tools/ToolEnum":48,"../../tools/base/SimpleTool":50,"../ShapeEnum":21}],38:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"./Data":35,"./Shape":36,"./Tool":37,"dup":30}],39:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2155,7 +2384,7 @@ var RectData = /** @class */ (function (_super) {
 }(base_1.ShapeData));
 exports.RectData = RectData;
 
-},{"../ShapeEnum":17,"../base":21}],31:[function(require,module,exports){
+},{"../ShapeEnum":21,"../base":25}],40:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2194,7 +2423,7 @@ var ShapeRect = /** @class */ (function (_super) {
 exports.ShapeRect = ShapeRect;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Rect, function () { return new Data_1.RectData; }, function (d) { return new ShapeRect(d); });
 
-},{"../../mgr/FactoryMgr":14,"../ShapeEnum":17,"../base/ShapeNeedPath":20,"./Data":30}],32:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":18,"../ShapeEnum":21,"../base/ShapeNeedPath":24,"./Data":39}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -2205,18 +2434,9 @@ var SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Rect, function () { return new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect); }, { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/FactoryMgr":14,"../../tools/ToolEnum":39,"../../tools/base/SimpleTool":41,"../ShapeEnum":17}],33:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RectTool = exports.ShapeRect = exports.RectData = void 0;
-var Data_1 = require("./Data");
-Object.defineProperty(exports, "RectData", { enumerable: true, get: function () { return Data_1.RectData; } });
-var Shape_1 = require("./Shape");
-Object.defineProperty(exports, "ShapeRect", { enumerable: true, get: function () { return Shape_1.ShapeRect; } });
-var Tool_1 = require("./Tool");
-Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return Tool_1.RectTool; } });
-
-},{"./Data":30,"./Shape":31,"./Tool":32}],34:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":18,"../../tools/ToolEnum":48,"../../tools/base/SimpleTool":50,"../ShapeEnum":21}],42:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"./Data":39,"./Shape":40,"./Tool":41,"dup":30}],43:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2276,7 +2496,7 @@ var TextData = /** @class */ (function (_super) {
 }(base_1.ShapeData));
 exports.TextData = TextData;
 
-},{"../ShapeEnum":17,"../base":21}],35:[function(require,module,exports){
+},{"../ShapeEnum":21,"../base":25}],44:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2479,7 +2699,7 @@ var ShapeText = /** @class */ (function (_super) {
 exports.ShapeText = ShapeText;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Text, function () { return new Data_1.TextData; }, function (d) { return new ShapeText(d); });
 
-},{"../../mgr/FactoryMgr":14,"../../utils/Rect":45,"../ShapeEnum":17,"../base":21,"./Data":34,"./TextSelection":36}],36:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":18,"../../utils/Rect":62,"../ShapeEnum":21,"../base":25,"./Data":43,"./TextSelection":45}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -2499,7 +2719,7 @@ var TextSelection = /** @class */ (function () {
 }());
 exports.TextSelection = TextSelection;
 
-},{}],37:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -2648,20 +2868,29 @@ var TextTool = /** @class */ (function () {
 exports.TextTool = TextTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Text, function () { return new TextTool; }, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event/Events":6,"../../mgr/FactoryMgr":14,"../../tools/ToolEnum":39,"../ShapeEnum":17}],38:[function(require,module,exports){
+},{"../../event/Events":7,"../../mgr/FactoryMgr":18,"../../tools/ToolEnum":48,"../ShapeEnum":21}],47:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TextSelection = exports.TextTool = exports.ShapeText = exports.TextData = void 0;
-var Data_1 = require("./Data");
-Object.defineProperty(exports, "TextData", { enumerable: true, get: function () { return Data_1.TextData; } });
-var Shape_1 = require("./Shape");
-Object.defineProperty(exports, "ShapeText", { enumerable: true, get: function () { return Shape_1.ShapeText; } });
-var Tool_1 = require("./Tool");
-Object.defineProperty(exports, "TextTool", { enumerable: true, get: function () { return Tool_1.TextTool; } });
-var TextSelection_1 = require("./TextSelection");
-Object.defineProperty(exports, "TextSelection", { enumerable: true, get: function () { return TextSelection_1.TextSelection; } });
+__exportStar(require("./Data"), exports);
+__exportStar(require("./Shape"), exports);
+__exportStar(require("./TextSelection"), exports);
+__exportStar(require("./Tool"), exports);
 
-},{"./Data":34,"./Shape":35,"./TextSelection":36,"./Tool":37}],39:[function(require,module,exports){
+},{"./Data":43,"./Shape":44,"./TextSelection":45,"./Tool":46}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToolName = exports.ToolEnum = void 0;
@@ -2688,7 +2917,7 @@ function getToolName(type) {
 }
 exports.getToolName = getToolName;
 
-},{}],40:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidTool = void 0;
@@ -2737,7 +2966,7 @@ var InvalidTool = /** @class */ (function () {
 }());
 exports.InvalidTool = InvalidTool;
 
-},{"../ToolEnum":39}],41:[function(require,module,exports){
+},{"../ToolEnum":48}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
@@ -2821,17 +3050,53 @@ var SimpleTool = /** @class */ (function () {
 }());
 exports.SimpleTool = SimpleTool;
 
-},{"../../event/Events":6,"../../utils/RectHelper":46}],42:[function(require,module,exports){
+},{"../../event/Events":7,"../../utils/RectHelper":63}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getToolName = exports.ToolEnum = exports.SelectorTool = void 0;
-var SelectorTool_1 = require("./selector/SelectorTool");
-Object.defineProperty(exports, "SelectorTool", { enumerable: true, get: function () { return SelectorTool_1.SelectorTool; } });
-var ToolEnum_1 = require("./ToolEnum");
-Object.defineProperty(exports, "ToolEnum", { enumerable: true, get: function () { return ToolEnum_1.ToolEnum; } });
-Object.defineProperty(exports, "getToolName", { enumerable: true, get: function () { return ToolEnum_1.getToolName; } });
 
-},{"./ToolEnum":39,"./selector/SelectorTool":43}],43:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./InvalidTool"), exports);
+__exportStar(require("./SimpleTool"), exports);
+__exportStar(require("./Tool"), exports);
+
+},{"./InvalidTool":49,"./SimpleTool":50,"./Tool":51}],53:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./base"), exports);
+__exportStar(require("./selector"), exports);
+__exportStar(require("./ToolEnum"), exports);
+
+},{"./ToolEnum":48,"./base":52,"./selector":55}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
@@ -2976,7 +3241,26 @@ FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Selector, function () {
     desc: 'selector'
 });
 
-},{"../../event/Events":6,"../../mgr/FactoryMgr":14,"../../shape/base/Data":18,"../../shape/rect/Shape":31,"../../utils/RectHelper":46,"../ToolEnum":39}],44:[function(require,module,exports){
+},{"../../event/Events":7,"../../mgr/FactoryMgr":18,"../../shape/base/Data":22,"../../shape/rect/Shape":40,"../../utils/RectHelper":63,"../ToolEnum":48}],55:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./SelectorTool"), exports);
+
+},{"./SelectorTool":54}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findIndex = void 0;
@@ -2989,7 +3273,584 @@ var findIndex = function (arr, func) {
 };
 exports.findIndex = findIndex;
 
-},{}],45:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BinaryRange = void 0;
+var BinaryRange = /** @class */ (function () {
+    function BinaryRange(f, t) {
+        this.from = f;
+        this.to = t;
+    }
+    BinaryRange.prototype.set = function (range) {
+        this.from = range.from;
+        this.to = range.to;
+    };
+    Object.defineProperty(BinaryRange.prototype, "mid", {
+        get: function () {
+            return (this.from + this.to) / 2;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    BinaryRange.prototype.hit = function (other) {
+        return !(this.from > other.to) && !(this.to < other.from);
+    };
+    return BinaryRange;
+}());
+exports.BinaryRange = BinaryRange;
+
+},{}],58:[function(require,module,exports){
+"use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BinaryTree = void 0;
+var BinaryRange_1 = require("./BinaryRange");
+var BinaryTree = /** @class */ (function () {
+    function BinaryTree(opts) {
+        this._range = new BinaryRange_1.BinaryRange(0, 0);
+        this._items = [];
+        this._itemCount = 0;
+        this._level = 0;
+        this._opts = __assign({}, opts);
+        this._range.set(opts.range);
+    }
+    Object.defineProperty(BinaryTree.prototype, "children", {
+        get: function () { return [this._child0, this._child1]; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "maxItems", {
+        get: function () { return this._opts.maxItems || 20; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "parent", {
+        get: function () { return this._parent; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "level", {
+        get: function () { return this._level; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "itemCount", {
+        get: function () { return this._itemCount; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "range", {
+        get: function () { return this._range; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "items", {
+        get: function () { return this._items; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "child0", {
+        get: function () { return this._child0; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "child1", {
+        get: function () { return this._child1; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "genChild0", {
+        get: function () {
+            if (!this._child0) {
+                this._child0 = new BinaryTree(__assign(__assign({}, this._opts), { range: this.childRange0 }));
+                this._child0._parent = this;
+                this._child0._level = this._level + 1;
+            }
+            return this._child0;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "genChild1", {
+        get: function () {
+            if (!this._child1) {
+                this._child1 = new BinaryTree(__assign(__assign({}, this._opts), { range: this.childRange1 }));
+                this._child1._parent = this;
+                this._child1._level = this._level + 1;
+            }
+            return this._child1;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "childRange0", {
+        get: function () {
+            if (!this._childRange0)
+                this._childRange0 = new BinaryRange_1.BinaryRange(this._range.from, this._range.mid);
+            return this._childRange0;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(BinaryTree.prototype, "childRange1", {
+        get: function () {
+            if (!this._childRange1)
+                this._childRange1 = new BinaryRange_1.BinaryRange(this._range.mid, this._range.to);
+            return this._childRange1;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    BinaryTree.prototype.split = function () {
+        if (this._child0 && this._child1)
+            return;
+        var item, itemRange, inChild0, inChild1, in_lb, in_rb, hitCount;
+        for (var i = 0; i < this._items.length; ++i) {
+            item = this._items[i];
+            itemRange = this._opts.getItemRange(item);
+            inChild0 = this.childRange0.hit(itemRange) ? 1 : 0;
+            inChild1 = this.childRange1.hit(itemRange) ? 1 : 0;
+            hitCount = inChild0 + inChild1;
+            if (hitCount !== 1)
+                continue;
+            this._items.splice(i, 1);
+            --i;
+            if (inChild0) {
+                this.genChild0.insert(item);
+                this._opts.onTreeChanged && this._opts.onTreeChanged(item, this, this.genChild0);
+            }
+            else if (inChild1) {
+                this.genChild1.insert(item);
+                this._opts.onTreeChanged && this._opts.onTreeChanged(item, this, this.genChild1);
+            }
+        }
+    };
+    BinaryTree.prototype.insert = function (item) {
+        ++this._itemCount;
+        var itemRange = this._opts.getItemRange(item);
+        var needSplit = this._itemCount >= this.maxItems;
+        needSplit && this.split();
+        if (needSplit) {
+            var inChild0 = this.childRange0.hit(itemRange) ? 1 : 0;
+            var inChild1 = this.childRange1.hit(itemRange) ? 1 : 0;
+            if (inChild0)
+                return this.genChild0.insert(item);
+            else if (inChild1)
+                return this.genChild1.insert(item);
+        }
+        this._items.push(item);
+        return this;
+    };
+    BinaryTree.prototype.removeOnlyUnderMe = function (item) {
+        var idx = this._items.indexOf(item);
+        if (idx >= 0) {
+            --this._itemCount;
+            this._items.splice(idx, 1);
+            return true;
+        }
+        return false;
+    };
+    BinaryTree.prototype.remove = function (item) {
+        var _a, _b, _c, _d;
+        if (this._opts.getTree) {
+            // 从子节点到父节点的移除逻辑
+            var tree = this._opts.getTree(item);
+            if (!tree)
+                return false;
+            var result = tree.removeOnlyUnderMe(item);
+            tree._itemCount++;
+            var treeNeedMerge = void 0;
+            do {
+                --tree._itemCount;
+                if (tree._itemCount <= 0) {
+                    if (((_a = tree.parent) === null || _a === void 0 ? void 0 : _a._child0) === tree)
+                        delete tree.parent._child0;
+                    if (((_b = tree.parent) === null || _b === void 0 ? void 0 : _b._child1) === tree)
+                        delete tree.parent._child1;
+                }
+                else if (tree._itemCount < this.maxItems) {
+                    treeNeedMerge = tree;
+                }
+                tree = tree.parent;
+            } while (tree);
+            treeNeedMerge === null || treeNeedMerge === void 0 ? void 0 : treeNeedMerge.merge();
+            return result;
+        }
+        // 从父节点的到子节点移除逻辑
+        if (this.removeOnlyUnderMe(item))
+            return true;
+        if ((_c = this._child0) === null || _c === void 0 ? void 0 : _c.remove(item)) {
+            !this._child0.itemCount && delete this._child0;
+        }
+        else if ((_d = this._child1) === null || _d === void 0 ? void 0 : _d.remove(item)) {
+            !this._child1.itemCount && delete this._child1;
+        }
+        else {
+            return false;
+        }
+        --this._itemCount;
+        if (this._itemCount < this.maxItems)
+            this.merge();
+        return true;
+    };
+    BinaryTree.prototype.merge = function () {
+        var _this = this;
+        this.children.forEach(function (child) {
+            if (!child)
+                return;
+            child.merge();
+            child._items.forEach(function (item) {
+                _this.items.push(item);
+                _this._opts.onTreeChanged && _this._opts.onTreeChanged(item, child, _this);
+            });
+        });
+        delete this._child0;
+        delete this._child1;
+    };
+    return BinaryTree;
+}());
+exports.BinaryTree = BinaryTree;
+
+},{"./BinaryRange":57}],59:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],60:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],61:[function(require,module,exports){
+"use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.QuadTree = void 0;
+var Rect_1 = require("./Rect");
+var QuadTree = /** @class */ (function () {
+    function QuadTree(opts) {
+        this._items = [];
+        this._itemCount = 0;
+        this._rect = new Rect_1.Rect(0, 0, 0, 0);
+        this._level = 0;
+        this._opts = __assign({}, opts);
+        this._rect.set(opts.rect);
+    }
+    Object.defineProperty(QuadTree.prototype, "children", {
+        get: function () { return [this._child0, this._child1, this._child2, this._child3]; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "maxItems", {
+        get: function () { return this._opts.maxItems || 20; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "parent", {
+        get: function () { return this._parent; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "level", {
+        get: function () { return this._level; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "itemCount", {
+        get: function () { return this._itemCount; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "rect", {
+        get: function () { return this._rect; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "items", {
+        get: function () { return this._items; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "child0", {
+        get: function () { return this._child0; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "child1", {
+        get: function () { return this._child1; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "child2", {
+        get: function () { return this._child2; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "child3", {
+        get: function () { return this._child3; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "genChild0", {
+        get: function () {
+            if (!this._child0) {
+                this._child0 = new QuadTree(__assign(__assign({}, this._opts), { rect: this.childRect0 }));
+                this._child0._parent = this;
+                this._child0._level = this._level + 1;
+            }
+            return this._child0;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "genChild1", {
+        get: function () {
+            if (!this._child1) {
+                this._child1 = new QuadTree(__assign(__assign({}, this._opts), { rect: this.childRect1 }));
+                this._child1._parent = this;
+                this._child1._level = this._level + 1;
+            }
+            return this._child1;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "genChild2", {
+        get: function () {
+            if (!this._child2) {
+                this._child2 = new QuadTree(__assign(__assign({}, this._opts), { rect: this.childRect2 }));
+                this._child2._parent = this;
+                this._child2._level = this._level + 1;
+            }
+            return this._child2;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "genChild3", {
+        get: function () {
+            if (!this._child3) {
+                this._child3 = new QuadTree(__assign(__assign({}, this._opts), { rect: this.childRect3 }));
+                this._child3._parent = this;
+                this._child3._level = this._level + 1;
+            }
+            return this._child3;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "childRect0", {
+        get: function () {
+            if (!this._childRect0) {
+                var _a = this.rect, x = _a.x, y = _a.y;
+                var w = this.rect.w / 2;
+                var h = this.rect.h / 2;
+                this._childRect0 = new Rect_1.Rect(x, y, w, h);
+            }
+            return this._childRect0;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "childRect1", {
+        get: function () {
+            if (!this._childRect1) {
+                var y = this.rect.y;
+                var w = this.rect.w / 2;
+                var h = this.rect.h / 2;
+                var midX = this.rect.mid().x;
+                this._childRect1 = new Rect_1.Rect(midX, y, w, h);
+            }
+            return this._childRect1;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "childRect2", {
+        get: function () {
+            if (!this._childRect2) {
+                var x = this.rect.x;
+                var w = this.rect.w / 2;
+                var h = this.rect.h / 2;
+                var midY = this.rect.mid().y;
+                this._childRect2 = new Rect_1.Rect(x, midY, w, h);
+            }
+            return this._childRect2;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(QuadTree.prototype, "childRect3", {
+        get: function () {
+            if (!this._childRect3) {
+                var w = this.rect.w / 2;
+                var h = this.rect.h / 2;
+                var _a = this.rect.mid(), midX = _a.x, midY = _a.y;
+                this._childRect3 = new Rect_1.Rect(midX, midY, w, h);
+            }
+            return this._childRect3;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    QuadTree.prototype.split = function () {
+        if (this._child0 && this._child1 && this._child2 && this._child3)
+            return;
+        var item, itemRect, inChild0, inChild1, inChild2, inChild3, hitCount;
+        for (var i = 0; i < this._items.length; ++i) {
+            item = this._items[i];
+            itemRect = this._opts.getItemRect(item);
+            inChild0 = this.childRect0.hit(itemRect) ? 1 : 0;
+            inChild1 = this.childRect1.hit(itemRect) ? 1 : 0;
+            inChild2 = this.childRect2.hit(itemRect) ? 1 : 0;
+            inChild3 = this.childRect3.hit(itemRect) ? 1 : 0;
+            hitCount = inChild0 + inChild1 + inChild2 + inChild3;
+            if (hitCount !== 1)
+                continue;
+            this._items.splice(i, 1);
+            --i;
+            if (inChild0) {
+                this.genChild0.insert(item);
+                this._opts.onTreeChanged && this._opts.onTreeChanged(item, this, this.genChild0);
+            }
+            else if (inChild1) {
+                this.genChild1.insert(item);
+                this._opts.onTreeChanged && this._opts.onTreeChanged(item, this, this.genChild1);
+            }
+            else if (inChild2) {
+                this.genChild2.insert(item);
+                this._opts.onTreeChanged && this._opts.onTreeChanged(item, this, this.genChild2);
+            }
+            else if (inChild3) {
+                this.genChild3.insert(item);
+                this._opts.onTreeChanged && this._opts.onTreeChanged(item, this, this.genChild3);
+            }
+        }
+    };
+    QuadTree.prototype.insert = function (item) {
+        ++this._itemCount;
+        var itemRect = this._opts.getItemRect(item);
+        var needSplit = this._itemCount >= this.maxItems;
+        needSplit && this.split();
+        if (needSplit) {
+            var inChild0 = this.childRect0.hit(itemRect) ? 1 : 0;
+            var inChild1 = this.childRect1.hit(itemRect) ? 1 : 0;
+            var inChild2 = this.childRect2.hit(itemRect) ? 1 : 0;
+            var inChild3 = this.childRect3.hit(itemRect) ? 1 : 0;
+            if (inChild0)
+                return this.genChild0.insert(item);
+            else if (inChild1)
+                return this.genChild1.insert(item);
+            else if (inChild2)
+                return this.genChild2.insert(item);
+            else if (inChild3)
+                return this.genChild3.insert(item);
+        }
+        this._items.push(item);
+        return this;
+    };
+    QuadTree.prototype.removeOnlyUnderMe = function (item) {
+        var idx = this._items.indexOf(item);
+        if (idx >= 0) {
+            --this._itemCount;
+            this._items.splice(idx, 1);
+            return true;
+        }
+        return false;
+    };
+    QuadTree.prototype.remove = function (item) {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        if (this._opts.getTree) {
+            // 从子节点到父节点的移除逻辑
+            var tree = this._opts.getTree(item);
+            if (!tree)
+                return false;
+            var result = tree.removeOnlyUnderMe(item);
+            tree._itemCount++;
+            var treeNeedMerge = void 0;
+            do {
+                --tree._itemCount;
+                if (tree._itemCount <= 0) {
+                    if (((_a = tree.parent) === null || _a === void 0 ? void 0 : _a._child0) === tree)
+                        delete tree.parent._child0;
+                    if (((_b = tree.parent) === null || _b === void 0 ? void 0 : _b._child1) === tree)
+                        delete tree.parent._child1;
+                    if (((_c = tree.parent) === null || _c === void 0 ? void 0 : _c._child2) === tree)
+                        delete tree.parent._child2;
+                    if (((_d = tree.parent) === null || _d === void 0 ? void 0 : _d._child3) === tree)
+                        delete tree.parent._child3;
+                }
+                else if (tree._itemCount < this.maxItems) {
+                    treeNeedMerge = tree;
+                }
+                tree = tree.parent;
+            } while (tree);
+            treeNeedMerge === null || treeNeedMerge === void 0 ? void 0 : treeNeedMerge.merge();
+            return result;
+        }
+        // 从父节点的到子节点移除逻辑
+        if (this.removeOnlyUnderMe(item))
+            return true;
+        if ((_e = this._child0) === null || _e === void 0 ? void 0 : _e.remove(item)) {
+            !this._child0.itemCount && delete this._child0;
+        }
+        else if ((_f = this._child1) === null || _f === void 0 ? void 0 : _f.remove(item)) {
+            !this._child1.itemCount && delete this._child1;
+        }
+        else if ((_g = this._child2) === null || _g === void 0 ? void 0 : _g.remove(item)) {
+            !this._child2.itemCount && delete this._child2;
+        }
+        else if ((_h = this._child3) === null || _h === void 0 ? void 0 : _h.remove(item)) {
+            !this._child3.itemCount && delete this._child3;
+        }
+        else {
+            return false;
+        }
+        --this._itemCount;
+        if (this._itemCount < this.maxItems)
+            this.merge();
+        return true;
+    };
+    QuadTree.prototype.merge = function () {
+        var _this = this;
+        this.children.forEach(function (child) {
+            if (!child)
+                return;
+            child.merge();
+            child._items.forEach(function (item) {
+                _this.items.push(item);
+                _this._opts.onTreeChanged && _this._opts.onTreeChanged(item, child, _this);
+            });
+        });
+        delete this._child0;
+        delete this._child1;
+        delete this._child2;
+        delete this._child3;
+    };
+    return QuadTree;
+}());
+exports.QuadTree = QuadTree;
+
+},{"./Rect":62}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -3079,7 +3940,7 @@ var Rect = /** @class */ (function () {
 }());
 exports.Rect = Rect;
 
-},{}],46:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -3180,7 +4041,7 @@ var RectHelper = /** @class */ (function () {
 }());
 exports.RectHelper = RectHelper;
 
-},{"./Vector":47}],47:[function(require,module,exports){
+},{"./Vector":64}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -3209,18 +4070,38 @@ var Vector = /** @class */ (function () {
 }());
 exports.Vector = Vector;
 
-},{}],48:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Rect = exports.getValue = void 0;
+exports.getValue = void 0;
 function getValue(v, prev) {
     return typeof v !== 'function' ? v : v(prev);
 }
 exports.getValue = getValue;
-var Rect_1 = require("./Rect");
-Object.defineProperty(exports, "Rect", { enumerable: true, get: function () { return Rect_1.Rect; } });
+__exportStar(require("./Array"), exports);
+__exportStar(require("./BinaryRange"), exports);
+__exportStar(require("./BinaryTree"), exports);
+__exportStar(require("./Dot"), exports);
+__exportStar(require("./ITree"), exports);
+__exportStar(require("./QuadTree"), exports);
+__exportStar(require("./Rect"), exports);
+__exportStar(require("./Vector"), exports);
 
-},{"./Rect":45}],49:[function(require,module,exports){
+},{"./Array":56,"./BinaryRange":57,"./BinaryTree":58,"./Dot":59,"./ITree":60,"./QuadTree":61,"./Rect":62,"./Vector":64}],66:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3529,7 +4410,7 @@ var HSB = /** @class */ (function () {
 }());
 exports.HSB = HSB;
 
-},{}],50:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3879,18 +4760,29 @@ var ColorPalette = /** @class */ (function () {
 }());
 exports.ColorPalette = ColorPalette;
 
-},{"../../../dist/utils/Rect":45,"../../../dist/utils/Vector":47,"./Color":49}],51:[function(require,module,exports){
+},{"../../../dist/utils/Rect":62,"../../../dist/utils/Vector":64,"./Color":66}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "{\"snapshot\":{\"x\":0,\"y\":0,\"w\":4096,\"h\":4096,\"shapes\":[]},\"events\":[{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328524304,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524304,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":159,\"y\":199,\"w\":0,\"h\":0,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[159,199]},{\"t\":1,\"i\":\"1_16653285243041\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524343,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":199,\"w\":2,\"h\":1,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[158,200,157,200]},{\"t\":1,\"i\":\"1_16653285243041\",\"x\":159,\"y\":199,\"w\":0,\"h\":0,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[159,199]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524395,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":184,\"w\":13,\"h\":16,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[157,197,162,191,170,184]},{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":199,\"w\":2,\"h\":1,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[159,199,158,200,157,200]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524443,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":181,\"w\":28,\"h\":19,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[178,181,185,182]},{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":184,\"w\":13,\"h\":16,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[159,199,158,200,157,200,157,197,162,191,170,184]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524477,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":181,\"w\":37,\"h\":58,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[191,191,194,215,194,239]},{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":181,\"w\":28,\"h\":19,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524530,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":181,\"w\":37,\"h\":117,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[191,262,187,298]},{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":181,\"w\":37,\"h\":58,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182,191,191,194,215,194,239]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524573,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":181,\"w\":37,\"h\":118,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[187,299,187,299]},{\"t\":1,\"i\":\"1_16653285243041\",\"x\":157,\"y\":181,\"w\":37,\"h\":117,\"z\":1665328524305,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182,191,191,194,215,194,239,191,262,187,298]}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328524692,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524693,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":0,\"h\":0,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[239,159]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524745,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":0,\"h\":36,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[239,165,239,175,239,195]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":0,\"h\":0,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524795,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":14,\"h\":97,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[242,221,245,235,253,256]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":0,\"h\":36,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524845,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":25,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[258,266,263,274,264,275]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":14,\"h\":97,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524896,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":25,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[262,273,255,265,246,254]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":25,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524946,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":222,\"y\":159,\"w\":42,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[235,242,229,239,222,241]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":239,\"y\":159,\"w\":25,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328524996,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":50,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[217,244,214,246,214,247]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":222,\"y\":159,\"w\":42,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525044,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":50,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[217,250,224,253]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":50,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525079,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":57,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[240,256,255,257,271,253]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":50,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525129,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":92,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[286,249,297,243,306,235]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":57,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525179,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[307,226,306,222,300,221]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":92,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525228,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[294,223,286,229]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525262,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[280,239,277,254,279,267]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525312,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":117,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[284,273,292,276,302,273]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":116,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525362,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":125,\"h\":117,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[313,263,329,235,339,210]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":93,\"h\":117,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525412,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":143,\"w\":144,\"h\":133,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[350,176,353,162,358,143]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":159,\"w\":125,\"h\":117,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525462,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[359,134,357,133,353,139]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":143,\"w\":144,\"h\":133,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525513,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[348,153,342,174,335,207]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525563,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[332,235,333,251,337,260]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525613,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[342,263,348,257,355,242]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525663,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":172,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[369,201,378,176,386,156]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":145,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525711,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":181,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[392,143,395,138]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":172,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525746,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":181,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[395,137,392,145,386,167]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":181,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525796,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":181,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[382,192,380,215,380,234]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":181,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525846,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":182,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[383,246,389,252,396,250]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":181,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525896,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":203,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[405,235,411,219,417,206]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":182,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525947,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":206,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[419,200,420,204,416,211]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":203,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328525997,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":206,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[415,221,415,230,420,239]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":206,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526047,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":226,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[423,242,433,242,440,237]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":206,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526096,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":237,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[447,227,451,216,451,207]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":226,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526147,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":237,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[448,206,435,212,426,219]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":237,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526197,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":237,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[420,225,419,227,427,223]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":237,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207,448,206,435,212,426,219]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526235,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":237,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[434,219,434,219]},{\"t\":1,\"i\":\"1_16653285246922\",\"x\":214,\"y\":133,\"w\":237,\"h\":143,\"z\":1665328524694,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207,448,206,435,212,426,219,420,225,419,227,427,223]}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328526782,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526782,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":522,\"y\":203,\"w\":0,\"h\":0,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[522,203]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526847,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":512,\"y\":203,\"w\":10,\"h\":17,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[520,205,516,211,512,220]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":522,\"y\":203,\"w\":0,\"h\":0,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526896,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":12,\"h\":33,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[510,227,510,236]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":512,\"y\":203,\"w\":10,\"h\":17,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526930,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":24,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[517,247,522,250,534,253]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":12,\"h\":33,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328526980,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":43,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[542,248,550,235,553,222]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":24,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527033,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":43,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[553,213,551,209,551,208]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":43,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527084,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":43,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[551,212,551,214]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":43,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527132,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":45,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[553,229,554,239,555,243]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":43,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527179,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":54,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[559,246,564,247]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":45,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527215,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":74,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[569,242,577,232,584,217]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":54,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527265,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":77,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[586,209,587,204,586,202]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":203,\"w\":74,\"h\":50,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527315,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":77,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[579,204,574,205,571,207]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":77,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527366,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":77,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[570,208,575,208]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":77,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527415,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":88,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[581,209,588,209,598,209]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":77,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527463,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":100,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[603,209,610,208]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":88,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527499,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[611,208]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":100,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527538,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[610,208,608,208]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527580,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[606,208,602,213]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527614,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[598,223,597,231,598,239]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527663,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[601,243,606,244]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527696,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":108,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[611,242,618,231]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":101,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527731,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":111,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[621,218,621,211,616,208]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":108,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527780,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":111,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[613,208,605,213]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":111,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527814,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":111,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[601,215,601,216,609,212]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":111,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527864,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":118,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[620,207,628,204]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":111,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527898,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":140,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[644,202,648,202,650,209]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":118,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527948,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":140,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[650,217,650,230,650,240]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":140,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328527998,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":140,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[650,246,650,248,650,243]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":140,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528048,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":150,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[650,233,652,219,660,205]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":140,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528098,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":199,\"w\":166,\"h\":54,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[666,200,673,199,676,202]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":202,\"w\":150,\"h\":51,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528148,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":199,\"w\":168,\"h\":54,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[677,208,678,217,678,225]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":199,\"w\":166,\"h\":54,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205,666,200,673,199,676,202]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528197,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":199,\"w\":168,\"h\":54,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[677,230,675,225,675,225]},{\"t\":1,\"i\":\"1_16653285267823\",\"x\":510,\"y\":199,\"w\":168,\"h\":54,\"z\":1665328526785,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205,666,200,673,199,676,202,677,208,678,217,678,225]}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328528642,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528642,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":729,\"y\":138,\"w\":0,\"h\":0,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[729,138]},{\"t\":1,\"i\":\"1_16653285286424\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528681,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":729,\"y\":137,\"w\":1,\"h\":1,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[730,137]},{\"t\":1,\"i\":\"1_16653285286424\",\"x\":729,\"y\":138,\"w\":0,\"h\":0,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[729,138]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528731,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":725,\"y\":137,\"w\":5,\"h\":8,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[729,139,725,145]},{\"t\":1,\"i\":\"1_16653285286424\",\"x\":729,\"y\":137,\"w\":1,\"h\":1,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[729,138,730,137]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528766,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":702,\"y\":137,\"w\":28,\"h\":56,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[720,154,713,168,702,193]},{\"t\":1,\"i\":\"1_16653285286424\",\"x\":725,\"y\":137,\"w\":5,\"h\":8,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[729,138,730,137,729,139,725,145]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528815,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":687,\"y\":137,\"w\":43,\"h\":111,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[694,214,687,238,687,248]},{\"t\":1,\"i\":\"1_16653285286424\",\"x\":702,\"y\":137,\"w\":28,\"h\":56,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[729,138,730,137,729,139,725,145,720,154,713,168,702,193]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528867,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":687,\"y\":137,\"w\":43,\"h\":119,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[693,254,699,256]},{\"t\":1,\"i\":\"1_16653285286424\",\"x\":687,\"y\":137,\"w\":43,\"h\":111,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[729,138,730,137,729,139,725,145,720,154,713,168,702,193,694,214,687,238,687,248]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328528915,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285286424\",\"x\":687,\"y\":137,\"w\":43,\"h\":119,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[714,249,719,245,719,245]},{\"t\":1,\"i\":\"1_16653285286424\",\"x\":687,\"y\":137,\"w\":43,\"h\":119,\"z\":1665328528646,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[729,138,730,137,729,139,725,145,720,154,713,168,702,193,694,214,687,238,687,248,693,254,699,256]}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328529023,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529023,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":750,\"y\":210,\"w\":0,\"h\":0,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[750,210]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529065,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":746,\"y\":210,\"w\":4,\"h\":1,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[747,211,746,211]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":750,\"y\":210,\"w\":0,\"h\":0,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529099,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":742,\"y\":210,\"w\":8,\"h\":1,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[744,211,742,211]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":746,\"y\":210,\"w\":4,\"h\":1,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529150,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":729,\"y\":210,\"w\":21,\"h\":20,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[740,212,736,217,729,230]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":742,\"y\":210,\"w\":8,\"h\":1,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529200,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":210,\"w\":27,\"h\":40,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[724,243,723,248,728,250]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":729,\"y\":210,\"w\":21,\"h\":20,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529250,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":210,\"w\":42,\"h\":40,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[735,246,747,236,765,214]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":210,\"w\":27,\"h\":40,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529300,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":151,\"w\":76,\"h\":99,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[779,194,793,167,799,151]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":210,\"w\":42,\"h\":40,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529349,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":139,\"w\":78,\"h\":111,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[801,142,801,139]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":151,\"w\":76,\"h\":99,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529383,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":138,\"w\":78,\"h\":112,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[796,138,791,145,783,159]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":139,\"w\":78,\"h\":111,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529433,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":138,\"w\":78,\"h\":112,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[773,179,762,209,759,228]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":138,\"w\":78,\"h\":112,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529483,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":138,\"w\":78,\"h\":116,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[760,243,770,253,781,254]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":138,\"w\":78,\"h\":112,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159,773,179,762,209,759,228]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328529532,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":138,\"w\":85,\"h\":116,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[792,248,805,232,808,227,808,227]},{\"t\":1,\"i\":\"1_16653285290235\",\"x\":723,\"y\":138,\"w\":78,\"h\":116,\"z\":1665328529028,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159,773,179,762,209,759,228,760,243,770,253,781,254]}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328531790,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285317906\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328531790,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":349,\"w\":0,\"h\":0,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[401,349]},{\"t\":1,\"i\":\"1_16653285317906\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328531835,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":339,\"w\":10,\"h\":10,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[403,347,406,344,411,339]},{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":349,\"w\":0,\"h\":0,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[401,349]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328531885,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":331,\"w\":21,\"h\":18,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[416,335,422,331]},{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":339,\"w\":10,\"h\":10,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[401,349,403,347,406,344,411,339]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328531920,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":328,\"w\":51,\"h\":21,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[433,328,442,328,452,334]},{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":331,\"w\":21,\"h\":18,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[401,349,403,347,406,344,411,339,416,335,422,331]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328531969,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":328,\"w\":65,\"h\":25,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[460,342,466,353]},{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":328,\"w\":51,\"h\":21,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[401,349,403,347,406,344,411,339,416,335,422,331,433,328,442,328,452,334]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328532003,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":328,\"w\":66,\"h\":31,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[467,359,466,357,466,357]},{\"t\":1,\"i\":\"1_16653285317906\",\"x\":401,\"y\":328,\"w\":65,\"h\":25,\"z\":1665328531796,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[401,349,403,347,406,344,411,339,416,335,422,331,433,328,442,328,452,334,460,342,466,353]}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328532414,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285324147\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328532414,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":354,\"w\":0,\"h\":0,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[499,354]},{\"t\":1,\"i\":\"1_16653285324147\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328532502,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":348,\"w\":2,\"h\":6,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[500,353,500,351,501,348]},{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":354,\"w\":0,\"h\":0,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[499,354]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328532552,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":335,\"w\":20,\"h\":19,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[504,344,510,339,519,335]},{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":348,\"w\":2,\"h\":6,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[499,354,500,353,500,351,501,348]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328532601,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":334,\"w\":37,\"h\":20,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[526,334,536,339]},{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":335,\"w\":20,\"h\":19,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[499,354,500,353,500,351,501,348,504,344,510,339,519,335]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328532666,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":334,\"w\":53,\"h\":25,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[549,352,552,359,552,359]},{\"t\":1,\"i\":\"1_16653285324147\",\"x\":499,\"y\":334,\"w\":37,\"h\":20,\"z\":1665328532421,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[499,354,500,353,500,351,501,348,504,344,510,339,519,335,526,334,536,339]}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328533166,\"detail\":{\"shapeDatas\":[{\"t\":1,\"i\":\"1_16653285331668\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328533166,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":0,\"h\":0,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[428,408]},{\"t\":1,\"i\":\"1_16653285331668\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328533221,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":3,\"h\":8,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[428,410,429,413,431,416]},{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":0,\"h\":0,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[428,408]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328533270,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":19,\"h\":26,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[433,420,439,427,447,434]},{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":3,\"h\":8,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[428,408,428,410,429,413,431,416]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328533318,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":46,\"h\":38,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[457,440,474,446]},{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":19,\"h\":26,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[428,408,428,410,429,413,431,416,433,420,439,427,447,434]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328533352,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":82,\"h\":38,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":2,\"coords\":[489,446,510,438]},{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":46,\"h\":38,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[428,408,428,410,429,413,431,416,433,420,439,427,447,434,457,440,474,446]}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_PEN\",\"timeStamp\":1665328533405,\"detail\":{\"shapeDatas\":[[{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":118,\"h\":38,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{},\"dotsType\":2,\"coords\":[539,418,546,411,546,411]},{\"t\":1,\"i\":\"1_16653285331668\",\"x\":428,\"y\":408,\"w\":82,\"h\":38,\"z\":1665328533174,\"style\":{\"a\":\"white\",\"c\":\"round\",\"f\":\"round\",\"g\":3},\"status\":{\"e\":1},\"dotsType\":1,\"coords\":[428,408,428,410,429,413,431,416,433,420,439,427,447,434,457,440,474,446,489,446,510,438]}]]}}]}";
 
-},{}],52:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "{\"snapshot\":{\"x\":0,\"y\":0,\"w\":4096,\"h\":4096,\"shapes\":[]},\"events\":[{\"type\":\"TOOL_CHANGED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328594833,\"detail\":{\"from\":\"TOOL_SELECTOR\",\"to\":\"TOOL_RECT\"}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328595289,\"detail\":{\"shapeDatas\":[{\"t\":2,\"i\":\"2_16653285952891\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328595290,\"style\":{\"b\":\"#ff0000\",\"a\":\"#000000\",\"g\":2},\"status\":{}}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595306,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":0,\"h\":0},{\"i\":\"2_16653285952891\",\"x\":0,\"y\":0,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595348,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":1,\"h\":2},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595365,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":5,\"h\":8},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":1,\"h\":2}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595400,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":13,\"h\":18},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":5,\"h\":8}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595432,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":33,\"h\":32},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":13,\"h\":18}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595466,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":47,\"h\":39},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":33,\"h\":32}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595519,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":49,\"h\":40},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":47,\"h\":39}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595552,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":52,\"h\":43},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":49,\"h\":40}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595583,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":56,\"h\":45},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":52,\"h\":43}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595608,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":63,\"h\":51},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":56,\"h\":45}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595632,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":67,\"h\":54},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":63,\"h\":51}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595650,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":74,\"h\":60},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":67,\"h\":54}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595681,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":77,\"h\":63},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":74,\"h\":60}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595698,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":80,\"h\":66},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":77,\"h\":63}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595715,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":82,\"h\":68},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":80,\"h\":66}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595733,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":87,\"h\":72},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":82,\"h\":68}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595766,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":90,\"h\":74},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":87,\"h\":72}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595784,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":97,\"h\":80},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":90,\"h\":74}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595817,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":106,\"h\":86},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":97,\"h\":80}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595850,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":114,\"h\":93},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":106,\"h\":86}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595884,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":123,\"h\":99},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":114,\"h\":93}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595917,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":132,\"h\":106},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":123,\"h\":99}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595948,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":134,\"h\":109},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":132,\"h\":106}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595965,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":136,\"h\":111},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":134,\"h\":109}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328595982,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":137,\"h\":112},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":136,\"h\":111}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328596000,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":139,\"h\":114},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":137,\"h\":112}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328596034,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":141,\"h\":116},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":139,\"h\":114}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328596083,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":142,\"h\":117},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":141,\"h\":116}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328596388,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":142,\"h\":117},{\"i\":\"2_16653285952891\",\"x\":52,\"y\":44,\"w\":142,\"h\":117}]]}},{\"type\":\"TOOL_CHANGED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328598413,\"detail\":{\"from\":\"TOOL_RECT\",\"to\":\"TOOL_OVAL\"}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328598860,\"detail\":{\"shapeDatas\":[{\"t\":3,\"i\":\"3_16653285988602\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328598862,\"style\":{\"b\":\"#0000ff\",\"a\":\"#000000\",\"g\":2},\"status\":{}}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328598876,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":0,\"h\":0},{\"i\":\"3_16653285988602\",\"x\":0,\"y\":0,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328598920,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":7,\"h\":7},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328598952,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":15,\"h\":14},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":7,\"h\":7}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328598969,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":27,\"h\":30},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":15,\"h\":14}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599001,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":35,\"h\":38},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":27,\"h\":30}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599019,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":52,\"h\":53},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":35,\"h\":38}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599071,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":62,\"h\":63},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":52,\"h\":53}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599104,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":69,\"h\":71},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":62,\"h\":63}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599135,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":78,\"h\":80},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":69,\"h\":71}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599154,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":86,\"h\":87},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":78,\"h\":80}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599185,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":89,\"h\":89},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":86,\"h\":87}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599205,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":96,\"h\":96},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":89,\"h\":89}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599238,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":104,\"h\":101},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":96,\"h\":96}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599268,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":107,\"h\":104},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":104,\"h\":101}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599287,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":113,\"h\":109},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":107,\"h\":104}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599320,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":118,\"h\":113},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":113,\"h\":109}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599439,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":120,\"h\":114},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":118,\"h\":113}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599469,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":122,\"h\":115},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":120,\"h\":114}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599487,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":125,\"h\":117},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":122,\"h\":115}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599504,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":129,\"h\":121},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":125,\"h\":117}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599535,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":131,\"h\":122},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":129,\"h\":121}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328599707,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":129,\"h\":120},{\"i\":\"3_16653285988602\",\"x\":282,\"y\":49,\"w\":131,\"h\":122}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328601336,\"detail\":{\"shapeDatas\":[{\"t\":3,\"i\":\"3_16653286013363\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328601339,\"style\":{\"b\":\"#0000ff\",\"a\":\"#000000\",\"g\":2},\"status\":{}}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601353,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":212,\"y\":327,\"w\":2,\"h\":0},{\"i\":\"3_16653286013363\",\"x\":0,\"y\":0,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601374,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":202,\"y\":324,\"w\":12,\"h\":3},{\"i\":\"3_16653286013363\",\"x\":212,\"y\":327,\"w\":2,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601407,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":186,\"y\":314,\"w\":28,\"h\":13},{\"i\":\"3_16653286013363\",\"x\":202,\"y\":324,\"w\":12,\"h\":3}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601438,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":172,\"y\":305,\"w\":42,\"h\":22},{\"i\":\"3_16653286013363\",\"x\":186,\"y\":314,\"w\":28,\"h\":13}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601454,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":159,\"y\":295,\"w\":55,\"h\":32},{\"i\":\"3_16653286013363\",\"x\":172,\"y\":305,\"w\":42,\"h\":22}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601472,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":132,\"y\":276,\"w\":82,\"h\":51},{\"i\":\"3_16653286013363\",\"x\":159,\"y\":295,\"w\":55,\"h\":32}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601504,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":122,\"y\":270,\"w\":92,\"h\":57},{\"i\":\"3_16653286013363\",\"x\":132,\"y\":276,\"w\":82,\"h\":51}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601522,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":106,\"y\":259,\"w\":108,\"h\":68},{\"i\":\"3_16653286013363\",\"x\":122,\"y\":270,\"w\":92,\"h\":57}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601590,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":91,\"y\":246,\"w\":123,\"h\":81},{\"i\":\"3_16653286013363\",\"x\":106,\"y\":259,\"w\":108,\"h\":68}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601624,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":80,\"y\":237,\"w\":134,\"h\":90},{\"i\":\"3_16653286013363\",\"x\":91,\"y\":246,\"w\":123,\"h\":81}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601654,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":77,\"y\":235,\"w\":137,\"h\":92},{\"i\":\"3_16653286013363\",\"x\":80,\"y\":237,\"w\":134,\"h\":90}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601672,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":76,\"y\":233,\"w\":138,\"h\":94},{\"i\":\"3_16653286013363\",\"x\":77,\"y\":235,\"w\":137,\"h\":92}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601689,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":74,\"y\":232,\"w\":140,\"h\":95},{\"i\":\"3_16653286013363\",\"x\":76,\"y\":233,\"w\":138,\"h\":94}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601707,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":73,\"y\":230,\"w\":141,\"h\":97},{\"i\":\"3_16653286013363\",\"x\":74,\"y\":232,\"w\":140,\"h\":95}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601740,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":72,\"y\":229,\"w\":142,\"h\":98},{\"i\":\"3_16653286013363\",\"x\":73,\"y\":230,\"w\":141,\"h\":97}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601771,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":71,\"y\":228,\"w\":143,\"h\":99},{\"i\":\"3_16653286013363\",\"x\":72,\"y\":229,\"w\":142,\"h\":98}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601892,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":70,\"y\":226,\"w\":144,\"h\":101},{\"i\":\"3_16653286013363\",\"x\":71,\"y\":228,\"w\":143,\"h\":99}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601921,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":69,\"y\":224,\"w\":145,\"h\":103},{\"i\":\"3_16653286013363\",\"x\":70,\"y\":226,\"w\":144,\"h\":101}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601939,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":67,\"y\":219,\"w\":147,\"h\":108},{\"i\":\"3_16653286013363\",\"x\":69,\"y\":224,\"w\":145,\"h\":103}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328601972,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":65,\"y\":213,\"w\":149,\"h\":114},{\"i\":\"3_16653286013363\",\"x\":67,\"y\":219,\"w\":147,\"h\":108}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602004,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":64,\"y\":211,\"w\":150,\"h\":116},{\"i\":\"3_16653286013363\",\"x\":65,\"y\":213,\"w\":149,\"h\":114}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602023,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":64,\"y\":208,\"w\":150,\"h\":119},{\"i\":\"3_16653286013363\",\"x\":64,\"y\":211,\"w\":150,\"h\":116}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602054,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":64,\"y\":207,\"w\":150,\"h\":120},{\"i\":\"3_16653286013363\",\"x\":64,\"y\":208,\"w\":150,\"h\":119}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602073,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":64,\"y\":204,\"w\":150,\"h\":123},{\"i\":\"3_16653286013363\",\"x\":64,\"y\":207,\"w\":150,\"h\":120}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602106,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":64,\"y\":201,\"w\":150,\"h\":126},{\"i\":\"3_16653286013363\",\"x\":64,\"y\":204,\"w\":150,\"h\":123}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602138,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":65,\"y\":199,\"w\":149,\"h\":128},{\"i\":\"3_16653286013363\",\"x\":64,\"y\":201,\"w\":150,\"h\":126}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602157,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":66,\"y\":197,\"w\":148,\"h\":130},{\"i\":\"3_16653286013363\",\"x\":65,\"y\":199,\"w\":149,\"h\":128}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602188,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":66,\"y\":196,\"w\":148,\"h\":131},{\"i\":\"3_16653286013363\",\"x\":66,\"y\":197,\"w\":148,\"h\":130}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602206,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":67,\"y\":194,\"w\":147,\"h\":133},{\"i\":\"3_16653286013363\",\"x\":66,\"y\":196,\"w\":148,\"h\":131}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_OVAL\",\"timeStamp\":1665328602363,\"detail\":{\"shapeDatas\":[[{\"i\":\"3_16653286013363\",\"x\":67,\"y\":194,\"w\":147,\"h\":133},{\"i\":\"3_16653286013363\",\"x\":67,\"y\":194,\"w\":147,\"h\":133}]]}},{\"type\":\"TOOL_CHANGED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328603214,\"detail\":{\"from\":\"TOOL_OVAL\",\"to\":\"TOOL_RECT\"}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328603748,\"detail\":{\"shapeDatas\":[{\"t\":2,\"i\":\"2_16653286037484\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328603752,\"style\":{\"b\":\"#ff0000\",\"a\":\"#000000\",\"g\":2},\"status\":{}}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603766,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":385,\"y\":303,\"w\":0,\"h\":0},{\"i\":\"2_16653286037484\",\"x\":0,\"y\":0,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603823,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":384,\"y\":303,\"w\":1,\"h\":0},{\"i\":\"2_16653286037484\",\"x\":385,\"y\":303,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603840,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":370,\"y\":288,\"w\":15,\"h\":15},{\"i\":\"2_16653286037484\",\"x\":384,\"y\":303,\"w\":1,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603873,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":358,\"y\":276,\"w\":27,\"h\":27},{\"i\":\"2_16653286037484\",\"x\":370,\"y\":288,\"w\":15,\"h\":15}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603891,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":337,\"y\":257,\"w\":48,\"h\":46},{\"i\":\"2_16653286037484\",\"x\":358,\"y\":276,\"w\":27,\"h\":27}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603924,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":331,\"y\":252,\"w\":54,\"h\":51},{\"i\":\"2_16653286037484\",\"x\":337,\"y\":257,\"w\":48,\"h\":46}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603941,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":326,\"y\":248,\"w\":59,\"h\":55},{\"i\":\"2_16653286037484\",\"x\":331,\"y\":252,\"w\":54,\"h\":51}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328603994,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":320,\"y\":245,\"w\":65,\"h\":58},{\"i\":\"2_16653286037484\",\"x\":326,\"y\":248,\"w\":59,\"h\":55}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604021,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":313,\"y\":241,\"w\":72,\"h\":62},{\"i\":\"2_16653286037484\",\"x\":320,\"y\":245,\"w\":65,\"h\":58}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604041,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":307,\"y\":236,\"w\":78,\"h\":67},{\"i\":\"2_16653286037484\",\"x\":313,\"y\":241,\"w\":72,\"h\":62}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604058,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":296,\"y\":228,\"w\":89,\"h\":75},{\"i\":\"2_16653286037484\",\"x\":307,\"y\":236,\"w\":78,\"h\":67}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604091,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":291,\"y\":224,\"w\":94,\"h\":79},{\"i\":\"2_16653286037484\",\"x\":296,\"y\":228,\"w\":89,\"h\":75}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604108,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":283,\"y\":218,\"w\":102,\"h\":85},{\"i\":\"2_16653286037484\",\"x\":291,\"y\":224,\"w\":94,\"h\":79}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604140,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":279,\"y\":215,\"w\":106,\"h\":88},{\"i\":\"2_16653286037484\",\"x\":283,\"y\":218,\"w\":102,\"h\":85}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604159,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":273,\"y\":209,\"w\":112,\"h\":94},{\"i\":\"2_16653286037484\",\"x\":279,\"y\":215,\"w\":106,\"h\":88}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604192,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":269,\"y\":206,\"w\":116,\"h\":97},{\"i\":\"2_16653286037484\",\"x\":273,\"y\":209,\"w\":112,\"h\":94}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604226,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":267,\"y\":204,\"w\":118,\"h\":99},{\"i\":\"2_16653286037484\",\"x\":269,\"y\":206,\"w\":116,\"h\":97}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604258,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":266,\"y\":203,\"w\":119,\"h\":100},{\"i\":\"2_16653286037484\",\"x\":267,\"y\":204,\"w\":118,\"h\":99}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604275,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":264,\"y\":200,\"w\":121,\"h\":103},{\"i\":\"2_16653286037484\",\"x\":266,\"y\":203,\"w\":119,\"h\":100}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604323,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":263,\"y\":199,\"w\":122,\"h\":104},{\"i\":\"2_16653286037484\",\"x\":264,\"y\":200,\"w\":121,\"h\":103}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604371,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":262,\"y\":198,\"w\":123,\"h\":105},{\"i\":\"2_16653286037484\",\"x\":263,\"y\":199,\"w\":122,\"h\":104}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328604469,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286037484\",\"x\":262,\"y\":197,\"w\":123,\"h\":106},{\"i\":\"2_16653286037484\",\"x\":262,\"y\":198,\"w\":123,\"h\":105}]]}},{\"type\":\"SHAPES_ADDED\",\"operator\":\"whiteboard\",\"timeStamp\":1665328605718,\"detail\":{\"shapeDatas\":[{\"t\":2,\"i\":\"2_16653286057185\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":1665328605723,\"style\":{\"b\":\"#ff0000\",\"a\":\"rgba(85,51,51,1.00)\",\"g\":2},\"status\":{}}]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605736,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":613,\"y\":268,\"w\":0,\"h\":0},{\"i\":\"2_16653286057185\",\"x\":0,\"y\":0,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605827,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":606,\"y\":262,\"w\":7,\"h\":6},{\"i\":\"2_16653286057185\",\"x\":613,\"y\":268,\"w\":0,\"h\":0}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605858,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":596,\"y\":253,\"w\":17,\"h\":15},{\"i\":\"2_16653286057185\",\"x\":606,\"y\":262,\"w\":7,\"h\":6}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605875,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":583,\"y\":241,\"w\":30,\"h\":27},{\"i\":\"2_16653286057185\",\"x\":596,\"y\":253,\"w\":17,\"h\":15}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605892,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":570,\"y\":229,\"w\":43,\"h\":39},{\"i\":\"2_16653286057185\",\"x\":583,\"y\":241,\"w\":30,\"h\":27}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605908,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":560,\"y\":220,\"w\":53,\"h\":48},{\"i\":\"2_16653286057185\",\"x\":570,\"y\":229,\"w\":43,\"h\":39}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605926,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":550,\"y\":211,\"w\":63,\"h\":57},{\"i\":\"2_16653286057185\",\"x\":560,\"y\":220,\"w\":53,\"h\":48}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605942,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":539,\"y\":200,\"w\":74,\"h\":68},{\"i\":\"2_16653286057185\",\"x\":550,\"y\":211,\"w\":63,\"h\":57}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605975,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":535,\"y\":196,\"w\":78,\"h\":72},{\"i\":\"2_16653286057185\",\"x\":539,\"y\":200,\"w\":74,\"h\":68}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328605992,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":532,\"y\":191,\"w\":81,\"h\":77},{\"i\":\"2_16653286057185\",\"x\":535,\"y\":196,\"w\":78,\"h\":72}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606011,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":529,\"y\":188,\"w\":84,\"h\":80},{\"i\":\"2_16653286057185\",\"x\":532,\"y\":191,\"w\":81,\"h\":77}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606044,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":524,\"y\":181,\"w\":89,\"h\":87},{\"i\":\"2_16653286057185\",\"x\":529,\"y\":188,\"w\":84,\"h\":80}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606109,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":517,\"y\":172,\"w\":96,\"h\":96},{\"i\":\"2_16653286057185\",\"x\":524,\"y\":181,\"w\":89,\"h\":87}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606125,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":516,\"y\":170,\"w\":97,\"h\":98},{\"i\":\"2_16653286057185\",\"x\":517,\"y\":172,\"w\":96,\"h\":96}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606142,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":515,\"y\":169,\"w\":98,\"h\":99},{\"i\":\"2_16653286057185\",\"x\":516,\"y\":170,\"w\":97,\"h\":98}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606160,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":513,\"y\":167,\"w\":100,\"h\":101},{\"i\":\"2_16653286057185\",\"x\":515,\"y\":169,\"w\":98,\"h\":99}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606193,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":511,\"y\":166,\"w\":102,\"h\":102},{\"i\":\"2_16653286057185\",\"x\":513,\"y\":167,\"w\":100,\"h\":101}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606211,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":508,\"y\":163,\"w\":105,\"h\":105},{\"i\":\"2_16653286057185\",\"x\":511,\"y\":166,\"w\":102,\"h\":102}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606242,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":507,\"y\":161,\"w\":106,\"h\":107},{\"i\":\"2_16653286057185\",\"x\":508,\"y\":163,\"w\":105,\"h\":105}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606259,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":506,\"y\":161,\"w\":107,\"h\":107},{\"i\":\"2_16653286057185\",\"x\":507,\"y\":161,\"w\":106,\"h\":107}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606276,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":506,\"y\":160,\"w\":107,\"h\":108},{\"i\":\"2_16653286057185\",\"x\":506,\"y\":161,\"w\":107,\"h\":107}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606294,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":504,\"y\":158,\"w\":109,\"h\":110},{\"i\":\"2_16653286057185\",\"x\":506,\"y\":160,\"w\":107,\"h\":108}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606326,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":502,\"y\":157,\"w\":111,\"h\":111},{\"i\":\"2_16653286057185\",\"x\":504,\"y\":158,\"w\":109,\"h\":110}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606374,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":502,\"y\":156,\"w\":111,\"h\":112},{\"i\":\"2_16653286057185\",\"x\":502,\"y\":157,\"w\":111,\"h\":111}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606443,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":501,\"y\":156,\"w\":112,\"h\":112},{\"i\":\"2_16653286057185\",\"x\":502,\"y\":156,\"w\":111,\"h\":112}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606477,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":498,\"y\":156,\"w\":115,\"h\":112},{\"i\":\"2_16653286057185\",\"x\":501,\"y\":156,\"w\":112,\"h\":112}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606510,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":497,\"y\":156,\"w\":116,\"h\":112},{\"i\":\"2_16653286057185\",\"x\":498,\"y\":156,\"w\":115,\"h\":112}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606543,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":495,\"y\":156,\"w\":118,\"h\":112},{\"i\":\"2_16653286057185\",\"x\":497,\"y\":156,\"w\":116,\"h\":112}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606577,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":493,\"y\":156,\"w\":120,\"h\":112},{\"i\":\"2_16653286057185\",\"x\":495,\"y\":156,\"w\":118,\"h\":112}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606593,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":490,\"y\":157,\"w\":123,\"h\":111},{\"i\":\"2_16653286057185\",\"x\":493,\"y\":156,\"w\":120,\"h\":112}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606627,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":487,\"y\":157,\"w\":126,\"h\":111},{\"i\":\"2_16653286057185\",\"x\":490,\"y\":157,\"w\":123,\"h\":111}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606659,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":486,\"y\":158,\"w\":127,\"h\":110},{\"i\":\"2_16653286057185\",\"x\":487,\"y\":157,\"w\":126,\"h\":111}]]}},{\"type\":\"SHAPES_CHANGED\",\"operator\":\"TOOL_RECT\",\"timeStamp\":1665328606794,\"detail\":{\"shapeDatas\":[[{\"i\":\"2_16653286057185\",\"x\":486,\"y\":157,\"w\":127,\"h\":111},{\"i\":\"2_16653286057185\",\"x\":486,\"y\":158,\"w\":127,\"h\":110}]]}}]}";
 
-},{}],53:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -3900,7 +4792,6 @@ var dist_1 = require("../../dist");
 var ColorPalette_1 = require("./colorPalette/ColorPalette");
 var demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
 var demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
-var utils_1 = require("../../dist/utils");
 var whiteBoard;
 var factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 var _recorder;
@@ -3954,7 +4845,8 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
             });
             ui.dynamic('button', {
                 className: 'tool_button',
-                innerText: '随机加1000个圆', onclick: function () {
+                innerText: '随机加1000个圆',
+                onclick: function () {
                     var items = [];
                     for (var i = 0; i < 1000; ++i) {
                         var item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Oval);
@@ -4074,138 +4966,17 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
         ui.dynamic('div', {
             className: 'blackboard'
         }, function (div) {
-            var offscreen = ui.static('canvas', {
-                width: ui.state.width,
-                height: ui.state.height,
-                offscreen: true
-            });
             ui.static('canvas', function (onscreen) {
-                onscreen.width = offscreen.width;
-                onscreen.height = offscreen.height;
                 onscreen.style.position = 'relative';
                 onscreen.style.touchAction = 'none';
-                whiteBoard = factory.newWhiteBoard({ onscreen: onscreen, offscreen: offscreen });
+                whiteBoard = factory.newWhiteBoard(__assign({ onscreen: onscreen }, ui.state));
                 whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
-                var _loop_1 = function (key) {
-                    var v = dist_1.EventEnum[key];
-                    whiteBoard.on(v, function (e) { return console.log(v, e); });
-                };
-                for (var key in dist_1.EventEnum) {
-                    _loop_1(key);
-                }
-                var pickRect = new utils_1.Rect(Math.ceil(Math.random() * (onscreen.width - 20) / 2), Math.ceil(Math.random() * (onscreen.height - 20) / 2), Math.ceil(Math.random() * (onscreen.width) / 2), Math.ceil(Math.random() * (onscreen.height) / 2));
-                var pickRange = { from: pickRect.top, to: pickRect.bottom };
-                var ctx = onscreen.getContext('2d');
-                // class RectInTree extends Rect {
-                //   tree: BinaryTree<RectInTree> | undefined
-                // }
-                // const tree = new BinaryTree<RectInTree>({
-                //   range: new BinaryRange(0, onscreen.height),
-                //   getItemRange: v => new BinaryRange(v.top, v.bottom),
-                //   onTreeChanged(item, from, to) {
-                //     item.tree = to
-                //   },
-                //   getTree: v => v.tree
-                // })
-                // const drawTreeNode = (tree: BinaryTree<RectInTree>) => {
-                //   if (!ctx) return
-                //   ctx.lineWidth = 1
-                //   if (tree.range.hit(pickRange))
-                //     ctx.strokeStyle = 'yellow'
-                //   else
-                //     ctx.strokeStyle = 'white'
-                //   ctx.strokeRect(
-                //     0,
-                //     tree.range.from - .5,
-                //     onscreen.width,
-                //     tree.range.to - tree.range.from)
-                //   if (tree.range.hit(pickRange)) {
-                //     ctx.strokeStyle = 'green'
-                //     ctx.fillStyle = 'red'
-                //     tree.items.forEach(v => {
-                //       if (v.hit(pickRect))
-                //         ctx.fillRect(v.x, v.y, v.w, v.h)
-                //       else
-                //         ctx.strokeRect(v.x, v.y, v.w, v.h)
-                //     })
-                //   } else {
-                //     ctx.strokeStyle = 'gray'
-                //     tree.items.forEach(v => ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h))
-                //   }
-                //   tree.child0 && drawTreeNode(tree.child0)
-                //   tree.child1 && drawTreeNode(tree.child1)
-                // }
-                // class RectInTree extends Rect {
-                //   tree: QuadTree<RectInTree> | undefined
-                // }
-                // const tree = new QuadTree<RectInTree>({
-                //   rect: new Rect(0, 0, onscreen.width, onscreen.height),
-                //   getItemRect: v => v,
-                //   onTreeChanged(item, from, to) {
-                //     item.tree = to
-                //   },
-                //   getTree: v => v.tree
-                // })
-                // const drawTreeNode = (tree: QuadTree<RectInTree>) => {
-                //   if (!ctx) return
-                //   ctx.lineWidth = 1
-                //   if (tree.rect.hit(pickRect))
-                //     ctx.strokeStyle = 'yellow'
-                //   else
-                //     ctx.strokeStyle = 'white'
-                //   ctx.strokeRect(tree.rect.x - .5, tree.rect.y - .5, tree.rect.w, tree.rect.h)
-                //   if (tree.rect.hit(pickRect)) {
-                //     ctx.strokeStyle = 'green'
-                //     ctx.fillStyle = 'red'
-                //     tree.items.forEach(v => {
-                //       if (v.hit(pickRect))
-                //         ctx.fillRect(v.x, v.y, v.w, v.h)
-                //       else
-                //         ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h)
-                //     })
-                //   } else {
-                //     ctx.strokeStyle = 'gray'
-                //     tree.items.forEach(v => ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h))
-                //   }
-                //   tree.child0 && drawTreeNode(tree.child0)
-                //   tree.child1 && drawTreeNode(tree.child1)
-                //   tree.child2 && drawTreeNode(tree.child2)
-                //   tree.child3 && drawTreeNode(tree.child3)
-                // }
-                // drawTreeNode(tree)
-                // const rects: RectInTree[] = []
-                // const ttt = setInterval(() => {
-                //   for (let i = 0; i < 1; ++i) {
-                //     const rect = new RectInTree(
-                //       Math.ceil(Math.random() * (onscreen.width - 50)),
-                //       Math.ceil(Math.random() * (onscreen.height - 50)),
-                //       Math.ceil(5 + Math.random() * 50),
-                //       Math.ceil(5 + Math.random() * 50)
-                //     )
-                //     rects.push(rect)
-                //     rect.tree = tree.insert(rect)
-                //     if (rect.tree.items.indexOf(rect) < 0) {
-                //       alert('!')
-                //     }
-                //   }
-                //   ctx?.clearRect(0, 0, onscreen.width, onscreen.height)
-                //   console.log(tree.itemCount)
-                //   drawTreeNode(tree)
-                //   if (ctx) {
-                //     ctx.lineWidth = 1
-                //     ctx.strokeStyle = 'blue'
-                //     ctx.strokeRect(pickRect.x - 0.5, pickRect.y - 0.5, pickRect.w, pickRect.h)
-                //   }
-                //   if (tree.itemCount > 9999) {
-                //     clearInterval(ttt)
-                //   }
-                // }, 1)
             });
         });
     });
 });
 
-},{"../../dist":11,"../../dist/utils":48,"./colorPalette/ColorPalette":50,"./demo_helloworld":51,"./demo_rect_n_oval":52,"./ui/ele":54}],54:[function(require,module,exports){
+},{"../../dist":15,"./colorPalette/ColorPalette":67,"./demo_helloworld":68,"./demo_rect_n_oval":69,"./ui/ele":71}],71:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -4307,4 +5078,4 @@ var UI = /** @class */ (function () {
 }());
 exports.UI = UI;
 
-},{}]},{},[53]);
+},{}]},{},[70]);

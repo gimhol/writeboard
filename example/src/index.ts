@@ -76,7 +76,8 @@ let initState: State = {
       })
       ui.dynamic('button', {
         className: 'tool_button',
-        innerText: '随机加1000个圆', onclick: () => {
+        innerText: '随机加1000个圆',
+        onclick: () => {
           const items: Shape[] = []
           for (let i = 0; i < 1000; ++i) {
             const item = whiteBoard.factory.newShape(ShapeEnum.Oval)
@@ -197,141 +198,11 @@ let initState: State = {
     ui.dynamic('div', {
       className: 'blackboard'
     }, (div) => {
-      const offscreen = ui.static('canvas', {
-        width: ui.state.width!,
-        height: ui.state.height!,
-        offscreen: true
-      })
       ui.static('canvas', onscreen => {
-        onscreen.width = offscreen.width!
-        onscreen.height = offscreen.height!
         onscreen.style.position = 'relative'
         onscreen.style.touchAction = 'none'
-        whiteBoard = factory.newWhiteBoard({ onscreen, offscreen })
+        whiteBoard = factory.newWhiteBoard({ onscreen, ...ui.state })
         whiteBoard.on(EventEnum.ToolChanged, () => ui.refresh())
-        for (const key in EventEnum) {
-          const v = (EventEnum as any)[key]
-          whiteBoard.on(v, e => console.log(v, e))
-        }
-        const pickRect = new Rect(
-          Math.ceil(Math.random() * (onscreen.width - 20) / 2),
-          Math.ceil(Math.random() * (onscreen.height - 20) / 2),
-          Math.ceil(Math.random() * (onscreen.width) / 2),
-          Math.ceil(Math.random() * (onscreen.height) / 2)
-        )
-        const pickRange = { from: pickRect.top, to: pickRect.bottom }
-
-
-        const ctx = onscreen.getContext('2d')
-        // class RectInTree extends Rect {
-        //   tree: BinaryTree<RectInTree> | undefined
-        // }
-        // const tree = new BinaryTree<RectInTree>({
-        //   range: new BinaryRange(0, onscreen.height),
-        //   getItemRange: v => new BinaryRange(v.top, v.bottom),
-        //   onTreeChanged(item, from, to) {
-        //     item.tree = to
-        //   },
-        //   getTree: v => v.tree
-        // })
-        // const drawTreeNode = (tree: BinaryTree<RectInTree>) => {
-        //   if (!ctx) return
-        //   ctx.lineWidth = 1
-        //   if (tree.range.hit(pickRange))
-        //     ctx.strokeStyle = 'yellow'
-        //   else
-        //     ctx.strokeStyle = 'white'
-        //   ctx.strokeRect(
-        //     0,
-        //     tree.range.from - .5,
-        //     onscreen.width,
-        //     tree.range.to - tree.range.from)
-
-        //   if (tree.range.hit(pickRange)) {
-        //     ctx.strokeStyle = 'green'
-        //     ctx.fillStyle = 'red'
-        //     tree.items.forEach(v => {
-        //       if (v.hit(pickRect))
-        //         ctx.fillRect(v.x, v.y, v.w, v.h)
-        //       else
-        //         ctx.strokeRect(v.x, v.y, v.w, v.h)
-        //     })
-        //   } else {
-        //     ctx.strokeStyle = 'gray'
-        //     tree.items.forEach(v => ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h))
-        //   }
-        //   tree.child0 && drawTreeNode(tree.child0)
-        //   tree.child1 && drawTreeNode(tree.child1)
-        // }
-
-        // class RectInTree extends Rect {
-        //   tree: QuadTree<RectInTree> | undefined
-        // }
-        // const tree = new QuadTree<RectInTree>({
-        //   rect: new Rect(0, 0, onscreen.width, onscreen.height),
-        //   getItemRect: v => v,
-        //   onTreeChanged(item, from, to) {
-        //     item.tree = to
-        //   },
-        //   getTree: v => v.tree
-        // })
-        // const drawTreeNode = (tree: QuadTree<RectInTree>) => {
-        //   if (!ctx) return
-        //   ctx.lineWidth = 1
-        //   if (tree.rect.hit(pickRect))
-        //     ctx.strokeStyle = 'yellow'
-        //   else
-        //     ctx.strokeStyle = 'white'
-        //   ctx.strokeRect(tree.rect.x - .5, tree.rect.y - .5, tree.rect.w, tree.rect.h)
-        //   if (tree.rect.hit(pickRect)) {
-        //     ctx.strokeStyle = 'green'
-        //     ctx.fillStyle = 'red'
-        //     tree.items.forEach(v => {
-        //       if (v.hit(pickRect))
-        //         ctx.fillRect(v.x, v.y, v.w, v.h)
-        //       else
-        //         ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h)
-        //     })
-        //   } else {
-        //     ctx.strokeStyle = 'gray'
-        //     tree.items.forEach(v => ctx.strokeRect(v.x - 0.5, v.y - 0.5, v.w, v.h))
-        //   }
-        //   tree.child0 && drawTreeNode(tree.child0)
-        //   tree.child1 && drawTreeNode(tree.child1)
-        //   tree.child2 && drawTreeNode(tree.child2)
-        //   tree.child3 && drawTreeNode(tree.child3)
-        // }
-        // drawTreeNode(tree)
-
-        // const rects: RectInTree[] = []
-        // const ttt = setInterval(() => {
-        //   for (let i = 0; i < 1; ++i) {
-        //     const rect = new RectInTree(
-        //       Math.ceil(Math.random() * (onscreen.width - 50)),
-        //       Math.ceil(Math.random() * (onscreen.height - 50)),
-        //       Math.ceil(5 + Math.random() * 50),
-        //       Math.ceil(5 + Math.random() * 50)
-        //     )
-        //     rects.push(rect)
-        //     rect.tree = tree.insert(rect)
-
-        //     if (rect.tree.items.indexOf(rect) < 0) {
-        //       alert('!')
-        //     }
-        //   }
-        //   ctx?.clearRect(0, 0, onscreen.width, onscreen.height)
-        //   console.log(tree.itemCount)
-        //   drawTreeNode(tree)
-        //   if (ctx) {
-        //     ctx.lineWidth = 1
-        //     ctx.strokeStyle = 'blue'
-        //     ctx.strokeRect(pickRect.x - 0.5, pickRect.y - 0.5, pickRect.w, pickRect.h)
-        //   }
-        //   if (tree.itemCount > 9999) {
-        //     clearInterval(ttt)
-        //   }
-        // }, 1)
-
       })
     })
   })
