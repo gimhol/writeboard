@@ -1,16 +1,15 @@
-import { Shape, ShapeData } from "../shape/base"
-import {
-  Observer, IObserver, Listener,
-  Callback, Emitter, IEmitter, Options,
-  EventMap, ToolChangedEvent, ShapesAddedEvent, ShapesRemovedEvent, BaseEvent
-} from "../event"
-import { ToolEnum, ToolType, ITool } from "../tools"
-import { IRect, Rect, IDot } from "../utils"
+import { BaseEvent, Callback, Emitter, EventMap, IEmitter, IObserver, Listener, Observer, Options, ShapesAddedEvent, ShapesRemovedEvent, ToolChangedEvent } from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
+import { Shape, ShapeData } from "../shape/base"
+import { ITool, ToolEnum, ToolType } from "../tools"
+import { IDot, IRect, Rect } from "../utils"
 const Tag = '[WhiteBoard]'
 export interface WhiteBoardOptions {
   onscreen: HTMLCanvasElement
-  offscreen: HTMLCanvasElement
+  offscreen?: HTMLCanvasElement
+  width?: number
+  height?: number
+  toolType?: ToolType
 }
 export interface IPointerEventHandler { (ev: PointerEvent): void }
 export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
@@ -27,17 +26,47 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _eventEmitter = new Emitter(this)
   private _operators: string[] = ['whiteboard']
   private _operator = 'whiteboard'
+  get width() {
+    return this._onscreen.width;
+  }
+  set width(v: number) {
+    this._onscreen.width = v;
+    this._offscreen.width = v;
+  }
+  get height() {
+    return this._onscreen.height;
+  }
+  set height(v: number) {
+    this._onscreen.height = v;
+    this._offscreen.height = v;
+  }
   constructor(factory: IFactory, options: WhiteBoardOptions) {
     this._factory = factory
     this._shapesMgr = this._factory.newShapesMgr()
-    this._offscreen = options.offscreen
     this._onscreen = options.onscreen
+    if (options.offscreen) {
+      this._offscreen = options.offscreen
+    } else {
+      this._offscreen = document.createElement('canvas');
+      this._offscreen.width = options.onscreen.width;
+      this._offscreen.height = options.onscreen.height;
+    }
+    if (options.width) {
+      this.width = options.width;
+    }
+    if (options.height) {
+      this.height = options.height;
+    }
     this._dirty = { x: 0, y: 0, w: options.onscreen.width, h: options.onscreen.height }
     this.listenTo(this._onscreen, 'pointerdown', this.pointerdown as Callback, undefined)
     this.listenTo(this._onscreen, 'pointermove', this.pointermove as Callback, undefined)
     this.listenTo(this._onscreen, 'pointerup', this.pointerup as Callback, undefined)
     this._onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
     this.render()
+
+    if (options.toolType) {
+      this.toolType = options.toolType;
+    }
   }
 
   finds(ids: string[]): Shape[] {
