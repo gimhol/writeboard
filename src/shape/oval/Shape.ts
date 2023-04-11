@@ -11,8 +11,7 @@ export class ShapeOval extends ShapeNeedPath<OvalData> {
     ctx.save();
     ctx.scale(scale.x, scale.y);
     ctx.beginPath();
-    ctx.moveTo((x + w) / scale.x, y / scale.y);
-    ctx.arc(x / scale.x, y / scale.y, r, 0, 2 * Math.PI);
+    ctx.arc((x + 0.5 * w) / scale.x, (y + 0.5 * h) / scale.y, r / 2, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.restore();
   }
