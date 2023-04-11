@@ -1881,7 +1881,6 @@ var ShapeOval = /** @class */ (function (_super) {
         ctx.save();
         ctx.scale(scale.x, scale.y);
         ctx.beginPath();
-        // ctx.moveTo((x + w) / scale.x, y / scale.y);
         ctx.arc((x + 0.5 * w) / scale.x, (y + 0.5 * h) / scale.y, r / 2, 0, 2 * Math.PI);
         ctx.closePath();
         ctx.restore();
@@ -1893,14 +1892,58 @@ FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Oval, function () { 
 
 },{"../../mgr/FactoryMgr":18,"../ShapeEnum":21,"../base/ShapeNeedPath":24,"./Data":27}],29:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
 var FactoryMgr_1 = require("../../mgr/FactoryMgr");
 var ShapeEnum_1 = require("../ShapeEnum");
 var ToolEnum_1 = require("../../tools/ToolEnum");
 var SimpleTool_1 = require("../../tools/base/SimpleTool");
-Object.defineProperty(exports, "OvalTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Oval, function () { return new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Oval, ShapeEnum_1.ShapeEnum.Oval); }, { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
+var OvalTool = /** @class */ (function (_super) {
+    __extends(OvalTool, _super);
+    function OvalTool() {
+        return _super.call(this, ToolEnum_1.ToolEnum.Oval, ShapeEnum_1.ShapeEnum.Oval) || this;
+    }
+    OvalTool.prototype.applyRect = function () {
+        var _a, _b;
+        if (this._keys['Shift'] && this._keys['Alt']) {
+            // 从圆心开始绘制正圆
+            var f = this._rect.from();
+            var t = this._rect.to();
+            var r = Math.sqrt(Math.pow(f.y - t.y, 2) + Math.pow(f.x - t.x, 2));
+            var x = f.x - r;
+            var y = f.y - r;
+            (_a = this._curShape) === null || _a === void 0 ? void 0 : _a.geo(x, y, r * 2, r * 2);
+        }
+        else if (this._keys['Shift']) {
+            // 四角开始绘制正圆
+            var _c = this._rect.gen(), x = _c.x, y = _c.y, w = _c.w, h = _c.h;
+            var s = Math.max(w, h);
+            (_b = this._curShape) === null || _b === void 0 ? void 0 : _b.geo(x, y, s, s);
+        }
+        else {
+            // 四角开始绘制椭圆
+            return _super.prototype.applyRect.call(this);
+        }
+    };
+    return OvalTool;
+}(SimpleTool_1.SimpleTool));
+exports.OvalTool = OvalTool;
+FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Oval, function () { return new OvalTool(); }, { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
 },{"../../mgr/FactoryMgr":18,"../../tools/ToolEnum":48,"../../tools/base/SimpleTool":50,"../ShapeEnum":21}],30:[function(require,module,exports){
 "use strict";
@@ -2987,20 +3030,48 @@ exports.InvalidTool = InvalidTool;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
-var RectHelper_1 = require("../../utils/RectHelper");
 var Events_1 = require("../../event/Events");
+var RectHelper_1 = require("../../utils/RectHelper");
 var Tag = '[SimpleTool]';
 var SimpleTool = /** @class */ (function () {
     function SimpleTool(type, shapeType) {
+        var _this = this;
+        this._keys = {};
         this._rect = new RectHelper_1.RectHelper();
         this._type = type;
         this._shapeType = shapeType;
+        window.addEventListener('keydown', function (e) { return _this.keydown(e); });
+        window.addEventListener('keyup', function (e) { return _this.keyup(e); });
     }
     Object.defineProperty(SimpleTool.prototype, "type", {
         get: function () { return this._type; },
         enumerable: false,
         configurable: true
     });
+    SimpleTool.prototype.keydown = function (e) {
+        switch (e.key) {
+            case 'Control':
+            case 'Alt':
+            case 'Shift':
+                if (!this._keys[e.key]) {
+                    this._keys[e.key] = true;
+                    this.applyRect();
+                }
+                return;
+        }
+    };
+    SimpleTool.prototype.keyup = function (e) {
+        switch (e.key) {
+            case 'Control':
+            case 'Alt':
+            case 'Shift':
+                if (this._keys[e.key]) {
+                    this._keys[e.key] = false;
+                    this.applyRect();
+                }
+                return;
+        }
+    };
     SimpleTool.prototype.start = function () {
     };
     SimpleTool.prototype.end = function () {
@@ -3042,15 +3113,19 @@ var SimpleTool = /** @class */ (function () {
         this.updateGeo();
         delete this._curShape;
     };
+    SimpleTool.prototype.applyRect = function () {
+        var _a;
+        var _b = this._rect.gen(), x = _b.x, y = _b.y, w = _b.w, h = _b.h;
+        (_a = this._curShape) === null || _a === void 0 ? void 0 : _a.geo(x, y, w, h);
+    };
     SimpleTool.prototype.updateGeo = function () {
         var _this = this;
-        var _a = this._rect.gen(), x = _a.x, y = _a.y, w = _a.w, h = _a.h;
         var shape = this._curShape;
         var board = this.board;
         if (!shape || !board)
             return;
         if (this._prevData) {
-            shape.geo(x, y, w, h);
+            this.applyRect();
             return;
         }
         this._prevData = (0, Events_1.pickShapeGeoData)(shape.data);
@@ -3060,7 +3135,7 @@ var SimpleTool = /** @class */ (function () {
             board.emit(new Events_1.ShapesGeoEvent(_this.type, { shapeDatas: [[curr, prev]] }));
             delete _this._prevData;
         };
-        shape.geo(x, y, w, h);
+        this.applyRect();
         setTimeout(emitEvent, 1000 / 60);
     };
     return SimpleTool;
@@ -3978,6 +4053,12 @@ var RectHelper = /** @class */ (function () {
         this._from = Vector_1.Vector.pure(-999, -999);
         this._to = Vector_1.Vector.pure(-999, -999);
     }
+    RectHelper.prototype.from = function () {
+        return this._from;
+    };
+    RectHelper.prototype.to = function () {
+        return this._to;
+    };
     RectHelper.prototype.start = function (x, y) {
         this._from.x = x;
         this._from.y = y;

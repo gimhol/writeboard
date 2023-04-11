@@ -1,12 +1,14 @@
 import { WhiteBoard } from "../../board/WhiteBoard"
-import { RectHelper } from "../../utils/RectHelper"
-import { Shape } from "../../shape/base/Shape"
 import { IShapeGeoData, pickShapeGeoData, ShapesGeoEvent } from "../../event/Events"
+import { Shape } from "../../shape/base/Shape"
 import type { ShapeType } from "../../shape/ShapeEnum"
+import type { IDot } from "../../utils/Dot"
+import { RectHelper } from "../../utils/RectHelper"
 import type { ToolType } from "../ToolEnum"
 import type { ITool } from "./Tool"
-import type { IDot } from "../../utils/Dot"
 const Tag = '[SimpleTool]'
+
+type FnKeys = 'Control' | 'Alt' | 'Shift';
 export class SimpleTool implements ITool {
   get type(): string { return this._type }
   private _type: ToolType
@@ -14,7 +16,35 @@ export class SimpleTool implements ITool {
   constructor(type: ToolType, shapeType: ShapeType) {
     this._type = type
     this._shapeType = shapeType
+    window.addEventListener('keydown', e => this.keydown(e));
+    window.addEventListener('keyup', e => this.keyup(e))
   }
+  protected _keys: { [key in FnKeys]?: boolean } = {}
+  protected keydown(e: KeyboardEvent) {
+    switch (e.key) {
+      case 'Control':
+      case 'Alt':
+      case 'Shift':
+        if (!this._keys[e.key]) {
+          this._keys[e.key] = true;
+          this.applyRect();
+        }
+        return;
+    }
+  }
+  protected keyup(e: KeyboardEvent) {
+    switch (e.key) {
+      case 'Control':
+      case 'Alt':
+      case 'Shift':
+        if (this._keys[e.key]) {
+          this._keys[e.key] = false;
+          this.applyRect();
+        }
+        return;
+    }
+  }
+
   start(): void {
   }
   end(): void {
@@ -50,15 +80,17 @@ export class SimpleTool implements ITool {
     this.updateGeo()
     delete this._curShape
   }
-  private updateGeo() {
+  protected applyRect() {
     const { x, y, w, h } = this._rect.gen()
-
+    this._curShape?.geo(x, y, w, h)
+  }
+  private updateGeo() {
     const shape = this._curShape
     const board = this.board
     if (!shape || !board) return
 
     if (this._prevData) {
-      shape.geo(x, y, w, h)
+      this.applyRect();
       return
     }
 
@@ -69,11 +101,12 @@ export class SimpleTool implements ITool {
       board.emit(new ShapesGeoEvent(this.type, { shapeDatas: [[curr, prev]] }))
       delete this._prevData
     }
-    shape.geo(x, y, w, h)
+
+    this.applyRect();
     setTimeout(emitEvent, 1000 / 60)
   }
-  private _prevData: IShapeGeoData | undefined
-  private _curShape: Shape | undefined
-  private _board: WhiteBoard | undefined
-  private _rect = new RectHelper()
+  protected _prevData: IShapeGeoData | undefined
+  protected _curShape: Shape | undefined
+  protected _board: WhiteBoard | undefined
+  protected _rect = new RectHelper()
 }

@@ -14,8 +14,14 @@ export type GenOptions = {
   lockMode: LockMode
 }
 export class RectHelper {
-  private _from = Vector.pure(-999, -999)
-  private _to = Vector.pure(-999, -999)
+  private _from = Vector.pure(-999, -999);
+  private _to = Vector.pure(-999, -999);
+  from() {
+    return this._from;
+  }
+  to() {
+    return this._to;
+  }
   start(x: number, y: number) {
     this._from.x = x
     this._from.y = y
