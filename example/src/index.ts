@@ -201,7 +201,7 @@ let initState: State = {
       ui.static('canvas', onscreen => {
         onscreen.style.position = 'relative'
         onscreen.style.touchAction = 'none'
-        whiteBoard = factory.newWhiteBoard({ onscreen, ...ui.state })
+        whiteBoard = factory.newWhiteBoard({ screens: [onscreen], ...ui.state })
         whiteBoard.on(EventEnum.ToolChanged, () => ui.refresh())
       })
     })

@@ -5,8 +5,7 @@ import { EventDataVisitor } from "./EventDataVisitor"
 import { EventEnum, EventType } from "./EventType"
 import { IEventDataMaker } from "./IEventDataMaker"
 
-const tempEvent = new CustomEvent('')
-export class BaseEvent<T = any> implements Event, IEventDataMaker<T> {
+export class BaseEvent<T = any> implements IEventDataMaker<T> {
   get operator() { return this._operator }
   get detail() { return this._detail }
   get type() { return this._type }
@@ -58,10 +57,6 @@ export class BaseEvent<T = any> implements Event, IEventDataMaker<T> {
   stopImmediatePropagation(): void { }
   stopPropagation(): void { }
 
-  readonly AT_TARGET: number = tempEvent.AT_TARGET
-  readonly BUBBLING_PHASE: number = tempEvent.BUBBLING_PHASE
-  readonly CAPTURING_PHASE: number = tempEvent.CAPTURING_PHASE
-  readonly NONE: number = tempEvent.NONE
   pure(): EventData<T> {
     return EventDataVisitor.create(this)
   }
@@ -138,13 +133,13 @@ export class ToolChangedEvent extends BaseEvent<IToolChangedEventDetail>{
   }
 }
 
-export interface EventPureMap extends GlobalEventHandlersEventMap {
+export interface EventPureMap {
   [EventEnum.ShapesAdded]: EventData<IShapesEventDetail>
   [EventEnum.ShapesRemoved]: EventData<IShapesEventDetail>,
   [EventEnum.ShapesChanged]: EventData<IShapesChangedEventDetail>,
   [EventEnum.ToolChanged]: EventData<IToolChangedEventDetail>
 }
-export interface EventMap extends GlobalEventHandlersEventMap {
+export interface EventMap {
   [EventEnum.ShapesAdded]: ShapesAddedEvent
   [EventEnum.ShapesRemoved]: ShapesRemovedEvent,
   [EventEnum.ShapesChanged]: ShapesChangedEvent,

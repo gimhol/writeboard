@@ -1,12 +1,14 @@
-import { BaseEvent, Callback, Emitter, EventMap, IEmitter, IObserver, Listener, Observer, Options, ShapesAddedEvent, ShapesRemovedEvent, ToolChangedEvent } from "../event"
+import {
+  BaseEvent, ICallback, Emitter, EventMap, IEmitter, IObserver, Listener, Observer,
+  ShapesAddedEvent, ShapesRemovedEvent, ToolChangedEvent
+} from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
 import { Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Rect } from "../utils"
 const Tag = '[WhiteBoard]'
 export interface WhiteBoardOptions {
-  onscreen: HTMLCanvasElement
-  offscreen?: HTMLCanvasElement
+  screens: (HTMLCanvasElement | [HTMLCanvasElement] | [HTMLCanvasElement, HTMLCanvasElement])[]
   width?: number
   height?: number
   toolType?: ToolType
@@ -15,16 +17,16 @@ export interface IPointerEventHandler { (ev: PointerEvent): void }
 export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
-  private _onscreen: HTMLCanvasElement
-  private _offscreen: HTMLCanvasElement
+  private _screens: [HTMLCanvasElement, HTMLCanvasElement][];
+  private get _onscreen() { return this._screens[0][0] }
+  private get _offscreen() { return this._screens[0][1] }
   private _shapesMgr: IShapesMgr
   private _mousedown = false
   private _tools: { [key in ToolEnum | string]?: ITool } = {}
   private _tool: ITool | undefined
   private _selects: Shape[] = []
   private _eventsObserver = new Observer()
-  private _eventEmitter = new Emitter(this)
-  private _operators: string[] = ['whiteboard']
+  private _eventEmitter = new Emitter()
   private _operator = 'whiteboard'
   get width() {
     return this._onscreen.width;
@@ -43,25 +45,30 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   constructor(factory: IFactory, options: WhiteBoardOptions) {
     this._factory = factory
     this._shapesMgr = this._factory.newShapesMgr()
-    this._onscreen = options.onscreen
-    if (options.offscreen) {
-      this._offscreen = options.offscreen
-    } else {
-      this._offscreen = document.createElement('canvas');
-      this._offscreen.width = options.onscreen.width;
-      this._offscreen.height = options.onscreen.height;
-    }
+
+    this._screens = options.screens.map(v => {
+      const onscreen = Array.isArray(v) ? v[0] : v;
+      const offscreen = (Array.isArray(v) ? v[1] : undefined) || document.createElement('canvas')!
+      offscreen.width = onscreen.width;
+      offscreen.height = onscreen.height;
+      return [onscreen, offscreen]
+    })
+
     if (options.width) {
       this.width = options.width;
     }
     if (options.height) {
       this.height = options.height;
     }
-    this._dirty = { x: 0, y: 0, w: options.onscreen.width, h: options.onscreen.height }
-    this.listenTo(this._onscreen, 'pointerdown', this.pointerdown as Callback, undefined)
-    this.listenTo(this._onscreen, 'pointermove', this.pointermove as Callback, undefined)
-    this.listenTo(this._onscreen, 'pointerup', this.pointerup as Callback, undefined)
+    this._dirty = { x: 0, y: 0, w: this.onscreen.width, h: this.onscreen.height }
+
+
+    this.listenTo(this._onscreen, 'pointerdown', this.pointerdown)
+    this.listenTo(this._onscreen, 'pointermove', this.pointermove)
+    this.listenTo(this._onscreen, 'pointerup', this.pointerup)
     this._onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
+
+
     this.render()
 
     if (options.toolType) {
@@ -110,36 +117,37 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   hits(rect: IRect): Shape<ShapeData>[] {
     return this._shapesMgr.hits(rect)
   }
-  addEventListener<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any, options?: Options): Listener;
-  addEventListener(type: string, callback: Callback | null, options?: Options): Listener {
-    return this._eventEmitter.addEventListener(type, callback, options)
+  addEventListener<K extends keyof EventMap>(type: K, callback: (e: EventMap[K]) => any): Listener;
+  addEventListener(type: string, callback: ICallback): Listener {
+    return this._eventEmitter.addEventListener(type, callback);
   }
-  removeEventListener<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any, options?: Options): void;
-  removeEventListener(type: string, callback: Callback | null, options?: Options): void {
-    return this._eventEmitter.removeEventListener(type, callback, options)
+  removeEventListener<K extends keyof EventMap>(type: K, callback: (e: EventMap[K]) => any): void;
+  removeEventListener(type: string, callback: ICallback): void {
+    return this._eventEmitter.removeEventListener(type, callback);
   }
-  dispatchEvent(e: BaseEvent): boolean {
-    return this._eventEmitter.dispatchEvent(e)
+  dispatchEvent(e: BaseEvent): void {
+    return this._eventEmitter.dispatchEvent(e);
   }
-  on<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any, options?: Options): () => void;
-  on(type: string, callback: Callback, options?: Options) {
-    return this._eventEmitter.on(type, callback, options)
+  on<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any): () => void;
+  on(type: string, callback: ICallback) {
+    return this._eventEmitter.on(type, callback);
   }
-  once<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any, options?: Options): () => void;
-  once(type: string, callback: Callback, options?: Options) {
-    return this._eventEmitter.once(type, callback, options)
+  once<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any): () => void;
+  once(type: string, callback: ICallback) {
+    return this._eventEmitter.once(type, callback);
   }
-  emit(e: BaseEvent): boolean {
+  emit(e: BaseEvent): void {
     return this._eventEmitter.emit(e)
   }
-  listenTo(
-    target: EventTarget,
-    type: string,
-    callback: Callback | null,
-    options?: boolean | AddEventListenerOptions
-  ) {
-    return this._eventsObserver.listenTo(target, type, callback, options)
+
+  listenTo<K extends keyof GlobalEventHandlersEventMap>(target: EventTarget, type: K, callback: (e: GlobalEventHandlersEventMap[K]) => any): () => void;
+  listenTo(target: EventTarget, type: string, callback: (e: Event) => void): () => void;
+  listenTo(target: Emitter, type: string, callback: ICallback): () => void;
+  listenTo(target: Emitter | EventTarget, type: string, callback: ICallback | ((e: Event) => void)): () => void;
+  listenTo(target: Emitter | EventTarget, type: string, callback: ICallback | ((e: Event) => void)) {
+    return this._eventsObserver.listenTo(target, type, callback)
   }
+
   destory() { return this._eventsObserver.destory() }
 
   get factory() { return this._factory }

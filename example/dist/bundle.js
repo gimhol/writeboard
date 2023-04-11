@@ -23,8 +23,7 @@ var WhiteBoard = /** @class */ (function () {
         this._tools = {};
         this._selects = [];
         this._eventsObserver = new event_1.Observer();
-        this._eventEmitter = new event_1.Emitter(this);
-        this._operators = ['whiteboard'];
+        this._eventEmitter = new event_1.Emitter();
         this._operator = 'whiteboard';
         this.pointerdown = function (e) {
             var _a;
@@ -50,29 +49,39 @@ var WhiteBoard = /** @class */ (function () {
         };
         this._factory = factory;
         this._shapesMgr = this._factory.newShapesMgr();
-        this._onscreen = options.onscreen;
-        if (options.offscreen) {
-            this._offscreen = options.offscreen;
-        }
-        else {
-            this._offscreen = document.createElement('canvas');
-            this._offscreen.width = options.onscreen.width;
-            this._offscreen.height = options.onscreen.height;
-        }
+        this._screens = options.screens.map(function (v) {
+            var onscreen = Array.isArray(v) ? v[0] : v;
+            var offscreen = (Array.isArray(v) ? v[1] : undefined) || document.createElement('canvas');
+            offscreen.width = onscreen.width;
+            offscreen.height = onscreen.height;
+            return [onscreen, offscreen];
+        });
         if (options.width) {
             this.width = options.width;
         }
         if (options.height) {
             this.height = options.height;
         }
-        this._dirty = { x: 0, y: 0, w: options.onscreen.width, h: options.onscreen.height };
-        this.listenTo(this._onscreen, 'pointerdown', this.pointerdown, undefined);
-        this.listenTo(this._onscreen, 'pointermove', this.pointermove, undefined);
-        this.listenTo(this._onscreen, 'pointerup', this.pointerup, undefined);
+        this._dirty = { x: 0, y: 0, w: this.onscreen.width, h: this.onscreen.height };
+        this.listenTo(this._onscreen, 'pointerdown', this.pointerdown);
+        this.listenTo(this._onscreen, 'pointermove', this.pointermove);
+        this.listenTo(this._onscreen, 'pointerup', this.pointerup);
         this._onscreen.addEventListener('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); });
         this.render();
-        this.toolType = tools_1.ToolEnum.Rect;
+        if (options.toolType) {
+            this.toolType = options.toolType;
+        }
     }
+    Object.defineProperty(WhiteBoard.prototype, "_onscreen", {
+        get: function () { return this._screens[0][0]; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(WhiteBoard.prototype, "_offscreen", {
+        get: function () { return this._screens[0][1]; },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(WhiteBoard.prototype, "width", {
         get: function () {
             return this._onscreen.width;
@@ -142,26 +151,26 @@ var WhiteBoard = /** @class */ (function () {
     WhiteBoard.prototype.hits = function (rect) {
         return this._shapesMgr.hits(rect);
     };
-    WhiteBoard.prototype.addEventListener = function (type, callback, options) {
-        return this._eventEmitter.addEventListener(type, callback, options);
+    WhiteBoard.prototype.addEventListener = function (type, callback) {
+        return this._eventEmitter.addEventListener(type, callback);
     };
-    WhiteBoard.prototype.removeEventListener = function (type, callback, options) {
-        return this._eventEmitter.removeEventListener(type, callback, options);
+    WhiteBoard.prototype.removeEventListener = function (type, callback) {
+        return this._eventEmitter.removeEventListener(type, callback);
     };
     WhiteBoard.prototype.dispatchEvent = function (e) {
         return this._eventEmitter.dispatchEvent(e);
     };
-    WhiteBoard.prototype.on = function (type, callback, options) {
-        return this._eventEmitter.on(type, callback, options);
+    WhiteBoard.prototype.on = function (type, callback) {
+        return this._eventEmitter.on(type, callback);
     };
-    WhiteBoard.prototype.once = function (type, callback, options) {
-        return this._eventEmitter.once(type, callback, options);
+    WhiteBoard.prototype.once = function (type, callback) {
+        return this._eventEmitter.once(type, callback);
     };
     WhiteBoard.prototype.emit = function (e) {
         return this._eventEmitter.emit(e);
     };
-    WhiteBoard.prototype.listenTo = function (target, type, callback, options) {
-        return this._eventsObserver.listenTo(target, type, callback, options);
+    WhiteBoard.prototype.listenTo = function (target, type, callback) {
+        return this._eventsObserver.listenTo(target, type, callback);
     };
     WhiteBoard.prototype.destory = function () { return this._eventsObserver.destory(); };
     Object.defineProperty(WhiteBoard.prototype, "factory", {
@@ -364,60 +373,59 @@ __exportStar(require("./WhiteBoard"), exports);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Emitter = void 0;
 var Array_1 = require("../utils/Array");
+;
 var Emitter = /** @class */ (function () {
-    function Emitter(target) {
+    function Emitter() {
         this._listenersMap = {};
-        this._target = target || this;
     }
-    Emitter.prototype.addEventListener = function (type, callback, options) {
+    Emitter.prototype.addEventListener = function (type, callback) {
         var _this = this;
         var listeners = this._listenersMap[type] || [];
-        var canceller = function () { return _this.removeEventListener(type, callback, options); };
-        var listener = { times: -1, callback: callback, options: options, type: type, target: this._target, canceller: canceller };
+        var canceller = function () { return _this.removeEventListener(type, callback); };
+        var listener = { times: -1, callback: callback, type: type, target: this, canceller: canceller };
         listeners.push(listener);
         this._listenersMap[type] = listeners;
         return listener;
     };
-    Emitter.prototype.removeEventListener = function (type, callback, options) {
+    Emitter.prototype.removeEventListener = function (type, callback) {
         var listeners = this._listenersMap[type];
         var idx = listeners && (0, Array_1.findIndex)(listeners, function (v) {
-            return v.type === type && v.callback === callback && JSON.stringify(v.options) === JSON.stringify(options);
+            return v.type === type && v.callback === callback;
         });
         if (idx !== undefined && idx >= 0)
             this._listenersMap[type] = listeners === null || listeners === void 0 ? void 0 : listeners.filter(function (_, i) { return (i !== idx); });
     };
     Emitter.prototype.dispatchEvent = function (e) {
-        e.target = this;
-        var ret = !e.cancelable || !e.defaultPrevented;
         var listeners = this._listenersMap[e.type];
-        if (!listeners)
-            return ret;
-        for (var i = 0; i < listeners.length; ++i) {
-            var _a = listeners[i], times = _a.times, callback = _a.callback;
-            if (times > 1)
-                listeners[i].times = times - 1;
-            else if (times === 0)
-                listeners.splice(i, 1);
-            if (!callback)
-                continue;
-            if (typeof callback === 'function')
-                callback(e);
-            else
-                callback.handleEvent(e);
+        if (!listeners) {
+            return;
         }
-        return ret;
+        for (var i = 0; i < listeners.length; ++i) {
+            var listener = listeners[i];
+            if (listener.target instanceof Emitter) {
+                var times = listener.times, callback = listener.callback;
+                if (times > 1) {
+                    listeners[i].times = times - 1;
+                }
+                else if (times === 0) {
+                    listeners.splice(i, 1);
+                }
+                callback(e);
+            }
+        }
+        return;
     };
-    Emitter.prototype.on = function (type, callback, options) {
-        var listener = this.addEventListener(type, callback, options);
+    Emitter.prototype.on = function (type, callback) {
+        var listener = this.addEventListener(type, callback);
         return listener.canceller;
     };
-    Emitter.prototype.once = function (type, callback, options) {
-        var listener = this.addEventListener(type, callback, options);
+    Emitter.prototype.once = function (type, callback) {
+        var listener = this.addEventListener(type, callback);
         listener.times = 0;
         return listener.canceller;
     };
     Emitter.prototype.emit = function (e) {
-        return this.dispatchEvent(e);
+        this.dispatchEvent(e);
     };
     return Emitter;
 }());
@@ -510,7 +518,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolChangedEvent = exports.ShapesGeoEvent = exports.pickShapeGeoData = exports.ShapesMovedEvent = exports.pickShapePositionData = exports.ShapesChangedEvent = exports.ShapesChangedEnum = exports.ShapesRemovedEvent = exports.ShapesAddedEvent = exports.ShapesEvent = exports.BaseEvent = void 0;
 var EventDataVisitor_1 = require("./EventDataVisitor");
 var EventType_1 = require("./EventType");
-var tempEvent = new CustomEvent('');
 var BaseEvent = /** @class */ (function () {
     function BaseEvent(type, operator, detail) {
         this._bubbles = true;
@@ -525,10 +532,6 @@ var BaseEvent = /** @class */ (function () {
         this._srcElement = null;
         this._target = null;
         this._timeStamp = Date.now();
-        this.AT_TARGET = tempEvent.AT_TARGET;
-        this.BUBBLING_PHASE = tempEvent.BUBBLING_PHASE;
-        this.CAPTURING_PHASE = tempEvent.CAPTURING_PHASE;
-        this.NONE = tempEvent.NONE;
         this._type = type;
         this._operator = operator;
         this._detail = detail;
@@ -731,20 +734,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Observer = void 0;
 var Emitter_1 = require("./Emitter");
+;
+;
+;
+;
+;
 var Observer = /** @class */ (function () {
     function Observer() {
         this._listeners = [];
     }
-    Observer.prototype.listenTo = function (target, type, callback, options) {
+    Observer.prototype.listenTo = function (target, type, callback) {
         if (target instanceof Emitter_1.Emitter) {
-            var canceller_1 = target.addEventListener(type, callback, options).canceller;
-            return canceller_1;
+            var listener = target.addEventListener(type, callback);
+            this._listeners.push(listener);
+            return listener.canceller;
         }
-        var canceller = function () { return target.removeEventListener(type, callback, options); };
-        var listener = { times: -1, target: target, type: type, callback: callback, canceller: canceller };
-        target.addEventListener(type, callback, options);
-        this._listeners.push(listener);
-        return canceller;
+        else {
+            var canceller = function () { return target.removeEventListener(type, callback); };
+            target.addEventListener(type, callback, undefined);
+            var listener = {
+                times: -1,
+                target: target,
+                type: type,
+                callback: callback,
+                canceller: canceller
+            };
+            this._listeners.push(listener);
+            return canceller;
+        }
     };
     Observer.prototype.destory = function () {
         this._listeners.forEach(function (v) { return v.canceller(); });
@@ -1864,8 +1881,8 @@ var ShapeOval = /** @class */ (function (_super) {
         ctx.save();
         ctx.scale(scale.x, scale.y);
         ctx.beginPath();
-        ctx.moveTo((x + w) / scale.x, y / scale.y);
-        ctx.arc(x / scale.x, y / scale.y, r, 0, 2 * Math.PI);
+        // ctx.moveTo((x + w) / scale.x, y / scale.y);
+        ctx.arc((x + 0.5 * w) / scale.x, (y + 0.5 * h) / scale.y, r / 2, 0, 2 * Math.PI);
         ctx.closePath();
         ctx.restore();
     };
@@ -4969,7 +4986,7 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
             ui.static('canvas', function (onscreen) {
                 onscreen.style.position = 'relative';
                 onscreen.style.touchAction = 'none';
-                whiteBoard = factory.newWhiteBoard(__assign({ onscreen: onscreen }, ui.state));
+                whiteBoard = factory.newWhiteBoard(__assign({ screens: [onscreen] }, ui.state));
                 whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
             });
         });

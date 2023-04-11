@@ -196,7 +196,7 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
             ui.static('canvas', function (onscreen) {
                 onscreen.style.position = 'relative';
                 onscreen.style.touchAction = 'none';
-                whiteBoard = factory.newWhiteBoard(__assign({ onscreen: onscreen }, ui.state));
+                whiteBoard = factory.newWhiteBoard(__assign({ screens: [onscreen] }, ui.state));
                 whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
             });
         });
