@@ -44,7 +44,14 @@ export class SimpleTool implements ITool {
         return;
     }
   }
-
+  holdingKey(...keys: FnKeys[]): boolean {
+    for (let i = 0; i < keys.length; ++i) {
+      if (!keys[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
   start(): void {
   }
   end(): void {

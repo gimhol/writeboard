@@ -8,7 +8,7 @@ export class OvalTool extends SimpleTool {
   }
 
   protected applyRect() {
-    if (this._keys['Shift'] && this._keys['Alt']) {
+    if (this.holdingKey('Shift', 'Alt')) {
       // 从圆心开始绘制正圆
       const f = this._rect.from();
       const t = this._rect.to();
@@ -16,11 +16,11 @@ export class OvalTool extends SimpleTool {
       const x = f.x - r;
       const y = f.y - r;
       this._curShape?.geo(x, y, r * 2, r * 2);
-    } else if (this._keys['Shift']) {
+    } else if (this.holdingKey('Shift')) {
       // 四角开始绘制正圆
       // TODO;
       return super.applyRect();
-    } else if (this._keys['Alt']) {
+    } else if (this.holdingKey('Alt')) {
       // 圆心开始绘制椭圆
       // TODO;
       return super.applyRect();
