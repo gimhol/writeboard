@@ -1,19 +1,18 @@
-import { UI } from "./ui/ele"
 import {
-  WhiteBoard, ToolEnum,
-  ShapeEnum, ShapePen,
-  EventEnum, Shape,
+  EventEnum,
   FactoryEnum, FactoryMgr,
-  Player, Recorder
+  ILayerOptions,
+  Player, Recorder,
+  Shape,
+  ShapeEnum, ShapePen,
+  ToolEnum,
+  WhiteBoard
 } from "../../dist"
-import { ColorPalette } from "./colorPalette/ColorPalette"
 import { ToolType } from "../../dist/tools/ToolEnum"
+import { ColorPalette } from "./colorPalette/ColorPalette"
 import demo_helloworld from "./demo_helloworld"
 import demo_rect_n_oval from "./demo_rect_n_oval"
-import { QuadTree } from "../../dist/utils/QuadTree"
-import { Rect } from "../../dist/utils"
-import { BinaryTree } from "../../dist/utils/BinaryTree"
-import { BinaryRange } from "../../dist/utils/BinaryRange"
+import { UI } from "./ui/ele"
 
 type State = {
   count: number
@@ -62,6 +61,7 @@ let initState: State = {
           const items: Shape[] = []
           for (let i = 0; i < 1000; ++i) {
             const item = whiteBoard.factory.newShape(ShapeEnum.Rect)
+            item.data.layer = whiteBoard.currentLayer().info.name;
             item.geo(
               Math.floor(Math.random() * ui.state.width!),
               Math.floor(Math.random() * ui.state.height!), 50, 50)
@@ -81,6 +81,7 @@ let initState: State = {
           const items: Shape[] = []
           for (let i = 0; i < 1000; ++i) {
             const item = whiteBoard.factory.newShape(ShapeEnum.Oval)
+            item.data.layer = whiteBoard.currentLayer().info.name;
             item.geo(
               Math.floor(Math.random() * ui.state.width!),
               Math.floor(Math.random() * ui.state.height!), 50, 50)
@@ -177,6 +178,21 @@ let initState: State = {
           replay(demo_rect_n_oval)
         }
       })
+      ui.dynamic('button', {
+        className: 'tool_button',
+        innerText: 'layer_0',
+        onclick: () => whiteBoard.setCurrentLayer(0)
+      })
+      ui.dynamic('button', {
+        className: 'tool_button',
+        innerText: 'layer_1',
+        onclick: () => whiteBoard.setCurrentLayer(1)
+      })
+      ui.dynamic('button', {
+        className: 'tool_button',
+        innerText: 'layer_2',
+        onclick: () => whiteBoard.setCurrentLayer(2)
+      })
       const _recorder_textarea = ui.dynamic('textarea')
 
       ui.static('canvas', canvas => {
@@ -195,15 +211,28 @@ let initState: State = {
         }
       })
     })
-    ui.dynamic('div', {
-      className: 'blackboard'
+    ui.static('div', {
+      className: 'blackboard',
+      style: {
+        'position': 'relative'
+      }
     }, (div) => {
-      ui.static('canvas', onscreen => {
-        onscreen.style.position = 'relative'
-        onscreen.style.touchAction = 'none'
-        whiteBoard = factory.newWhiteBoard({ screens: [onscreen], ...ui.state })
-        whiteBoard.on(EventEnum.ToolChanged, () => ui.refresh())
+      const layers = ['1', '2', ''].map<ILayerOptions>((name, idx) => {
+        const onscreen = ui.static('canvas', {
+          style: {
+            position: idx === 0 ? 'relative' : 'absolute',
+            touchAction: 'none',
+            left: '0px',
+            right: '0px',
+            top: '0px',
+            bottom: '0px'
+          }
+        })
+        return { info: { name }, onscreen }
       })
+      whiteBoard = factory.newWhiteBoard({ layers, ...ui.state })
+      whiteBoard.on(EventEnum.ToolChanged, () => ui.refresh())
+
     })
   })
 })

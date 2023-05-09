@@ -1,5 +1,8 @@
 import {
-  BaseEvent, ICallback, Emitter, EventMap, IEmitter, IObserver, Listener, Observer,
+  BaseEvent,
+  Emitter, EventMap,
+  ICallback,
+  IEmitter, IObserver, Listener, Observer,
   ShapesAddedEvent, ShapesRemovedEvent, ToolChangedEvent
 } from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
@@ -7,8 +10,27 @@ import { Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Rect } from "../utils"
 const Tag = '[WhiteBoard]'
+
+export interface ILayerInfoInit {
+  readonly name: string;
+}
+export interface ILayerOptions {
+  readonly info: ILayerInfoInit;
+  readonly onscreen: HTMLCanvasElement;
+}
+
+export interface ILayerInfo {
+  name: string;
+}
+export interface ILayer {
+  info: ILayerInfo;
+  onscreen: HTMLCanvasElement;
+  offscreen: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  octx: CanvasRenderingContext2D;
+}
 export interface WhiteBoardOptions {
-  screens: (HTMLCanvasElement | [HTMLCanvasElement] | [HTMLCanvasElement, HTMLCanvasElement])[]
+  layers: ILayerOptions[]
   width?: number
   height?: number
   toolType?: ToolType
@@ -17,9 +39,9 @@ export interface IPointerEventHandler { (ev: PointerEvent): void }
 export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
-  private _screens: [HTMLCanvasElement, HTMLCanvasElement][];
-  private get _onscreen() { return this._screens[0][0] }
-  private get _offscreen() { return this._screens[0][1] }
+  private _layers: ILayer[];
+  private _currentLayer?: ILayer;
+  private _layerMap: { [x in string]: ILayer | undefined } = {}
   private _shapesMgr: IShapesMgr
   private _mousedown = false
   private _tools: { [key in ToolEnum | string]?: ITool } = {}
@@ -29,29 +51,50 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _eventEmitter = new Emitter()
   private _operator = 'whiteboard'
   get width() {
-    return this._onscreen.width;
+    return this._layers[0].onscreen.width;
   }
   set width(v: number) {
-    this._onscreen.width = v;
-    this._offscreen.width = v;
+    for (let i = 0; i < this._layers.length; ++i) {
+      this._layers[i].onscreen.width = v;
+      this._layers[i].offscreen.width = v;
+    }
   }
   get height() {
-    return this._onscreen.height;
+    return this._layers[0].offscreen.height;
   }
   set height(v: number) {
-    this._onscreen.height = v;
-    this._offscreen.height = v;
+    for (let i = 0; i < this._layers.length; ++i) {
+      this._layers[i].onscreen.height = v;
+      this._layers[i].offscreen.height = v;
+    }
+  }
+  setCurrentLayer(idx: number): boolean {
+    if (idx < 0) { return false }
+    if (idx > this._layers.length - 1) { return false }
+    for (let i = 0; i < this._layers.length; ++i) {
+      this._layers[i].onscreen.style.pointerEvents = 'none'
+    }
+    this._currentLayer = this._layers[idx];
+    this._currentLayer.onscreen.style.pointerEvents = ''
+    return true;
   }
   constructor(factory: IFactory, options: WhiteBoardOptions) {
     this._factory = factory
     this._shapesMgr = this._factory.newShapesMgr()
-
-    this._screens = options.screens.map(v => {
-      const onscreen = Array.isArray(v) ? v[0] : v;
-      const offscreen = (Array.isArray(v) ? v[1] : undefined) || document.createElement('canvas')!
+    this._layers = options.layers.map(v => {
+      const onscreen = v.onscreen;
+      const offscreen = document.createElement('canvas')
       offscreen.width = onscreen.width;
       offscreen.height = onscreen.height;
-      return [onscreen, offscreen]
+      const ret: ILayer = {
+        info: { ...v.info },
+        onscreen,
+        offscreen,
+        ctx: onscreen.getContext('2d')!,
+        octx: offscreen.getContext('2d')!
+      };
+      this._layerMap[ret.info.name] = ret
+      return ret;
     })
 
     if (options.width) {
@@ -60,16 +103,17 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     if (options.height) {
       this.height = options.height;
     }
-    this._dirty = { x: 0, y: 0, w: this.onscreen.width, h: this.onscreen.height }
+    this._dirty = { x: 0, y: 0, w: this.onscreen()!.width, h: this.onscreen()!.height }
 
-
-    this.listenTo(this._onscreen, 'pointerdown', this.pointerdown)
-    this.listenTo(this._onscreen, 'pointermove', this.pointermove)
-    this.listenTo(this._onscreen, 'pointerup', this.pointerup)
-    this._onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
-
-
+    for (let i = 0; i < this._layers.length; ++i) {
+      this.listenTo(this._layers[i].onscreen, 'pointerdown', this.pointerdown)
+      this.listenTo(this._layers[i].onscreen, 'pointermove', this.pointermove)
+      this.listenTo(this._layers[i].onscreen, 'pointerup', this.pointerup)
+      this._layers[i].onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
+    }
+    this.setCurrentLayer(0);
     this.render()
+
 
     if (options.toolType) {
       this.toolType = options.toolType;
@@ -85,8 +129,8 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   toJson(): any {
     return {
       x: 0, y: 0,
-      w: this._onscreen.width,
-      h: this._onscreen.height,
+      w: this._layers[0].onscreen.width,
+      h: this._layers[0].onscreen.height,
       shapes: this.shapes().map(v => v.data)
     }
   }
@@ -95,10 +139,10 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   }
   fromJson(jobj: any) {
     this.removeAll()
-    this._offscreen.width = jobj.w
-    this._offscreen.height = jobj.h
-    this._onscreen.width = jobj.w
-    this._onscreen.height = jobj.h
+    this._layers[0].onscreen.width = jobj.w
+    this._layers[0].onscreen.height = jobj.h
+    this._layers[0].onscreen.width = jobj.w
+    this._layers[0].onscreen.height = jobj.h
     const shapes = jobj.shapes.map((v: ShapeData) => this.factory.newShape(v))
     this.add(...shapes)
   }
@@ -152,10 +196,22 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
 
   get factory() { return this._factory }
   set factory(v) { this._factory = v }
-  get ctx() { return this._onscreen.getContext('2d') }
-  get octx() { return this._offscreen.getContext('2d') }
-  get onscreen() { return this._onscreen }
-  get offscreen() { return this._offscreen }
+  currentLayer(): ILayer {
+    return this._currentLayer!;
+  }
+  ctx(idx: number = 0): CanvasRenderingContext2D | null | undefined {
+    return this.onscreen(idx)?.getContext('2d');
+  }
+  octx(idx: number = 0): CanvasRenderingContext2D | null | undefined {
+    return this.offscreen(idx)?.getContext('2d')
+  }
+  onscreen(idx: number = 0): HTMLCanvasElement | undefined {
+    return this._layers[idx].onscreen;
+  }
+  offscreen(idx: number = 0): HTMLCanvasElement | undefined {
+    return this._layers[idx].offscreen;
+  }
+
   get toolType() { return this._toolType }
   set toolType(v) { this.setToolType(v) }
   setToolType(to: ToolType) {
@@ -220,7 +276,7 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     return ret
   }
   getDot(ev: MouseEvent | PointerEvent): IDot {
-    const ele = this._onscreen
+    const ele = this._layers[0].onscreen;
     const sw = ele.width / ele.offsetWidth
     const sh = ele.height / ele.offsetHeight
     const { pressure = 0.5 } = ev as any
@@ -273,25 +329,30 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     requestRender && requestAnimationFrame(() => this.render())
   }
   render() {
-    const ctx = this.ctx
-    const octx = this.octx
     const dirty = this._dirty
-    if (!dirty || !ctx || !octx)
+    if (!dirty)
       return
-    if (dirty) {
-      octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
-      ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
+
+    for (let i = 0; i < this._layers.length; ++i) {
+      this._layers[i].ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
+      this._layers[i].octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
     }
     this._shapesMgr.shapes().forEach(v => {
       const br = v.boundingRect()
-      if (Rect.hit(br, dirty)) v.render(octx)
+      const layer = this._layerMap[v.data.layer]
+      if (Rect.hit(br, dirty) && layer) v.render(layer.octx)
     })
-    this.tool?.render(octx)
-    ctx.drawImage(
-      this.offscreen,
-      dirty.x, dirty.y, dirty.w, dirty.h,
-      dirty.x, dirty.y, dirty.w, dirty.h
-    )
+    this.tool?.render(this.currentLayer().octx)
+
+    for (let i = 0; i < this._layers.length; ++i) {
+      const { ctx, offscreen } = this._layers[i]
+      ctx.drawImage(
+        offscreen,
+        dirty.x, dirty.y, dirty.w, dirty.h,
+        dirty.x, dirty.y, dirty.w, dirty.h
+      )
+    }
+
     delete this._dirty
   }
 }

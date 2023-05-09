@@ -1,5 +1,16 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -19,6 +30,7 @@ var WhiteBoard = /** @class */ (function () {
     function WhiteBoard(factory, options) {
         var _this = this;
         this._toolType = tools_1.ToolEnum.Pen;
+        this._layerMap = {};
         this._mousedown = false;
         this._tools = {};
         this._selects = [];
@@ -49,12 +61,20 @@ var WhiteBoard = /** @class */ (function () {
         };
         this._factory = factory;
         this._shapesMgr = this._factory.newShapesMgr();
-        this._screens = options.screens.map(function (v) {
-            var onscreen = Array.isArray(v) ? v[0] : v;
-            var offscreen = (Array.isArray(v) ? v[1] : undefined) || document.createElement('canvas');
+        this._layers = options.layers.map(function (v) {
+            var onscreen = v.onscreen;
+            var offscreen = document.createElement('canvas');
             offscreen.width = onscreen.width;
             offscreen.height = onscreen.height;
-            return [onscreen, offscreen];
+            var ret = {
+                info: __assign({}, v.info),
+                onscreen: onscreen,
+                offscreen: offscreen,
+                ctx: onscreen.getContext('2d'),
+                octx: offscreen.getContext('2d')
+            };
+            _this._layerMap[ret.info.name] = ret;
+            return ret;
         });
         if (options.width) {
             this.width = options.width;
@@ -62,48 +82,59 @@ var WhiteBoard = /** @class */ (function () {
         if (options.height) {
             this.height = options.height;
         }
-        this._dirty = { x: 0, y: 0, w: this.onscreen.width, h: this.onscreen.height };
-        this.listenTo(this._onscreen, 'pointerdown', this.pointerdown);
-        this.listenTo(this._onscreen, 'pointermove', this.pointermove);
-        this.listenTo(this._onscreen, 'pointerup', this.pointerup);
-        this._onscreen.addEventListener('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); });
+        this._dirty = { x: 0, y: 0, w: this.onscreen().width, h: this.onscreen().height };
+        for (var i = 0; i < this._layers.length; ++i) {
+            this.listenTo(this._layers[i].onscreen, 'pointerdown', this.pointerdown);
+            this.listenTo(this._layers[i].onscreen, 'pointermove', this.pointermove);
+            this.listenTo(this._layers[i].onscreen, 'pointerup', this.pointerup);
+            this._layers[i].onscreen.addEventListener('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); });
+        }
+        this.setCurrentLayer(0);
         this.render();
         if (options.toolType) {
             this.toolType = options.toolType;
         }
     }
-    Object.defineProperty(WhiteBoard.prototype, "_onscreen", {
-        get: function () { return this._screens[0][0]; },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(WhiteBoard.prototype, "_offscreen", {
-        get: function () { return this._screens[0][1]; },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(WhiteBoard.prototype, "width", {
         get: function () {
-            return this._onscreen.width;
+            return this._layers[0].onscreen.width;
         },
         set: function (v) {
-            this._onscreen.width = v;
-            this._offscreen.width = v;
+            for (var i = 0; i < this._layers.length; ++i) {
+                this._layers[i].onscreen.width = v;
+                this._layers[i].offscreen.width = v;
+            }
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(WhiteBoard.prototype, "height", {
         get: function () {
-            return this._onscreen.height;
+            return this._layers[0].offscreen.height;
         },
         set: function (v) {
-            this._onscreen.height = v;
-            this._offscreen.height = v;
+            for (var i = 0; i < this._layers.length; ++i) {
+                this._layers[i].onscreen.height = v;
+                this._layers[i].offscreen.height = v;
+            }
         },
         enumerable: false,
         configurable: true
     });
+    WhiteBoard.prototype.setCurrentLayer = function (idx) {
+        if (idx < 0) {
+            return false;
+        }
+        if (idx > this._layers.length - 1) {
+            return false;
+        }
+        for (var i = 0; i < this._layers.length; ++i) {
+            this._layers[i].onscreen.style.pointerEvents = 'none';
+        }
+        this._currentLayer = this._layers[idx];
+        this._currentLayer.onscreen.style.pointerEvents = '';
+        return true;
+    };
     WhiteBoard.prototype.finds = function (ids) {
         return this._shapesMgr.finds(ids);
     };
@@ -113,8 +144,8 @@ var WhiteBoard = /** @class */ (function () {
     WhiteBoard.prototype.toJson = function () {
         return {
             x: 0, y: 0,
-            w: this._onscreen.width,
-            h: this._onscreen.height,
+            w: this._layers[0].onscreen.width,
+            h: this._layers[0].onscreen.height,
             shapes: this.shapes().map(function (v) { return v.data; })
         };
     };
@@ -124,10 +155,10 @@ var WhiteBoard = /** @class */ (function () {
     WhiteBoard.prototype.fromJson = function (jobj) {
         var _this = this;
         this.removeAll();
-        this._offscreen.width = jobj.w;
-        this._offscreen.height = jobj.h;
-        this._onscreen.width = jobj.w;
-        this._onscreen.height = jobj.h;
+        this._layers[0].onscreen.width = jobj.w;
+        this._layers[0].onscreen.height = jobj.h;
+        this._layers[0].onscreen.width = jobj.w;
+        this._layers[0].onscreen.height = jobj.h;
         var shapes = jobj.shapes.map(function (v) { return _this.factory.newShape(v); });
         this.add.apply(this, shapes);
     };
@@ -179,26 +210,27 @@ var WhiteBoard = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(WhiteBoard.prototype, "ctx", {
-        get: function () { return this._onscreen.getContext('2d'); },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(WhiteBoard.prototype, "octx", {
-        get: function () { return this._offscreen.getContext('2d'); },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(WhiteBoard.prototype, "onscreen", {
-        get: function () { return this._onscreen; },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(WhiteBoard.prototype, "offscreen", {
-        get: function () { return this._offscreen; },
-        enumerable: false,
-        configurable: true
-    });
+    WhiteBoard.prototype.currentLayer = function () {
+        return this._currentLayer;
+    };
+    WhiteBoard.prototype.ctx = function (idx) {
+        var _a;
+        if (idx === void 0) { idx = 0; }
+        return (_a = this.onscreen(idx)) === null || _a === void 0 ? void 0 : _a.getContext('2d');
+    };
+    WhiteBoard.prototype.octx = function (idx) {
+        var _a;
+        if (idx === void 0) { idx = 0; }
+        return (_a = this.offscreen(idx)) === null || _a === void 0 ? void 0 : _a.getContext('2d');
+    };
+    WhiteBoard.prototype.onscreen = function (idx) {
+        if (idx === void 0) { idx = 0; }
+        return this._layers[idx].onscreen;
+    };
+    WhiteBoard.prototype.offscreen = function (idx) {
+        if (idx === void 0) { idx = 0; }
+        return this._layers[idx].offscreen;
+    };
     Object.defineProperty(WhiteBoard.prototype, "toolType", {
         get: function () { return this._toolType; },
         set: function (v) { this.setToolType(v); },
@@ -286,7 +318,7 @@ var WhiteBoard = /** @class */ (function () {
         return ret;
     };
     WhiteBoard.prototype.getDot = function (ev) {
-        var ele = this._onscreen;
+        var ele = this._layers[0].onscreen;
         var sw = ele.width / ele.offsetWidth;
         var sh = ele.height / ele.offsetHeight;
         var _a = ev.pressure, pressure = _a === void 0 ? 0.5 : _a;
@@ -326,23 +358,26 @@ var WhiteBoard = /** @class */ (function () {
         requestRender && requestAnimationFrame(function () { return _this.render(); });
     };
     WhiteBoard.prototype.render = function () {
+        var _this = this;
         var _a;
-        var ctx = this.ctx;
-        var octx = this.octx;
         var dirty = this._dirty;
-        if (!dirty || !ctx || !octx)
+        if (!dirty)
             return;
-        if (dirty) {
-            octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h);
-            ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h);
+        for (var i = 0; i < this._layers.length; ++i) {
+            this._layers[i].ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h);
+            this._layers[i].octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h);
         }
         this._shapesMgr.shapes().forEach(function (v) {
             var br = v.boundingRect();
-            if (utils_1.Rect.hit(br, dirty))
-                v.render(octx);
+            var layer = _this._layerMap[v.data.layer];
+            if (utils_1.Rect.hit(br, dirty) && layer)
+                v.render(layer.octx);
         });
-        (_a = this.tool) === null || _a === void 0 ? void 0 : _a.render(octx);
-        ctx.drawImage(this.offscreen, dirty.x, dirty.y, dirty.w, dirty.h, dirty.x, dirty.y, dirty.w, dirty.h);
+        (_a = this.tool) === null || _a === void 0 ? void 0 : _a.render(this.currentLayer().octx);
+        for (var i = 0; i < this._layers.length; ++i) {
+            var _b = this._layers[i], ctx = _b.ctx, offscreen = _b.offscreen;
+            ctx.drawImage(offscreen, dirty.x, dirty.y, dirty.w, dirty.h, dirty.x, dirty.y, dirty.w, dirty.h);
+        }
         delete this._dirty;
     };
     return WhiteBoard;
@@ -353,11 +388,7 @@ exports.WhiteBoard = WhiteBoard;
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -774,11 +805,7 @@ exports.Observer = Observer;
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -934,11 +961,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -955,11 +978,7 @@ __exportStar(require("./Screenplay"), exports);
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1019,24 +1038,24 @@ var Factory = /** @class */ (function () {
     Factory.prototype.newTool = function (toolType) {
         var create = FactoryMgr_1.FactoryMgr.tools[toolType];
         if (!create) {
-            console.warn(Tag, "newTool(\"".concat(toolType, "\"), ").concat(toolType, " is not registered"));
+            console.warn(Tag, "newTool(\"" + toolType + "\"), " + toolType + " is not registered");
             return new InvalidTool_1.InvalidTool;
         }
         var ret = create();
         if (ret.type !== toolType) {
-            console.warn(Tag, "newTool(\"".concat(toolType, "\"), ").concat(toolType, " is not corrent! check member 'type' of your Tool!"));
+            console.warn(Tag, "newTool(\"" + toolType + "\"), " + toolType + " is not corrent! check member 'type' of your Tool!");
         }
         return ret;
     };
     Factory.prototype.newShapeData = function (shapeType) {
         var create = FactoryMgr_1.FactoryMgr.shapeDatas[shapeType];
         if (!create) {
-            console.warn(Tag, "newShapeData(\"".concat(shapeType, "\"), ").concat(shapeType, " is not registered"));
+            console.warn(Tag, "newShapeData(\"" + shapeType + "\"), " + shapeType + " is not registered");
             return new Data_1.ShapeData;
         }
         var ret = create();
         if (ret.type !== shapeType) {
-            console.warn(Tag, "newShapeData(\"".concat(shapeType, "\"), ").concat(shapeType, " is not corrent! check member 'type' of your ShapeData!"));
+            console.warn(Tag, "newShapeData(\"" + shapeType + "\"), " + shapeType + " is not corrent! check member 'type' of your ShapeData!");
         }
         return ret;
     };
@@ -1109,12 +1128,12 @@ var FactoryMgr = /** @class */ (function () {
     FactoryMgr.createFactory = function (type) {
         var create = this.factorys[type];
         if (!create) {
-            var error = new Error("".concat(Tag, "create(\"").concat(type, "\"), ").concat(type, " is not registered"));
+            var error = new Error(Tag + "create(\"" + type + "\"), " + type + " is not registered");
             throw error;
         }
         var ret = create();
         if (ret.type !== type) {
-            console.warn(Tag, "create(\"".concat(type, "\"), ").concat(type, " is not corrent! check member 'type' of your Factory!"));
+            console.warn(Tag, "create(\"" + type + "\"), " + type + " is not corrent! check member 'type' of your Factory!");
         }
         return ret;
     };
@@ -1205,7 +1224,7 @@ var ShapesMgr = /** @class */ (function () {
         var ret = 0;
         items.forEach(function (item) {
             if (_this.exists(item))
-                return console.warn(Tag, "can not add \"".concat(item.data.id, "\", already exists!"));
+                return console.warn(Tag, "can not add \"" + item.data.id + "\", already exists!");
             _this._kvs[item.data.id] = item;
             _this._items.push(item);
             ++ret;
@@ -1256,11 +1275,7 @@ exports.ShapesMgr = ShapesMgr;
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1323,6 +1338,7 @@ var ShapeData = /** @class */ (function () {
         this.w = -0;
         this.h = -0;
         this.z = -0;
+        this.l = '';
         this.style = {};
         this.status = {};
     }
@@ -1483,6 +1499,12 @@ var ShapeData = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(ShapeData.prototype, "layer", {
+        get: function () { return this.l; },
+        set: function (v) { this.l = v; },
+        enumerable: false,
+        configurable: true
+    });
     ShapeData.prototype.merge = function (other) {
         this.copyFrom(other);
         return this;
@@ -1502,6 +1524,8 @@ var ShapeData = /** @class */ (function () {
             this.w = other.w;
         if (typeof other.h === 'number')
             this.h = other.h;
+        if (typeof other.l === 'string')
+            this.l = other.l;
         var style = other.style, status = other.status;
         if (style) {
             if (!this.style)
@@ -1766,11 +1790,7 @@ exports.ShapeNeedPath = ShapeNeedPath;
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1787,11 +1807,7 @@ __exportStar(require("./ShapeNeedPath"), exports);
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1919,8 +1935,8 @@ var OvalTool = /** @class */ (function (_super) {
         return _super.call(this, ToolEnum_1.ToolEnum.Oval, ShapeEnum_1.ShapeEnum.Oval) || this;
     }
     OvalTool.prototype.applyRect = function () {
-        var _a, _b;
-        if (this._keys['Shift'] && this._keys['Alt']) {
+        var _a;
+        if (this.holdingKey('Shift', 'Alt')) {
             // 从圆心开始绘制正圆
             var f = this._rect.from();
             var t = this._rect.to();
@@ -1929,11 +1945,15 @@ var OvalTool = /** @class */ (function (_super) {
             var y = f.y - r;
             (_a = this._curShape) === null || _a === void 0 ? void 0 : _a.geo(x, y, r * 2, r * 2);
         }
-        else if (this._keys['Shift']) {
+        else if (this.holdingKey('Shift')) {
             // 四角开始绘制正圆
-            var _c = this._rect.gen(), x = _c.x, y = _c.y, w = _c.w, h = _c.h;
-            var s = Math.max(w, h);
-            (_b = this._curShape) === null || _b === void 0 ? void 0 : _b.geo(x, y, s, s);
+            // TODO;
+            return _super.prototype.applyRect.call(this);
+        }
+        else if (this.holdingKey('Alt')) {
+            // 圆心开始绘制椭圆
+            // TODO;
+            return _super.prototype.applyRect.call(this);
         }
         else {
             // 四角开始绘制椭圆
@@ -1949,11 +1969,7 @@ FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Oval, function () { ret
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -2274,6 +2290,7 @@ var PenTool = /** @class */ (function () {
         if (!board)
             return;
         this._curShape = board.factory.newShape(ShapeEnum_1.ShapeEnum.Pen);
+        this._curShape.data.layer = board.currentLayer().info.name;
         this._curShape.data.editing = true;
         board.add(this._curShape);
         this.addDot(dot, 'first');
@@ -2887,9 +2904,9 @@ var TextTool = /** @class */ (function () {
             return this._board;
         },
         set: function (v) {
-            var _a, _b;
+            var _a, _b, _c;
             this._board = v;
-            (_b = (_a = this._board) === null || _a === void 0 ? void 0 : _a.onscreen.parentElement) === null || _b === void 0 ? void 0 : _b.appendChild(this._editor);
+            (_c = (_b = (_a = this._board) === null || _a === void 0 ? void 0 : _a.onscreen(0)) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.appendChild(this._editor);
         },
         enumerable: false,
         configurable: true
@@ -2914,6 +2931,7 @@ var TextTool = /** @class */ (function () {
         }
         else if (!shapeText) {
             var newShapeText = board.factory.newShape(ShapeEnum_1.ShapeEnum.Text);
+            newShapeText.data.layer = board.currentLayer().info.name;
             newShapeText.move(dot.x, dot.y);
             board.add(newShapeText);
             shapeText = newShapeText;
@@ -2932,11 +2950,7 @@ FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Text, function () { ret
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -3072,6 +3086,18 @@ var SimpleTool = /** @class */ (function () {
                 return;
         }
     };
+    SimpleTool.prototype.holdingKey = function () {
+        var keys = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            keys[_i] = arguments[_i];
+        }
+        for (var i = 0; i < keys.length; ++i) {
+            if (!keys[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
     SimpleTool.prototype.start = function () {
     };
     SimpleTool.prototype.end = function () {
@@ -3095,6 +3121,7 @@ var SimpleTool = /** @class */ (function () {
         if (!board)
             return;
         this._curShape = board.factory.newShape(this._shapeType);
+        this._curShape.data.layer = board.currentLayer().info.name;
         var shape = this._curShape;
         if (!shape)
             return;
@@ -3150,11 +3177,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -3171,11 +3194,7 @@ __exportStar(require("./Tool"), exports);
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -3337,11 +3356,7 @@ FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Selector, function () {
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -3983,7 +3998,7 @@ var Rect = /** @class */ (function () {
         return Rect.hit(this, b);
     };
     Rect.prototype.toString = function () {
-        return "Rect(x=".concat(this.x, ", y=").concat(this.x, ", w=").concat(this.w, ", h=").concat(this.h, ")");
+        return "Rect(x=" + this.x + ", y=" + this.x + ", w=" + this.w + ", h=" + this.h + ")";
     };
     Rect.prototype.mid = function () {
         return { x: this.x + this.w / 2, y: this.y + this.h / 2 };
@@ -4172,11 +4187,7 @@ exports.Vector = Vector;
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -4885,11 +4896,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = require("./ui/ele");
 var dist_1 = require("../../dist");
 var ColorPalette_1 = require("./colorPalette/ColorPalette");
 var demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
 var demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
+var ele_1 = require("./ui/ele");
 var whiteBoard;
 var factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 var _recorder;
@@ -4931,6 +4942,7 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                     var items = [];
                     for (var i = 0; i < 1000; ++i) {
                         var item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Rect);
+                        item.data.layer = whiteBoard.currentLayer().info.name;
                         item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
                         var r = Math.floor(Math.random() * 255);
                         var g = Math.floor(Math.random() * 255);
@@ -4948,6 +4960,7 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                     var items = [];
                     for (var i = 0; i < 1000; ++i) {
                         var item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Oval);
+                        item.data.layer = whiteBoard.currentLayer().info.name;
                         item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
                         var r = Math.floor(Math.random() * 255);
                         var g = Math.floor(Math.random() * 255);
@@ -5042,6 +5055,21 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                     replay(demo_rect_n_oval_1.default);
                 }
             });
+            ui.dynamic('button', {
+                className: 'tool_button',
+                innerText: 'layer_0',
+                onclick: function () { return whiteBoard.setCurrentLayer(0); }
+            });
+            ui.dynamic('button', {
+                className: 'tool_button',
+                innerText: 'layer_1',
+                onclick: function () { return whiteBoard.setCurrentLayer(1); }
+            });
+            ui.dynamic('button', {
+                className: 'tool_button',
+                innerText: 'layer_2',
+                onclick: function () { return whiteBoard.setCurrentLayer(2); }
+            });
             var _recorder_textarea = ui.dynamic('textarea');
             ui.static('canvas', function (canvas) {
                 canvas.width = 180;
@@ -5061,15 +5089,27 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                 };
             });
         });
-        ui.dynamic('div', {
-            className: 'blackboard'
+        ui.static('div', {
+            className: 'blackboard',
+            style: {
+                'position': 'relative'
+            }
         }, function (div) {
-            ui.static('canvas', function (onscreen) {
-                onscreen.style.position = 'relative';
-                onscreen.style.touchAction = 'none';
-                whiteBoard = factory.newWhiteBoard(__assign({ screens: [onscreen] }, ui.state));
-                whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
+            var layers = ['1', '2', ''].map(function (name, idx) {
+                var onscreen = ui.static('canvas', {
+                    style: {
+                        position: idx === 0 ? 'relative' : 'absolute',
+                        touchAction: 'none',
+                        left: '0px',
+                        right: '0px',
+                        top: '0px',
+                        bottom: '0px'
+                    }
+                });
+                return { info: { name: name }, onscreen: onscreen };
             });
+            whiteBoard = factory.newWhiteBoard(__assign({ layers: layers }, ui.state));
+            whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
         });
     });
 });

@@ -14,11 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = require("./ui/ele");
 var dist_1 = require("../../dist");
 var ColorPalette_1 = require("./colorPalette/ColorPalette");
 var demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
 var demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
+var ele_1 = require("./ui/ele");
 var whiteBoard;
 var factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 var _recorder;
@@ -60,6 +60,7 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                     var items = [];
                     for (var i = 0; i < 1000; ++i) {
                         var item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Rect);
+                        item.data.layer = whiteBoard.currentLayer().info.name;
                         item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
                         var r = Math.floor(Math.random() * 255);
                         var g = Math.floor(Math.random() * 255);
@@ -77,6 +78,7 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                     var items = [];
                     for (var i = 0; i < 1000; ++i) {
                         var item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Oval);
+                        item.data.layer = whiteBoard.currentLayer().info.name;
                         item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
                         var r = Math.floor(Math.random() * 255);
                         var g = Math.floor(Math.random() * 255);
@@ -171,6 +173,21 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                     replay(demo_rect_n_oval_1.default);
                 }
             });
+            ui.dynamic('button', {
+                className: 'tool_button',
+                innerText: 'layer_0',
+                onclick: function () { return whiteBoard.setCurrentLayer(0); }
+            });
+            ui.dynamic('button', {
+                className: 'tool_button',
+                innerText: 'layer_1',
+                onclick: function () { return whiteBoard.setCurrentLayer(1); }
+            });
+            ui.dynamic('button', {
+                className: 'tool_button',
+                innerText: 'layer_2',
+                onclick: function () { return whiteBoard.setCurrentLayer(2); }
+            });
             var _recorder_textarea = ui.dynamic('textarea');
             ui.static('canvas', function (canvas) {
                 canvas.width = 180;
@@ -190,15 +207,27 @@ window.ui = new ele_1.UI(document.body, initState, function (ui) {
                 };
             });
         });
-        ui.dynamic('div', {
-            className: 'blackboard'
+        ui.static('div', {
+            className: 'blackboard',
+            style: {
+                'position': 'relative'
+            }
         }, function (div) {
-            ui.static('canvas', function (onscreen) {
-                onscreen.style.position = 'relative';
-                onscreen.style.touchAction = 'none';
-                whiteBoard = factory.newWhiteBoard(__assign({ screens: [onscreen] }, ui.state));
-                whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
+            var layers = ['1', '2', ''].map(function (name, idx) {
+                var onscreen = ui.static('canvas', {
+                    style: {
+                        position: idx === 0 ? 'relative' : 'absolute',
+                        touchAction: 'none',
+                        left: '0px',
+                        right: '0px',
+                        top: '0px',
+                        bottom: '0px'
+                    }
+                });
+                return { info: { name: name }, onscreen: onscreen };
             });
+            whiteBoard = factory.newWhiteBoard(__assign({ layers: layers }, ui.state));
+            whiteBoard.on(dist_1.EventEnum.ToolChanged, function () { return ui.refresh(); });
         });
     });
 });

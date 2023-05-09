@@ -93,8 +93,8 @@ export class TextTool implements ITool {
     return this._board
   }
   set board(v: WhiteBoard | undefined) {
-    this._board = v
-    this._board?.onscreen.parentElement?.appendChild(this._editor)
+    this._board = v;
+    this._board?.onscreen(0)?.parentElement?.appendChild(this._editor)
   }
   pointerMove(dot: IDot): void { }
   pointerDown(dot: IDot): void {
@@ -115,6 +115,7 @@ export class TextTool implements ITool {
       return this.setCurShape()
     } else if (!shapeText) {
       const newShapeText = board.factory.newShape(ShapeEnum.Text) as ShapeText
+      newShapeText.data.layer = board.currentLayer().info.name;
       newShapeText.move(dot.x, dot.y)
       board.add(newShapeText)
       shapeText = newShapeText

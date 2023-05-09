@@ -56,6 +56,7 @@ export interface IShapeData {
   w: number
   h: number
   z: number
+  l: string
   style?: IShapeStyle
   status?: IShapeStatus
 }
@@ -67,6 +68,7 @@ export class ShapeData implements IShapeData {
   w = -0
   h = -0
   z = -0
+  l = ''
   style?: Partial<IShapeStyle> = {}
   status?: Partial<IShapeStatus> = {}
 
@@ -141,6 +143,8 @@ export class ShapeData implements IShapeData {
     if (v) this.status.e = 1
     else delete this.status.e
   }
+  get layer() { return this.l }
+  set layer(v) { this.l = v }
   merge(other: Partial<IShapeData>) {
     this.copyFrom(other)
     return this
@@ -153,6 +157,7 @@ export class ShapeData implements IShapeData {
     if (typeof other.z === 'number') this.z = other.z
     if (typeof other.w === 'number') this.w = other.w
     if (typeof other.h === 'number') this.h = other.h
+    if (typeof other.l === 'string') this.l = other.l
 
     const { style, status } = other
     if (style) {
