@@ -1,11 +1,28 @@
 const gulp = require('gulp')
+const connect = require('gulp-connect');
 const child_process = require('child_process')
+
 const taskNames = {
   tsc: 'tsc',
   tsc_demo: 'tsc_demo',
   browserify: 'browserify',
   copy_public: 'copy_public',
+  start_server: 'start_server',
+  reload_web: 'reload_web'
 }
+
+gulp.task(taskNames.start_server, function () {
+  connect.server({
+    root: "output",
+    port: '5000',
+    livereload: true
+  })
+})
+
+gulp.task(taskNames.reload_web, function () {
+  gulp.src("./output/**/*.*").pipe(connect.reload())
+})
+
 gulp.task(taskNames.tsc, (done) => {
   const childProcess = child_process.exec('npm run tsc');
   childProcess.stdout.pipe(process.stdout);
@@ -31,5 +48,7 @@ exports.default = function () {
   gulp.watch('./example/src/**/*.ts', gulp.series(taskNames.tsc_demo, taskNames.browserify));
   gulp.watch('./example/public/**/*.*', gulp.series(taskNames.copy_public));
   gulp.watch('./src/**/*.ts', gulp.series(taskNames.tsc, taskNames.browserify));
-  gulp.series(taskNames.tsc, taskNames.tsc_demo, taskNames.browserify, taskNames.copy_public)()
+  gulp.watch('./output/*.*', gulp.series(taskNames.reload_web));
+
+  gulp.series(taskNames.tsc, taskNames.tsc_demo, taskNames.browserify, taskNames.copy_public, taskNames.start_server)()
 }

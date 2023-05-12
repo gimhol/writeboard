@@ -7,8 +7,8 @@ import {
   ShapeEnum, ShapePen,
   ToolEnum,
   WhiteBoard
-} from "../../dist"
-import { ToolType } from "../../dist/tools/ToolEnum"
+} from "../../src"
+import { ToolType } from "../../src/tools/ToolEnum"
 import { ColorPalette } from "./colorPalette/ColorPalette"
 import demo_helloworld from "./demo_helloworld"
 import demo_rect_n_oval from "./demo_rect_n_oval"

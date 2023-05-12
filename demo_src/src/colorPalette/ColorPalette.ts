@@ -1,5 +1,5 @@
-import { IRect, Rect } from "../../../dist/utils/Rect";
-import { Vector } from "../../../dist/utils/Vector";
+import { IRect, Rect } from "../../../src/utils/Rect";
+import { Vector } from "../../../src/utils/Vector";
 import { clampF, clampI, HSB, RGB, RGBA } from "./Color";
 
 class Base {
