@@ -9,28 +9,11 @@ import { IFactory, IShapesMgr } from "../mgr"
 import { Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Rect } from "../utils"
+import { ILayer, ILayerInits, Layer } from "./Layer"
 const Tag = '[WhiteBoard]'
 
-export interface ILayerInfoInit {
-  readonly name: string;
-}
-export interface ILayerOptions {
-  readonly info: ILayerInfoInit;
-  readonly onscreen: HTMLCanvasElement;
-}
-
-export interface ILayerInfo {
-  name: string;
-}
-export interface ILayer {
-  info: ILayerInfo;
-  onscreen: HTMLCanvasElement;
-  offscreen: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  octx: CanvasRenderingContext2D;
-}
 export interface WhiteBoardOptions {
-  layers: ILayerOptions[]
+  layers: ILayerInits[]
   width?: number
   height?: number
   toolType?: ToolType
@@ -39,9 +22,9 @@ export interface IPointerEventHandler { (ev: PointerEvent): void }
 export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
-  private _layers: ILayer[];
-  private _currentLayer?: ILayer;
-  private _layerMap: { [x in string]: ILayer | undefined } = {}
+  private _layers: Layer[];
+  private _currentLayer?: Layer;
+  private _layerMap: { [x in string]: Layer | undefined } = {}
   private _shapesMgr: IShapesMgr
   private _mousedown = false
   private _tools: { [key in ToolEnum | string]?: ITool } = {}
@@ -51,22 +34,19 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _eventEmitter = new Emitter()
   private _operator = 'whiteboard'
   get width() {
-    return this._layers[0].onscreen.width;
+    return this._layers[0].width;
   }
   set width(v: number) {
-    for (let i = 0; i < this._layers.length; ++i) {
-      this._layers[i].onscreen.width = v;
-      this._layers[i].offscreen.width = v;
-    }
+    this._layers.forEach(l => l.width = v);
   }
   get height() {
-    return this._layers[0].offscreen.height;
+    return this._layers[0].height;
   }
   set height(v: number) {
-    for (let i = 0; i < this._layers.length; ++i) {
-      this._layers[i].onscreen.height = v;
-      this._layers[i].offscreen.height = v;
-    }
+    this._layers.forEach(l => l.height = v);
+  }
+  layer(idx: number): ILayer {
+    return this._layers[idx];
   }
   setCurrentLayer(idx: number): boolean {
     if (idx < 0) { return false }
@@ -82,18 +62,8 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     this._factory = factory
     this._shapesMgr = this._factory.newShapesMgr()
     this._layers = options.layers.map(v => {
-      const onscreen = v.onscreen;
-      const offscreen = document.createElement('canvas')
-      offscreen.width = onscreen.width;
-      offscreen.height = onscreen.height;
-      const ret: ILayer = {
-        info: { ...v.info },
-        onscreen,
-        offscreen,
-        ctx: onscreen.getContext('2d')!,
-        octx: offscreen.getContext('2d')!
-      };
-      this._layerMap[ret.info.name] = ret
+      const ret = new Layer(v);
+      this._layerMap[ret.name] = ret
       return ret;
     })
 
@@ -113,8 +83,6 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     }
     this.setCurrentLayer(0);
     this.render()
-
-
     if (options.toolType) {
       this.toolType = options.toolType;
     }

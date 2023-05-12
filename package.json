@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "build-example": "npm run tsc-example & npm run browserify-example & npm run copy-example-public",
-    "tsc-example": "tsc -p ./example",
-    "browserify-example": "browserify ./example/dist/index.js -o ./example/dist/bundle.js",
-    "copy-example-public": "copyfiles -f ./example/public/*.* ./example/dist"
+    "start": "gulp",
+    "tsc": "tsc",
+    "build-demo": "npm run tsc-demo & npm run browserify & npm run copy-public",
+    "tsc-demo": "tsc -p ./demo_src",
+    "browserify": "browserify ./demo_src/dist/index.js -o ./output/bundle.js",
+    "copy-public": "copyfiles -f ./demo_src/public/*.* ./demo_src/dist"
   },
   "author": "Gim",
   "license": "Apache License 2.0",
@@ -18,6 +18,8 @@
     "browserify": "^17.0.0",
     "comment-json": "^4.2.3",
     "copyfiles": "^2.4.1",
+    "gulp": "^4.0.2",
+    "gulp-connect": "^5.7.0",
     "mocha": "^10.2.0",
     "typescript": "^4.9.4"
   },

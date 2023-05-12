@@ -34,17 +34,10 @@ export class UI<S extends UIState> {
     this.render(this)
   }
 
-  null() {
-    const parent = this.eleStack[this.eleStack.length - 1]
-    const child = document.createElement('div')
-    child.style.display = 'none'
-    this.appendChild(parent, child)
-  }
-
   private applyOptions(ele: HTMLElement | undefined, options: Options | undefined) {
     if (!ele || !options) return
     for (const key in options) {
-      if (key === 'style' || key === 'attributes') continue
+      if (key === 'style' || key === 'attrs') continue
       (ele as any)[key] = (options as any)[key]
     }
     for (const key in options?.style)
@@ -65,8 +58,20 @@ export class UI<S extends UIState> {
 
   dynamic<T extends EleMapKey>(
     tagName: T,
+    updater?: EleHandler<EleMap[T]>
+  ): EleMap[T];
+
+  dynamic<T extends EleMapKey>(
+    tagName: T,
+    options?: Omit<Partial<EleMap[T]>, 'style'> & Options,
+    updater?: EleHandler<EleMap[T]>
+  ): EleMap[T];
+
+  dynamic<T extends EleMapKey>(
+    tagName: T,
     arg2?: EleHandler<EleMap[T]> | Omit<Partial<EleMap[T]>, 'style'> & Options,
-    arg3?: EleHandler<EleMap[T]>): EleMap[T] {
+    arg3?: EleHandler<EleMap[T]>
+  ): EleMap[T] {
 
     const updater = typeof arg2 === 'function' ? arg2 : arg3
     const options = typeof arg2 === 'function' ? undefined : { ...arg2 }
@@ -85,6 +90,19 @@ export class UI<S extends UIState> {
     this.eleStack.pop()
     return child
   }
+
+  static<T extends EleMapKey>(
+    tagName: T,
+    initer?: EleHandler<EleMap[T]>,
+    updater?: EleHandler<EleMap[T]>
+  ): EleMap[T]
+
+  static<T extends EleMapKey>(
+    tagName: T,
+    options: Omit<Partial<EleMap[T]>, 'style'> & Options | undefined,
+    initer?: EleHandler<EleMap[T]>,
+    updater?: EleHandler<EleMap[T]>
+  ): EleMap[T]
 
   static<T extends EleMapKey>(
     tagName: T,

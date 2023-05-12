@@ -1,7 +1,7 @@
 import {
   EventEnum,
   FactoryEnum, FactoryMgr,
-  ILayerOptions,
+  ILayerInits,
   Player, Recorder,
   Shape,
   ShapeEnum, ShapePen,
@@ -178,20 +178,38 @@ let initState: State = {
           replay(demo_rect_n_oval)
         }
       })
-      ui.dynamic('button', {
+      ui.static('button', {
         className: 'tool_button',
         innerText: 'layer_0',
         onclick: () => whiteBoard.setCurrentLayer(0)
       })
-      ui.dynamic('button', {
+      ui.static('button', {
         className: 'tool_button',
         innerText: 'layer_1',
         onclick: () => whiteBoard.setCurrentLayer(1)
       })
-      ui.dynamic('button', {
+      ui.static('button', {
         className: 'tool_button',
         innerText: 'layer_2',
         onclick: () => whiteBoard.setCurrentLayer(2)
+      });
+      ui.static('input', {
+        type: 'checkbox',
+        className: 'tool_button',
+        innerText: 'layer_0',
+        onchange: (e) => { whiteBoard.layer(0).onscreen.style.opacity = (e.target as any).checked ? '0' : '1' }
+      })
+      ui.static('input', {
+        type: 'checkbox',
+        className: 'tool_button',
+        innerText: 'layer_1',
+        onchange: (e) => { whiteBoard.layer(1).onscreen.style.opacity = (e.target as any).checked ? '0' : '1' }
+      })
+      ui.static('input', {
+        type: 'checkbox',
+        className: 'tool_button',
+        innerText: 'layer_2',
+        onchange: (e) => { whiteBoard.layer(2).onscreen.style.opacity = (e.target as any).checked ? '0' : '1' }
       })
       const _recorder_textarea = ui.dynamic('textarea')
 
@@ -217,7 +235,7 @@ let initState: State = {
         'position': 'relative'
       }
     }, (div) => {
-      const layers = ['1', '2', ''].map<ILayerOptions>((name, idx) => {
+      const layers = ['1', '2', ''].map<ILayerInits>((name, idx) => {
         const onscreen = ui.static('canvas', {
           style: {
             position: idx === 0 ? 'relative' : 'absolute',
