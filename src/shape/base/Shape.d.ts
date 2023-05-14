@@ -1,0 +1,31 @@
+import { ShapeData } from "./Data";
+import { WhiteBoard } from "../../board/WhiteBoard";
+import { IRect, Rect } from "../../utils/Rect";
+import { ShapeType } from "../ShapeEnum";
+export declare class Shape<D extends ShapeData = ShapeData> {
+    private _data;
+    private _board?;
+    constructor(data: D);
+    get data(): D;
+    get type(): ShapeType;
+    get board(): WhiteBoard | undefined;
+    set board(v: WhiteBoard | undefined);
+    get visible(): boolean;
+    set visible(v: boolean);
+    get editing(): boolean;
+    set editing(v: boolean);
+    get selected(): boolean;
+    set selected(v: boolean);
+    merge(data: Partial<ShapeData>): void;
+    markDirty(rect?: IRect): void;
+    move(x: number, y: number): void;
+    resize(w: number, h: number): void;
+    getGeo(): Rect;
+    geo(x: number, y: number, w: number, h: number): void;
+    moveBy(x: number, y: number): void;
+    resizeBy(w: number, h: number): void;
+    geoBy(x: number, y: number, w: number, h: number): void;
+    render(ctx: CanvasRenderingContext2D): void;
+    drawingRect(): IRect;
+    boundingRect(): IRect;
+}

@@ -6,11 +6,9 @@
   "scripts": {
     "test": "mocha",
     "start": "gulp",
-    "tsc": "tsc",
-    "build-demo": "npm run tsc-demo & npm run browserify & npm run copy-public",
-    "tsc-demo": "tsc -p ./demo_src",
-    "browserify": "browserify ./demo_src/dist/index.js -o ./output/bundle.js",
-    "copy-public": "copyfiles -f ./demo_src/public/*.* ./demo_src/dist"
+    "tsc": "tsc -p ./tsconfig.json",
+    "tsc-demo": "tsc -p ./demo/tsconfig.json",
+    "browserify": "browserify ./demo/dist/index.js -o ./output/bundle.js"
   },
   "author": "Gim",
   "license": "Apache License 2.0",
