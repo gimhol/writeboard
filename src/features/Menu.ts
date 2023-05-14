@@ -1,5 +1,6 @@
 export interface IMenuItemInfo<K extends string | number | symbol> {
   key: K;
+  divider?: boolean;
   icon?: string;
   label?: string;
   items?: IMenuItemInfo<K>[];
@@ -28,8 +29,44 @@ export class Menu<K extends string | number | symbol> implements IMenu<K>{
     this._element = document.createElement('div');
     this._element.style.position = 'absolute';
     this._element.style.display = 'none'
-
+    this._element.style.gridTemplateColumns = 'auto'
+    this._element.style.background = 'white';
+    this._element.style.borderRadius = '5px';
+    this._element.style.userSelect = 'none';
     inits?.items && this.setup(inits.items);
+    document.body.addEventListener('click', () => this.hide());
+    window.addEventListener('blur', () => this.hide())
+  }
+
+  private itemEle(item: IMenuItemInfo<K>): HTMLElement {
+    const ele = document.createElement('div');
+    if (item.divider) {
+      ele.style.height = '1px';
+      ele.style.background = '#00000011'
+    } else {
+      ele.style.display = 'flex';
+      ele.style.borderRadius = '5px';
+      ele.style.padding = '5px';
+      ele.style.fontSize = '12px';
+      ele.addEventListener('click', (e) => { })
+      ele.addEventListener('mouseenter', () => {
+        ele.style.background = '#00000011'
+      })
+      ele.addEventListener('mouseleave', () => {
+        ele.style.background = ''
+      })
+      const label = document.createElement('div')
+      if (item.label) { label.innerText = item.label }
+      label.style.flex = '1';
+      ele.appendChild(label);
+      if (item.items?.length) {
+        const more = document.createElement('p')
+        more.innerText = '>';
+        ele.appendChild(more);
+        this._subMenus[item.key] = new Menu(item);
+      }
+    }
+    return ele;
   }
 
   item(key: K): IMenuItemInfo<K> | undefined {
@@ -39,35 +76,15 @@ export class Menu<K extends string | number | symbol> implements IMenu<K>{
   setup(items: IMenuItemInfo<K>[]): void {
     this._itemElements.forEach(ele => this._element?.removeChild(ele));
     this._items = items;
-    for (let i = 0; i < items.length; ++i) {
-      const ele = this.itemEle(items[i]);
+    this._itemElements = items.map(v => {
+      const ele = this.itemEle(v);
       this.element().appendChild(ele);
-    }
+      return ele;
+    });
   }
 
   element(): HTMLElement {
     return this._element
-  }
-
-  private itemEle(item: IMenuItemInfo<K>): HTMLElement {
-    const ele = document.createElement('div');
-    ele.style.display = 'flex';
-
-    const label = document.createElement('span')
-    if (item.label) { label.innerText = item.label }
-    label.style.flex = '1';
-
-    ele.appendChild(label);
-
-    if (item.items?.length) {
-      const more = document.createElement('p')
-      more.innerText = '>';
-      ele.appendChild(more);
-      ele.onmouseenter = (e) => { }
-      ele.onmouseleave = (e) => { }
-      this._subMenus[item.key] = new Menu(item);
-    }
-    return ele;
   }
 
   move(x: number, y: number): void {
@@ -76,7 +93,7 @@ export class Menu<K extends string | number | symbol> implements IMenu<K>{
   }
 
   show(): void {
-    this.element().style.display = 'block'
+    this.element().style.display = 'grid'
   }
 
   hide(): void {

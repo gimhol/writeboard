@@ -243,6 +243,12 @@ let initState: State = {
             right: '0px',
             top: '0px',
             bottom: '0px'
+          },
+          oncontextmenu: (e) => {
+            const ele = (e.target as HTMLElement);
+            const { left, top } = ele.getBoundingClientRect()
+            menu.move(e.x, e.y);
+            menu.show();
           }
         })
         return { info: { name }, onscreen }
@@ -253,3 +259,21 @@ let initState: State = {
     })
   })
 })
+
+import { Menu } from '../../dist/features/Menu';
+const menu = new Menu({
+  items: [{
+    key: 'shit',
+    label: 'world'
+  }, {
+    key: 'shit0',
+    label: 'world'
+  }, {
+    key: 'shit2',
+    divider: true
+  }, {
+    key: 'shit1',
+    label: 'world'
+  }]
+});
+document.body.appendChild(menu.element());

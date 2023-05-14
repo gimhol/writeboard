@@ -4,34 +4,25 @@ body {
   height: 100%;
 }
 
-* {
-  transition: all 125ms;
-}
-
 *::-webkit-scrollbar {
   width     : 8px;
   height    : 8px;
   background: transparent;
 }
-
 *::-webkit-scrollbar-track {
   border-radius: 4px;
 }
-
 *::-webkit-scrollbar-track:hover {
   border-radius   : 4px;
   background-color: rgba(255, 255, 255, 0.1);
 }
-
 *::-webkit-scrollbar-thumb {
   border-radius   : 4px;
   background-color: rgba(255, 255, 255, 0.2);
 }
-
 *::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
-
 *::-webkit-scrollbar-corner {
   background: transparent;
 }
@@ -40,7 +31,6 @@ button {
   background-color: transparent;
   border          : none;
 }
-
 .tool_bar {
   display         : flex;
   flex-direction  : column;
