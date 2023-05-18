@@ -15,6 +15,7 @@ export interface ILayer {
   readonly offscreen: HTMLCanvasElement;
   readonly ctx: CanvasRenderingContext2D;
   readonly octx: CanvasRenderingContext2D;
+  opacity: number;
 }
 export class LayerInfo implements ILayerInfo {
   protected _name: string;
@@ -36,6 +37,8 @@ export class Layer implements ILayer {
   get offscreen() { return this._offscreen };
   get ctx() { return this._ctx };
   get octx() { return this._octx };
+  get opacity() { return Number(this._offscreen.style.opacity) };
+  set opacity(v) { this._offscreen.style.opacity = '' + v };
 
   constructor(inits: ILayerInits) {
     this._info = new LayerInfo(inits.info);

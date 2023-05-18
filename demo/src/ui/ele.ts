@@ -2,134 +2,133 @@
 
 export type EleMap = HTMLElementTagNameMap
 export type EleMapKey = keyof EleMap
-export type EleHandler<T> = (ele: T, prev?: T) => void
-export type UIState = { [key in string]?: any }
-export interface UIRenderFunc<S extends UIState> { (ui: UI<S>): void }
-export interface StyleDeclaration extends Partial<CSSStyleDeclaration> { }
-export interface Options {
-  style?: StyleDeclaration
-  attrs?: { [key in string]: string }
-  offscreen?: boolean
+export type EleEventMap = HTMLElementEventMap
+export type EleEventMapKey = keyof EleEventMap
+export interface EleRender<
+  T, S extends Obj,
+  SK extends keyof Obj = keyof Obj,
+  AK extends string = string,
+> { (ele: T, ui: UI<S, SK, AK>): void }
+export type Obj = { [key in string | number | symbol]?: any };
+export interface InitEle<
+  S extends Obj,
+  SK extends keyof Obj = keyof Obj,
+  AK extends string = string,
+> { (ui: UI<S, SK, AK>): void };
+
+export interface Style extends Partial<CSSStyleDeclaration> { };
+export interface Opts<
+  T extends keyof EleMap = keyof EleMap,
+  K extends keyof EleEventMap = keyof EleEventMap,
+  S extends Obj = Obj,
+  SK extends keyof S = keyof S,
+  AK extends string = string,
+> {
+  alias?: AK;
+  style?: Style;
+  attrs?: { [key in string]: string };
+  on?: { [x in K]?: (ev: EleEventMap[K], ele: EleMap[T], ui: UI<S, SK, AK>) => any };
+  offscreen?: boolean;
+  listens?: ([SK[], (ele: EleMap[T], ui: UI<S, SK, AK>) => any] | [SK[]])[];
 }
-export class UI<S extends UIState> {
-  private root: HTMLElement | undefined
-  private eleStack: HTMLElement[] = []
-  private eles: { [key in string]?: HTMLElement } = {}
-  private render: UIRenderFunc<S>
+
+interface ListenerInfo {
+  update?: (...args: any[]) => any,
+  callback?: (...args: any[]) => any,
+  ele: HTMLElement
+}
+export class UI<
+  S extends Obj,
+  SK extends keyof Obj = keyof Obj,
+  AK extends string = string,
+> {
+  private _eleRoot?: HTMLElement;
+  private _eleStack: HTMLElement[] = [];
+  _eles: { [x in AK]?: HTMLElement } = {}
+  private _listens: { [x in keyof S]?: ListenerInfo[] } = {}
+
   state: S
 
-  constructor(container: HTMLElement, initState: S | (() => S), render: UIRenderFunc<S>) {
-    this.eleStack = [container]
-    this.render = render
-    this.state = (typeof initState !== 'function') ? initState : initState()
-    this.render(this)
+  constructor(container: HTMLElement, initState: () => S, initEle: InitEle<S, SK, AK>) {
+    this._eleStack = [container];
+    this.state = initState();
+    initEle(this);
   }
 
-  setState(state: S | ((old: S) => S)) {
-    this.state = (typeof state !== 'function') ? state : state(this.state)
-    this.render(this)
+  setState(state: Partial<S>) {
+    setTimeout(() => {
+      Object.assign(this.state, state);
+      const set = new Set<ListenerInfo>();
+      for (const key in state) {
+        this._listens[key]?.forEach(cb => set.add(cb));
+      }
+      set.forEach(cb => {
+        cb.callback?.(cb.ele, this);
+        cb.update?.(cb.ele, this);
+      })
+    }, 1)
   }
 
-  refresh() {
-    this.render(this)
-  }
-
-  private applyOptions(ele: HTMLElement | undefined, options: Options | undefined) {
-    if (!ele || !options) return
-    for (const key in options) {
+  private applyOpts<T extends EleMapKey>(
+    ele: EleMap[T] | undefined,
+    opts?: Opts<T, EleEventMapKey, S, SK, AK>
+  ) {
+    if (!ele || !opts) return
+    for (const key in opts) {
       if (key === 'style' || key === 'attrs') continue
-      (ele as any)[key] = (options as any)[key]
+      (ele as any)[key] = (opts as any)[key]
     }
-    for (const key in options?.style)
-      (ele.style as any)[key] = (options?.style as any)[key]
-    for (const key in options?.attrs)
-      ele.setAttribute(key, (options!.attrs as any)[key])
+    for (const key in opts?.style) {
+      (ele.style as any)[key] = (opts?.style as any)[key]
+    }
+    for (const key in opts?.attrs) {
+      ele.setAttribute(key, (opts!.attrs as any)[key])
+    }
+    for (const key in opts?.on) {
+      const listener = opts.on[key as EleEventMapKey]!;
+      ele.addEventListener(key, (e) => listener(e, ele, this));
+    }
   }
 
-  private appendChild(parent: HTMLElement, child: HTMLElement, options?: Options) {
-    if (parent === this.eleStack[0]) {
+  private appendChild<T extends EleMapKey>(
+    parent: HTMLElement,
+    child: EleMap[T],
+    options?: Opts<T, EleEventMapKey, S, SK, AK>
+  ) {
+    if (parent === this._eleStack[0]) {
       if (!options?.offscreen)
-        this.root ? parent.replaceChild(child, this.root) : parent.appendChild(child)
-      this.root = child
+        this._eleRoot ? parent.replaceChild(child, this._eleRoot) : parent.appendChild(child)
+      this._eleRoot = child
     } else {
       !options?.offscreen && parent.appendChild(child)
     }
   }
 
-  dynamic<T extends EleMapKey>(
+  ele<T extends EleMapKey>(
     tagName: T,
-    updater?: EleHandler<EleMap[T]>
-  ): EleMap[T];
-
-  dynamic<T extends EleMapKey>(
-    tagName: T,
-    options?: Omit<Partial<EleMap[T]>, 'style'> & Options,
-    updater?: EleHandler<EleMap[T]>
-  ): EleMap[T];
-
-  dynamic<T extends EleMapKey>(
-    tagName: T,
-    arg2?: EleHandler<EleMap[T]> | Omit<Partial<EleMap[T]>, 'style'> & Options,
-    arg3?: EleHandler<EleMap[T]>
+    opts?: Omit<Partial<EleMap[T]>, 'style'> & Opts<T, EleEventMapKey, S, SK, AK>,
+    render?: EleRender<EleMap[T], S, SK, AK>
   ): EleMap[T] {
+    const endIdx = this._eleStack.length - 1;
+    const parent = this._eleStack[endIdx];
+    const ele: EleMap[T] = document.createElement(tagName);
+    this.applyOpts(ele, opts)
 
-    const updater = typeof arg2 === 'function' ? arg2 : arg3
-    const options = typeof arg2 === 'function' ? undefined : { ...arg2 }
-
-    const endIdx = this.eleStack.length - 1
-    const parent = this.eleStack[endIdx]
-    const key = `${tagName}_${endIdx}_${parent.childNodes.length}_${!!options?.offscreen}`
-    const prev = this.eles[key] as (EleMap[T] | undefined)
-    const child = document.createElement(tagName)
-
-    this.eleStack.push(child)
-    this.eles[key] = child
-    this.applyOptions(child, options)
-    updater && updater(child, prev)
-    this.appendChild(parent, child, options)
-    this.eleStack.pop()
-    return child
-  }
-
-  static<T extends EleMapKey>(
-    tagName: T,
-    initer?: EleHandler<EleMap[T]>,
-    updater?: EleHandler<EleMap[T]>
-  ): EleMap[T]
-
-  static<T extends EleMapKey>(
-    tagName: T,
-    options: Omit<Partial<EleMap[T]>, 'style'> & Options | undefined,
-    initer?: EleHandler<EleMap[T]>,
-    updater?: EleHandler<EleMap[T]>
-  ): EleMap[T]
-
-  static<T extends EleMapKey>(
-    tagName: T,
-    arg2?: EleHandler<EleMap[T]> | Omit<Partial<EleMap[T]>, 'style'> & Options,
-    arg3?: EleHandler<EleMap[T]>,
-    arg4?: EleHandler<EleMap[T]>
-  ): EleMap[T] {
-    const options = typeof arg2 !== 'function' ? arg2 : undefined
-    const init = typeof arg2 === 'function' ? arg2 : arg3
-    const updater = typeof arg2 === 'function' ? arg3 : arg4
-
-    const endIdx = this.eleStack.length - 1
-    const parent = this.eleStack[endIdx]
-    const key = `${tagName}_${endIdx}_${parent.childNodes.length}_${!!options?.offscreen}`
-    const child = this.eles[key] as (EleMap[T] | undefined) || document.createElement(tagName)
-
-    this.applyOptions(child, options)
-    if (key in this.eles) {
-      this.eleStack.push(child)
-      updater && updater(child)
-    } else {
-      this.eles[key] = child
-      this.eleStack.push(child)
-      init && init(child)
+    if (opts?.alias) {
+      this._eles[opts.alias] = ele;
     }
-    this.appendChild(parent, child, options)
-    this.eleStack.pop()
-    return child
+
+    this._eleStack.push(ele)
+    render && render(ele, this)
+    opts?.listens?.forEach(([keys, callback]) => {
+      keys.forEach((key) => {
+        this._listens[key] = this._listens[key] || [];
+        this._listens[key]?.push({ ele: ele, callback, update: render });
+      })
+    });
+
+    this.appendChild(parent, ele, opts)
+    this._eleStack.pop()
+    return ele;
   }
 }

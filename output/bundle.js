@@ -563,104 +563,123 @@ let initState = {
     width: 2048,
     height: 2048,
 };
-window.ui = new ele_1.UI(document.body, initState, (ui) => {
+window.ui = new ele_1.UI(document.body, () => initState, (ui) => {
     const toolBtn = (toolType) => {
         const { name = toolType } = dist_1.FactoryMgr.toolInfo(toolType) || {};
-        ui.dynamic('button', {
+        ui.ele('button', {
             className: 'tool_button',
             innerText: name,
             disabled: (whiteBoard === null || whiteBoard === void 0 ? void 0 : whiteBoard.toolType) === toolType,
-            onclick: () => whiteBoard === null || whiteBoard === void 0 ? void 0 : whiteBoard.setToolType(toolType)
+            on: {
+                click: () => whiteBoard === null || whiteBoard === void 0 ? void 0 : whiteBoard.setToolType(toolType)
+            }
         });
     };
-    ui.dynamic('div', {
+    ui.ele('div', {
         className: 'root'
-    }, div => {
-        ui.dynamic('div', {
+    }, () => {
+        ui.ele('div', {
             className: 'tool_bar'
-        }, div => {
+        }, () => {
             toolBtn(dist_1.ToolEnum.Selector);
             toolBtn(dist_1.ToolEnum.Pen);
             toolBtn(dist_1.ToolEnum.Rect);
             toolBtn(dist_1.ToolEnum.Oval);
             toolBtn(dist_1.ToolEnum.Text);
-            ui.static('br');
-            ui.dynamic('button', { className: 'tool_button', innerText: 'select all', onclick: () => whiteBoard.selectAll() });
-            ui.dynamic('button', { className: 'tool_button', innerText: 'remove selected', onclick: () => whiteBoard.removeSelected() });
-            ui.dynamic('button', { className: 'tool_button', innerText: 'remove all', onclick: () => whiteBoard.removeAll() });
-            ui.dynamic('br');
-            ui.dynamic('button', {
+            ui.ele('br');
+            ui.ele('button', { className: 'tool_button', innerText: 'select all', on: { click: () => whiteBoard.selectAll() } });
+            ui.ele('button', { className: 'tool_button', innerText: 'remove selected', on: { click: () => whiteBoard.removeSelected() } });
+            ui.ele('button', { className: 'tool_button', innerText: 'remove all', on: { click: () => whiteBoard.removeAll() } });
+            ui.ele('br');
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: '随机加1000个矩形', onclick: () => {
-                    const items = [];
-                    for (let i = 0; i < 1000; ++i) {
-                        const item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Rect);
-                        item.data.layer = whiteBoard.currentLayer().info.name;
-                        item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
-                        const r = Math.floor(Math.random() * 255);
-                        const g = Math.floor(Math.random() * 255);
-                        const b = Math.floor(Math.random() * 255);
-                        item.data.fillStyle = `rgb(${r},${g},${b})`;
-                        items.push(item);
+                innerText: '随机加1000个矩形',
+                on: {
+                    click: (e, ele, ui) => {
+                        const items = [];
+                        for (let i = 0; i < 1000; ++i) {
+                            const item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Rect);
+                            item.data.layer = whiteBoard.currentLayer().info.name;
+                            item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
+                            const r = Math.floor(Math.random() * 255);
+                            const g = Math.floor(Math.random() * 255);
+                            const b = Math.floor(Math.random() * 255);
+                            item.data.fillStyle = `rgb(${r},${g},${b})`;
+                            items.push(item);
+                        }
+                        whiteBoard.add(...items);
                     }
-                    whiteBoard.add(...items);
-                }
+                },
+                listens: [
+                    [['count', 'height', 'width']]
+                ]
             });
-            ui.dynamic('button', {
+            ui.ele('button', {
                 className: 'tool_button',
                 innerText: '随机加1000个圆',
-                onclick: () => {
-                    const items = [];
-                    for (let i = 0; i < 1000; ++i) {
-                        const item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Oval);
-                        item.data.layer = whiteBoard.currentLayer().info.name;
-                        item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
-                        const r = Math.floor(Math.random() * 255);
-                        const g = Math.floor(Math.random() * 255);
-                        const b = Math.floor(Math.random() * 255);
-                        item.data.fillStyle = `rgb(${r},${g},${b})`;
-                        items.push(item);
-                    }
-                    whiteBoard.add(...items);
-                }
-            });
-            ui.dynamic('button', {
-                className: 'tool_button',
-                innerText: '随机画1000笔', onclick: () => {
-                    const items = [];
-                    for (let i = 0; i < 1000; ++i) {
-                        const item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Pen);
-                        let x = Math.floor(Math.random() * ui.state.width);
-                        let y = Math.floor(Math.random() * ui.state.height);
-                        const lenth = Math.floor(Math.random() * 100);
-                        for (let j = 0; j < lenth; ++j) {
-                            x += Math.floor(Math.random() * 5);
-                            y += Math.floor(Math.random() * 5);
-                            item.appendDot({ x, y, p: 0.5 });
+                on: {
+                    click: () => {
+                        const items = [];
+                        for (let i = 0; i < 1000; ++i) {
+                            const item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Oval);
+                            item.data.layer = whiteBoard.currentLayer().info.name;
+                            item.geo(Math.floor(Math.random() * ui.state.width), Math.floor(Math.random() * ui.state.height), 50, 50);
+                            const r = Math.floor(Math.random() * 255);
+                            const g = Math.floor(Math.random() * 255);
+                            const b = Math.floor(Math.random() * 255);
+                            item.data.fillStyle = `rgb(${r},${g},${b})`;
+                            items.push(item);
                         }
-                        const r = Math.floor(Math.random() * 255);
-                        const g = Math.floor(Math.random() * 255);
-                        const b = Math.floor(Math.random() * 255);
-                        item.data.strokeStyle = `rgb(${r},${g},${b})`;
-                        items.push(item);
+                        whiteBoard.add(...items);
                     }
-                    whiteBoard.add(...items);
                 }
             });
-            ui.dynamic('br');
-            ui.dynamic('button', {
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: 'JSON化', onclick: () => {
-                    _json_textarea.value = whiteBoard.toJsonStr();
+                innerText: '随机画1000笔',
+                on: {
+                    click: () => {
+                        const items = [];
+                        for (let i = 0; i < 1000; ++i) {
+                            const item = whiteBoard.factory.newShape(dist_1.ShapeEnum.Pen);
+                            let x = Math.floor(Math.random() * ui.state.width);
+                            let y = Math.floor(Math.random() * ui.state.height);
+                            const lenth = Math.floor(Math.random() * 100);
+                            for (let j = 0; j < lenth; ++j) {
+                                x += Math.floor(Math.random() * 5);
+                                y += Math.floor(Math.random() * 5);
+                                item.appendDot({ x, y, p: 0.5 });
+                            }
+                            const r = Math.floor(Math.random() * 255);
+                            const g = Math.floor(Math.random() * 255);
+                            const b = Math.floor(Math.random() * 255);
+                            item.data.strokeStyle = `rgb(${r},${g},${b})`;
+                            items.push(item);
+                        }
+                        whiteBoard.add(...items);
+                    }
                 }
             });
-            ui.dynamic('button', {
+            ui.ele('br');
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: '反JSON化', onclick: () => {
-                    whiteBoard.fromJsonStr(_json_textarea.value);
+                innerText: 'JSON化',
+                on: {
+                    click: () => {
+                        _json_textarea.value = whiteBoard.toJsonStr();
+                    }
                 }
             });
-            const _json_textarea = ui.dynamic('textarea');
+            ui.ele('button', {
+                className: 'tool_button',
+                innerText: '反JSON化',
+                on: {
+                    click: () => {
+                        whiteBoard.fromJsonStr(_json_textarea.value);
+                    }
+                }
+            });
+            const _json_textarea = ui.ele('textarea');
             const startRecord = () => {
                 _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
                 _recorder = new dist_1.Recorder();
@@ -678,71 +697,77 @@ window.ui = new ele_1.UI(document.body, initState, (ui) => {
                 _player = new dist_1.Player();
                 whiteBoard && _player.start(whiteBoard, JSON.parse(str));
             };
-            ui.dynamic('br');
-            ui.dynamic('button', {
+            ui.ele('br');
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: '开始录制', onclick: startRecord
+                innerText: '开始录制', on: { click: startRecord }
             });
-            ui.dynamic('button', {
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: '停止录制', onclick: endRecord
+                innerText: '停止录制', on: { click: endRecord }
             });
-            ui.dynamic('button', {
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: '回放', onclick: () => {
-                    endRecord();
-                    replay(_recorder_textarea.value);
+                innerText: '回放', on: {
+                    click: () => {
+                        endRecord();
+                        replay(_recorder_textarea.value);
+                    }
                 }
             });
-            ui.dynamic('button', {
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: `replay: write "hello world"`, onclick: () => {
-                    endRecord();
-                    replay(demo_helloworld_1.default);
+                innerText: `replay: write "hello world"`, on: {
+                    click: () => {
+                        endRecord();
+                        replay(demo_helloworld_1.default);
+                    }
                 }
             });
-            ui.dynamic('button', {
+            ui.ele('button', {
                 className: 'tool_button',
-                innerText: `replay: rect & oval`, onclick: () => {
-                    endRecord();
-                    replay(demo_rect_n_oval_1.default);
+                innerText: `replay: rect & oval`, on: {
+                    click: () => {
+                        endRecord();
+                        replay(demo_rect_n_oval_1.default);
+                    }
                 }
             });
-            ui.static('button', {
+            ui.ele('button', {
                 className: 'tool_button',
                 innerText: 'layer_0',
-                onclick: () => whiteBoard.setCurrentLayer(0)
+                on: { click: () => whiteBoard.setCurrentLayer(0) }
             });
-            ui.static('button', {
+            ui.ele('button', {
                 className: 'tool_button',
                 innerText: 'layer_1',
-                onclick: () => whiteBoard.setCurrentLayer(1)
+                on: { click: () => whiteBoard.setCurrentLayer(1) }
             });
-            ui.static('button', {
+            ui.ele('button', {
                 className: 'tool_button',
                 innerText: 'layer_2',
-                onclick: () => whiteBoard.setCurrentLayer(2)
+                on: { click: () => whiteBoard.setCurrentLayer(2) }
             });
-            ui.static('input', {
+            ui.ele('input', {
                 type: 'checkbox',
                 className: 'tool_button',
                 innerText: 'layer_0',
-                onchange: (e) => { whiteBoard.layer(0).onscreen.style.opacity = e.target.checked ? '0' : '1'; }
+                onchange: (e) => { whiteBoard.layer(0).opacity = e.target.checked ? 0 : 1; }
             });
-            ui.static('input', {
+            ui.ele('input', {
                 type: 'checkbox',
                 className: 'tool_button',
                 innerText: 'layer_1',
-                onchange: (e) => { whiteBoard.layer(1).onscreen.style.opacity = e.target.checked ? '0' : '1'; }
+                onchange: (e) => { whiteBoard.layer(1).opacity = e.target.checked ? 0 : 1; }
             });
-            ui.static('input', {
+            ui.ele('input', {
                 type: 'checkbox',
                 className: 'tool_button',
                 innerText: 'layer_2',
-                onchange: (e) => { whiteBoard.layer(2).onscreen.style.opacity = e.target.checked ? '0' : '1'; }
+                onchange: (e) => { whiteBoard.layer(2).opacity = e.target.checked ? 0 : 1; },
             });
-            const _recorder_textarea = ui.dynamic('textarea');
-            ui.static('canvas', canvas => {
+            const _recorder_textarea = ui.ele('textarea');
+            ui.ele('canvas', {}, canvas => {
                 canvas.width = 180;
                 canvas.height = 100;
                 canvas.style.minWidth = canvas.width + 'px';
@@ -760,14 +785,15 @@ window.ui = new ele_1.UI(document.body, initState, (ui) => {
                 };
             });
         });
-        ui.static('div', {
+        ui.ele('div', {
+            alias: 'hello',
             className: 'blackboard',
             style: {
-                'position': 'relative'
+                position: 'relative'
             }
-        }, (div) => {
+        }, () => {
             const layers = ['1', '2', ''].map((name, idx) => {
-                const onscreen = ui.static('canvas', {
+                const onscreen = ui.ele('canvas', {
                     style: {
                         position: idx === 0 ? 'relative' : 'absolute',
                         touchAction: 'none',
@@ -786,7 +812,10 @@ window.ui = new ele_1.UI(document.body, initState, (ui) => {
                 return { info: { name }, onscreen };
             });
             whiteBoard = factory.newWhiteBoard(Object.assign({ layers }, ui.state));
-            whiteBoard.on(dist_1.EventEnum.ToolChanged, () => ui.refresh());
+            whiteBoard.on(dist_1.EventEnum.ToolChanged, () => {
+                const { count } = ui.state;
+                ui.setState({ count: count + 1 });
+            });
         });
     });
 });
@@ -812,82 +841,82 @@ document.body.appendChild(menu.element());
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UI = void 0;
+;
+;
 class UI {
-    constructor(container, initState, render) {
-        this.eleStack = [];
-        this.eles = {};
-        this.eleStack = [container];
-        this.render = render;
-        this.state = (typeof initState !== 'function') ? initState : initState();
-        this.render(this);
+    constructor(container, initState, initEle) {
+        this._eleStack = [];
+        this._eles = {};
+        this._listens = {};
+        this._eleStack = [container];
+        this.state = initState();
+        initEle(this);
     }
     setState(state) {
-        this.state = (typeof state !== 'function') ? state : state(this.state);
-        this.render(this);
+        setTimeout(() => {
+            var _a;
+            Object.assign(this.state, state);
+            const set = new Set();
+            for (const key in state) {
+                (_a = this._listens[key]) === null || _a === void 0 ? void 0 : _a.forEach(cb => set.add(cb));
+            }
+            set.forEach(cb => {
+                var _a, _b;
+                (_a = cb.callback) === null || _a === void 0 ? void 0 : _a.call(cb, cb.ele, this);
+                (_b = cb.update) === null || _b === void 0 ? void 0 : _b.call(cb, cb.ele, this);
+            });
+        }, 1);
     }
-    refresh() {
-        this.render(this);
-    }
-    applyOptions(ele, options) {
-        if (!ele || !options)
+    applyOpts(ele, opts) {
+        if (!ele || !opts)
             return;
-        for (const key in options) {
+        for (const key in opts) {
             if (key === 'style' || key === 'attrs')
                 continue;
-            ele[key] = options[key];
+            ele[key] = opts[key];
         }
-        for (const key in options === null || options === void 0 ? void 0 : options.style)
-            ele.style[key] = (options === null || options === void 0 ? void 0 : options.style)[key];
-        for (const key in options === null || options === void 0 ? void 0 : options.attrs)
-            ele.setAttribute(key, options.attrs[key]);
+        for (const key in opts === null || opts === void 0 ? void 0 : opts.style) {
+            ele.style[key] = (opts === null || opts === void 0 ? void 0 : opts.style)[key];
+        }
+        for (const key in opts === null || opts === void 0 ? void 0 : opts.attrs) {
+            ele.setAttribute(key, opts.attrs[key]);
+        }
+        for (const key in opts === null || opts === void 0 ? void 0 : opts.on) {
+            const listener = opts.on[key];
+            ele.addEventListener(key, (e) => listener(e, ele, this));
+        }
     }
     appendChild(parent, child, options) {
-        if (parent === this.eleStack[0]) {
+        if (parent === this._eleStack[0]) {
             if (!(options === null || options === void 0 ? void 0 : options.offscreen))
-                this.root ? parent.replaceChild(child, this.root) : parent.appendChild(child);
-            this.root = child;
+                this._eleRoot ? parent.replaceChild(child, this._eleRoot) : parent.appendChild(child);
+            this._eleRoot = child;
         }
         else {
             !(options === null || options === void 0 ? void 0 : options.offscreen) && parent.appendChild(child);
         }
     }
-    dynamic(tagName, arg2, arg3) {
-        const updater = typeof arg2 === 'function' ? arg2 : arg3;
-        const options = typeof arg2 === 'function' ? undefined : Object.assign({}, arg2);
-        const endIdx = this.eleStack.length - 1;
-        const parent = this.eleStack[endIdx];
-        const key = `${tagName}_${endIdx}_${parent.childNodes.length}_${!!(options === null || options === void 0 ? void 0 : options.offscreen)}`;
-        const prev = this.eles[key];
-        const child = document.createElement(tagName);
-        this.eleStack.push(child);
-        this.eles[key] = child;
-        this.applyOptions(child, options);
-        updater && updater(child, prev);
-        this.appendChild(parent, child, options);
-        this.eleStack.pop();
-        return child;
-    }
-    static(tagName, arg2, arg3, arg4) {
-        const options = typeof arg2 !== 'function' ? arg2 : undefined;
-        const init = typeof arg2 === 'function' ? arg2 : arg3;
-        const updater = typeof arg2 === 'function' ? arg3 : arg4;
-        const endIdx = this.eleStack.length - 1;
-        const parent = this.eleStack[endIdx];
-        const key = `${tagName}_${endIdx}_${parent.childNodes.length}_${!!(options === null || options === void 0 ? void 0 : options.offscreen)}`;
-        const child = this.eles[key] || document.createElement(tagName);
-        this.applyOptions(child, options);
-        if (key in this.eles) {
-            this.eleStack.push(child);
-            updater && updater(child);
+    ele(tagName, opts, render) {
+        var _a;
+        const endIdx = this._eleStack.length - 1;
+        const parent = this._eleStack[endIdx];
+        const ele = document.createElement(tagName);
+        this.applyOpts(ele, opts);
+        if (opts === null || opts === void 0 ? void 0 : opts.alias) {
+            this._eles[opts.alias] = ele;
         }
-        else {
-            this.eles[key] = child;
-            this.eleStack.push(child);
-            init && init(child);
-        }
-        this.appendChild(parent, child, options);
-        this.eleStack.pop();
-        return child;
+        this._eleStack.push(ele);
+        render && render(ele, this);
+        (_a = opts === null || opts === void 0 ? void 0 : opts.listens) === null || _a === void 0 ? void 0 : _a.forEach(([keys, callback]) => {
+            keys.forEach((key) => {
+                var _a;
+                this._listens[key] = this._listens[key] || [];
+                (_a = this._listens[key]) === null || _a === void 0 ? void 0 : _a.push({ ele: ele, callback, update: render });
+            });
+        });
+        this.appendChild(parent, ele, opts);
+        this._eleStack.pop();
+        return ele;
     }
 }
 exports.UI = UI;
@@ -916,6 +945,10 @@ class Layer {
     get ctx() { return this._ctx; }
     ;
     get octx() { return this._octx; }
+    ;
+    get opacity() { return Number(this._offscreen.style.opacity); }
+    ;
+    set opacity(v) { this._offscreen.style.opacity = '' + v; }
     ;
     constructor(inits) {
         this._info = new LayerInfo(inits.info);
