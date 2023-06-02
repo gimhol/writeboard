@@ -1,174 +1,97 @@
-import { ILayerInfoInit, LayerInfo } from "../../dist";
+import { ILayerInfoInit } from "../../dist";
+import { FloatingSubwin } from "./G/FloatingSubwin";
+import { View } from "./G/View";
+import { IconButton } from "./G/IconButton";
+import { ToggleIconButton } from "./G/ToggleIconButton";
+import { HoverOb } from "./G/HoverOb";
 
-
-export default class LayersView {
-  private _ele = document.createElement('div');
-  private _header = document.createElement('div');
-  private _footer = document.createElement('div');
-  private _list = document.createElement('div');
+export default class LayersView extends FloatingSubwin {
   private _layers: LayerItemView[] = [];
 
-  ele() { return this._ele; }
   constructor() {
-    this._ele.style.left = '' + 100 + 'px';
-    this._ele.style.top = '' + 100 + 'px';
-    this._ele.style.position = 'fixed';
-    this._ele.style.background = '#555555';
-    this._ele.style.zIndex = '10000';
-    this._ele.style.minWidth = '200px';
-    this._ele.style.minHeight = '200px';
-    this._ele.style.width = '200px';
-    this._ele.style.height = '200px';
-    this._ele.style.overflow = 'hidden';
-    this._ele.style.border = '1px solid black';
-    this._ele.style.resize = 'both';
-    this._ele.style.boxShadow = '5px 5px 10px 10px #00000022'
-    this._ele.style.borderRadius = '5px';
-    this._ele.style.display = 'flex';
-    this._ele.style.flexDirection = 'column';
+    super()
+    this.content = new View('div');
+    this.content.inner.style.flex = '1';
+    this.content.inner.style.overflowY = 'auto'
+    this.content.inner.style.overflowX = 'hidden'
 
+    const btnAddLayer = new IconButton({ text: '📃', title: '新建图层', size: 's' })
+    this.footer.addChild(btnAddLayer);
 
-    also(this._header, (div) => {
-      div.style.userSelect = 'none';
-      div.style.width = '100%';
-      div.style.color = '#FFFFFF88'
-      div.innerText = 'layers'
-      div.style.padding = '5px';
-      div.style.background = '#222222'
-      div.style.borderBottom = '#222222'
-      this._ele.append(div);
-
-      let _offsetX = 0;
-      let _offsetY = 0;
-      let _down = false;
-      div.onmousedown = e => {
-        _down = true;
-        _offsetX = e.offsetX;
-        _offsetY = e.offsetY;
-      }
-      document.addEventListener('mousemove', e => {
-        if (!_down) { return }
-        this._ele.style.left = '' + (e.pageX - _offsetX) + 'px';
-        this._ele.style.top = '' + (e.pageY - _offsetY) + 'px';
-      })
-      document.addEventListener('mouseup', () => {
-        _down = false;
-      })
-    })
-
-    also(this._list, (div) => {
-      div.style.flex = '1';
-      div.style.overflowY = 'auto'
-      div.style.overflowX = 'hidden'
-      this._ele.append(this._list);
-    })
-    also(this._footer, (div) => {
-      div.style.userSelect = 'none';
-      div.style.width = '100%';
-      div.style.color = '#FFFFFF88'
-      div.innerText = 'layers'
-      div.style.padding = '5px';
-      div.style.background = '#222222'
-      div.style.borderBottom = '#222222'
-      this._ele.append(div);
-      let _offsetX = 0;
-      let _offsetY = 0;
-      let _down = false;
-      div.onmousedown = e => {
-        _down = true;
-        _offsetX = e.offsetX;
-        _offsetY = e.offsetY;
-      }
-      document.addEventListener('mousemove', e => {
-        if (!_down) { return }
-        this._ele.style.left = '' + (e.pageX - _offsetX) + 'px';
-        this._ele.style.top = '' + (e.pageY - _offsetY) + 'px';
-      })
-      document.addEventListener('mouseup', () => {
-        _down = false;
-      })
-    })
+    const btnAddFolder = new IconButton({ text: '📂', title: '新建图层组', size: 's' })
+    this.footer.addChild(btnAddFolder);
   }
   layers() { return this._layers }
   setLayers() { }
   addLayer(inits: ILayerInfoInit) {
     const item = new LayerItemView(inits);
     this._layers.push(item);
-    this._list.append(item.ele);
+    this.content?.addChild(item);
+    item.onClick(() => {
+      this.content?.children?.forEach(v => v.selected = false)
+      item.selected = true;
+    })
   }
 }
 
-export class LayerItemView {
-  private _ele: HTMLDivElement;
+export class LayerItemView extends View<'div'> {
   private _state = {
     visible: true,
     locked: false,
     name: '',
     selected: false,
   };
-  get ele() { return this._ele; }
   get state() { return this._state; }
-  select() {
-    this.state.selected = true;
+  get selected() { return this._state.selected; }
+  set selected(v) {
+    this._state.selected = v;
+    this._inner.style.background = this.state.selected ? '#00000044' : '';
   }
+
   constructor(inits: ILayerInfoInit) {
+    super('div')
     this._state.name = inits.name;
-    this._ele = also(document.createElement('div'), div => {
-      div.style.display = 'flex';
-      div.style.position = 'relative';
-      div.style.padding = '5px';
-      div.style.borderBottom = '1px solid #00000022';
-      div.onclick = () => {
-        this.state.selected = true;
-        update();
-      }
-      const update = () => {
-        div.style.background = this.state.selected ? '#00000022' : '';
-      }
-      update();
-    });
-    also(document.createElement('div'), div => {
-      const hoverOb = new HoverOb(div, () => update());
-      style_btnIcon(div);
-      const update = () => {
-        div.innerText = this._state.locked ? '🔒' : '🔓';
-        div.style.background = hoverOb.hover ? '#00000022' : '';
-      }
-      div.onclick = () => {
-        this._state.locked = !this._state.locked;
-        update();
-      }
-      this._ele.append(div);
-      update();
+    this._inner.style.display = 'flex';
+    this._inner.style.position = 'relative';
+    this._inner.style.padding = '5px';
+    this._inner.style.borderBottom = '1px solid #00000022';
+    this._inner.style.transition = 'all 200ms';
+
+    new HoverOb(this._inner, hover => {
+      this._inner.style.background = hover ?
+        '#00000022' :
+        this.state.selected ?
+          '#00000044' : '';
     })
-    also(document.createElement('div'), div => {
-      const hoverOb = new HoverOb(div, () => update());
-      style_btnIcon(div);
-      const update = () => {
-        div.innerText = this._state.visible ? '🐵' : '🙈';
-        div.style.background = hoverOb.hover ? '#00000022' : '';
-      }
-      div.onclick = () => {
-        this._state.visible = !this._state.visible;
-        update();
-      }
-      this._ele.append(div);
-      update();
+
+
+    const btn0 = new ToggleIconButton({
+      checked: this._state.locked,
+      texts: ['🔓', '🔒']
+    }).onClick(btn => {
+      this._state.locked = btn.checked;
     })
-    also(document.createElement('div'), div => {
-      const hoverOb = new HoverOb(div, () => update());
-      style_btnIcon(div);
-      div.innerText = '🖊️'
-      const update = () => {
-        div.style.background = hoverOb.hover ? '#00000022' : '';
-      }
-      div.onclick = () => {
-        inputName.disabled = false;
-        inputName.focus();
-      }
-      this._ele.append(div);
-      update();
+    this.addChild(btn0);
+
+    const btn1 = new ToggleIconButton({
+      checked: this._state.visible,
+      texts: ['🙈', '🐵']
+    }).onClick(btn => {
+      this._state.visible = btn.checked;
     })
+    this.addChild(btn1);
+
+    const btn2 = new ToggleIconButton({
+      checked: this._state.visible,
+      texts: ['➕', '➖']
+    }).onClick(btn => {
+      this._state.visible = btn.checked;
+    })
+    this.addChild(btn2);
+
+
+
+
     const inputName = also(document.createElement('input'), input => {
       const focusedOb = new FocusedOb(input, () => update());
       const hoverOb = new HoverOb(input, () => update());
@@ -202,22 +125,20 @@ export class LayerItemView {
         this._state.name = (e.target as HTMLInputElement).value;
         input.disabled = true;
       }
-      this._ele.append(input);
+      this.inner.append(input);
       update();
     })
+
+    const btn3 = new IconButton({
+      text: '🖊️'
+    }).onClick(() => {
+      inputName.disabled = false;
+      inputName.focus();
+    })
+    this.addChild(btn3);
   }
 }
 
-function style_btnIcon(ele: HTMLElement) {
-  ele.style.userSelect = 'none';
-  ele.style.cursor = 'pointer';
-  ele.style.width = '24px';
-  ele.style.height = '24px';
-  ele.style.textAlign = 'center';
-  ele.style.transition = 'all 200ms';
-  ele.style.borderRadius = '5px';
-  ele.style.lineHeight = '24px';
-}
 class FocusedOb {
   private _focused = false;
   get focused() { return this._focused; }
@@ -226,12 +147,54 @@ class FocusedOb {
     ele.addEventListener('blur', e => { this._focused = false; cb() });
   }
 }
-class HoverOb {
-  private _hover = false;
-  get hover() { return this._hover; }
-  constructor(ele: HTMLElement, cb: () => void) {
-    ele.addEventListener('mouseenter', e => { this._hover = true; cb() });
-    ele.addEventListener('mouseleave', e => { this._hover = false; cb() });
+interface IViewDraggerInits {
+  handle?: HTMLElement;
+  view?: HTMLElement;
+}
+export class ViewDragger {
+  private _handle?: HTMLElement | null;
+  private _view?: HTMLElement | null;
+  private _offsetX = 0;
+  private _offsetY = 0;
+  private _down = false;
+
+  private _onpointerdown = (e: PointerEvent) => {
+    if (e.button !== 0) { return; }
+    this._down = true;
+    this._offsetX = e.offsetX;
+    this._offsetY = e.offsetY;
+  }
+  private _pointermove = (e: PointerEvent) => {
+    if (!this._view) { return }
+    if (!this._down) { return }
+    this._view.style.left = '' + (e.pageX - this._offsetX) + 'px';
+    this._view.style.top = '' + (e.pageY - this._offsetY) + 'px';
+  }
+  private _pointerup = (e: PointerEvent) => {
+    if (e.button !== 0) { return; }
+    this._down = false;
+  }
+
+  get handle() { return this._handle; }
+  set handle(v) {
+    this._handle?.removeEventListener('pointerdown', this._onpointerdown)
+    this._handle = v;
+    this._handle?.addEventListener('pointerdown', this._onpointerdown)
+  }
+
+  get view() { return this._view; }
+  set view(v) { this._view = v; }
+
+  constructor(inits?: IViewDraggerInits) {
+    this.view = inits?.view;
+    this.handle = inits?.handle
+    document.addEventListener('pointermove', this._pointermove)
+    document.addEventListener('pointerup', this._pointerup)
+  }
+  destory() {
+    document.removeEventListener('pointermove', this._pointermove)
+    document.removeEventListener('pointerup', this._pointerup)
+    this._handle?.removeEventListener('pointerdown', this._onpointerdown)
   }
 }
 

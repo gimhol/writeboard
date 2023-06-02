@@ -221,7 +221,7 @@ let initState: State = {
         })
         const _recorder_textarea = ui.ele('textarea')
 
-        ui.current()?.append(layersView.ele())
+        ui.current()?.append(layersView.inner)
 
         ui.ele('canvas', {}, canvas => {
           canvas.width = 180
