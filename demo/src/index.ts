@@ -8,17 +8,31 @@ import {
   ToolEnum,
   ToolType,
   WhiteBoard
-} from "../../dist"
+} from "../../dist";
+import LayersView from "./layers_view";
 import { ColorPalette } from "./colorPalette/ColorPalette"
 import demo_helloworld from "./demo_helloworld"
 import demo_rect_n_oval from "./demo_rect_n_oval"
 import { UI } from "./ui/ele"
+
 type State = {
   count: number
   width?: number
   height?: number
 }
 let whiteBoard: WhiteBoard
+
+const layersView = new LayersView;
+layersView.addLayer({ name: 'layer_0' });
+layersView.addLayer({ name: 'layer_1' });
+layersView.addLayer({ name: 'layer_2' });
+layersView.addLayer({ name: 'layer_3' });
+layersView.addLayer({ name: 'layer_4' });
+layersView.addLayer({ name: 'layer_5' });
+layersView.addLayer({ name: 'layer_6' });
+layersView.addLayer({ name: 'layer_7' });
+layersView.addLayer({ name: 'layer_8' });
+
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let _recorder: Recorder | undefined
 let _player: Player | undefined
@@ -144,7 +158,7 @@ let initState: State = {
         })
         ui.ele('button', {
           className: 'tool_button',
-          innerText: '反JSON化', 
+          innerText: '反JSON化',
           on: {
             click: () => {
               whiteBoard.fromJsonStr(_json_textarea.value)
@@ -205,40 +219,9 @@ let initState: State = {
             }
           }
         })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: 'layer_0',
-          on: { click: () => whiteBoard.setCurrentLayer(0) }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: 'layer_1',
-          on: { click: () => whiteBoard.setCurrentLayer(1) }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: 'layer_2',
-          on: { click: () => whiteBoard.setCurrentLayer(2) }
-        });
-        ui.ele('input', {
-          type: 'checkbox',
-          className: 'tool_button',
-          innerText: 'layer_0',
-          onchange: (e) => { whiteBoard.layer(0).opacity = (e.target as any).checked ? 0 : 1 }
-        })
-        ui.ele('input', {
-          type: 'checkbox',
-          className: 'tool_button',
-          innerText: 'layer_1',
-          onchange: (e) => { whiteBoard.layer(1).opacity = (e.target as any).checked ? 0 : 1 }
-        })
-        ui.ele('input', {
-          type: 'checkbox',
-          className: 'tool_button',
-          innerText: 'layer_2',
-          onchange: (e) => { whiteBoard.layer(2).opacity = (e.target as any).checked ? 0 : 1 },
-        })
         const _recorder_textarea = ui.ele('textarea')
+
+        ui.current()?.append(layersView.ele())
 
         ui.ele('canvas', {}, canvas => {
           canvas.width = 180
@@ -263,7 +246,7 @@ let initState: State = {
           position: 'relative'
         }
       }, () => {
-        const layers = ['1', '2', ''].map<ILayerInits>((name, idx) => {
+        const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
           const onscreen = ui.ele('canvas', {
             style: {
               position: idx === 0 ? 'relative' : 'absolute',
@@ -280,7 +263,7 @@ let initState: State = {
               menu.show();
             }
           })
-          return { info: { name }, onscreen }
+          return { info: layer.state, onscreen }
         })
         whiteBoard = factory.newWhiteBoard({ layers, ...ui.state })
         whiteBoard.on(EventEnum.ToolChanged, () => {

@@ -103,7 +103,9 @@ export class UI<
       !options?.offscreen && parent.appendChild(child)
     }
   }
-
+  current(): HTMLElement | undefined {
+    return this._eleStack[this._eleStack.length - 1];
+  }
   ele<T extends EleMapKey>(
     tagName: T,
     opts?: Omit<Partial<EleMap[T]>, 'style'> & Opts<T, EleEventMapKey, S, SK, AK>,
