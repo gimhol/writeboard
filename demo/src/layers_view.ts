@@ -5,9 +5,30 @@ import { IconButton } from "./G/IconButton";
 import { ToggleIconButton } from "./G/ToggleIconButton";
 import { HoverOb } from "./G/HoverOb";
 
-export default class LayersView extends FloatingSubwin {
-  private _layers: LayerItemView[] = [];
+export class ToolsView extends FloatingSubwin {
+  constructor() {
+    super()
+    this.content = new View('div');
+    this.content.inner.style.flex = '1';
+    this.content.inner.style.overflowY = 'auto'
+    this.content.inner.style.overflowX = 'hidden'
 
+    const btn0 = new ToggleIconButton({ text: 'mouse' })
+    btn0.saveStyle('normal_checked', {
+      background: '#444444'
+    })
+    btn0.saveStyle('hover_checked', {
+      background: '#333333'
+    })
+    btn0.onClick((btn)=>{
+      alert(btn.checked)
+    })
+    this.content.addChild(btn0);
+  }
+}
+
+export class LayersView extends FloatingSubwin {
+  private _layers: LayerItemView[] = [];
   constructor() {
     super()
     this.content = new View('div');

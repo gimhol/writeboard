@@ -9,7 +9,7 @@ import {
   ToolType,
   WhiteBoard
 } from "../../dist";
-import LayersView from "./layers_view";
+import { LayersView, ToolsView } from "./layers_view";
 import { ColorPalette } from "./colorPalette/ColorPalette"
 import demo_helloworld from "./demo_helloworld"
 import demo_rect_n_oval from "./demo_rect_n_oval"
@@ -32,6 +32,8 @@ layersView.addLayer({ name: 'layer_5' });
 layersView.addLayer({ name: 'layer_6' });
 layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
+
+const toolsView = new ToolsView;
 
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let _recorder: Recorder | undefined
@@ -221,6 +223,7 @@ let initState: State = {
         })
         const _recorder_textarea = ui.ele('textarea')
 
+        ui.current()?.append(toolsView.inner)
         ui.current()?.append(layersView.inner)
 
         ui.ele('canvas', {}, canvas => {

@@ -107,41 +107,56 @@ exports.HoverOb = HoverOb;
 },{}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IconButton = void 0;
+exports.IconButton = exports.style = void 0;
 const View_1 = require("./View");
-const HoverOb_1 = require("./HoverOb");
+exports.style = {};
 class IconButton extends View_1.View {
     constructor(init) {
         var _a, _b;
         super('button');
-        this._inner.style.userSelect = 'none';
-        this._inner.style.cursor = 'pointer';
-        this._inner.style.textAlign = 'center';
-        this._inner.style.transition = 'all 200ms';
-        this._inner.style.padding = '0px';
+        this.hoverOb();
+        Object.assign(this._inner.style, exports.style);
         this._inner.innerText = (_a = init === null || init === void 0 ? void 0 : init.text) !== null && _a !== void 0 ? _a : '';
         this._inner.title = (_b = init === null || init === void 0 ? void 0 : init.title) !== null && _b !== void 0 ? _b : '';
-        new HoverOb_1.HoverOb(this._inner, hover => {
-            this._inner.style.background = hover ? '#00000022' : '';
+        this.saveStyle('normal', {
+            userSelect: 'none',
+            cursor: 'pointer',
+            textAlign: 'center',
+            transition: 'all 200ms',
+            padding: '0px',
+            background: 'transparent'
         });
+        this.saveStyle('hover', {
+            background: '#00000022'
+        });
+        this.saveStyle('small', {
+            width: '18px',
+            height: '18px',
+            lineHeight: '18px',
+            borderRadius: '5px',
+            fontSize: '12px',
+        });
+        this.saveStyle('middle', {
+            width: '24px',
+            height: '24px',
+            lineHeight: '24px',
+            borderRadius: '5px',
+            fontSize: '16px',
+        });
+        this.applyStyle('normal');
         switch (init === null || init === void 0 ? void 0 : init.size) {
-            case 's': {
-                this._inner.style.width = '18px';
-                this._inner.style.height = '18px';
-                this._inner.style.lineHeight = '18px';
-                this._inner.style.borderRadius = '5px';
-                this._inner.style.fontSize = '12px';
+            case 's':
+                this.applyStyle('small');
                 break;
-            }
-            default: {
-                this._inner.style.width = '24px';
-                this._inner.style.height = '24px';
-                this._inner.style.lineHeight = '24px';
-                this._inner.style.borderRadius = '5px';
-                this._inner.style.fontSize = '16px';
+            default:
+                this.applyStyle('middle');
                 break;
-            }
         }
+    }
+    onHover(hover) {
+        hover ?
+            this.applyStyle('hover') :
+            this.applyStyle('normal');
     }
     onClick(cb) {
         return super.onClick(cb);
@@ -149,7 +164,7 @@ class IconButton extends View_1.View {
 }
 exports.IconButton = IconButton;
 
-},{"./HoverOb":4,"./View":7}],6:[function(require,module,exports){
+},{"./View":7}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToggleIconButton = void 0;
@@ -157,7 +172,8 @@ const IconButton_1 = require("./IconButton");
 class ToggleIconButton extends IconButton_1.IconButton {
     get checked() { return this._checked; }
     set checked(v) {
-        this._checked = !this._checked;
+        this._checked = v;
+        this.onHover(this.hoverOb().hover);
         this.updateText();
     }
     constructor(inits) {
@@ -165,8 +181,13 @@ class ToggleIconButton extends IconButton_1.IconButton {
         super(inits);
         this._texts = ['', ''];
         this._checked = false;
-        this._texts = (inits === null || inits === void 0 ? void 0 : inits.texts) ? [...inits.texts] : ['', ''];
+        this._texts = (inits === null || inits === void 0 ? void 0 : inits.texts) ?
+            [...inits.texts] :
+            (inits === null || inits === void 0 ? void 0 : inits.text) ?
+                [inits === null || inits === void 0 ? void 0 : inits.text, inits === null || inits === void 0 ? void 0 : inits.text] :
+                ['', ''];
         this.checked = (_a = inits === null || inits === void 0 ? void 0 : inits.checked) !== null && _a !== void 0 ? _a : false;
+        this.hoverOb();
     }
     updateText() {
         this._inner.innerText = this._checked ? this._texts[1] : this._texts[0];
@@ -180,6 +201,20 @@ class ToggleIconButton extends IconButton_1.IconButton {
         };
         return this;
     }
+    onHover(hover) {
+        if (hover) {
+            this.applyStyle('hover');
+            if (this.checked) {
+                this.applyStyle('hover_checked');
+            }
+        }
+        else {
+            this.applyStyle('normal');
+            if (this.checked) {
+                this.applyStyle('normal_checked');
+            }
+        }
+    }
 }
 exports.ToggleIconButton = ToggleIconButton;
 
@@ -187,6 +222,7 @@ exports.ToggleIconButton = ToggleIconButton;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.View = void 0;
+const HoverOb_1 = require("./HoverOb");
 class View {
     get cb() { return this._cb; }
     set cb(v) {
@@ -202,14 +238,22 @@ class View {
     get parent() { var _a; return (_a = this._inner.parentElement) === null || _a === void 0 ? void 0 : _a.view; }
     get children() { return Array.from(this._inner.children).map(v => v === null || v === void 0 ? void 0 : v.view); }
     constructor(tagName) {
-        this._handleClick = () => { var _a; return (_a = this._cb) === null || _a === void 0 ? void 0 : _a.call(this, this); };
+        this._handleClick = () => { var _a; (_a = this._cb) === null || _a === void 0 ? void 0 : _a.call(this, this); };
+        this._styles = {};
         this._inner = document.createElement(tagName);
         this._inner.view = this;
+    }
+    hoverOb() {
+        if (!this._hoverOb) {
+            this._hoverOb = new HoverOb_1.HoverOb(this._inner, v => this.onHover(v));
+        }
+        return this._hoverOb;
     }
     onBeforeAdded(parent) { }
     onAfterAdded(parent) { }
     onBeforeRemoved(parent) { }
     onAfterRemoved(parent) { }
+    onHover(hover) { }
     addChild(child) {
         child.onBeforeAdded(this);
         this._inner.append(child.inner);
@@ -230,10 +274,23 @@ class View {
         this.cb = cb;
         return this;
     }
+    findStyle(name) {
+        return this._styles[name];
+    }
+    saveStyle(name, style) {
+        var _a;
+        this._styles[name] = typeof style === 'function' ?
+            style((_a = this.findStyle(name)) !== null && _a !== void 0 ? _a : {}) :
+            style;
+    }
+    applyStyle(name) {
+        console.log("applyStyle:", name);
+        Object.assign(this._inner.style, this._styles[name]);
+    }
 }
 exports.View = View;
 
-},{}],8:[function(require,module,exports){
+},{"./HoverOb":4}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.LazyHolder = exports.clampI = exports.clampF = void 0;
@@ -785,13 +842,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
-const layers_view_1 = __importDefault(require("./layers_view"));
+const layers_view_1 = require("./layers_view");
 const ColorPalette_1 = require("./colorPalette/ColorPalette");
 const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
 const demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
 const ele_1 = require("./ui/ele");
 let whiteBoard;
-const layersView = new layers_view_1.default;
+const layersView = new layers_view_1.LayersView;
 layersView.addLayer({ name: 'layer_0' });
 layersView.addLayer({ name: 'layer_1' });
 layersView.addLayer({ name: 'layer_2' });
@@ -801,6 +858,7 @@ layersView.addLayer({ name: 'layer_5' });
 layersView.addLayer({ name: 'layer_6' });
 layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
+const toolsView = new layers_view_1.ToolsView;
 const factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 let _recorder;
 let _player;
@@ -827,7 +885,7 @@ window.ui = new ele_1.UI(document.body, () => initState, (ui) => {
         ui.ele('div', {
             className: 'tool_bar'
         }, () => {
-            var _a;
+            var _a, _b;
             toolBtn(dist_1.ToolEnum.Selector);
             toolBtn(dist_1.ToolEnum.Pen);
             toolBtn(dist_1.ToolEnum.Rect);
@@ -981,7 +1039,8 @@ window.ui = new ele_1.UI(document.body, () => initState, (ui) => {
                 }
             });
             const _recorder_textarea = ui.ele('textarea');
-            (_a = ui.current()) === null || _a === void 0 ? void 0 : _a.append(layersView.inner);
+            (_a = ui.current()) === null || _a === void 0 ? void 0 : _a.append(toolsView.inner);
+            (_b = ui.current()) === null || _b === void 0 ? void 0 : _b.append(layersView.inner);
             ui.ele('canvas', {}, canvas => {
                 canvas.width = 180;
                 canvas.height = 100;
@@ -1055,12 +1114,33 @@ document.body.appendChild(menu.element());
 },{"../../dist":31,"../../dist/features/Menu":26,"./colorPalette/ColorPalette":9,"./demo_helloworld":10,"./demo_rect_n_oval":11,"./layers_view":13,"./ui/ele":14}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ViewDragger = exports.LayerItemView = void 0;
+exports.ViewDragger = exports.LayerItemView = exports.LayersView = exports.ToolsView = void 0;
 const FloatingSubwin_1 = require("./G/FloatingSubwin");
 const View_1 = require("./G/View");
 const IconButton_1 = require("./G/IconButton");
 const ToggleIconButton_1 = require("./G/ToggleIconButton");
 const HoverOb_1 = require("./G/HoverOb");
+class ToolsView extends FloatingSubwin_1.FloatingSubwin {
+    constructor() {
+        super();
+        this.content = new View_1.View('div');
+        this.content.inner.style.flex = '1';
+        this.content.inner.style.overflowY = 'auto';
+        this.content.inner.style.overflowX = 'hidden';
+        const btn0 = new ToggleIconButton_1.ToggleIconButton({ text: 'mouse' });
+        btn0.saveStyle('normal_checked', {
+            background: '#444444'
+        });
+        btn0.saveStyle('hover_checked', {
+            background: '#333333'
+        });
+        btn0.onClick((btn) => {
+            alert(btn.checked);
+        });
+        this.content.addChild(btn0);
+    }
+}
+exports.ToolsView = ToolsView;
 class LayersView extends FloatingSubwin_1.FloatingSubwin {
     constructor() {
         super();
@@ -1088,7 +1168,7 @@ class LayersView extends FloatingSubwin_1.FloatingSubwin {
         });
     }
 }
-exports.default = LayersView;
+exports.LayersView = LayersView;
 class LayerItemView extends View_1.View {
     get state() { return this._state; }
     get selected() { return this._state.selected; }
