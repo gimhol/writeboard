@@ -74,13 +74,16 @@ const layers_view_1 = require("../layers_view");
 class FloatingSubwinHeader extends View_1.View {
     constructor() {
         super('div');
-        this._inner.style.userSelect = 'none';
-        this._inner.style.width = '100%';
-        this._inner.style.color = '#FFFFFF88';
-        this._inner.style.padding = '5px';
-        this._inner.style.background = '#222222';
-        this._inner.style.borderBottom = '#222222';
-        this._inner.innerText = 'layers';
+        this.saveStyle('normal', {
+            userSelect: 'none',
+            width: '100%',
+            color: '#FFFFFF88',
+            padding: '5px',
+            background: '#222222',
+            borderBottom: '#222222',
+            fontSize: '12px',
+        });
+        this.applyStyle('normal');
         this._dragger = new layers_view_1.ViewDragger();
         this._dragger.handle = this.inner;
     }
@@ -1123,6 +1126,7 @@ const HoverOb_1 = require("./G/HoverOb");
 class ToolsView extends FloatingSubwin_1.FloatingSubwin {
     constructor() {
         super();
+        this.header.inner.innerHTML = 'tools';
         this.content = new View_1.View('div');
         this.content.inner.style.flex = '1';
         this.content.inner.style.overflowY = 'auto';
@@ -1135,9 +1139,18 @@ class ToolsView extends FloatingSubwin_1.FloatingSubwin {
             background: '#333333'
         });
         btn0.onClick((btn) => {
-            alert(btn.checked);
         });
         this.content.addChild(btn0);
+        const btn1 = new ToggleIconButton_1.ToggleIconButton({ text: 'pen' });
+        btn1.saveStyle('normal_checked', {
+            background: '#444444'
+        });
+        btn1.saveStyle('hover_checked', {
+            background: '#333333'
+        });
+        btn1.onClick((btn) => {
+        });
+        this.content.addChild(btn1);
     }
 }
 exports.ToolsView = ToolsView;
@@ -1145,6 +1158,7 @@ class LayersView extends FloatingSubwin_1.FloatingSubwin {
     constructor() {
         super();
         this._layers = [];
+        this.header.inner.innerHTML = 'layers';
         this.content = new View_1.View('div');
         this.content.inner.style.flex = '1';
         this.content.inner.style.overflowY = 'auto';

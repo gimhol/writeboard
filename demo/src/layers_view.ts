@@ -8,6 +8,7 @@ import { HoverOb } from "./G/HoverOb";
 export class ToolsView extends FloatingSubwin {
   constructor() {
     super()
+    this.header.inner.innerHTML = 'tools'
     this.content = new View('div');
     this.content.inner.style.flex = '1';
     this.content.inner.style.overflowY = 'auto'
@@ -21,9 +22,19 @@ export class ToolsView extends FloatingSubwin {
       background: '#333333'
     })
     btn0.onClick((btn)=>{
-      alert(btn.checked)
     })
     this.content.addChild(btn0);
+
+    const btn1 = new ToggleIconButton({ text: 'pen' })
+    btn1.saveStyle('normal_checked', {
+      background: '#444444'
+    })
+    btn1.saveStyle('hover_checked', {
+      background: '#333333'
+    })
+    btn1.onClick((btn)=>{
+    })
+    this.content.addChild(btn1);
   }
 }
 
@@ -31,6 +42,7 @@ export class LayersView extends FloatingSubwin {
   private _layers: LayerItemView[] = [];
   constructor() {
     super()
+    this.header.inner.innerHTML = 'layers'
     this.content = new View('div');
     this.content.inner.style.flex = '1';
     this.content.inner.style.overflowY = 'auto'

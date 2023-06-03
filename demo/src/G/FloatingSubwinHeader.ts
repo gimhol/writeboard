@@ -5,13 +5,16 @@ export class FloatingSubwinHeader extends View<'div'> {
   protected _dragger: ViewDragger;
   constructor() {
     super('div');
-    this._inner.style.userSelect = 'none';
-    this._inner.style.width = '100%';
-    this._inner.style.color = '#FFFFFF88';
-    this._inner.style.padding = '5px';
-    this._inner.style.background = '#222222';
-    this._inner.style.borderBottom = '#222222';
-    this._inner.innerText = 'layers';
+    this.saveStyle('normal', {
+      userSelect: 'none',
+      width: '100%',
+      color: '#FFFFFF88',
+      padding: '5px',
+      background: '#222222',
+      borderBottom: '#222222',
+      fontSize: '12px',
+    });
+    this.applyStyle('normal')
     this._dragger = new ViewDragger();
     this._dragger.handle = this.inner;
   }
