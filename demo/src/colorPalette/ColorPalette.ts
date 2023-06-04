@@ -9,6 +9,11 @@ class Base {
   protected _onscreen: HTMLCanvasElement
   protected _offscreen: HTMLCanvasElement
   protected _requested = false;
+  get rect() { return this._rect; }
+  set rect(v: IRect) {
+    this._rect.set(v);
+    this.update();
+  }
   constructor(onscreen: HTMLCanvasElement, offscreen: HTMLCanvasElement, rect?: IRect) {
     if (rect)
       this._rect = Rect.create(rect)
@@ -64,7 +69,6 @@ class Base {
   }
   updatePos(e: PointerEvent) {
     this._pos = this.clampPos(e)
-    this.update()
   }
   update() {
     if (this._requested) return
@@ -97,14 +101,14 @@ class ColorCol extends Base {
   onChanged(cb: (hues: number) => void) {
     this._onChanged = cb
   }
-  update(): void {
-    super.update()
+  updatePos(e: PointerEvent): void {
+    super.updatePos(e);
     const { y } = this._pos
-
     const hues = clampF(0, 360, (y / this._rect.h) * 360)
     if (this._current === hues) return
-    this._current = hues
-    this._onChanged && this._onChanged(hues)
+    this._current = hues;
+    this._onChanged && this._onChanged(hues);
+    this.update();
   }
   drawOffscreen() {
     const ctx = this._offscreen.getContext('2d')!
@@ -139,7 +143,8 @@ class ColorCol extends Base {
     ctx.fillStyle = grd
     ctx.fillRect(this._rect.x + 1, this._rect.y + 1, this._rect.w - 2, this._rect.h - 2)
 
-    const { y } = this._pos
+    const y = this._rect.h * (this._current / 360);
+
     const indicatorSize = 4
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
@@ -165,14 +170,16 @@ class AlphaRow extends Base {
     this._base = color.copy()
     this.update()
   }
-  update(): void {
-    super.update()
+  updatePos(e: PointerEvent): void {
+    super.updatePos(e)
     const { x } = this._pos
     const rgba = this._base.toRGBA(255)
     rgba.a = clampI(0, 255, 255 * (1 - x / this._rect.w))
     if (this._current.equal(rgba)) return
     this._current = rgba
     this._onChanged && this._onChanged(rgba)
+    
+    this.update();
   }
   drawOffscreen() {
     const ctx = this._offscreen.getContext('2d')!
@@ -205,7 +212,7 @@ class AlphaRow extends Base {
     ctx.fillStyle = g0
     ctx.fillRect(this._rect.x + 1, this._rect.y + 1, this._rect.w - 2, this._rect.h - 2)
 
-    const { x } = this._pos
+    const x = this._rect.w * (1 - this._current.a / 255);
     const indicatorSize = 4
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
@@ -231,8 +238,8 @@ class HBZone extends Base {
     this._hues = clampI(0, 359, hues)
     this.update()
   }
-  update(): void {
-    super.update()
+  updatePos(e: PointerEvent): void {
+    super.updatePos(e);
     const { x, y } = this._pos
     const hsb = new HSB(this._hues, 1, 1)
     hsb.s = clampF(0, 1, 1 - x / this._rect.w)
@@ -241,6 +248,7 @@ class HBZone extends Base {
     if (this._current.equal(rgb)) return
     this._current = rgb
     this._onChanged && this._onChanged(rgb)
+    this.update();
   }
   drawOffscreen() {
     const ctx = this._offscreen.getContext('2d')!
@@ -257,7 +265,9 @@ class HBZone extends Base {
     ctx.fillStyle = g1
     ctx.fillRect(this._rect.x + 1, this._rect.y + 1, this._rect.w - 2, this._rect.h - 2)
 
-    const { x, y } = this._pos
+    const hsb = this._current.toHSB(this._hues);
+    const x = this._rect.w * (1 - hsb.s)
+    const y = this._rect.h * (1 - hsb.b)
 
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
@@ -322,18 +332,19 @@ export class ColorPalette {
   private _alphaRow: AlphaRow;
   private _hbZone: HBZone;
   private _finalZone: FinalZone
+  private _rowH = 16
+  private _colW = 16
+  private _onscreen: HTMLCanvasElement;
+  private _offscreen: HTMLCanvasElement;
   _onChanged: undefined | ((rgba: RGBA) => void)
   constructor(onscreen: HTMLCanvasElement) {
-    const offscreen = document.createElement('canvas')
-    offscreen.width = onscreen.width
-    offscreen.height = onscreen.height
-    const { width: w, height: h } = onscreen
-    const rowH = 16
-    const colW = 16
-    this._colorCol = new ColorCol(onscreen, offscreen, new Rect(w - colW, 0, colW, h - rowH))
-    this._hbZone = new HBZone(onscreen, offscreen, new Rect(0, 0, w - colW, h - rowH))
-    this._alphaRow = new AlphaRow(onscreen, offscreen, new Rect(0, h - rowH, w - colW, rowH))
-    this._finalZone = new FinalZone(onscreen, offscreen, new Rect(w - colW, h - rowH, colW, rowH))
+    this._onscreen = onscreen;
+    this._offscreen = document.createElement('canvas')
+    this._colorCol = new ColorCol(this._onscreen, this._offscreen)
+    this._hbZone = new HBZone(this._onscreen, this._offscreen)
+    this._alphaRow = new AlphaRow(this._onscreen, this._offscreen)
+    this._finalZone = new FinalZone(this._onscreen, this._offscreen)
+    this.update();
     this._colorCol.onChanged(v => this._hbZone.setHues(v))
     this._hbZone.onChanged(v => this._alphaRow.setColor(v))
     this._alphaRow.onChanged(v => {
@@ -343,5 +354,18 @@ export class ColorPalette {
     this._hbZone.setHues(0)
     document.addEventListener('pointerup', _ => this._finalZone.setPrev())
     document.addEventListener('pointercancel', _ => this._finalZone.setPrev())
+  }
+  update() {
+    const { width: w, height: h } = this._onscreen
+    this._offscreen.width = w;
+    this._offscreen.height = h;
+    this._colorCol.rect = new Rect(w - this._colW, 0, this._colW, h - this._rowH)
+    this._hbZone.rect = new Rect(0, 0, w - this._colW, h - this._rowH)
+    this._alphaRow.rect = new Rect(0, h - this._rowH, w - this._colW, this._rowH)
+    this._finalZone.rect = new Rect(w - this._colW, h - this._rowH, this._colW, this._rowH)
+    this._colorCol.drawOffscreen();
+    this._alphaRow.drawOffscreen();
+    this._hbZone.drawOffscreen();
+    this._finalZone.drawOffscreen()
   }
 }

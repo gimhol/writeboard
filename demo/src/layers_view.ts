@@ -1,57 +1,105 @@
 import { ILayerInfoInit } from "../../dist";
-import { FloatingSubwin } from "./G/FloatingSubwin";
+import { Subwin } from "./G/Subwin";
 import { View } from "./G/View";
 import { IconButton } from "./G/IconButton";
 import { ToggleIconButton } from "./G/ToggleIconButton";
 import { HoverOb } from "./G/HoverOb";
+import { Button, ButtonGroup, SizeType } from "./G/Button";
+import { ColorPalette } from "./colorPalette/ColorPalette";
 
-export class ToolsView extends FloatingSubwin {
+export class ColorView extends Subwin {
   constructor() {
     super()
-    this.header.inner.innerHTML = 'tools'
+    this.header.title = 'color'
+    this.content = new View('div');
+    this.content.inner.style.flex = '1';
+    this.content.inner.style.position = 'relative';
+
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'absolute';
+    canvas.style.left = '0%';
+    canvas.style.right = '0%';
+    canvas.style.top = '0%';
+    canvas.style.bottom = '0%';
+    canvas.width = 1;
+    canvas.height = 1;
+    this.content.inner.append(canvas);
+
+    const colorPalette = new ColorPalette(canvas);
+    new ResizeObserver(entries => entries.forEach(entry => {
+      canvas.width = entry.contentRect.width;
+      canvas.height = entry.contentRect.height;
+      colorPalette.update();
+    })).observe(this.content.inner)
+  }
+}
+export class ToolsView extends Subwin {
+  constructor() {
+    super()
+    this.header.title = 'tools'
     this.content = new View('div');
     this.content.inner.style.flex = '1';
     this.content.inner.style.overflowY = 'auto'
     this.content.inner.style.overflowX = 'hidden'
 
-    const btn0 = new ToggleIconButton({ text: 'mouse' })
-    btn0.saveStyle('normal_checked', {
+    const btn0 = new Button({ text: 'mouse', checkable: true })
+    btn0.styleHolder().setStyle('normal_checked', {
       background: '#444444'
-    })
-    btn0.saveStyle('hover_checked', {
+    }).setStyle('hover_checked', {
       background: '#333333'
-    })
-    btn0.onClick((btn)=>{
     })
     this.content.addChild(btn0);
 
-    const btn1 = new ToggleIconButton({ text: 'pen' })
-    btn1.saveStyle('normal_checked', {
+    const btn1 = new Button({ text: 'pen', checkable: true })
+    btn1.styleHolder().setStyle('normal_checked', {
       background: '#444444'
-    })
-    btn1.saveStyle('hover_checked', {
+    }).setStyle('hover_checked', {
       background: '#333333'
     })
-    btn1.onClick((btn)=>{
-    })
     this.content.addChild(btn1);
+
+    const btn2 = new Button({ text: 'rect', checkable: true })
+    btn2.styleHolder().setStyle('normal_checked', {
+      background: '#444444'
+    }).setStyle('hover_checked', {
+      background: '#333333'
+    })
+    this.content.addChild(btn2);
+
+    const btn3 = new Button({ text: 'oval', checkable: true })
+    btn3.styleHolder().setStyle('normal_checked', {
+      background: '#444444'
+    }).setStyle('hover_checked', {
+      background: '#333333'
+    })
+    this.content.addChild(btn3);
+
+    const btn4 = new Button({ text: 'text', checkable: true })
+    btn4.styleHolder().setStyle('normal_checked', {
+      background: '#444444'
+    }).setStyle('hover_checked', {
+      background: '#333333'
+    })
+    this.content.addChild(btn4);
+
+    new ButtonGroup({ buttons: [btn0, btn1, btn2, btn3] })
   }
 }
 
-export class LayersView extends FloatingSubwin {
+export class LayersView extends Subwin {
   private _layers: LayerItemView[] = [];
   constructor() {
     super()
-    this.header.inner.innerHTML = 'layers'
+    this.header.title = 'layers'
     this.content = new View('div');
     this.content.inner.style.flex = '1';
     this.content.inner.style.overflowY = 'auto'
     this.content.inner.style.overflowX = 'hidden'
 
-    const btnAddLayer = new IconButton({ text: '📃', title: '新建图层', size: 's' })
+    const btnAddLayer = new IconButton({ text: '📃', title: '新建图层', size: SizeType.Small })
     this.footer.addChild(btnAddLayer);
 
-    const btnAddFolder = new IconButton({ text: '📂', title: '新建图层组', size: 's' })
+    const btnAddFolder = new IconButton({ text: '📂', title: '新建图层组', size: SizeType.Small })
     this.footer.addChild(btnAddFolder);
   }
   layers() { return this._layers }
@@ -122,9 +170,6 @@ export class LayerItemView extends View<'div'> {
     })
     this.addChild(btn2);
 
-
-
-
     const inputName = also(document.createElement('input'), input => {
       const focusedOb = new FocusedOb(input, () => update());
       const hoverOb = new HoverOb(input, () => update());
@@ -178,56 +223,6 @@ class FocusedOb {
   constructor(ele: HTMLElement, cb: () => void) {
     ele.addEventListener('focus', e => { this._focused = true; cb() });
     ele.addEventListener('blur', e => { this._focused = false; cb() });
-  }
-}
-interface IViewDraggerInits {
-  handle?: HTMLElement;
-  view?: HTMLElement;
-}
-export class ViewDragger {
-  private _handle?: HTMLElement | null;
-  private _view?: HTMLElement | null;
-  private _offsetX = 0;
-  private _offsetY = 0;
-  private _down = false;
-
-  private _onpointerdown = (e: PointerEvent) => {
-    if (e.button !== 0) { return; }
-    this._down = true;
-    this._offsetX = e.offsetX;
-    this._offsetY = e.offsetY;
-  }
-  private _pointermove = (e: PointerEvent) => {
-    if (!this._view) { return }
-    if (!this._down) { return }
-    this._view.style.left = '' + (e.pageX - this._offsetX) + 'px';
-    this._view.style.top = '' + (e.pageY - this._offsetY) + 'px';
-  }
-  private _pointerup = (e: PointerEvent) => {
-    if (e.button !== 0) { return; }
-    this._down = false;
-  }
-
-  get handle() { return this._handle; }
-  set handle(v) {
-    this._handle?.removeEventListener('pointerdown', this._onpointerdown)
-    this._handle = v;
-    this._handle?.addEventListener('pointerdown', this._onpointerdown)
-  }
-
-  get view() { return this._view; }
-  set view(v) { this._view = v; }
-
-  constructor(inits?: IViewDraggerInits) {
-    this.view = inits?.view;
-    this.handle = inits?.handle
-    document.addEventListener('pointermove', this._pointermove)
-    document.addEventListener('pointerup', this._pointerup)
-  }
-  destory() {
-    document.removeEventListener('pointermove', this._pointermove)
-    document.removeEventListener('pointerup', this._pointerup)
-    this._handle?.removeEventListener('pointerdown', this._onpointerdown)
   }
 }
 

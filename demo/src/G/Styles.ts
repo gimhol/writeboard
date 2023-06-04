@@ -1,3 +1,2 @@
 
-export interface Style extends
-  Partial<Omit<CSSStyleDeclaration, ''>> { }
+export interface Style extends Partial<Omit<CSSStyleDeclaration, ''>> { }

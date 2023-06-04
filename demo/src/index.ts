@@ -9,11 +9,13 @@ import {
   ToolType,
   WhiteBoard
 } from "../../dist";
-import { LayersView, ToolsView } from "./layers_view";
+import { ColorView, LayersView, ToolsView } from "./layers_view";
 import { ColorPalette } from "./colorPalette/ColorPalette"
 import demo_helloworld from "./demo_helloworld"
 import demo_rect_n_oval from "./demo_rect_n_oval"
 import { UI } from "./ui/ele"
+import { Menu } from '../../dist/features/Menu'
+import { SubwinWorkspace } from "./G/Subwin";
 
 type State = {
   count: number
@@ -34,6 +36,16 @@ layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
 
 const toolsView = new ToolsView;
+const colorView = new ColorView;
+
+new SubwinWorkspace({
+  zIndex: 1000,
+  wins: [
+    toolsView,
+    layersView,
+    colorView
+  ]
+})
 
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let _recorder: Recorder | undefined
@@ -225,6 +237,8 @@ let initState: State = {
 
         ui.current()?.append(toolsView.inner)
         ui.current()?.append(layersView.inner)
+        ui.current()?.append(colorView.inner)
+
 
         ui.ele('canvas', {}, canvas => {
           canvas.width = 180
@@ -278,7 +292,6 @@ let initState: State = {
     })
   })
 
-import { Menu } from '../../dist/features/Menu'
 const menu = new Menu({
   items: [{
     key: 'shit',
