@@ -1,6 +1,7 @@
 import { HoverOb } from "./HoverOb";
 import { Style } from "./Styles";
 
+
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
   protected _inner: HTMLElementTagNameMap[T];
   private _cb?: (self: View) => void
@@ -14,9 +15,11 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     this._inner.addEventListener('click', this._handleClick)
   }
 
+  get hover() { return this.hoverOb().hover }
   get inner() { return this._inner; }
   get parent() { return (this._inner.parentElement as any)?.view; }
   get children() { return Array.from(this._inner.children).map(v => (v as any)?.view) }
+
   constructor(tagName: T) {
     this._inner = document.createElement(tagName);
     (this._inner as any).view = this;
@@ -62,6 +65,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   private _styleHolder?: StyleHolder<string>;
 }
 
+export type GetStyle = Style | ((old: Style) => Style);
 export class StyleHolder<T extends string = string> implements IStyleHolder<T>{
   private _view: View<keyof HTMLElementTagNameMap>;
   private _styles = new Map<T, Style>();
@@ -74,7 +78,7 @@ export class StyleHolder<T extends string = string> implements IStyleHolder<T>{
   styles(): Map<T, Style> { return this._styles; }
   applieds(): Map<T, Style> { return this._appliedStyles; }
   getStyle(name: T): Style | undefined { return this._styles.get(name) }
-  setStyle(name: T, style: Style | ((old: Style) => Style)): StyleHolder<T> {
+  setStyle(name: T, style: GetStyle): StyleHolder<T> {
     const s = typeof style === 'function' ? style(this.getStyle(name) ?? {}) : style;
     this._styles.set(name, s);
     return this;
@@ -84,7 +88,7 @@ export class StyleHolder<T extends string = string> implements IStyleHolder<T>{
     this.view.inner.removeAttribute('style');
     return this;
   }
-  applyStyle(name: T, style: Style | ((old: Style) => Style)): StyleHolder<T>;
+  applyStyle(name: T, style: GetStyle): StyleHolder<T>;
   applyStyle(...names: T[]): StyleHolder<T>;
   applyStyle(...args: any[]): StyleHolder<T> {
     if (typeof args[1] === 'object') {

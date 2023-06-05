@@ -96,18 +96,19 @@ class ColorCol extends Base {
     new RGB(255, 0, 255),
     new RGB(255, 0, 0)
   ];
-  protected _current = 0
-  protected _onChanged: undefined | ((hues: number) => void)
-  onChanged(cb: (hues: number) => void) {
-    this._onChanged = cb
+  protected _result = 0
+  protected _onChanged?: (hues: number) => void;
+  get value() { return this._result; }
+  set value(v) {
+    this._result = clampF(0, 360, v)
+    this.update();
   }
+  set onChanged(cb: (hues: number) => void) { this._onChanged = cb }
   updatePos(e: PointerEvent): void {
     super.updatePos(e);
     const { y } = this._pos
-    const hues = clampF(0, 360, (y / this._rect.h) * 360)
-    if (this._current === hues) return
-    this._current = hues;
-    this._onChanged && this._onChanged(hues);
+    this._result = clampF(0, 360, (y / this._rect.h) * 360)
+    this._onChanged?.(this._result);
     this.update();
   }
   drawOffscreen() {
@@ -143,7 +144,7 @@ class ColorCol extends Base {
     ctx.fillStyle = grd
     ctx.fillRect(this._rect.x + 1, this._rect.y + 1, this._rect.w - 2, this._rect.h - 2)
 
-    const y = this._rect.h * (this._current / 360);
+    const y = this._rect.h * (this._result / 360);
 
     const indicatorSize = 4
     ctx.strokeStyle = 'black';
@@ -161,24 +162,30 @@ class ColorCol extends Base {
 }
 class AlphaRow extends Base {
   protected _base = new RGB(255, 0, 0)
-  protected _current = this._base.toRGBA(255)
+  protected _value = this._base.toRGBA(255)
   protected _onChanged: undefined | ((rgba: RGBA) => void)
-  onChanged(cb: (rgb: RGBA) => void) {
-    this._onChanged = cb
+  get value() { return this._value.copy() }
+  set value(v) {
+    this._value = v.copy();
+    this._base = v.toRGB();
+    this.update();
   }
-  setColor(color: RGB) {
-    this._base = color.copy()
-    this.update()
+  get base() { return this._base.copy(); }
+  set base(v) {
+    this._base = v.copy();
+    this._value = this._base.toRGBA(this._value.a);
+    this.update();
+  }
+  set onChanged(cb: (rgb: RGBA) => void) {
+    this._onChanged = cb
   }
   updatePos(e: PointerEvent): void {
     super.updatePos(e)
     const { x } = this._pos
-    const rgba = this._base.toRGBA(255)
-    rgba.a = clampI(0, 255, 255 * (1 - x / this._rect.w))
-    if (this._current.equal(rgba)) return
-    this._current = rgba
-    this._onChanged && this._onChanged(rgba)
-    
+    this._value = this._base.toRGBA(
+      clampI(0, 255, 255 * (1 - x / this._rect.w))
+    )
+    this._onChanged?.(this._value)
     this.update();
   }
   drawOffscreen() {
@@ -205,14 +212,13 @@ class AlphaRow extends Base {
     const g0 = ctx.createLinearGradient(
       this._rect.x, this._rect.y,
       this._rect.x + this._rect.w, this._rect.y);
-
     g0.addColorStop(0, '' + this._base)
     g0.addColorStop(1, '' + this._base.toRGBA(0))
 
     ctx.fillStyle = g0
     ctx.fillRect(this._rect.x + 1, this._rect.y + 1, this._rect.w - 2, this._rect.h - 2)
 
-    const x = this._rect.w * (1 - this._current.a / 255);
+    const x = this._rect.w * (1 - this._value.a / 255);
     const indicatorSize = 4
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
@@ -228,26 +234,33 @@ class AlphaRow extends Base {
   }
 }
 class HBZone extends Base {
-  protected _hues = 0
-  protected _current = new HSB(this._hues, 1, 1).toRGB()
-  protected _onChanged: undefined | ((rgb: RGB) => void)
-  onChanged(cb: (rgb: RGB) => void) {
-    this._onChanged = cb
+  protected _hues = 0;
+  protected _value = new HSB(this._hues, 1, 1);
+  protected _onChanged?: (hsb: HSB) => void;
+  get value() { return this._value.copy(); }
+  set value(v) {
+    this._value = v.copy();
+    this.hues = v.h;
   }
-  setHues(hues: number) {
-    this._hues = clampI(0, 359, hues)
+  get hues() { return this._hues; }
+  set hues(v) {
+    this._hues = clampI(0, 359, v)
+    this._value = new HSB(
+      this._hues,
+      this._value.s,
+      this._value.b
+    );
     this.update()
   }
+  set onChanged(cb: (rgb: HSB) => void) { this._onChanged = cb; }
   updatePos(e: PointerEvent): void {
     super.updatePos(e);
     const { x, y } = this._pos
-    const hsb = new HSB(this._hues, 1, 1)
-    hsb.s = clampF(0, 1, 1 - x / this._rect.w)
-    hsb.b = clampF(0, 1, 1 - y / this._rect.h)
-    const rgb = hsb.toRGB()
-    if (this._current.equal(rgb)) return
-    this._current = rgb
-    this._onChanged && this._onChanged(rgb)
+    this._value = new HSB(this._hues,
+      clampF(0, 1, 1 - x / this._rect.w),
+      clampF(0, 1, 1 - y / this._rect.h)
+    )
+    this._onChanged?.(this._value)
     this.update();
   }
   drawOffscreen() {
@@ -265,7 +278,7 @@ class HBZone extends Base {
     ctx.fillStyle = g1
     ctx.fillRect(this._rect.x + 1, this._rect.y + 1, this._rect.w - 2, this._rect.h - 2)
 
-    const hsb = this._current.toHSB(this._hues);
+    const hsb = this._value;
     const x = this._rect.w * (1 - hsb.s)
     const y = this._rect.h * (1 - hsb.b)
 
@@ -283,13 +296,15 @@ class HBZone extends Base {
   }
 }
 class FinalZone extends Base {
-  private _curr = RGBA.BlackT.copy()
-  private _prev = RGBA.BlackT.copy()
-  setCurr(color: RGBA) {
+  protected _curr = RGBA.BlackT.copy()
+  protected _prev = RGBA.BlackT.copy()
+  get curr() { return this._curr.copy() }
+  set curr(color: RGBA) {
     this._curr = color.copy()
     this.update()
   }
-  setPrev(color: RGBA = this._curr) {
+  get prev() { return this._prev.copy(); }
+  set prev(color: RGBA) {
     this._prev = color.copy()
     this.update()
   }
@@ -336,7 +351,19 @@ export class ColorPalette {
   private _colW = 16
   private _onscreen: HTMLCanvasElement;
   private _offscreen: HTMLCanvasElement;
-  _onChanged: undefined | ((rgba: RGBA) => void)
+  private _onChanged?: (rgba: RGBA) => void;
+  get onChanged() { return this._onChanged; }
+  set onChanged(v) { this._onChanged = v; }
+  set value(v: RGBA) {
+    const hsb = v.toHSB(this._colorCol.value)
+    this._colorCol.value = hsb.h;
+    this._hbZone.value = hsb;
+    this._alphaRow.value = v;
+    this._finalZone.curr = v;
+    this._finalZone.prev = v;
+  }
+  get value() { return this._alphaRow.value; }
+
   constructor(onscreen: HTMLCanvasElement) {
     this._onscreen = onscreen;
     this._offscreen = document.createElement('canvas')
@@ -344,16 +371,25 @@ export class ColorPalette {
     this._hbZone = new HBZone(this._onscreen, this._offscreen)
     this._alphaRow = new AlphaRow(this._onscreen, this._offscreen)
     this._finalZone = new FinalZone(this._onscreen, this._offscreen)
+    this._colorCol.onChanged = v => {
+      this._hbZone.hues = v;
+      this._alphaRow.base = this._hbZone.value.toRGB();
+      this._finalZone.curr = this._alphaRow.value;
+      this._onChanged?.(this._finalZone.curr);
+    }
+    this._hbZone.onChanged = v => {
+      this._alphaRow.base = v.toRGB();
+      this._finalZone.curr = this._alphaRow.value;
+      this._onChanged?.(this._finalZone.curr);
+    }
+    this._alphaRow.onChanged = v => {
+      this._finalZone.curr = v;
+      this._onChanged?.(this._finalZone.curr);
+    }
+    this._hbZone.hues = 0;
     this.update();
-    this._colorCol.onChanged(v => this._hbZone.setHues(v))
-    this._hbZone.onChanged(v => this._alphaRow.setColor(v))
-    this._alphaRow.onChanged(v => {
-      this._onChanged && this._onChanged(v)
-      this._finalZone.setCurr(v)
-    })
-    this._hbZone.setHues(0)
-    document.addEventListener('pointerup', _ => this._finalZone.setPrev())
-    document.addEventListener('pointercancel', _ => this._finalZone.setPrev())
+    document.addEventListener('pointerup', _ => this._finalZone.prev = this._finalZone.curr)
+    document.addEventListener('pointercancel', _ => this._finalZone.prev = this._finalZone.curr)
   }
   update() {
     const { width: w, height: h } = this._onscreen

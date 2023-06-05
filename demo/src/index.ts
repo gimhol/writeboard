@@ -36,6 +36,8 @@ layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
 
 const toolsView = new ToolsView;
+toolsView.onToolClick = (btn) => whiteBoard.setToolType(btn.toolType)
+
 const colorView = new ColorView;
 
 new SubwinWorkspace({
@@ -60,28 +62,12 @@ let initState: State = {
   document.body,
   () => initState,
   (ui) => {
-    const toolBtn = (toolType: ToolType) => {
-      const { name = toolType } = FactoryMgr.toolInfo(toolType) || {}
-      ui.ele('button', {
-        className: 'tool_button',
-        innerText: name,
-        disabled: whiteBoard?.toolType === toolType,
-        on: {
-          click: () => whiteBoard?.setToolType(toolType)
-        }
-      })
-    }
     ui.ele('div', {
       className: 'root'
     }, () => {
       ui.ele('div', {
         className: 'tool_bar'
       }, () => {
-        toolBtn(ToolEnum.Selector)
-        toolBtn(ToolEnum.Pen)
-        toolBtn(ToolEnum.Rect)
-        toolBtn(ToolEnum.Oval)
-        toolBtn(ToolEnum.Text)
         ui.ele('br')
         ui.ele('button', { className: 'tool_button', innerText: 'select all', on: { click: () => whiteBoard.selectAll() } })
         ui.ele('button', { className: 'tool_button', innerText: 'remove selected', on: { click: () => whiteBoard.removeSelected() } })
@@ -248,7 +234,7 @@ let initState: State = {
           canvas.style.maxWidth = canvas.width + 'px'
           canvas.style.maxHeight = canvas.height + 'px'
           const a = new ColorPalette(canvas)
-          a._onChanged = (v) => {
+          a.onChanged = (v) => {
             const shape = FactoryMgr.toolInfo(whiteBoard.toolType)?.shape
             if (!shape) return
             const template = whiteBoard.factory.shapeTemplate(shape)

@@ -5,25 +5,7 @@ export const clampF = (min: number, max: number, value: number) =>
 export const clampI = (min: number, max: number, value: number) =>
   Math.floor(clampF(min, max, value))
 
-export class LazyHolder<Result> {
-  private _result: Result[] = []
-  private _dirty: boolean[] = []
-  protected constructor(result: Result[]) {
-    this._result = result
-  }
-  protected dirty(i = 0) { return !!this._dirty[i] }
-  protected markAsDirty(i = 0) {
-    this._dirty[i] = true
-  }
-  protected result(v: Result | undefined, i = 0): Result | undefined {
-    if (v !== undefined) {
-      this._dirty[i] = false
-      this._result[i] = v
-    }
-    return this._result[i]
-  }
-}
-export class RGB extends LazyHolder<string> {
+export class RGB {
   static get White() { return new RGB(255, 255, 255) }
   static get Black() { return new RGB(0, 0, 0) }
   private _r: number = 0
@@ -31,17 +13,14 @@ export class RGB extends LazyHolder<string> {
   private _b: number = 0
   get r() { return this._r }
   set r(v) {
-    this._r !== v && this.markAsDirty()
     this._r = clampI(0, 255, v)
   }
   get g() { return this._g }
   set g(v) {
-    this._g !== v && this.markAsDirty()
     this._g = clampI(0, 255, v)
   }
   get b() { return this._b }
   set b(v) {
-    this._b !== v && this.markAsDirty()
     this._b = clampI(0, 255, v)
   }
   equal(o: RGB) {
@@ -60,7 +39,6 @@ export class RGB extends LazyHolder<string> {
     return this
   }
   constructor(r = 0, g = 0, b = 0) {
-    super([''])
     this.r = r
     this.g = g
     this.b = b
@@ -69,19 +47,20 @@ export class RGB extends LazyHolder<string> {
     return new RGB(this.r, this.g, this.b);
   }
   toString() {
-    return this.dirty() ?
-      this.result(`rgb(${this.r},${this.g},${this.b})`)! :
-      this.result(undefined)!;
+    return `rgb(${this.r},${this.g},${this.b})`
   }
   toHex() {
-    return this.dirty(1) ?
-      this.result("#" +
-        Math.floor(this.r).toString(16) +
-        Math.floor(this.g).toString(16) +
-        Math.floor(this.b).toString(16), 1)! :
-      this.result(undefined, 1)!;
+    return "#" +
+      (this.r < 16 ? '0' : '') +
+      Math.floor(this.r).toString(16) +
+      (this.g < 16 ? '0' : '') +
+      Math.floor(this.g).toString(16) +
+      (this.b < 16 ? '0' : '') +
+      Math.floor(this.b).toString(16);
   }
-  toHSB(hues: number): HSB {
+  toHSB(): HSB | null
+  toHSB(hues: number): HSB;
+  toHSB(hues?: number): HSB | null {
     var rgb = [
       this.r,
       this.g,
@@ -100,8 +79,13 @@ export class RGB extends LazyHolder<string> {
     var rgbR = this.r;
     var rgbG = this.g;
     var rgbB = this.b;
-    if (max == min) // lost rgb
-      ret.h = hues
+    if (max == min) {// lost rgb 
+      if (hues === undefined) {
+        return null;
+      } else {
+        ret.h = hues
+      }
+    }
     else if (max == rgbR && rgbG >= rgbB)
       ret.h = (rgbG - rgbB) * 60 / (max - min) + 0
     else if (max == rgbR && rgbG < rgbB)
@@ -125,7 +109,7 @@ export class RGBA extends RGB {
   private _a: number = 0
   get a() { return this._a }
   set a(v) {
-    this._a !== v && this.markAsDirty()
+    this._a !== v
     this._a = clampI(0, 255, v)
   }
   equal(o: RGBA) {
@@ -143,20 +127,18 @@ export class RGBA extends RGB {
     return new RGBA(this.r, this.g, this.b, this.a)
   }
   toString() {
-    return this.dirty() ? this.result(`rgba(${this.r},${this.g},${this.b},${(this.a / 255).toFixed(2)})`)! : this.result(undefined)!;
+    return `rgba(${this.r},${this.g},${this.b},${(this.a / 255).toFixed(2)})`;
   }
   toHex() {
-    return this.dirty(1) ?
-      this.result("#" +
-        (this.r < 16 ? '0' : '') +
-        Math.floor(this.r).toString(16) +
-        (this.g < 16 ? '0' : '') +
-        Math.floor(this.g).toString(16) +
-        (this.b < 16 ? '0' : '') +
-        Math.floor(this.b).toString(16) +
-        (this.a < 16 ? '0' : '') +
-        Math.floor(this.a).toString(16), 1)! :
-      this.result(undefined, 1)!;
+    return "#" +
+      (this.r < 16 ? '0' : '') +
+      Math.floor(this.r).toString(16) +
+      (this.g < 16 ? '0' : '') +
+      Math.floor(this.g).toString(16) +
+      (this.b < 16 ? '0' : '') +
+      Math.floor(this.b).toString(16) +
+      (this.a < 16 ? '0' : '') +
+      Math.floor(this.a).toString(16)
   }
   toRGB() {
     return new RGB(this.r, this.g, this.b);

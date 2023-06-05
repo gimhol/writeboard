@@ -1,21 +1,38 @@
-import { View } from "./View";
+import { GetStyle, View } from "./View";
 
 export enum SizeType {
   Small = 's',
   Middle = 'm',
+  Large = 'l',
 }
+export type Content = string | View;
 export interface ButtonInits {
-  texts?: [string, string];
-  text?: string;
+  contents?: [Content, Content];
+  content?: Content;
   titles?: [string, string];
   title?: string;
   size?: SizeType;
   checkable?: boolean;
   checked?: boolean;
 }
+
+export enum ButtonStyles {
+  Normal = 'normal',
+  Hover = 'hover',
+  Small = 'small',
+  Middle = 'middle',
+  Large = 'large',
+  Hover_Checked = 'hover_checked',
+  Normal_Checked = 'normal_checked',
+  Hover_Unchecked = 'hover_unchecked',
+  Normal_Unchecked = 'normal_unchecked',
+  Disabled = 'disabled',
+  Disabled_Checked = 'disabled_checked',
+  Disabled_Unchecked = 'disabled_unchecked',
+}
 export class Button extends View<'button'> {
   private _size: SizeType = SizeType.Middle;
-  private _texts: [string, string] = ['', ''];
+  private _contents: [Content, Content] = ['', ''];
   private _titles: [string, string] = ['', ''];
   private _checked = false;
   private _checkable = false;
@@ -25,14 +42,22 @@ export class Button extends View<'button'> {
     this._checked = v;
     this.updateStyle();
   }
+  get disabled() { return this._inner.disabled }
+  set disabled(v) {
+    this._inner.disabled = v;
+    this.updateStyle();
+  }
   constructor(inits?: ButtonInits) {
     super('button');
     this.hoverOb();
-    this._texts = inits?.texts ?
-      inits.texts :
-      inits?.text ?
-        [inits?.text, inits?.text] :
-        this._texts;
+
+    this._contents = inits?.contents ?
+      inits.contents :
+      inits?.content ?
+        [inits?.content, inits?.content] :
+        this._contents;
+
+
     this._titles = inits?.titles ?
       inits.titles :
       inits?.title ?
@@ -42,36 +67,42 @@ export class Button extends View<'button'> {
     this._checkable = inits?.checkable ?? this._checkable;
 
     this.styleHolder()
-      .applyStyle('normal', {
+      .applyStyle(ButtonStyles.Normal, {
         userSelect: 'none',
         cursor: 'pointer',
         textAlign: 'center',
         transition: 'all 200ms',
         padding: '0px',
-        background: 'transparent'
-      }).setStyle('hover', {
+        background: 'transparent',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }).setStyle(ButtonStyles.Hover, {
         background: '#00000022'
-      }).setStyle('small', {
+      }).setStyle(ButtonStyles.Small, {
         height: '18px',
         lineHeight: '18px',
         borderRadius: '5px',
         fontSize: '12px',
-      }).setStyle('middle', {
+      }).setStyle(ButtonStyles.Middle, {
         height: '24px',
         lineHeight: '24px',
         borderRadius: '5px',
         fontSize: '14px',
+      }).setStyle(ButtonStyles.Large, {
+        height: '32px',
+        lineHeight: '32px',
+        borderRadius: '5px',
+        fontSize: '24px',
       })
-
-
     this.handleClick = () => {
       if (this._checkable) { this._checked = !this._checked; }
       this.cb?.(this as any);
       this.updateStyle()
-      this.updateText();
+      this.updateContent();
       this.updateTitle();
     };
-    this.updateText();
+    this.updateContent();
     this.updateTitle();
     this.updateSize();
   }
@@ -84,30 +115,39 @@ export class Button extends View<'button'> {
   }
   updateStyle() {
     const { hover } = this.hoverOb()
-    const style0 = hover ? 'hover' : 'normal';
-
-    this.styleHolder().applyStyle(style0);
-    if (this._checkable) {
-      if (this._checked) {
-        this.styleHolder().applyStyle(hover ? 'hover_checked' : 'normal_checked');
-      } else {
-        this.styleHolder().applyStyle(hover ? 'hover_unchecked' : 'normal_unchecked');
-      }
-    }
+    this.styleHolder().applyStyle(hover ?
+      ButtonStyles.Hover :
+      ButtonStyles.Normal
+    );
+    const styleName = `${this.hover}_${this.checked}_${this.disabled}`
+    this.styleHolder().applyStyle(styleName);
   }
-  updateText() {
-    this._inner.innerText = this._checked ? this._texts[1] : this._texts[0];
+  editStyle(hover: boolean, checked: boolean, disabled: boolean, style: GetStyle) {
+    this.styleHolder().setStyle(`${hover}_${checked}_${disabled}`, style);
+    return this;
+  }
+  updateContent() {
+    const content = this._contents[this._checked ? 1 : 0];
+    if (typeof content === 'string') {
+      this._inner.innerText = content;
+    } else {
+      this._inner.innerHTML = ''
+      this.addChild(content);
+    }
   }
   updateTitle() {
     this._inner.title = this._checked ? this._titles[1] : this._titles[0];
   }
   updateSize() {
     switch (this._size) {
+      case SizeType.Large:
+        this.styleHolder().applyStyle(ButtonStyles.Large);
+        break;
       case SizeType.Small:
-        this.styleHolder().applyStyle('small');
+        this.styleHolder().applyStyle(ButtonStyles.Small);
         break;
       default:
-        this.styleHolder().applyStyle('middle');
+        this.styleHolder().applyStyle(ButtonStyles.Middle);
         break;
     }
   }
@@ -118,26 +158,30 @@ export enum ButtonGroupMode {
   Single = 1,
   Multipy = 2,
 }
-export interface ButtonGroupInits {
-  buttons?: Button[];
+export interface ButtonGroupInits<B extends Button> {
+  buttons?: B[];
   mode?: ButtonGroupMode;
 }
-export class ButtonGroup {
+export class ButtonGroup<B extends Button = Button> {
   private _mode = ButtonGroupMode.Single;
-  private _buttons: Button[] = [];
-  private _listeners = new Map<Button, (e: MouseEvent) => void>();
-  private _handleClick = (target: Button) => {
+  private _buttons: B[] = [];
+  private _listeners = new Map<B, (e: MouseEvent) => void>();
+  private _onClick?: (target: B) => void;
+  set onClick(v: (target: B) => void) { this._onClick = v; }
+
+  private _handleClick = (target: B) => {
     switch (this._mode) {
       case ButtonGroupMode.Single:
         this._buttons.forEach(btn => btn.checked = target === btn)
         break;
     }
+    this._onClick?.(target);
   }
-  constructor(inits?: ButtonGroupInits) {
+  constructor(inits?: ButtonGroupInits<B>) {
     if (inits?.buttons)
       this.addButton(...inits.buttons)
   }
-  addButton(...buttons: Button[]) {
+  addButton(...buttons: B[]) {
     this._buttons.forEach(btn => {
       const l = this._listeners.get(btn);
       if (l) {

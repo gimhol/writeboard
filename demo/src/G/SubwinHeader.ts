@@ -26,7 +26,7 @@ export class SubwinHeader extends View<'div'> {
       });
 
     this._iconView = new View('div')
-    this._iconView.inner.innerHTML = '❎';
+    this._iconView.inner.innerHTML = '';
     this._iconView.styleHolder().applyStyle('', {
       display: 'flex',
       alignItems: 'center',
@@ -44,7 +44,7 @@ export class SubwinHeader extends View<'div'> {
     });
     this.addChild(this._titleView);
 
-    this._btnClose = new IconButton({ text: '❎', size: SizeType.Small })
+    this._btnClose = new IconButton({ content: '❎', size: SizeType.Small })
     this._btnClose.styleHolder().applyStyle('', {
       alignSelf: 'center',
       margin: '5px',
