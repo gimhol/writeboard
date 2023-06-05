@@ -11,6 +11,8 @@ export class SubwinFooter extends View<'div'> {
       background: '#333333',
       borderBottom: '#333333',
       display: 'flex',
+      boxSizing: 'border-box',
+      alignItems: 'center',
     })
   }
 }

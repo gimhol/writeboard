@@ -279,6 +279,8 @@ class SubwinFooter extends View_1.View {
             background: '#333333',
             borderBottom: '#333333',
             display: 'flex',
+            boxSizing: 'border-box',
+            alignItems: 'center',
         });
     }
 }
@@ -288,6 +290,8 @@ exports.SubwinFooter = SubwinFooter;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinHeader = void 0;
+const Button_1 = require("./Button");
+const IconButton_1 = require("./IconButton");
 const View_1 = require("./View");
 const ViewDragger_1 = require("./ViewDragger");
 class SubwinHeader extends View_1.View {
@@ -300,17 +304,42 @@ class SubwinHeader extends View_1.View {
             userSelect: 'none',
             width: '100%',
             color: '#FFFFFF88',
-            padding: '5px',
             background: '#222222',
             borderBottom: '#222222',
             fontSize: '12px',
+            display: 'flex',
+            boxSizing: 'border-box',
+            alignItems: 'stretch',
         });
         this._iconView = new View_1.View('div');
+        this._iconView.inner.innerHTML = '❎';
+        this._iconView.styleHolder().applyStyle('', {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '5px',
+        });
         this.addChild(this._iconView);
         this._titleView = new View_1.View('div');
+        this._titleView.styleHolder().applyStyle('', {
+            display: 'flex',
+            alignItems: 'center',
+            flex: '1',
+        });
         this.addChild(this._titleView);
-        this._dragger = new ViewDragger_1.ViewDragger();
-        this._dragger.handle = this.inner;
+        this._btnClose = new IconButton_1.IconButton({ text: '❎', size: Button_1.SizeType.Small });
+        this._btnClose.styleHolder().applyStyle('', {
+            alignSelf: 'center',
+            margin: '5px',
+        });
+        this._btnClose.onClick(() => alert('!'));
+        this.addChild(this._btnClose);
+        this._dragger = new ViewDragger_1.ViewDragger({
+            handles: [
+                this._titleView.inner,
+                this._iconView.inner
+            ]
+        });
     }
     onAfterAdded(parent) {
         this._dragger.view = parent.inner;
@@ -318,7 +347,7 @@ class SubwinHeader extends View_1.View {
 }
 exports.SubwinHeader = SubwinHeader;
 
-},{"./View":8,"./ViewDragger":9}],7:[function(require,module,exports){
+},{"./Button":1,"./IconButton":3,"./View":8,"./ViewDragger":9}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToggleIconButton = void 0;
@@ -444,16 +473,17 @@ exports.StyleHolder = StyleHolder;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ViewDragger = void 0;
 class ViewDragger {
-    get handle() { return this._handle; }
-    set handle(v) {
+    get handles() { return this._handles; }
+    set handles(v) {
         var _a, _b;
-        (_a = this._handle) === null || _a === void 0 ? void 0 : _a.removeEventListener('pointerdown', this._onpointerdown);
-        this._handle = v;
-        (_b = this._handle) === null || _b === void 0 ? void 0 : _b.addEventListener('pointerdown', this._onpointerdown);
+        (_a = this._handles) === null || _a === void 0 ? void 0 : _a.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
+        this._handles = v;
+        (_b = this._handles) === null || _b === void 0 ? void 0 : _b.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
     }
     get view() { return this._view; }
     set view(v) { this._view = v; }
     constructor(inits) {
+        this._handles = [];
         this._offsetX = 0;
         this._offsetY = 0;
         this._down = false;
@@ -491,7 +521,7 @@ class ViewDragger {
             this._down = false;
         };
         this.view = inits === null || inits === void 0 ? void 0 : inits.view;
-        this.handle = inits === null || inits === void 0 ? void 0 : inits.handle;
+        this.handles = inits === null || inits === void 0 ? void 0 : inits.handles;
         document.addEventListener('pointermove', this._pointermove);
         document.addEventListener('pointerup', this._pointerup);
         document.addEventListener('blur', this._blur);
@@ -501,7 +531,7 @@ class ViewDragger {
         document.removeEventListener('pointermove', this._pointermove);
         document.removeEventListener('pointerup', this._pointerup);
         document.removeEventListener('blur', this._blur);
-        (_a = this._handle) === null || _a === void 0 ? void 0 : _a.removeEventListener('pointerdown', this._onpointerdown);
+        (_a = this._handles) === null || _a === void 0 ? void 0 : _a.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
     }
 }
 exports.ViewDragger = ViewDragger;

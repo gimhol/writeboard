@@ -1,10 +1,10 @@
 export interface IViewDraggerInits {
-  handle?: HTMLElement;
+  handles?: HTMLElement[];
   view?: HTMLElement;
 }
 export class ViewDragger {
-  private _handle?: HTMLElement | null;
-  private _view?: HTMLElement | null;
+  private _handles?: HTMLElement[] = [];
+  private _view?: HTMLElement;
   private _offsetX = 0;
   private _offsetY = 0;
   private _down = false;
@@ -36,19 +36,18 @@ export class ViewDragger {
   private _blur = () => {
     this._down = false;
   }
-  get handle() { return this._handle; }
-  set handle(v) {
-    this._handle?.removeEventListener('pointerdown', this._onpointerdown);
-    this._handle = v;
-    this._handle?.addEventListener('pointerdown', this._onpointerdown);
+  get handles() { return this._handles; }
+  set handles(v) {
+    this._handles?.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
+    this._handles = v;
+    this._handles?.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
   }
-
   get view() { return this._view; }
   set view(v) { this._view = v; }
 
   constructor(inits?: IViewDraggerInits) {
     this.view = inits?.view;
-    this.handle = inits?.handle;
+    this.handles = inits?.handles;
     document.addEventListener('pointermove', this._pointermove);
     document.addEventListener('pointerup', this._pointerup);
     document.addEventListener('blur', this._blur)
@@ -57,6 +56,6 @@ export class ViewDragger {
     document.removeEventListener('pointermove', this._pointermove);
     document.removeEventListener('pointerup', this._pointerup);
     document.removeEventListener('blur', this._blur)
-    this._handle?.removeEventListener('pointerdown', this._onpointerdown);
+    this._handles?.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
   }
 }

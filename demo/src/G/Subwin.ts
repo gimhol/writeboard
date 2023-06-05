@@ -1,5 +1,5 @@
-import { SubwinFooter as SubwinFooter } from "./SubwinFooter";
-import { SubwinHeader as SubwinHeader } from "./SubwinHeader";
+import { SubwinFooter } from "./SubwinFooter";
+import { SubwinHeader } from "./SubwinHeader";
 import { View } from "./View";
 export interface SubwinWorkspaceInits {
   wins?: Subwin[];
