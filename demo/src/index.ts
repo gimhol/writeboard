@@ -15,7 +15,8 @@ import demo_helloworld from "./demo_helloworld"
 import demo_rect_n_oval from "./demo_rect_n_oval"
 import { UI } from "./ui/ele"
 import { Menu } from '../../dist/features/Menu'
-import { SubwinWorkspace } from "./G/Subwin";
+import { SubwinWorkspace } from "./G/SubwinWorkspace";
+import { MergedSubwin } from "./G/Subwin";
 
 type State = {
   count: number
@@ -23,6 +24,15 @@ type State = {
   height?: number
 }
 let whiteBoard: WhiteBoard
+
+
+const mergedSubwin = new MergedSubwin();
+
+const toolsView2 = new ToolsView;
+const toolsView3 = new ToolsView;
+mergedSubwin.addSubWin(toolsView2)
+mergedSubwin.addSubWin(toolsView3)
+
 
 const layersView = new LayersView;
 layersView.addLayer({ name: 'layer_0' });
@@ -34,18 +44,23 @@ layersView.addLayer({ name: 'layer_5' });
 layersView.addLayer({ name: 'layer_6' });
 layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
+layersView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '150px' }))
+console.log(layersView.styleHolder())
 
 const toolsView = new ToolsView;
+toolsView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '5px' }))
 toolsView.onToolClick = (btn) => whiteBoard.setToolType(btn.toolType)
 
 const colorView = new ColorView;
+colorView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
 
 new SubwinWorkspace({
   zIndex: 1000,
   wins: [
     toolsView,
     layersView,
-    colorView
+    colorView,
+    mergedSubwin,
   ]
 })
 
@@ -224,6 +239,7 @@ let initState: State = {
         ui.current()?.append(toolsView.inner)
         ui.current()?.append(layersView.inner)
         ui.current()?.append(colorView.inner)
+        ui.current()?.append(mergedSubwin.inner)
 
 
         ui.ele('canvas', {}, canvas => {

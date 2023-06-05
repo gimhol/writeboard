@@ -8,6 +8,8 @@ export class SubwinHeader extends View<'div'> {
   private _titleView: View<"div">;
   private _iconView: View<"div">;
   private _btnClose: IconButton;
+  get iconView() { return this._iconView; }
+  set iconView(v) { this._iconView = v; }
   get title() { return this._titleView.inner.innerHTML; }
   set title(v) { this._titleView.inner.innerHTML = v; }
   constructor() {

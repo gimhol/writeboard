@@ -88,13 +88,18 @@ export class StyleHolder<T extends string = string> implements IStyleHolder<T>{
     this.view.inner.removeAttribute('style');
     return this;
   }
+  forgoStyle(...names: T[]): StyleHolder<T> {
+    names.forEach(name => this._appliedStyles.delete(name));
+    this.view.inner.removeAttribute('style');
+    Object.assign(this.view.inner.style, ...this._appliedStyles.values())
+    return this;
+  }
   applyStyle(name: T, style: GetStyle): StyleHolder<T>;
   applyStyle(...names: T[]): StyleHolder<T>;
   applyStyle(...args: any[]): StyleHolder<T> {
-    if (typeof args[1] === 'object') {
+    if (typeof args[1] === 'object' || typeof args[1] === 'function') {
       this.setStyle(args[0], args[1])
-      this._appliedStyles.set(args[0], args[1]);
-      Object.assign(this.view.inner.style, args[1]);
+      this.applyStyle(args[0]);
     } else {
       args.forEach(name => this._appliedStyles.set(name, this._styles.get(name) ?? {}))
       Object.assign(this.view.inner.style, ...args.map(name => this._styles.get(name)));

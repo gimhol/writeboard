@@ -1,43 +1,8 @@
+import { ToolsView } from "../layers_view";
 import { SubwinFooter } from "./SubwinFooter";
 import { SubwinHeader } from "./SubwinHeader";
 import { View } from "./View";
-export interface SubwinWorkspaceInits {
-  wins?: Subwin[];
-  zIndex?: number;
-}
-export class SubwinWorkspace {
-  private _zIndex: number = 0;
-  private _wins: Subwin[] = []
-  private _pointerdowns = new Map<Subwin, () => void>();
 
-  private _handleClick = (target: Subwin) => {
-    this._wins.splice(this._wins.indexOf(target), 1);
-    this._wins.push(target);
-    this._wins.forEach((win, idx) => win.inner.style.zIndex = `${this._zIndex + idx}`);
-  }
-  constructor(inits: SubwinWorkspaceInits) {
-    if (inits?.wins)
-      this.addSubWin(...inits.wins);
-    this._zIndex = inits?.zIndex ?? this._zIndex;
-  }
-  addSubWin(...subWins: Subwin[]) {
-    this._wins.forEach(v => {
-      const l = this._pointerdowns.get(v);
-      if (l) {
-        v.inner.removeEventListener('pointerdown', l);
-        v.inner.removeEventListener('touchstart', l)
-      }
-    });
-    this._wins = Array.from(new Set(this._wins.concat(subWins)));
-    this._wins.forEach((v, idx) => {
-      const l = () => this._handleClick(v);
-      this._pointerdowns.set(v, l);
-      v.inner.addEventListener('pointerdown', l)
-      v.inner.addEventListener('touchstart', l)
-      v.inner.style.zIndex = `${this._zIndex + idx}`
-    });
-  }
-}
 export class Subwin extends View<'div'> {
   private _header = new SubwinHeader();
   private _footer = new SubwinFooter();
@@ -67,7 +32,40 @@ export class Subwin extends View<'div'> {
     })
     this.addChild(this._header);
     this.addChild(this._footer);
-    this.onClick(() => {
+  }
+}
+
+export class MergedSubwin extends Subwin {
+  private subwins: Subwin[] = [];
+  constructor() {
+    super();
+    this.header.iconView.inner.innerHTML = '▨'
+    this.content = new View('div');
+    this.content?.styleHolder().applyStyle('', {
+      position: 'relative',
+      flex: 1
     })
+    this.styleHolder().applyStyle('normal', v => ({
+      ...v,
+      minWidth: '100px',
+      minHeight: '100px',
+    }))
+    this.removeChild(this.footer);
+  }
+  addSubWin(subwin: Subwin) {
+    if (this.subwins.indexOf(subwin) >= 0) { return; }
+
+    this.subwins.push(subwin);
+    subwin.styleHolder().applyStyle('merged', {
+      'position': 'absolute',
+      'left': '0px',
+      'right': '0px',
+      'top': '0px',
+      'bottom': '0px',
+      'border': 'none',
+      'boxShadow': 'none',
+    })
+    subwin.header.styleHolder().applyStyle('merged', { display: 'none' })
+    this.content?.addChild(subwin);
   }
 }
