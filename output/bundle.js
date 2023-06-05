@@ -469,7 +469,6 @@ class SubwinHeader extends View_1.View {
             alignSelf: 'center',
             margin: '5px',
         });
-        this._btnClose.onClick(() => alert('!'));
         this.addChild(this._btnClose);
         this._dragger = new ViewDragger_1.ViewDragger({
             handles: [
