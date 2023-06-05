@@ -35,37 +35,3 @@ export class Subwin extends View<'div'> {
   }
 }
 
-export class MergedSubwin extends Subwin {
-  private subwins: Subwin[] = [];
-  constructor() {
-    super();
-    this.header.iconView.inner.innerHTML = '▨'
-    this.content = new View('div');
-    this.content?.styleHolder().applyStyle('', {
-      position: 'relative',
-      flex: 1
-    })
-    this.styleHolder().applyStyle('normal', v => ({
-      ...v,
-      minWidth: '100px',
-      minHeight: '100px',
-    }))
-    this.removeChild(this.footer);
-  }
-  addSubWin(subwin: Subwin) {
-    if (this.subwins.indexOf(subwin) >= 0) { return; }
-
-    this.subwins.push(subwin);
-    subwin.styleHolder().applyStyle('merged', {
-      'position': 'absolute',
-      'left': '0px',
-      'right': '0px',
-      'top': '0px',
-      'bottom': '0px',
-      'border': 'none',
-      'boxShadow': 'none',
-    })
-    subwin.header.styleHolder().applyStyle('merged', { display: 'none' })
-    this.content?.addChild(subwin);
-  }
-}

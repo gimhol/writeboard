@@ -17,10 +17,6 @@ export class ColorView extends Subwin {
     this.header.title = 'color'
 
     this.styleHolder().applyStyle('', {
-      minWidth: '250px',
-      width: '250px',
-      minHeight: '200px',
-      height: '200px',
     })
 
     this.content = new View('div');
@@ -29,7 +25,9 @@ export class ColorView extends Subwin {
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'stretch',
+      alignItems: 'stretch',      
+      minWidth: '250px',
+      minHeight: '200px',
     })
     const canvasWrapper = new View('div');
     canvasWrapper.styleHolder().applyStyle('', {
@@ -40,10 +38,10 @@ export class ColorView extends Subwin {
 
     const canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
-    canvas.style.left = '0%';
-    canvas.style.right = '0%';
-    canvas.style.top = '0%';
-    canvas.style.bottom = '0%';
+    canvas.style.left = '10px';
+    canvas.style.right = '10px';
+    canvas.style.top = '10px';
+    canvas.style.bottom = '0px';
     canvas.style.userSelect = 'none';
     canvas.draggable = false;
     canvas.width = 1;
@@ -52,10 +50,10 @@ export class ColorView extends Subwin {
 
     const colorPalette = new ColorPalette(canvas);
     colorPalette.value = new RGBA(255, 255, 255, 255);
-    
+
     new ResizeObserver(entries => entries.forEach(entry => {
-      canvas.width = entry.contentRect.width;
-      canvas.height = entry.contentRect.height;
+      canvas.width = Math.max(1, entry.contentRect.width - 20);
+      canvas.height = Math.max(1, entry.contentRect.height - 10);
       colorPalette.update();
     })).observe(canvasWrapper.inner)
 

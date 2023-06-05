@@ -10,8 +10,11 @@ export class SubwinHeader extends View<'div'> {
   private _btnClose: IconButton;
   get iconView() { return this._iconView; }
   set iconView(v) { this._iconView = v; }
+  get titleView() { return this._titleView; }
+  set titleView(v) { this._titleView = v; }
   get title() { return this._titleView.inner.innerHTML; }
   set title(v) { this._titleView.inner.innerHTML = v; }
+  get dragger() { return this._dragger; }
   constructor() {
     super('div');
     this.styleHolder()
@@ -51,7 +54,6 @@ export class SubwinHeader extends View<'div'> {
       alignSelf: 'center',
       margin: '5px',
     })
-    this._btnClose.onClick(() => alert('!'))
     this.addChild(this._btnClose);
 
     this._dragger = new ViewDragger({

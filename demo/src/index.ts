@@ -16,7 +16,7 @@ import demo_rect_n_oval from "./demo_rect_n_oval"
 import { UI } from "./ui/ele"
 import { Menu } from '../../dist/features/Menu'
 import { SubwinWorkspace } from "./G/SubwinWorkspace";
-import { MergedSubwin } from "./G/Subwin";
+import { MergedSubwin } from "./G/MergedSubwin";
 
 type State = {
   count: number
@@ -28,10 +28,7 @@ let whiteBoard: WhiteBoard
 
 const mergedSubwin = new MergedSubwin();
 
-const toolsView2 = new ToolsView;
-const toolsView3 = new ToolsView;
-mergedSubwin.addSubWin(toolsView2)
-mergedSubwin.addSubWin(toolsView3)
+
 
 
 const layersView = new LayersView;
@@ -45,7 +42,7 @@ layersView.addLayer({ name: 'layer_6' });
 layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
 layersView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '150px' }))
-console.log(layersView.styleHolder())
+
 
 const toolsView = new ToolsView;
 toolsView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '5px' }))
@@ -53,6 +50,10 @@ toolsView.onToolClick = (btn) => whiteBoard.setToolType(btn.toolType)
 
 const colorView = new ColorView;
 colorView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
+
+mergedSubwin.addSubWin(layersView)
+mergedSubwin.addSubWin(toolsView)
+mergedSubwin.addSubWin(colorView)
 
 new SubwinWorkspace({
   zIndex: 1000,
@@ -196,7 +197,7 @@ let initState: State = {
         const replay = (str: string) => {
           _player?.stop()
           _player = new Player()
-          whiteBoard && _player.start(whiteBoard, JSON.parse(str))
+          _player.start(whiteBoard, JSON.parse(str))
         }
         ui.ele('br')
         ui.ele('button', {
@@ -236,9 +237,9 @@ let initState: State = {
         })
         const _recorder_textarea = ui.ele('textarea')
 
-        ui.current()?.append(toolsView.inner)
-        ui.current()?.append(layersView.inner)
-        ui.current()?.append(colorView.inner)
+        // ui.current()?.append(toolsView.inner)
+        // ui.current()?.append(layersView.inner)
+        // ui.current()?.append(colorView.inner)
         ui.current()?.append(mergedSubwin.inner)
 
 
