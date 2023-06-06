@@ -1,10 +1,11 @@
 import { ILayerInfoInit, ToolEnum, ToolType } from "../../dist";
 import { ButtonGroup, SizeType } from "./G/Button";
-import { HoverOb } from "./G/HoverOb";
+import { FocusOb, HoverOb } from "./G/HoverOb";
 import { IconButton } from "./G/IconButton";
 import { Img } from "./G/Img";
 import { CssObjectFit } from "./G/StyleType";
 import { Subwin } from "./G/Subwin";
+import { TextInput } from "./G/TextInput";
 import { ToggleIconButton } from "./G/ToggleIconButton";
 import { View } from "./G/View";
 export interface ToolButtonInits {
@@ -40,7 +41,7 @@ export class ToolsView extends Subwin {
     super()
     this.header.title = 'tools'
     this.content = new View('div');
-    this.content.styles().apply('_', {
+    this.content.styles().apply("", {
       flex: '1',
       overflowY: 'auto',
       overflowX: 'hidden'
@@ -64,13 +65,13 @@ export class LayersView extends Subwin {
     super()
     this.header.title = 'layers'
     this.content = new View('div');
-    this.content.styles().apply('_', {
+    this.content.styles().apply("", {
       flex: '1',
       overflowY: 'auto',
       overflowX: 'hidden'
 
     })
-    this.styles().apply('_', {
+    this.styles().apply("", {
       minWidth: '225px',
       width: 225,
     })
@@ -105,7 +106,7 @@ export class LayerItemView extends View<'div'> {
   get selected() { return this._state.selected; }
   set selected(v) {
     this._state.selected = v;
-    this.styles().apply("_", v => ({
+    this.styles().apply("", v => ({
       ...v,
       background: this.state.selected ? '#00000044' : ''
     }))
@@ -121,7 +122,7 @@ export class LayerItemView extends View<'div'> {
   constructor(inits: ILayerInfoInit) {
     super('div')
     this._state.name = inits.name;
-    this.styles().apply("_", {
+    this.styles().apply("", {
       display: 'flex',
       position: 'relative',
       padding: 5,
@@ -159,41 +160,41 @@ export class LayerItemView extends View<'div'> {
     })
     this.addChild(btn2);
 
-    const inputName = also(document.createElement('input'), input => {
-      const focusedOb = new FocusedOb(input, () => update());
-      const hoverOb = new HoverOb(input, () => update());
-      input.style.minWidth = '100px';
-      input.style.flex = '1';
-      input.style.height = '24px';
-      input.style.borderRadius = '5px';
-      input.style.padding = '0px 5px';
-      input.value = inits.name;
-      input.disabled = true;
-      const update = () => {
-        if (focusedOb.focused) {
-          input.style.outline = 'none';
-          input.style.border = 'none';
-          input.style.color = 'white'
-        } else {
-          input.style.background = 'none';
-          input.style.outline = 'none';
-          input.style.border = 'none';
-          input.style.borderBottom = 'none';
-          input.style.color = '#FFFFFF88';
-        }
-        if (hoverOb.hover) {
-          input.style.background = '#00000022'
-        } else {
-          input.style.background = 'none';
-        }
-      }
-      input.onblur = e => {
-        update();
-        this._state.name = (e.target as HTMLInputElement).value;
-        input.disabled = true;
-      }
-      this.inner.append(input);
-      update();
+    const inputName = new TextInput();
+    inputName
+      .editStyle(true, true, true, {})
+      .editStyle(false, true, true, {})
+      .editStyle(true, false, true, {})
+      .editStyle(false, false, true, {})
+      .editStyle(false, false, false, {})
+      .editStyle(true, false, false, {
+        background: '#00000022'
+      })
+      .editStyle(true, true, false, {
+        outline: 'none',
+        border: 'none',
+        color: 'white',
+      })
+      .editStyle(false, true, false, {
+        outline: 'none',
+        border: 'none',
+        color: 'white',
+      })
+      .styles().apply("", {
+        minWidth: 100,
+        flex: 1,
+        height: 24,
+        borderRadius: 5,
+        padding: '0px 5px',
+        background: 'none',
+        color: '#FFFFFF88'
+      });
+    inputName.value = inits.name;
+    inputName.disabled = true;
+    this.addChild(inputName);
+
+    new FocusOb(inputName.inner, (v) => {
+      if (!v) inputName.disabled = true;
     })
 
     const btn3 = new IconButton({
@@ -203,15 +204,6 @@ export class LayerItemView extends View<'div'> {
       inputName.focus();
     })
     this.addChild(btn3);
-  }
-}
-
-class FocusedOb {
-  private _focused = false;
-  get focused() { return this._focused; }
-  constructor(ele: HTMLElement, cb: () => void) {
-    ele.addEventListener('focus', e => { this._focused = true; cb() });
-    ele.addEventListener('blur', e => { this._focused = false; cb() });
   }
 }
 

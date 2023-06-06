@@ -1,11 +1,21 @@
 export class HoverOb {
   private _hover = false;
   get hover() { return this._hover; }
-  constructor(ele: HTMLElement | SVGViewElement, cb: (hover: boolean) => void) {
+  constructor(ele: HTMLElement, cb: (hover: boolean) => void) {
     ele.addEventListener('mouseenter', e => { this._hover = true; cb(this._hover); });
     ele.addEventListener('mouseleave', e => { this._hover = false; cb(this._hover); });
   }
 }
+
+export class FocusOb {
+  private _focused = false;
+  get focused() { return this._focused; }
+  constructor(ele: HTMLElement, cb: (focused: boolean) => void) {
+    ele.addEventListener('focus', e => { this._focused = true; cb(this._focused); });
+    ele.addEventListener('blur', e => { this._focused = true; cb(this._focused); });
+  }
+}
+
 export class DragInOutOB {
   private _disabled = true;
   private _ele: HTMLElement;

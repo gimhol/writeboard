@@ -220,7 +220,7 @@ class Button extends View_1.View {
             [SizeType.Middle]: ButtonStyles.Middle,
             [SizeType.Large]: ButtonStyles.Large
         };
-        this.hoverOb();
+        this.hoverOb;
         this._contents = (inits === null || inits === void 0 ? void 0 : inits.contents) ?
             inits.contents :
             (inits === null || inits === void 0 ? void 0 : inits.content) ?
@@ -291,9 +291,8 @@ class Button extends View_1.View {
         return this;
     }
     updateStyle() {
-        const { hover } = this.hoverOb();
         const styles = this.styles();
-        hover ? styles.add(ButtonStyles.Hover) : styles.remove(ButtonStyles.Hover);
+        this.hover ? styles.add(ButtonStyles.Hover) : styles.remove(ButtonStyles.Hover);
         const styleName = `${this.hover}_${this.checked}_${this.disabled}`;
         styles.remove(this._prevStyleNames).add(styleName);
         styles.refresh();
@@ -394,7 +393,7 @@ var GEventType;
 },{}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DragInOutOB = exports.HoverOb = void 0;
+exports.DragInOutOB = exports.FocusOb = exports.HoverOb = void 0;
 class HoverOb {
     get hover() { return this._hover; }
     constructor(ele, cb) {
@@ -404,6 +403,15 @@ class HoverOb {
     }
 }
 exports.HoverOb = HoverOb;
+class FocusOb {
+    get focused() { return this._focused; }
+    constructor(ele, cb) {
+        this._focused = false;
+        ele.addEventListener('focus', e => { this._focused = true; cb(this._focused); });
+        ele.addEventListener('blur', e => { this._focused = true; cb(this._focused); });
+    }
+}
+exports.FocusOb = FocusOb;
 class DragInOutOB {
     get draggables() { return this._draggables; }
     set draggables(v) {
@@ -1029,12 +1037,33 @@ exports.NumberInput = exports.TextInput = void 0;
 const View_1 = require("./View");
 class TextInput extends View_1.View {
     onChange(v) { this._onChange = v; }
+    get disabled() { return this.inner.disabled; }
+    set disabled(v) { this.inner.disabled = v; }
     get value() { return this.inner.value; }
     set value(v) { this.inner.value = v; }
+    focus() { this.inner.focus(); }
+    blur() { this.inner.blur(); }
     constructor() {
         super('input');
+        this.focusOb;
+        this.hoverOb;
         this.inner.type = 'text';
         this.inner.addEventListener('input', () => { var _a; return (_a = this._onChange) === null || _a === void 0 ? void 0 : _a.call(this, this); });
+    }
+    updateStyle() {
+        const styleName = `${this.hover}_${this.focused}_${this.disabled}`;
+        this.styles().remove(this._prevStyleNames).add(styleName).refresh();
+        this._prevStyleNames = styleName;
+    }
+    editStyle(hover, focused, disabled, style) {
+        this.styles().register(`${hover}_${focused}_${disabled}`, style);
+        return this;
+    }
+    onHover(hover) {
+        this.updateStyle();
+    }
+    onFocus(focused) {
+        this.updateStyle();
     }
 }
 exports.TextInput = TextInput;
@@ -1089,7 +1118,6 @@ class View {
     }
     get id() { return this.inner.id; }
     set id(v) { this.inner.id = v; }
-    get hover() { return this.hoverOb().hover; }
     get inner() { return this._inner; }
     get parent() { var _a; return (_a = this._inner.parentElement) === null || _a === void 0 ? void 0 : _a.view; }
     get children() { return Array.from(this._inner.children).map(v => v === null || v === void 0 ? void 0 : v.view); }
@@ -1100,17 +1128,24 @@ class View {
         this._inner = document.createElement(tagName);
         this._inner.view = this;
     }
-    hoverOb() {
-        if (!this._hoverOb) {
-            this._hoverOb = new HoverOb_1.HoverOb(this._inner, v => this.onHover(v));
-        }
+    get hover() { return this.hoverOb.hover; }
+    get hoverOb() {
+        var _a;
+        this._hoverOb = (_a = this._hoverOb) !== null && _a !== void 0 ? _a : new HoverOb_1.HoverOb(this._inner, v => this.onHover(v));
         return this._hoverOb;
     }
+    onHover(hover) { }
+    get focused() { return this.focusOb.focused; }
+    get focusOb() {
+        var _a;
+        this._focusOb = (_a = this._focusOb) !== null && _a !== void 0 ? _a : new HoverOb_1.FocusOb(this._inner, v => this.onFocus(v));
+        return this._focusOb;
+    }
+    onFocus(focused) { }
     onBeforeAdded(parent) { }
     onAfterAdded(parent) { }
     onBeforeRemoved(parent) { }
     onAfterRemoved(parent) { }
-    onHover(hover) { }
     addChild(...children) {
         children.forEach(child => {
             child.onBeforeAdded(this);
@@ -2159,6 +2194,7 @@ const IconButton_1 = require("./G/IconButton");
 const Img_1 = require("./G/Img");
 const StyleType_1 = require("./G/StyleType");
 const Subwin_1 = require("./G/Subwin");
+const TextInput_1 = require("./G/TextInput");
 const ToggleIconButton_1 = require("./G/ToggleIconButton");
 const View_1 = require("./G/View");
 class ToolButton extends IconButton_1.IconButton {
@@ -2188,7 +2224,7 @@ class ToolsView extends Subwin_1.Subwin {
         super();
         this.header.title = 'tools';
         this.content = new View_1.View('div');
-        this.content.styles().apply('_', {
+        this.content.styles().apply("", {
             flex: '1',
             overflowY: 'auto',
             overflowX: 'hidden'
@@ -2212,12 +2248,12 @@ class LayersView extends Subwin_1.Subwin {
         this._layers = [];
         this.header.title = 'layers';
         this.content = new View_1.View('div');
-        this.content.styles().apply('_', {
+        this.content.styles().apply("", {
             flex: '1',
             overflowY: 'auto',
             overflowX: 'hidden'
         });
-        this.styles().apply('_', {
+        this.styles().apply("", {
             minWidth: '225px',
             width: 225,
         });
@@ -2246,7 +2282,7 @@ class LayerItemView extends View_1.View {
     get selected() { return this._state.selected; }
     set selected(v) {
         this._state.selected = v;
-        this.styles().apply("_", v => (Object.assign(Object.assign({}, v), { background: this.state.selected ? '#00000044' : '' })));
+        this.styles().apply("", v => (Object.assign(Object.assign({}, v), { background: this.state.selected ? '#00000044' : '' })));
     }
     updateStyle() {
         const styleName = `${this.hover}_${this.selected}`;
@@ -2263,7 +2299,7 @@ class LayerItemView extends View_1.View {
             selected: false,
         };
         this._state.name = inits.name;
-        this.styles().apply("_", {
+        this.styles().apply("", {
             display: 'flex',
             position: 'relative',
             padding: 5,
@@ -2296,43 +2332,41 @@ class LayerItemView extends View_1.View {
             this._state.visible = btn.checked;
         });
         this.addChild(btn2);
-        const inputName = also(document.createElement('input'), input => {
-            const focusedOb = new FocusedOb(input, () => update());
-            const hoverOb = new HoverOb_1.HoverOb(input, () => update());
-            input.style.minWidth = '100px';
-            input.style.flex = '1';
-            input.style.height = '24px';
-            input.style.borderRadius = '5px';
-            input.style.padding = '0px 5px';
-            input.value = inits.name;
-            input.disabled = true;
-            const update = () => {
-                if (focusedOb.focused) {
-                    input.style.outline = 'none';
-                    input.style.border = 'none';
-                    input.style.color = 'white';
-                }
-                else {
-                    input.style.background = 'none';
-                    input.style.outline = 'none';
-                    input.style.border = 'none';
-                    input.style.borderBottom = 'none';
-                    input.style.color = '#FFFFFF88';
-                }
-                if (hoverOb.hover) {
-                    input.style.background = '#00000022';
-                }
-                else {
-                    input.style.background = 'none';
-                }
-            };
-            input.onblur = e => {
-                update();
-                this._state.name = e.target.value;
-                input.disabled = true;
-            };
-            this.inner.append(input);
-            update();
+        const inputName = new TextInput_1.TextInput();
+        inputName
+            .editStyle(true, true, true, {})
+            .editStyle(false, true, true, {})
+            .editStyle(true, false, true, {})
+            .editStyle(false, false, true, {})
+            .editStyle(false, false, false, {})
+            .editStyle(true, false, false, {
+            background: '#00000022'
+        })
+            .editStyle(true, true, false, {
+            outline: 'none',
+            border: 'none',
+            color: 'white',
+        })
+            .editStyle(false, true, false, {
+            outline: 'none',
+            border: 'none',
+            color: 'white',
+        })
+            .styles().apply("", {
+            minWidth: 100,
+            flex: 1,
+            height: 24,
+            borderRadius: 5,
+            padding: '0px 5px',
+            background: 'none',
+            color: '#FFFFFF88'
+        });
+        inputName.value = inits.name;
+        inputName.disabled = true;
+        this.addChild(inputName);
+        new HoverOb_1.FocusOb(inputName.inner, (v) => {
+            if (!v)
+                inputName.disabled = true;
         });
         const btn3 = new IconButton_1.IconButton({
             content: '🖊️'
@@ -2344,20 +2378,12 @@ class LayerItemView extends View_1.View {
     }
 }
 exports.LayerItemView = LayerItemView;
-class FocusedOb {
-    get focused() { return this._focused; }
-    constructor(ele, cb) {
-        this._focused = false;
-        ele.addEventListener('focus', e => { this._focused = true; cb(); });
-        ele.addEventListener('blur', e => { this._focused = false; cb(); });
-    }
-}
 function also(t, func) {
     func(t);
     return t;
 }
 
-},{"../../dist":43,"./G/Button":2,"./G/HoverOb":5,"./G/IconButton":6,"./G/Img":7,"./G/StyleType":9,"./G/Subwin":11,"./G/ToggleIconButton":16,"./G/View":17}],26:[function(require,module,exports){
+},{"../../dist":43,"./G/Button":2,"./G/HoverOb":5,"./G/IconButton":6,"./G/Img":7,"./G/StyleType":9,"./G/Subwin":11,"./G/TextInput":15,"./G/ToggleIconButton":16,"./G/View":17}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UI = void 0;

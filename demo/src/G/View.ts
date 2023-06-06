@@ -1,4 +1,4 @@
-import { HoverOb } from "./HoverOb";
+import { FocusOb, HoverOb } from "./HoverOb";
 import { Style } from "./StyleType";
 import { Styles } from "./Styles";
 
@@ -17,7 +17,6 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   }
   get id() { return this.inner.id; }
   set id(v) { this.inner.id = v; }
-  get hover() { return this.hoverOb().hover }
   get inner() { return this._inner; }
   get parent() { return (this._inner.parentElement as any)?.view; }
   get children() { return Array.from(this._inner.children).map(v => (v as any)?.view) }
@@ -27,18 +26,28 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     this._inner = document.createElement(tagName);
     (this._inner as any).view = this;
   }
-  hoverOb(): HoverOb {
-    if (!this._hoverOb) {
-      this._hoverOb = new HoverOb(this._inner, v => this.onHover(v))
-    }
-    return this._hoverOb!
+
+  protected _hoverOb?: HoverOb;
+  get hover() { return this.hoverOb.hover }
+  get hoverOb(): HoverOb {
+    this._hoverOb = this._hoverOb ?? new HoverOb(this._inner, v => this.onHover(v))
+    return this._hoverOb
   }
-  private _hoverOb?: HoverOb;
+  onHover(hover: boolean) { }
+
+  protected _focusOb?: FocusOb;
+  get focused() { return this.focusOb.focused }
+  get focusOb(): FocusOb {
+    this._focusOb = this._focusOb ?? new FocusOb(this._inner, v => this.onFocus(v))
+    return this._focusOb
+  }
+  onFocus(focused: boolean) { }
+
+
   onBeforeAdded(parent: View): void { }
   onAfterAdded(parent: View): void { }
   onBeforeRemoved(parent: View): void { }
   onAfterRemoved(parent: View): void { }
-  onHover(hover: boolean) { }
   addChild(...children: View[]) {
     children.forEach(child => {
       child.onBeforeAdded(this);

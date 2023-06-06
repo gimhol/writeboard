@@ -44,7 +44,7 @@ export class Button extends View<'button'> {
   }
   constructor(inits?: ButtonInits) {
     super('button');
-    this.hoverOb();
+    this.hoverOb;
 
     this._contents = inits?.contents ?
       inits.contents :
@@ -115,9 +115,8 @@ export class Button extends View<'button'> {
   }
   private _prevStyleNames = ''
   updateStyle() {
-    const { hover } = this.hoverOb();
     const styles = this.styles();
-    hover ? styles.add(ButtonStyles.Hover) : styles.remove(ButtonStyles.Hover)
+    this.hover ? styles.add(ButtonStyles.Hover) : styles.remove(ButtonStyles.Hover)
     const styleName = `${this.hover}_${this.checked}_${this.disabled}`
     styles.remove(this._prevStyleNames).add(styleName)
     styles.refresh();
