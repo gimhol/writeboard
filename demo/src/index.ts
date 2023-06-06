@@ -5,11 +5,10 @@ import {
   Player, Recorder,
   Shape,
   ShapeEnum, ShapePen,
-  ToolEnum,
-  ToolType,
   WhiteBoard
 } from "../../dist";
-import { ColorView, LayersView, ToolsView } from "./layers_view";
+import { LayersView, ToolsView } from "./layers_view";
+import ColorView from "./ColorView";
 import { ColorPalette } from "./colorPalette/ColorPalette"
 import demo_helloworld from "./demo_helloworld"
 import demo_rect_n_oval from "./demo_rect_n_oval"
@@ -17,6 +16,7 @@ import { UI } from "./ui/ele"
 import { Menu } from '../../dist/features/Menu'
 import { SubwinWorkspace } from "./G/SubwinWorkspace";
 import { MergedSubwin } from "./G/MergedSubwin";
+import { RGBA } from "./colorPalette/Color";
 
 type State = {
   count: number
@@ -24,12 +24,11 @@ type State = {
   height?: number
 }
 let whiteBoard: WhiteBoard
-
-
+const mergedSubwin2 = new MergedSubwin();
 const mergedSubwin = new MergedSubwin();
 
-
-
+document.body.appendChild(mergedSubwin2.inner);
+document.body.appendChild(mergedSubwin.inner);
 
 const layersView = new LayersView;
 layersView.addLayer({ name: 'layer_0' });
@@ -41,28 +40,59 @@ layersView.addLayer({ name: 'layer_5' });
 layersView.addLayer({ name: 'layer_6' });
 layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
-layersView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '150px' }))
-
+layersView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '150px' }))
 
 const toolsView = new ToolsView;
-toolsView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '5px' }))
+toolsView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '5px' }))
 toolsView.onToolClick = (btn) => whiteBoard.setToolType(btn.toolType)
 
 const colorView = new ColorView;
-colorView.styleHolder().applyStyle('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
+colorView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
 
 mergedSubwin.addSubWin(layersView)
 mergedSubwin.addSubWin(toolsView)
 mergedSubwin.addSubWin(colorView)
 
-new SubwinWorkspace({
+colorView.inner.addEventListener(ColorView.EventTypes.LineColorChange, (e) => {
+  const rgba = (e as CustomEvent).detail as RGBA;
+  FactoryMgr.listTools().forEach(toolType => {
+    const shape = FactoryMgr.toolInfo(toolType)?.shape
+    if (!shape) return;
+    const template = whiteBoard.factory.shapeTemplate(shape);
+    template.strokeStyle = '' + rgba.toHex();
+  })
+})
+colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
+  const rgba = (e as CustomEvent).detail as RGBA;
+  FactoryMgr.listTools().forEach(toolType => {
+    const shape = FactoryMgr.toolInfo(toolType)?.shape
+    if (!shape) return;
+    const template = whiteBoard.factory.shapeTemplate(shape);
+    template.fillStyle = '' + rgba.toHex();
+  })
+})
+
+
+const workspace = new SubwinWorkspace({
+  rect() {
+    return {
+      x: 0, y: 0,
+      w: document.body.offsetWidth,
+      h: document.body.offsetHeight
+    }
+  },
   zIndex: 1000,
   wins: [
     toolsView,
     layersView,
     colorView,
     mergedSubwin,
+    mergedSubwin2,
   ]
+});
+
+window.addEventListener('resize', () => {
+  workspace.clampAllSubwin();
 })
 
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
@@ -144,6 +174,7 @@ let initState: State = {
               const items: Shape[] = []
               for (let i = 0; i < 1000; ++i) {
                 const item = whiteBoard.factory.newShape(ShapeEnum.Pen) as ShapePen
+                item.data.layer = whiteBoard.currentLayer().info.name;
                 let x = Math.floor(Math.random() * ui.state.width!)
                 let y = Math.floor(Math.random() * ui.state.height!)
                 const lenth = Math.floor(Math.random() * 100)
@@ -159,6 +190,7 @@ let initState: State = {
                 items.push(item)
               }
               whiteBoard.add(...items)
+              console.log(items)
             }
           }
         })
@@ -236,29 +268,9 @@ let initState: State = {
           }
         })
         const _recorder_textarea = ui.ele('textarea')
-
-        // ui.current()?.append(toolsView.inner)
-        // ui.current()?.append(layersView.inner)
-        // ui.current()?.append(colorView.inner)
-        ui.current()?.append(mergedSubwin.inner)
-
-
-        ui.ele('canvas', {}, canvas => {
-          canvas.width = 180
-          canvas.height = 100
-          canvas.style.minWidth = canvas.width + 'px'
-          canvas.style.minHeight = canvas.height + 'px'
-          canvas.style.maxWidth = canvas.width + 'px'
-          canvas.style.maxHeight = canvas.height + 'px'
-          const a = new ColorPalette(canvas)
-          a.onChanged = (v) => {
-            const shape = FactoryMgr.toolInfo(whiteBoard.toolType)?.shape
-            if (!shape) return
-            const template = whiteBoard.factory.shapeTemplate(shape)
-            template.strokeStyle = '' + v
-          }
-        })
       })
+
+
       ui.ele('div', {
         alias: 'hello',
         className: 'blackboard',

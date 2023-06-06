@@ -1,4 +1,6 @@
-import { GetStyle, View } from "./View";
+import { Style } from "./StyleType";
+import { View } from "./View";
+import { ReValue } from "./utils";
 
 export enum SizeType {
   Small = 's',
@@ -22,21 +24,14 @@ export enum ButtonStyles {
   Small = 'small',
   Middle = 'middle',
   Large = 'large',
-  Hover_Checked = 'hover_checked',
-  Normal_Checked = 'normal_checked',
-  Hover_Unchecked = 'hover_unchecked',
-  Normal_Unchecked = 'normal_unchecked',
-  Disabled = 'disabled',
-  Disabled_Checked = 'disabled_checked',
-  Disabled_Unchecked = 'disabled_unchecked',
 }
 export class Button extends View<'button'> {
-  private _size: SizeType = SizeType.Middle;
-  private _contents: [Content, Content] = ['', ''];
-  private _titles: [string, string] = ['', ''];
-  private _checked = false;
-  private _checkable = false;
-
+  protected _size: SizeType = SizeType.Middle;
+  protected _preSize?: SizeType;
+  protected _contents: [Content, Content] = ['', ''];
+  protected _titles: [string, string] = ['', ''];
+  protected _checked = false;
+  protected _checkable = false;
   get checked() { return this._checked; }
   set checked(v) {
     this._checked = v;
@@ -65,36 +60,43 @@ export class Button extends View<'button'> {
         this._titles;
     this._size = inits?.size ?? this._size;
     this._checkable = inits?.checkable ?? this._checkable;
+    this.styles().register(ButtonStyles.Hover, {
+      background: '#00000022'
+    }).register(ButtonStyles.Small, {
+      height: '18px',
+      lineHeight: '18px',
+      borderRadius: '5px',
+      fontSize: '12px',
+    }).register(ButtonStyles.Middle, {
+      height: '24px',
+      lineHeight: '24px',
+      borderRadius: '5px',
+      fontSize: '14px',
+    }).register(ButtonStyles.Large, {
+      height: '32px',
+      lineHeight: '32px',
+      borderRadius: '5px',
+      fontSize: '24px',
+    }).register(ButtonStyles.Normal, {
+      userSelect: 'none',
+      cursor: 'pointer',
+      textAlign: 'center',
+      transition: 'all 200ms',
+      padding: '0px',
+      background: 'transparent',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }).add(ButtonStyles.Normal).refresh();
 
-    this.styleHolder()
-      .applyStyle(ButtonStyles.Normal, {
-        userSelect: 'none',
-        cursor: 'pointer',
-        textAlign: 'center',
-        transition: 'all 200ms',
-        padding: '0px',
-        background: 'transparent',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }).setStyle(ButtonStyles.Hover, {
-        background: '#00000022'
-      }).setStyle(ButtonStyles.Small, {
-        height: '18px',
-        lineHeight: '18px',
-        borderRadius: '5px',
-        fontSize: '12px',
-      }).setStyle(ButtonStyles.Middle, {
-        height: '24px',
-        lineHeight: '24px',
-        borderRadius: '5px',
-        fontSize: '14px',
-      }).setStyle(ButtonStyles.Large, {
-        height: '32px',
-        lineHeight: '32px',
-        borderRadius: '5px',
-        fontSize: '24px',
-      })
+    this.editStyle(true, true, true, { background: '#333333' })
+    this.editStyle(true, true, false, { background: '#333333' })
+    this.editStyle(true, false, true, {})
+    this.editStyle(true, false, false, {})
+    this.editStyle(false, true, true, { background: '#444444' })
+    this.editStyle(false, true, false, { background: '#444444' })
+    this.editStyle(false, false, true, {})
+    this.editStyle(false, false, false, {})
     this.handleClick = () => {
       if (this._checkable) { this._checked = !this._checked; }
       this.cb?.(this as any);
@@ -113,17 +115,18 @@ export class Button extends View<'button'> {
     this.cb = cb as any;
     return this;
   }
+  private _prevStyleNames = ''
   updateStyle() {
-    const { hover } = this.hoverOb()
-    this.styleHolder().applyStyle(hover ?
-      ButtonStyles.Hover :
-      ButtonStyles.Normal
-    );
+    const { hover } = this.hoverOb();
+    const styles = this.styles();
+    hover ? styles.add(ButtonStyles.Hover) : styles.remove(ButtonStyles.Hover)
     const styleName = `${this.hover}_${this.checked}_${this.disabled}`
-    this.styleHolder().applyStyle(styleName);
+    styles.remove(this._prevStyleNames).add(styleName)
+    styles.refresh();
+    this._prevStyleNames = styleName;
   }
-  editStyle(hover: boolean, checked: boolean, disabled: boolean, style: GetStyle) {
-    this.styleHolder().setStyle(`${hover}_${checked}_${disabled}`, style);
+  editStyle(hover: boolean, checked: boolean, disabled: boolean, style: ReValue<Style>) {
+    this.styles().register(`${hover}_${checked}_${disabled}`, style);
     return this;
   }
   updateContent() {
@@ -138,18 +141,17 @@ export class Button extends View<'button'> {
   updateTitle() {
     this._inner.title = this._checked ? this._titles[1] : this._titles[0];
   }
+  private aaa: Record<SizeType, ButtonStyles> = {
+    [SizeType.Small]: ButtonStyles.Small,
+    [SizeType.Middle]: ButtonStyles.Middle,
+    [SizeType.Large]: ButtonStyles.Large
+  }
   updateSize() {
-    switch (this._size) {
-      case SizeType.Large:
-        this.styleHolder().applyStyle(ButtonStyles.Large);
-        break;
-      case SizeType.Small:
-        this.styleHolder().applyStyle(ButtonStyles.Small);
-        break;
-      default:
-        this.styleHolder().applyStyle(ButtonStyles.Middle);
-        break;
-    }
+    this.styles()
+      .remove(this.aaa[this._preSize!])
+      .add(this.aaa[this._size])
+      .refresh();
+    this._preSize = this._size;
   }
 }
 

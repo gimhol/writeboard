@@ -13,9 +13,9 @@ export class TextInput extends View<'input'>{
   }
 }
 export class NumberInput extends TextInput {
-  
-  onChange(v: (self: NumberInput) => void) { this._onChange = v as any; }
 
+  onChange(v: (self: NumberInput) => void) { this._onChange = v as any; }
+  setNum(v: number) { this.num = v; }
   get num() { return Number(this.inner.value); }
   set num(v) { this.value = '' + v }
   get max() { return this.inner.max === '' ? null : Number(this.inner.max) }

@@ -1,4 +1,4 @@
-import { Style } from "./Styles";
+import { Style } from "./StyleType";
 import { View } from "./View";
 export interface ImgInit {
   src?: string;
@@ -11,6 +11,6 @@ export class Img extends View<'img'>{
   constructor(inits?: ImgInit) {
     super('img');
     inits?.src && (this.src = inits.src);
-    inits?.styles && (this.styleHolder().applyStyle('', inits.styles))
+    inits?.styles && (this.styles().apply('_', inits.styles))
   }
 }

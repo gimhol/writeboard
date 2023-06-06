@@ -3,132 +3,12 @@ import { ButtonGroup, SizeType } from "./G/Button";
 import { HoverOb } from "./G/HoverOb";
 import { IconButton } from "./G/IconButton";
 import { Img } from "./G/Img";
-import { CssObjectFit } from "./G/Styles";
+import { CssObjectFit } from "./G/StyleType";
 import { Subwin } from "./G/Subwin";
-import { NumberInput } from "./G/TextInput";
 import { ToggleIconButton } from "./G/ToggleIconButton";
 import { View } from "./G/View";
-import { RGBA } from "./colorPalette/Color";
-import { ColorPalette } from "./colorPalette/ColorPalette";
 
-export class ColorView extends Subwin {
-  constructor() {
-    super()
-    this.header.title = 'color'
 
-    this.styleHolder().applyStyle('', {
-    })
-
-    this.content = new View('div');
-    this.content.styleHolder().applyStyle('', {
-      flex: 1,
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'stretch',      
-      minWidth: '250px',
-      minHeight: '200px',
-    })
-    const canvasWrapper = new View('div');
-    canvasWrapper.styleHolder().applyStyle('', {
-      flex: 1,
-      position: 'relative',
-    })
-    this.content.addChild(canvasWrapper);
-
-    const canvas = document.createElement('canvas');
-    canvas.style.position = 'absolute';
-    canvas.style.left = '10px';
-    canvas.style.right = '10px';
-    canvas.style.top = '10px';
-    canvas.style.bottom = '0px';
-    canvas.style.userSelect = 'none';
-    canvas.draggable = false;
-    canvas.width = 1;
-    canvas.height = 1;
-    canvasWrapper.inner.append(canvas);
-
-    const colorPalette = new ColorPalette(canvas);
-    colorPalette.value = new RGBA(255, 255, 255, 255);
-
-    new ResizeObserver(entries => entries.forEach(entry => {
-      canvas.width = Math.max(1, entry.contentRect.width - 20);
-      canvas.height = Math.max(1, entry.contentRect.height - 10);
-      colorPalette.update();
-    })).observe(canvasWrapper.inner)
-
-    const inputWrapper = new View('div');
-    inputWrapper.styleHolder().applyStyle('', {
-      display: 'grid',
-      padding: '0px 5px',
-      gridTemplateColumns: 'repeat(4, 10px auto)',
-      fontSize: '12px',
-      color: 'white',
-      alignItems: 'center',
-    })
-    this.content.addChild(inputWrapper);
-
-    const inputR = new ColorNumInput();
-    inputR.onChange((s) => {
-      const color = colorPalette.value.copy();
-      color.r = s.num;
-      colorPalette.value = color;
-    })
-    inputWrapper.inner.append('R:')
-    inputWrapper.addChild(inputR);
-    const inputG = new ColorNumInput();
-    inputG.onChange((s) => {
-      const color = colorPalette.value.copy();
-      color.g = s.num;
-      colorPalette.value = color;
-    })
-    inputWrapper.inner.append('G:')
-    inputWrapper.addChild(inputG);
-    const inputB = new ColorNumInput();
-    inputB.onChange((s) => {
-      const color = colorPalette.value.copy();
-      color.b = s.num;
-      colorPalette.value = color;
-    })
-    inputWrapper.inner.append('B:')
-    inputWrapper.addChild(inputB);
-    const inputA = new ColorNumInput();
-    inputA.onChange((s) => {
-      const color = colorPalette.value.copy();
-      color.a = s.num;
-      colorPalette.value = color;
-    })
-    inputWrapper.inner.append('A:')
-    inputWrapper.addChild(inputA);
-
-    colorPalette.onChanged = v => {
-      inputR.num = v.r;
-      inputG.num = v.g;
-      inputB.num = v.b;
-      inputA.num = v.a;
-    }
-    colorPalette.onChanged(colorPalette.value)
-    this.removeChild(this.footer);
-  }
-}
-export class ColorNumInput extends NumberInput {
-  constructor() {
-    super();
-    this.max = 255;
-    this.min = 0;
-    this.styleHolder().applyStyle('', {
-      minWidth: '0px',
-      flex: 1,
-      background: 'transparent',
-      color: 'white',
-      border: 'none',
-      outline: 'none',
-      borderRadius: '5px',
-      margin: '5px 5px 3px 5px',
-      fontSize: '12px'
-    });
-  }
-}
 export interface ToolButtonInits {
   src: string;
   toolType: ToolType
@@ -149,11 +29,7 @@ export class ToolButton extends IconButton {
       checkable: true,
       size: SizeType.Large
     })
-    this.editStyle(false, true, false, {
-      background: '#444444'
-    }).editStyle(true, true, false, {
-      background: '#333333'
-    })
+
     this._toolType = inits.toolType;
   }
 }
@@ -167,9 +43,12 @@ export class ToolsView extends Subwin {
     super()
     this.header.title = 'tools'
     this.content = new View('div');
-    this.content.inner.style.flex = '1';
-    this.content.inner.style.overflowY = 'auto'
-    this.content.inner.style.overflowX = 'hidden'
+    this.content.styles().apply('_', {
+      flex: '1',
+      overflowY: 'auto',
+      overflowX: 'hidden'
+    })
+
     const toolsBtns = [
       new ToolButton({ src: './ic_selector.svg', toolType: ToolEnum.Selector }),
       new ToolButton({ src: './ic_pen.svg', toolType: ToolEnum.Pen }),
@@ -189,10 +68,13 @@ export class LayersView extends Subwin {
     super()
     this.header.title = 'layers'
     this.content = new View('div');
-    this.content.inner.style.flex = '1';
-    this.content.inner.style.overflowY = 'auto'
-    this.content.inner.style.overflowX = 'hidden'
-    this.styleHolder().applyStyle('', {
+    this.content.styles().apply('_', {
+      flex: '1',
+      overflowY: 'auto',
+      overflowX: 'hidden'
+
+    })
+    this.styles().apply('_', {
       minWidth: '225px',
       width: '225px',
     })
@@ -227,25 +109,29 @@ export class LayerItemView extends View<'div'> {
   get selected() { return this._state.selected; }
   set selected(v) {
     this._state.selected = v;
-    this._inner.style.background = this.state.selected ? '#00000044' : '';
+    this.styles().apply("_", v => ({
+      ...v,
+      background: this.state.selected ? '#00000044' : ''
+    }))
   }
 
   constructor(inits: ILayerInfoInit) {
     super('div')
     this._state.name = inits.name;
-    this._inner.style.display = 'flex';
-    this._inner.style.position = 'relative';
-    this._inner.style.padding = '5px';
-    this._inner.style.borderBottom = '1px solid #00000022';
-    this._inner.style.transition = 'all 200ms';
-
-    new HoverOb(this._inner, hover => {
-      this._inner.style.background = hover ?
-        '#00000022' :
-        this.state.selected ?
-          '#00000044' : '';
+    this.styles().apply("_", {
+      display: 'flex',
+      position: 'relative',
+      padding: '5px',
+      borderBottom: '1px solid #00000022',
+      transition: 'all 200ms',
     })
 
+    new HoverOb(this._inner, hover => {
+      this.styles().apply("_", v => ({
+        ...v,
+        background: hover ? '#00000022' : '#00000044'
+      }))
+    })
 
     const btn0 = new ToggleIconButton({
       checked: this._state.locked,

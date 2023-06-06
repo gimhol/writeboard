@@ -3,14 +3,14 @@ export interface IconButtonInits extends ButtonInits { }
 export class IconButton extends Button {
   constructor(init?: IconButtonInits) {
     super(init);
-    this.styleHolder()
-      .setStyle(ButtonStyles.Small, style => ({
+    this.styles()
+      .register(ButtonStyles.Small, style => ({
         ...style,
         width: style.height
-      })).setStyle(ButtonStyles.Middle, style => ({
+      })).register(ButtonStyles.Middle, style => ({
         ...style,
         width: style.height
-      })).setStyle(ButtonStyles.Large, style => ({
+      })).register(ButtonStyles.Large, style => ({
         ...style,
         width: style.height
       }));

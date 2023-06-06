@@ -1,5 +1,6 @@
 import { HoverOb } from "./HoverOb";
-import { Style } from "./Styles";
+import { Style } from "./StyleType";
+import { Styles } from "./Styles";
 
 
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
@@ -14,12 +15,14 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     this._handleClick = v;
     this._inner.addEventListener('click', this._handleClick)
   }
-
+  get id() { return this.inner.id; }
+  set id(v) { this.inner.id = v; }
   get hover() { return this.hoverOb().hover }
   get inner() { return this._inner; }
   get parent() { return (this._inner.parentElement as any)?.view; }
   get children() { return Array.from(this._inner.children).map(v => (v as any)?.view) }
-
+  get draggable() { return this._inner.draggable; }
+  set draggable(v) { this._inner.draggable = v; }
   constructor(tagName: T) {
     this._inner = document.createElement(tagName);
     (this._inner as any).view = this;
@@ -36,93 +39,35 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   onBeforeRemoved(parent: View): void { }
   onAfterRemoved(parent: View): void { }
   onHover(hover: boolean) { }
-  addChild(child: View) {
-    child.onBeforeAdded(this);
-    this._inner.append(child.inner);
-    child.onAfterAdded(this);
+  addChild(...children: View[]) {
+    children.forEach(child => {
+      child.onBeforeAdded(this);
+      this._inner.append(child.inner);
+      child.onAfterAdded(this);
+    })
   }
   insertBefore(child: View, anchor: View) {
     child.onBeforeAdded(this);
     this._inner.insertBefore(child.inner, anchor.inner);
     child.onAfterAdded(this);
   }
-  removeChild(child: View) {
-    child.onBeforeRemoved(this);
-    this._inner.removeChild(child.inner);
-    child.onAfterRemoved(this);
+  removeChild(...children: View[]) {
+    children.forEach(child => {
+      child.onBeforeRemoved(this);
+      this._inner.removeChild(child.inner);
+      child.onAfterRemoved(this);
+    })
   }
   onClick(cb: (self: View) => void): View {
     this.handleClick = () => this.cb?.(this);
     this.cb = cb as any;
     return this;
   }
-  styleHolder(): StyleHolder<string> {
+  styles(): Styles<string> {
     if (!this._styleHolder) {
-      this._styleHolder = new StyleHolder<string>(this)
+      this._styleHolder = new Styles<string>(this)
     }
     return this._styleHolder;
   }
-  private _styleHolder?: StyleHolder<string>;
-}
-
-export type GetStyle = Style | ((old: Style) => Style);
-export class StyleHolder<T extends string = string> implements IStyleHolder<T>{
-  private _view: View<keyof HTMLElementTagNameMap>;
-  private _styles = new Map<T, Style>();
-  private _appliedStyles = new Map<T, Style>();
-
-  get view() { return this._view; }
-  constructor(view: View) {
-    this._view = view;
-  }
-  styles(): Map<T, Style> { return this._styles; }
-  applieds(): Map<T, Style> { return this._appliedStyles; }
-  getStyle(name: T): Style | undefined { return this._styles.get(name) }
-  setStyle(name: T, style: GetStyle): StyleHolder<T> {
-    const s = typeof style === 'function' ? style(this.getStyle(name) ?? {}) : style;
-    this._styles.set(name, s);
-    return this;
-  }
-  clearApplieds(): StyleHolder<T> {
-    this._appliedStyles.clear();
-    this.view.inner.removeAttribute('style');
-    return this;
-  }
-  forgoStyle(...names: T[]): StyleHolder<T> {
-    names.forEach(name => this._appliedStyles.delete(name));
-    this.view.inner.removeAttribute('style');
-    Object.assign(this.view.inner.style, ...this._appliedStyles.values())
-    return this;
-  }
-  applyStyle(name: T, style: GetStyle): StyleHolder<T>;
-  applyStyle(...names: T[]): StyleHolder<T>;
-  applyStyle(...args: any[]): StyleHolder<T> {
-    if (typeof args[1] === 'object' || typeof args[1] === 'function') {
-      this.setStyle(args[0], args[1])
-      this.applyStyle(args[0]);
-    } else {
-      args.forEach(name => this._appliedStyles.set(name, this._styles.get(name) ?? {}))
-      Object.assign(this.view.inner.style, ...args.map(name => this._styles.get(name)));
-    }
-    return this;
-  }
-  applyClass(...names: string[]): StyleHolder<T> {
-    this.view.inner.className = Array.from(
-      new Set(Array.from(this.view.inner.classList).concat(names))
-    ).join(' ');
-    return this;
-  }
-  removeClass(...names: string[]): StyleHolder<T> {
-    this.view.inner.className = Array.from(
-      new Set(Array.from(this.view.inner.classList).filter(v => names.indexOf(v) < 0))
-    ).join(' ');
-    return this;
-  }
-}
-
-interface IStyleHolder<T extends string = string> {
-  getStyle(name: T): Style | undefined;
-  setStyle(name: T, style: Style | ((old: Style) => Style)): void
-  clearApplieds(): void
-  applyStyle(...names: T[]): void
+  private _styleHolder?: Styles<string>;
 }

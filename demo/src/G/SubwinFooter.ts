@@ -3,7 +3,7 @@ import { View } from "./View";
 export class SubwinFooter extends View<'div'> {
   constructor() {
     super('div');
-    this.styleHolder().applyStyle('normal', {
+    this.styles().apply('normal', {
       userSelect: 'none',
       width: '100%',
       color: '#FFFFFF88',

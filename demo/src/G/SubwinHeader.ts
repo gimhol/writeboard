@@ -17,8 +17,9 @@ export class SubwinHeader extends View<'div'> {
   get dragger() { return this._dragger; }
   constructor() {
     super('div');
-    this.styleHolder()
-      .applyStyle('normal', {
+    this.styles()
+      .applyCls('subwin_header')
+      .apply('normal', {
         userSelect: 'none',
         width: '100%',
         color: '#FFFFFF88',
@@ -32,7 +33,7 @@ export class SubwinHeader extends View<'div'> {
 
     this._iconView = new View('div')
     this._iconView.inner.innerHTML = '';
-    this._iconView.styleHolder().applyStyle('', {
+    this._iconView.styles().applyCls('subwinheader_iconview').apply('_', {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -42,7 +43,7 @@ export class SubwinHeader extends View<'div'> {
     this.addChild(this._iconView);
 
     this._titleView = new View('div')
-    this._titleView.styleHolder().applyStyle('', {
+    this._titleView.styles().applyCls('subwinheader_titleview').apply('wtf', {
       display: 'flex',
       alignItems: 'center',
       flex: '1',
@@ -50,7 +51,7 @@ export class SubwinHeader extends View<'div'> {
     this.addChild(this._titleView);
 
     this._btnClose = new IconButton({ content: '❎', size: SizeType.Small })
-    this._btnClose.styleHolder().applyStyle('', {
+    this._btnClose.styles().apply('_', {
       alignSelf: 'center',
       margin: '5px',
     })
@@ -64,7 +65,7 @@ export class SubwinHeader extends View<'div'> {
     });
   }
   override onAfterAdded(parent: View<keyof HTMLElementTagNameMap>): void {
-    this._dragger.view = parent.inner;
+    this._dragger.view = parent;
   }
 }
 

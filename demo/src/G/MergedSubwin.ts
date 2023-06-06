@@ -1,5 +1,6 @@
 import { View } from "./View";
 import { Subwin } from "./Subwin";
+import { DragInOutOB } from "./HoverOb";
 export interface SubwinTabInits {
   title: string;
   color: string;
@@ -7,7 +8,7 @@ export interface SubwinTabInits {
 export class SubwinTab extends View<'div'>{
   constructor(inits: SubwinTabInits) {
     super('div');
-    this.styleHolder().applyStyle('', {
+    this.styles().applyCls('subwin_tab').apply('_', {
       backgroundColor: inits.color,
       marginTop: '5px',
       paddingLeft: '5px',
@@ -20,36 +21,69 @@ export class SubwinTab extends View<'div'>{
       marginRight: '1px'
     })
     this.inner.append(inits.title);
+    this.inner.draggable = true;
+    this.inner.addEventListener('dragstart', (e) => {
+    })
+    // this.inner.addEventListener('dragend', (e) => console.log('[SubwinTab]', e.type, inits.title))
+    // this.inner.addEventListener('drag', (e) => console.log('[SubwinTab]', e.type, e))
+    this.inner.addEventListener('dragover', (e) => {
+      // if (e.target === this.inner) { return; }
+      // console.log('[SubwinTab]', e.type, inits.title)
+    })
   }
 }
+
 export class MergedSubwin extends Subwin {
   private subwins: Subwin[] = [];
   private tabs = new Map<Subwin, SubwinTab>();
   private activedSubwin?: Subwin;
+  private _dragOutOB: DragInOutOB;
+
   constructor() {
     super();
+    const onDragIn = (e: DragEvent, ele: HTMLElement) => {
+      console.log(ele.innerHTML, 'in')
+    }
+    const onDragOut = (e: DragEvent, ele: HTMLElement) => {
+      console.log(ele.innerHTML, 'out')
+    }
+    this._dragOutOB = new DragInOutOB({
+      ele: this.header.titleView.inner,
+      onDragOut,
+      onDragIn,
+    });
+
+
     this.header.iconView.inner.innerHTML = '▨';
+
     this.content = new View('div');
-    this.content?.styleHolder().applyStyle('', {
+    this.content?.styles().apply('_', {
       position: 'relative',
       flex: 1,
       minWidth: '250px',
       minHeight: '200px',
     });
-    this.styleHolder().applyStyle('normal', v => ({
+    this.styles().apply('normal', v => ({
       ...v
     }));
     this.removeChild(this.footer);
-    this.header.titleView.styleHolder().applyStyle('', {
+    this.header.titleView.styles().apply('_', {
       display: 'flex',
       overflow: 'hidden'
     })
   }
+  removeSubwin(subwin: Subwin) {
+    const idx = this.subwins.indexOf(subwin)
+    if (idx < 0) { return; }
+    this.subwins.splice(idx, 1);
+    subwin.styles().forgo('merged');
+    subwin.header.styles().forgo('merged');
+
+  }
   addSubWin(subwin: Subwin) {
     if (this.subwins.indexOf(subwin) >= 0) { return; }
     this.subwins.push(subwin);
-
-    subwin.styleHolder().applyStyle('merged', {
+    subwin.styles().apply('merged', {
       position: 'absolute',
       left: '0px',
       right: '0px',
@@ -61,7 +95,8 @@ export class MergedSubwin extends Subwin {
       boxShadow: 'none',
       resize: 'none'
     });
-    subwin.header.styleHolder().applyStyle('merged', { display: 'none' });
+    subwin.header.styles().apply('merged', { display: 'none' });
+
     this.content?.addChild(subwin);
     const tab = new SubwinTab({
       title: subwin.header.title,
@@ -73,15 +108,17 @@ export class MergedSubwin extends Subwin {
     const handleClick = () => {
       this.tabs.forEach((v, subwin) => {
         if (v === tab) {
-          v.styleHolder().forgoStyle('disactived');
-          subwin.styleHolder().forgoStyle('disactived');
+          v.styles().forgo('disactived');
+          subwin.styles().forgo('disactived');
         } else {
-          v.styleHolder().applyStyle('disactived', { opacity: '0.5' });
-          subwin.styleHolder().applyStyle('disactived', { display: 'none' });
+          v.styles().apply('disactived', { opacity: '0.5' });
+          subwin.styles().apply('disactived', { display: 'none' });
         }
       })
     }
-    this.header.dragger.ignores.push(tab.inner)
+
+    this._dragOutOB.addDraggble(tab.inner);
+    this.header.dragger.ignores?.push(tab.inner)
     tab.onClick(handleClick)
     handleClick();
   }
