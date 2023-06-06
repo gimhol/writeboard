@@ -43,7 +43,7 @@ layersView.addLayer({ name: 'layer_8' });
 layersView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '150px' }))
 
 const toolsView = new ToolsView;
-toolsView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '5px' }))
+toolsView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
 toolsView.onToolClick = (btn) => whiteBoard.setToolType(btn.toolType)
 
 const colorView = new ColorView;
@@ -286,7 +286,7 @@ let initState: State = {
               left: '0px',
               right: '0px',
               top: '0px',
-              bottom: '0px'
+              bottom: '0px',
             },
             oncontextmenu: (e) => {
               const ele = (e.target as HTMLElement);

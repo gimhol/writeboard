@@ -7,7 +7,7 @@ export class ToggleIconButton extends IconButton {
     super({ ...inits, checkable: true });
   }
 
-  onClick(cb: (self: ToggleIconButton) => void): ToggleIconButton {
+  override onClick(cb: (self: ToggleIconButton) => void): ToggleIconButton {
     this.cb = cb as any;
     return this;
   }

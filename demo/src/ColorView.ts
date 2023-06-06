@@ -25,8 +25,8 @@ class ColorKindButton extends Button {
     this._kind = inits.kind;
     this.styles().apply('normal', v => ({
       ...v,
-      paddingLeft: '5px',
-      paddingRight: '5px',
+      paddingLeft: 5,
+      paddingRight: 5,
     }))
 
     const content = new View('div');
@@ -39,10 +39,10 @@ class ColorKindButton extends Button {
 
     this._colorBrick = new View('div');
     this._colorBrick.styles().apply('_', {
-      marginLeft: '5px',
+      marginLeft: 5,
       background: '' + inits.defaultColor,
-      width: '16px',
-      height: '16px',
+      width: 16,
+      height: 16,
     })
     content.addChild(this._colorBrick)
     this._contents[0] = content;
@@ -145,7 +145,7 @@ export default class ColorView extends Subwin {
       display: 'grid',
       padding: '0px 5px',
       gridTemplateColumns: 'repeat(4, 10px auto)',
-      fontSize: '12px',
+      fontSize: 12,
       color: 'white',
       alignItems: 'center',
     });
@@ -188,15 +188,15 @@ class ColorNumInput extends NumberInput {
     this.max = 255;
     this.min = 0;
     this.styles().apply('_', {
-      minWidth: '0px',
+      minWidth: 0,
       flex: 1,
       background: 'transparent',
       color: 'white',
       border: 'none',
       outline: 'none',
-      borderRadius: '5px',
+      borderRadius: 5,
       margin: '5px 5px 3px 5px',
-      fontSize: '12px'
+      fontSize: 12
     });
   }
 }

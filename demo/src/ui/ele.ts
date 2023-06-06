@@ -112,7 +112,7 @@ export class UI<
     render?: EleRender<EleMap[T], S, SK, AK>
   ): EleMap[T] {
     const endIdx = this._eleStack.length - 1;
-    const parent = this._eleStack[endIdx];
+    const parent = this._eleStack[endIdx]!;
     const ele: EleMap[T] = document.createElement(tagName);
     this.applyOpts(ele, opts)
 

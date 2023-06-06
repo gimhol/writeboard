@@ -51,8 +51,6 @@ export class Button extends View<'button'> {
       inits?.content ?
         [inits?.content, inits?.content] :
         this._contents;
-
-
     this._titles = inits?.titles ?
       inits.titles :
       inits?.title ?
@@ -63,26 +61,26 @@ export class Button extends View<'button'> {
     this.styles().register(ButtonStyles.Hover, {
       background: '#00000022'
     }).register(ButtonStyles.Small, {
-      height: '18px',
-      lineHeight: '18px',
-      borderRadius: '5px',
-      fontSize: '12px',
+      height: 18,
+      lineHeight: 18,
+      borderRadius: 5,
+      fontSize: 12,
     }).register(ButtonStyles.Middle, {
-      height: '24px',
-      lineHeight: '24px',
-      borderRadius: '5px',
-      fontSize: '14px',
+      height: 24,
+      lineHeight: 24,
+      borderRadius: 5,
+      fontSize: 14,
     }).register(ButtonStyles.Large, {
-      height: '32px',
-      lineHeight: '32px',
-      borderRadius: '5px',
-      fontSize: '24px',
+      height: 32,
+      lineHeight: 32,
+      borderRadius: 5,
+      fontSize: 24,
     }).register(ButtonStyles.Normal, {
       userSelect: 'none',
       cursor: 'pointer',
       textAlign: 'center',
       transition: 'all 200ms',
-      padding: '0px',
+      padding: 0,
       background: 'transparent',
       display: 'inline-flex',
       alignItems: 'center',
@@ -111,7 +109,7 @@ export class Button extends View<'button'> {
   override onHover(hover: boolean): void {
     this.updateStyle();
   }
-  onClick(cb: (self: Button) => void): Button {
+  override onClick(cb: (self: Button) => void): Button {
     this.cb = cb as any;
     return this;
   }

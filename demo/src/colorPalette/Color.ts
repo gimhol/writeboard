@@ -69,8 +69,8 @@ export class RGB {
     rgb.sort(function sortNumber(a, b) {
       return a - b
     });
-    var max = rgb[2];
-    var min = rgb[0];
+    var max = rgb[2]!;
+    var min = rgb[0]!;
     var ret = new HSB(
       0,
       max == 0 ? 0 : (max - min) / max,
@@ -102,8 +102,8 @@ export class RGB {
 }
 
 export class RGBA extends RGB {
-  static get White() { return new RGBA(255, 255, 255, 255) }
-  static get Black() { return new RGBA(0, 0, 0, 255) }
+  static override get White() { return new RGBA(255, 255, 255, 255) }
+  static override get Black() { return new RGBA(0, 0, 0, 255) }
   static get WhiteT() { return new RGBA(255, 255, 255, 0) }
   static get BlackT() { return new RGBA(0, 0, 0, 0) }
   private _a: number = 0
@@ -112,7 +112,7 @@ export class RGBA extends RGB {
     this._a !== v
     this._a = clampI(0, 255, v)
   }
-  equal(o: RGBA) {
+  override equal(o: RGBA) {
     return this.r === o.r && this.g === o.g && this.b === o.b && this.a === o.a
   }
   setA(v: number) {
@@ -123,13 +123,13 @@ export class RGBA extends RGB {
     super(r, g, b)
     this.a = a
   }
-  copy() {
+  override copy() {
     return new RGBA(this.r, this.g, this.b, this.a)
   }
-  toString() {
+  override toString() {
     return `rgba(${this.r},${this.g},${this.b},${(this.a / 255).toFixed(2)})`;
   }
-  toHex() {
+  override toHex() {
     return "#" +
       (this.r < 16 ? '0' : '') +
       Math.floor(this.r).toString(16) +
@@ -182,18 +182,18 @@ export class HSB {
       t: this.b * (1 - (1 - f) * this.s),
       v: this.b
     };
-    var relations: (keyof typeof pool)[][] = [
+    var relations = [
       ['v', 't', 'p'],
       ['q', 'v', 'p'],
       ['p', 'v', 't'],
       ['p', 'q', 'v'],
       ['t', 'p', 'v'],
       ['v', 'p', 'q'],
-    ];
+    ] as const;
     return new RGB(
-      255 * pool[relations[i][0]],
-      255 * pool[relations[i][1]],
-      255 * pool[relations[i][2]]
+      255 * pool[relations[i]![0]],
+      255 * pool[relations[i]![1]],
+      255 * pool[relations[i]![2]]
     );
   }
   toRGBA(a: number) {

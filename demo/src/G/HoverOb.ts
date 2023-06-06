@@ -60,6 +60,7 @@ export class DragInOutOB {
     if (idx >= 0) { return false; }
     this._draggables.push(v);
     this.draggableListening(v, true);
+    return true;
   }
   removeDraggble(v: HTMLElement) {
     const idx = this._draggables.indexOf(v);
@@ -67,6 +68,7 @@ export class DragInOutOB {
     this._draggables.splice(idx, 1);
     this.draggableListening(v, false);
     this._dragging === v && delete this._dragging
+    return true;
   }
 
   get disabled() { return this._disabled; }
@@ -82,7 +84,7 @@ export class DragInOutOB {
   }
   private _dragenter = (e: DragEvent) => {
     this._node = (e.target as HTMLElement);
-    
+
   }
   private _dragleave = (e: DragEvent) => {
     if (this._node === e.target && this._dragging) {

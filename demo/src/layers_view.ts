@@ -7,8 +7,6 @@ import { CssObjectFit } from "./G/StyleType";
 import { Subwin } from "./G/Subwin";
 import { ToggleIconButton } from "./G/ToggleIconButton";
 import { View } from "./G/View";
-
-
 export interface ToolButtonInits {
   src: string;
   toolType: ToolType
@@ -21,8 +19,8 @@ export class ToolButton extends IconButton {
       content: new Img({
         src: inits.src,
         styles: {
-          width: '24px',
-          height: '24px',
+          width: 24,
+          height: 24,
           objectFit: CssObjectFit.Contain,
         }
       }),
@@ -33,7 +31,6 @@ export class ToolButton extends IconButton {
     this._toolType = inits.toolType;
   }
 }
-
 export class ToolsView extends Subwin {
   private _toolButtonGroup: ButtonGroup<ToolButton>;
   set onToolClick(v: (target: ToolButton) => void) {
@@ -61,7 +58,6 @@ export class ToolsView extends Subwin {
     this.removeChild(this.footer);
   }
 }
-
 export class LayersView extends Subwin {
   private _layers: LayerItemView[] = [];
   constructor() {
@@ -76,7 +72,7 @@ export class LayersView extends Subwin {
     })
     this.styles().apply('_', {
       minWidth: '225px',
-      width: '225px',
+      width: 225,
     })
 
     const btnAddLayer = new IconButton({ content: '📃', title: '新建图层', size: SizeType.Small })
@@ -97,7 +93,6 @@ export class LayersView extends Subwin {
     })
   }
 }
-
 export class LayerItemView extends View<'div'> {
   private _state = {
     visible: true,
@@ -105,6 +100,7 @@ export class LayerItemView extends View<'div'> {
     name: '',
     selected: false,
   };
+  private _prevStyleName?: string;
   get state() { return this._state; }
   get selected() { return this._state.selected; }
   set selected(v) {
@@ -115,23 +111,29 @@ export class LayerItemView extends View<'div'> {
     }))
   }
 
+  updateStyle() {
+    const styleName = `${this.hover}_${this.selected}`;
+    this.styles().remove(this._prevStyleName!).add(styleName).refresh()
+    this._prevStyleName = styleName;
+  }
+  override onHover(hover: boolean): void { this.updateStyle() }
+
   constructor(inits: ILayerInfoInit) {
     super('div')
     this._state.name = inits.name;
     this.styles().apply("_", {
       display: 'flex',
       position: 'relative',
-      padding: '5px',
+      padding: 5,
       borderBottom: '1px solid #00000022',
       transition: 'all 200ms',
     })
+    this.styles()
+      .register('false_false', {})
+      .register('true_false', { background: '#00000022' })
+      .register('false_true', { background: '#00000033' })
+      .register('true_true', { background: '#00000044' })
 
-    new HoverOb(this._inner, hover => {
-      this.styles().apply("_", v => ({
-        ...v,
-        background: hover ? '#00000022' : '#00000044'
-      }))
-    })
 
     const btn0 = new ToggleIconButton({
       checked: this._state.locked,

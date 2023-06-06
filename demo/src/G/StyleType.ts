@@ -14,10 +14,40 @@ export enum CssPosition {
   Sticky = 'sticky',
 }
 export interface Style extends Partial<Omit<CSSStyleDeclaration,
+  'length' | 'parentRule' |
+
   'flex' |
   'objectFit' |
   'position' |
-  'display'
+  'display' |
+  'width' |
+  'height' |
+  'maxWidth' |
+  'maxHeight' |
+  'minWidth' |
+  'minHeight' |
+  'left' |
+  'right' |
+  'top' |
+  'bottom' |
+  'borderRadius' |
+  'fontSize' |
+  'lineHeight' |
+  'padding' |
+  'paddingLeft' |
+  'paddingRight' |
+  'paddingBottom' |
+  'paddingTop' |
+  'margin' |
+  'marginLeft' |
+  'marginRight' |
+  'marginBottom' |
+  'marginTop' |
+  'borderRadius' |
+  'borderTopLeftRadius' |
+  'borderTopRightRadius' |
+  'borderBottomLeftRadius' |
+  'borderBottomRightRadius'
 >> {
   flex?: number | string;
   objectFit?: CssObjectFit | 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
@@ -39,5 +69,32 @@ export interface Style extends Partial<Omit<CSSStyleDeclaration,
   'initial' |
   'revert' |
   'revert-layer' |
-  'unset'
+  'unset';
+  width?: number | string;
+  height?: number | string;
+  maxWidth?: number | string;
+  maxHeight?: number | string;
+  minWidth?: number | string;
+  minHeight?: number | string;
+  left?: number | string;
+  right?: number | string;
+  top?: number | string;
+  bottom?: number | string;
+  borderRadius?: number | string;
+  fontSize?: number | string;
+  lineHeight?: number | string;
+  borderTopLeftRadius?: number | string;
+  borderTopRightRadius?: number | string;
+  borderBottomLeftRadius?: number | string;
+  borderBottomRightRadius?: number | string;
+  padding?: number | string;
+  paddingLeft?: number | string;
+  paddingRight?: number | string;
+  paddingBottom?: number | string;
+  paddingTop?: number | string;
+  margin?: number | string;
+  marginLeft?: number | string;
+  marginRight?: number | string;
+  marginBottom?: number | string;
+  marginTop?: number | string;
 };

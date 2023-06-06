@@ -30,7 +30,7 @@ export class Subwin extends View<'div'> {
       border: '1px solid black',
       resize: 'both',
       boxShadow: '5px 5px 10px 10px #00000022',
-      borderRadius: '5px',
+      borderRadius: 5,
       display: 'flex',
       flexDirection: 'column',
     })

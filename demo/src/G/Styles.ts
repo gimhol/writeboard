@@ -5,7 +5,7 @@ import { View } from "./View";
 export class Styles<T extends string = string>{
   private _view: View<keyof HTMLElementTagNameMap>;
   private _pool = new Map<T, Style>();
-  private _applieds: T[] = [];
+  private _applieds = new Set<T>();
   get view() { return this._view; }
   constructor(view: View) {
     this._view = view;
@@ -16,29 +16,22 @@ export class Styles<T extends string = string>{
     if (!ret) { console.warn(`style '${name}' not found!`); }
     return ret ?? {};
   }
+
   register(name: T, style: ReValue<Style>): Styles<T> {
     this._pool.set(name, reValue(style, this._pool.get(name) ?? {}));
     return this;
   }
 
   add(...names: T[]): Styles<T> {
-    names.forEach(name => {
-      const idx = this._applieds.indexOf(name);
-      if (idx >= 0) { this._applieds.splice(idx, 1); }
-      this._applieds.push(name)
-    });
+    names.forEach(name => this._applieds.add(name));
     return this;
   }
   remove(...names: T[]): Styles<T> {
-    names.forEach(name => {
-      const idx = this._applieds.indexOf(name);
-      if (idx >= 0)
-        this._applieds.splice(idx, 1);
-    });
+    names.forEach(name => this._applieds.delete(name));
     return this;
   }
   clear(): Styles<T> {
-    this._applieds.length = 0;
+    this._applieds.clear();
     this.view.inner.removeAttribute('style');
     return this;
   }
@@ -46,27 +39,63 @@ export class Styles<T extends string = string>{
     this.remove(...names).refresh();
     return this;
   }
-  get applieds(): T[] { return this._applieds; }
+  get applieds(): Set<T> { return this._applieds; }
   refresh() {
     this.view.inner.removeAttribute('style');
-    Object.assign(this.view.inner.style, ...this._applieds.map(name => this.read(name)));
+    this._applieds.forEach(name => {
+      const style = this.makeUp(this.read(name));
+      Object.assign(this.view.inner.style, style)
+    });
   }
+
   apply(name: T, style: ReValue<Style>): Styles<T> {
     this.register(name, style).add(name).refresh();
     return this;
   }
-
-
   applyCls(...names: string[]): Styles<T> {
-    this.view.inner.className = Array.from(
-      new Set(Array.from(this.view.inner.classList).concat(names))
-    ).join(' ');
+    names.forEach(name => this.view.inner.classList.add(name))
     return this;
   }
   removeCls(...names: string[]): Styles<T> {
-    this.view.inner.className = Array.from(
-      new Set(Array.from(this.view.inner.classList).filter(v => names.indexOf(v) < 0))
-    ).join(' ');
+    names.forEach(name => this.view.inner.classList.remove(name))
     return this;
   }
+  private makeUp(style: Style): Style {
+    const ret: Style = { ...style }
+    autoPxKeys.forEach(key => {
+      if (typeof ret[key] === 'number') {
+        (ret as any)[key] = `${ret[key]}px`
+      }
+    })
+    return ret;
+  }
 }
+const autoPxKeys = new Set<keyof Style>([
+  'width',
+  'height',
+  'maxWidth',
+  'maxHeight',
+  'minWidth',
+  'minHeight',
+  'left',
+  'right',
+  'top',
+  'bottom',
+  'borderRadius',
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomLeftRadius',
+  'borderBottomRightRadius',
+  'fontSize',
+  'lineHeight',
+  'padding',
+  'paddingLeft',
+  'paddingRight',
+  'paddingBottom',
+  'paddingTop',
+  'margin',
+  'marginLeft',
+  'marginRight',
+  'marginBottom',
+  'marginTop',
+])

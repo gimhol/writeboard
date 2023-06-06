@@ -20,7 +20,7 @@ class ColorKindButton extends Button_1.Button {
     constructor(inits) {
         super(inits);
         this._kind = inits.kind;
-        this.styles().apply('normal', v => (Object.assign(Object.assign({}, v), { paddingLeft: '5px', paddingRight: '5px' })));
+        this.styles().apply('normal', v => (Object.assign(Object.assign({}, v), { paddingLeft: 5, paddingRight: 5 })));
         const content = new View_1.View('div');
         content.styles().apply('_', {
             display: 'inline-flex',
@@ -30,10 +30,10 @@ class ColorKindButton extends Button_1.Button {
         content.inner.append(inits.kind + ' ');
         this._colorBrick = new View_1.View('div');
         this._colorBrick.styles().apply('_', {
-            marginLeft: '5px',
+            marginLeft: 5,
             background: '' + inits.defaultColor,
-            width: '16px',
-            height: '16px',
+            width: 16,
+            height: 16,
         });
         content.addChild(this._colorBrick);
         this._contents[0] = content;
@@ -121,7 +121,7 @@ class ColorView extends Subwin_1.Subwin {
             display: 'grid',
             padding: '0px 5px',
             gridTemplateColumns: 'repeat(4, 10px auto)',
-            fontSize: '12px',
+            fontSize: 12,
             color: 'white',
             alignItems: 'center',
         });
@@ -163,15 +163,15 @@ class ColorNumInput extends TextInput_1.NumberInput {
         this.max = 255;
         this.min = 0;
         this.styles().apply('_', {
-            minWidth: '0px',
+            minWidth: 0,
             flex: 1,
             background: 'transparent',
             color: 'white',
             border: 'none',
             outline: 'none',
-            borderRadius: '5px',
+            borderRadius: 5,
             margin: '5px 5px 3px 5px',
-            fontSize: '12px'
+            fontSize: 12
         });
     }
 }
@@ -236,26 +236,26 @@ class Button extends View_1.View {
         this.styles().register(ButtonStyles.Hover, {
             background: '#00000022'
         }).register(ButtonStyles.Small, {
-            height: '18px',
-            lineHeight: '18px',
-            borderRadius: '5px',
-            fontSize: '12px',
+            height: 18,
+            lineHeight: 18,
+            borderRadius: 5,
+            fontSize: 12,
         }).register(ButtonStyles.Middle, {
-            height: '24px',
-            lineHeight: '24px',
-            borderRadius: '5px',
-            fontSize: '14px',
+            height: 24,
+            lineHeight: 24,
+            borderRadius: 5,
+            fontSize: 14,
         }).register(ButtonStyles.Large, {
-            height: '32px',
-            lineHeight: '32px',
-            borderRadius: '5px',
-            fontSize: '24px',
+            height: 32,
+            lineHeight: 32,
+            borderRadius: 5,
+            fontSize: 24,
         }).register(ButtonStyles.Normal, {
             userSelect: 'none',
             cursor: 'pointer',
             textAlign: 'center',
             transition: 'all 200ms',
-            padding: '0px',
+            padding: 0,
             background: 'transparent',
             display: 'inline-flex',
             alignItems: 'center',
@@ -447,6 +447,7 @@ class DragInOutOB {
         }
         this._draggables.push(v);
         this.draggableListening(v, true);
+        return true;
     }
     removeDraggble(v) {
         const idx = this._draggables.indexOf(v);
@@ -456,6 +457,7 @@ class DragInOutOB {
         this._draggables.splice(idx, 1);
         this.draggableListening(v, false);
         this._dragging === v && delete this._dragging;
+        return true;
     }
     get disabled() { return this._disabled; }
     set disabled(v) {
@@ -543,15 +545,15 @@ class SubwinTab extends View_1.View {
         super('div');
         this.styles().applyCls('subwin_tab').apply('_', {
             backgroundColor: inits.color,
-            marginTop: '5px',
-            paddingLeft: '5px',
-            paddingRight: '5px',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
+            marginTop: 5,
+            paddingLeft: 5,
+            paddingRight: 5,
+            borderTopLeftRadius: 5,
+            borderTopRightRadius: 5,
             alignSelf: 'stretch',
             display: 'flex',
             alignItems: 'center',
-            marginRight: '1px'
+            marginRight: 1
         });
         this.inner.append(inits.title);
         this.inner.draggable = true;
@@ -615,10 +617,10 @@ class MergedSubwin extends Subwin_1.Subwin {
         this.subwins.push(subwin);
         subwin.styles().apply('merged', {
             position: 'absolute',
-            left: '0px',
-            right: '0px',
-            top: '0px',
-            bottom: '0px',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
             width: '100%',
             height: '100%',
             border: 'none',
@@ -685,7 +687,7 @@ class Styles {
     get view() { return this._view; }
     constructor(view) {
         this._pool = new Map();
-        this._applieds = [];
+        this._applieds = new Set();
         this._view = view;
     }
     pool() { return this._pool; }
@@ -702,25 +704,15 @@ class Styles {
         return this;
     }
     add(...names) {
-        names.forEach(name => {
-            const idx = this._applieds.indexOf(name);
-            if (idx >= 0) {
-                this._applieds.splice(idx, 1);
-            }
-            this._applieds.push(name);
-        });
+        names.forEach(name => this._applieds.add(name));
         return this;
     }
     remove(...names) {
-        names.forEach(name => {
-            const idx = this._applieds.indexOf(name);
-            if (idx >= 0)
-                this._applieds.splice(idx, 1);
-        });
+        names.forEach(name => this._applieds.delete(name));
         return this;
     }
     clear() {
-        this._applieds.length = 0;
+        this._applieds.clear();
         this.view.inner.removeAttribute('style');
         return this;
     }
@@ -731,22 +723,63 @@ class Styles {
     get applieds() { return this._applieds; }
     refresh() {
         this.view.inner.removeAttribute('style');
-        Object.assign(this.view.inner.style, ...this._applieds.map(name => this.read(name)));
+        this._applieds.forEach(name => {
+            const style = this.makeUp(this.read(name));
+            Object.assign(this.view.inner.style, style);
+        });
     }
     apply(name, style) {
         this.register(name, style).add(name).refresh();
         return this;
     }
     applyCls(...names) {
-        this.view.inner.className = Array.from(new Set(Array.from(this.view.inner.classList).concat(names))).join(' ');
+        names.forEach(name => this.view.inner.classList.add(name));
         return this;
     }
     removeCls(...names) {
-        this.view.inner.className = Array.from(new Set(Array.from(this.view.inner.classList).filter(v => names.indexOf(v) < 0))).join(' ');
+        names.forEach(name => this.view.inner.classList.remove(name));
         return this;
+    }
+    makeUp(style) {
+        const ret = Object.assign({}, style);
+        autoPxKeys.forEach(key => {
+            if (typeof ret[key] === 'number') {
+                ret[key] = `${ret[key]}px`;
+            }
+        });
+        return ret;
     }
 }
 exports.Styles = Styles;
+const autoPxKeys = new Set([
+    'width',
+    'height',
+    'maxWidth',
+    'maxHeight',
+    'minWidth',
+    'minHeight',
+    'left',
+    'right',
+    'top',
+    'bottom',
+    'borderRadius',
+    'borderTopLeftRadius',
+    'borderTopRightRadius',
+    'borderBottomLeftRadius',
+    'borderBottomRightRadius',
+    'fontSize',
+    'lineHeight',
+    'padding',
+    'paddingLeft',
+    'paddingRight',
+    'paddingBottom',
+    'paddingTop',
+    'margin',
+    'marginLeft',
+    'marginRight',
+    'marginBottom',
+    'marginTop',
+]);
 
 },{"./utils":19}],11:[function(require,module,exports){
 "use strict";
@@ -785,7 +818,7 @@ class Subwin extends View_1.View {
             border: '1px solid black',
             resize: 'both',
             boxShadow: '5px 5px 10px 10px #00000022',
-            borderRadius: '5px',
+            borderRadius: 5,
             display: 'flex',
             flexDirection: 'column',
         });
@@ -807,7 +840,7 @@ class SubwinFooter extends View_1.View {
             userSelect: 'none',
             width: '100%',
             color: '#FFFFFF88',
-            padding: '3px',
+            padding: 3,
             background: '#333333',
             borderBottom: '#333333',
             display: 'flex',
@@ -844,7 +877,7 @@ class SubwinHeader extends View_1.View {
             color: '#FFFFFF88',
             background: '#222222',
             borderBottom: '#222222',
-            fontSize: '12px',
+            fontSize: 12,
             display: 'flex',
             boxSizing: 'border-box',
             alignItems: 'stretch',
@@ -855,7 +888,7 @@ class SubwinHeader extends View_1.View {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '5px',
+            margin: 5,
         });
         this.addChild(this._iconView);
         this._titleView = new View_1.View('div');
@@ -868,7 +901,7 @@ class SubwinHeader extends View_1.View {
         this._btnClose = new IconButton_1.IconButton({ content: '❎', size: Button_1.SizeType.Small });
         this._btnClose.styles().apply('_', {
             alignSelf: 'center',
-            margin: '5px',
+            margin: 5,
         });
         this.addChild(this._btnClose);
         this._dragger = new ViewDragger_1.ViewDragger({
@@ -1849,7 +1882,7 @@ layersView.addLayer({ name: 'layer_7' });
 layersView.addLayer({ name: 'layer_8' });
 layersView.styles().apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '150px' })));
 const toolsView = new layers_view_1.ToolsView;
-toolsView.styles().apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '5px' })));
+toolsView.styles().apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: 5 })));
 toolsView.onToolClick = (btn) => whiteBoard.setToolType(btn.toolType);
 const colorView = new ColorView_1.default;
 colorView.styles().apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '400px' })));
@@ -2079,7 +2112,7 @@ window.ui = new ele_1.UI(document.body, () => initState, (ui) => {
                         left: '0px',
                         right: '0px',
                         top: '0px',
-                        bottom: '0px'
+                        bottom: '0px',
                     },
                     oncontextmenu: (e) => {
                         const ele = e.target;
@@ -2135,8 +2168,8 @@ class ToolButton extends IconButton_1.IconButton {
             content: new Img_1.Img({
                 src: inits.src,
                 styles: {
-                    width: '24px',
-                    height: '24px',
+                    width: 24,
+                    height: 24,
                     objectFit: StyleType_1.CssObjectFit.Contain,
                 }
             }),
@@ -2186,7 +2219,7 @@ class LayersView extends Subwin_1.Subwin {
         });
         this.styles().apply('_', {
             minWidth: '225px',
-            width: '225px',
+            width: 225,
         });
         const btnAddLayer = new IconButton_1.IconButton({ content: '📃', title: '新建图层', size: Button_1.SizeType.Small });
         this.footer.addChild(btnAddLayer);
@@ -2215,6 +2248,12 @@ class LayerItemView extends View_1.View {
         this._state.selected = v;
         this.styles().apply("_", v => (Object.assign(Object.assign({}, v), { background: this.state.selected ? '#00000044' : '' })));
     }
+    updateStyle() {
+        const styleName = `${this.hover}_${this.selected}`;
+        this.styles().remove(this._prevStyleName).add(styleName).refresh();
+        this._prevStyleName = styleName;
+    }
+    onHover(hover) { this.updateStyle(); }
     constructor(inits) {
         super('div');
         this._state = {
@@ -2227,13 +2266,15 @@ class LayerItemView extends View_1.View {
         this.styles().apply("_", {
             display: 'flex',
             position: 'relative',
-            padding: '5px',
+            padding: 5,
             borderBottom: '1px solid #00000022',
             transition: 'all 200ms',
         });
-        new HoverOb_1.HoverOb(this._inner, hover => {
-            this.styles().apply("_", v => (Object.assign(Object.assign({}, v), { background: hover ? '#00000022' : '#00000044' })));
-        });
+        this.styles()
+            .register('false_false', {})
+            .register('true_false', { background: '#00000022' })
+            .register('false_true', { background: '#00000033' })
+            .register('true_true', { background: '#00000044' });
         const btn0 = new ToggleIconButton_1.ToggleIconButton({
             checked: this._state.locked,
             contents: ['🔓', '🔒']

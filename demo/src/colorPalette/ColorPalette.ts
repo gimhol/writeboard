@@ -104,14 +104,14 @@ class ColorCol extends Base {
     this.update();
   }
   set onChanged(cb: (hues: number) => void) { this._onChanged = cb }
-  updatePos(e: PointerEvent): void {
+  override updatePos(e: PointerEvent): void {
     super.updatePos(e);
     const { y } = this._pos
     this._result = clampF(0, 360, (y / this._rect.h) * 360)
     this._onChanged?.(this._result);
     this.update();
   }
-  drawOffscreen() {
+  override drawOffscreen() {
     const ctx = this._offscreen.getContext('2d')!
     ctx.clearRect(this._rect.x, this._rect.y, this._rect.w, this._rect.h)
 
@@ -138,7 +138,7 @@ class ColorCol extends Base {
     const length = this.__colors.length
     for (var i = 0; i < length; ++i) {
       var step = i / (length - 1)
-      var color = this.__colors[i].toString()
+      var color = this.__colors[i]!.toString()
       grd.addColorStop(step, color)
     }
     ctx.fillStyle = grd
@@ -179,7 +179,7 @@ class AlphaRow extends Base {
   set onChanged(cb: (rgb: RGBA) => void) {
     this._onChanged = cb
   }
-  updatePos(e: PointerEvent): void {
+  override updatePos(e: PointerEvent): void {
     super.updatePos(e)
     const { x } = this._pos
     this._value = this._base.toRGBA(
@@ -188,7 +188,7 @@ class AlphaRow extends Base {
     this._onChanged?.(this._value)
     this.update();
   }
-  drawOffscreen() {
+  override drawOffscreen() {
     const ctx = this._offscreen.getContext('2d')!
     ctx.clearRect(this._rect.x, this._rect.y, this._rect.w, this._rect.h)
 
@@ -253,7 +253,7 @@ class HBZone extends Base {
     this.update()
   }
   set onChanged(cb: (rgb: HSB) => void) { this._onChanged = cb; }
-  updatePos(e: PointerEvent): void {
+  override updatePos(e: PointerEvent): void {
     super.updatePos(e);
     const { x, y } = this._pos
     this._value = new HSB(this._hues,
@@ -263,7 +263,7 @@ class HBZone extends Base {
     this._onChanged?.(this._value)
     this.update();
   }
-  drawOffscreen() {
+  override drawOffscreen() {
     const ctx = this._offscreen.getContext('2d')!
     ctx.clearRect(this._rect.x, this._rect.y, this._rect.w, this._rect.h)
     const g0 = ctx.createLinearGradient(this._rect.x, this._rect.y, this._rect.x + this._rect.w, this._rect.y);
@@ -308,7 +308,7 @@ class FinalZone extends Base {
     this._prev = color.copy()
     this.update()
   }
-  drawOffscreen(): void {
+  override drawOffscreen(): void {
     const ctx = this._offscreen.getContext('2d')!
     ctx.clearRect(this._rect.x, this._rect.y, this._rect.w, this._rect.h)
 

@@ -7,7 +7,7 @@ export class SubwinFooter extends View<'div'> {
       userSelect: 'none',
       width: '100%',
       color: '#FFFFFF88',
-      padding: '3px',
+      padding: 3,
       background: '#333333',
       borderBottom: '#333333',
       display: 'flex',

@@ -10,15 +10,15 @@ export class SubwinTab extends View<'div'>{
     super('div');
     this.styles().applyCls('subwin_tab').apply('_', {
       backgroundColor: inits.color,
-      marginTop: '5px',
-      paddingLeft: '5px',
-      paddingRight: '5px',
-      borderTopLeftRadius: '5px',
-      borderTopRightRadius: '5px',
+      marginTop: 5,
+      paddingLeft: 5,
+      paddingRight: 5,
+      borderTopLeftRadius: 5,
+      borderTopRightRadius: 5,
       alignSelf: 'stretch',
       display: 'flex',
       alignItems: 'center',
-      marginRight: '1px'
+      marginRight: 1
     })
     this.inner.append(inits.title);
     this.inner.draggable = true;
@@ -85,10 +85,10 @@ export class MergedSubwin extends Subwin {
     this.subwins.push(subwin);
     subwin.styles().apply('merged', {
       position: 'absolute',
-      left: '0px',
-      right: '0px',
-      top: '0px',
-      bottom: '0px',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
       width: '100%',
       height: '100%',
       border: 'none',

@@ -25,7 +25,7 @@ export class SubwinHeader extends View<'div'> {
         color: '#FFFFFF88',
         background: '#222222',
         borderBottom: '#222222',
-        fontSize: '12px',
+        fontSize: 12,
         display: 'flex',
         boxSizing: 'border-box',
         alignItems: 'stretch',
@@ -37,7 +37,7 @@ export class SubwinHeader extends View<'div'> {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      margin: '5px',
+      margin: 5,
     })
 
     this.addChild(this._iconView);
@@ -53,7 +53,7 @@ export class SubwinHeader extends View<'div'> {
     this._btnClose = new IconButton({ content: '❎', size: SizeType.Small })
     this._btnClose.styles().apply('_', {
       alignSelf: 'center',
-      margin: '5px',
+      margin: 5,
     })
     this.addChild(this._btnClose);
 
