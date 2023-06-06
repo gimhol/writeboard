@@ -810,7 +810,7 @@ class Subwin extends View_1.View {
         }
         this._content = v;
         if (v) {
-            this.insertBefore(v, this._footer);
+            this.insertBefore(this._footer, v);
         }
     }
     constructor() {
@@ -1153,10 +1153,12 @@ class View {
             child.onAfterAdded(this);
         });
     }
-    insertBefore(child, anchor) {
-        child.onBeforeAdded(this);
-        this._inner.insertBefore(child.inner, anchor.inner);
-        child.onAfterAdded(this);
+    insertBefore(anchor, ...children) {
+        children.forEach(child => {
+            child.onBeforeAdded(this);
+            this._inner.insertBefore(child.inner, anchor.inner);
+            child.onAfterAdded(this);
+        });
     }
     removeChild(...children) {
         children.forEach(child => {
@@ -1171,10 +1173,9 @@ class View {
         return this;
     }
     styles() {
-        if (!this._styleHolder) {
-            this._styleHolder = new Styles_1.Styles(this);
-        }
-        return this._styleHolder;
+        var _a;
+        this._styles = (_a = this._styles) !== null && _a !== void 0 ? _a : new Styles_1.Styles(this);
+        return this._styles;
     }
 }
 exports.View = View;

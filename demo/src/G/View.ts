@@ -55,10 +55,12 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
       child.onAfterAdded(this);
     })
   }
-  insertBefore(child: View, anchor: View) {
-    child.onBeforeAdded(this);
-    this._inner.insertBefore(child.inner, anchor.inner);
-    child.onAfterAdded(this);
+  insertBefore(anchor: View, ...children: View[]) {
+    children.forEach(child => {
+      child.onBeforeAdded(this);
+      this._inner.insertBefore(child.inner, anchor.inner);
+      child.onAfterAdded(this);
+    })
   }
   removeChild(...children: View[]) {
     children.forEach(child => {
@@ -73,10 +75,8 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     return this;
   }
   styles(): Styles<string> {
-    if (!this._styleHolder) {
-      this._styleHolder = new Styles<string>(this)
-    }
-    return this._styleHolder;
+    this._styles = this._styles ?? new Styles<string>(this)
+    return this._styles;
   }
-  private _styleHolder?: Styles<string>;
+  private _styles?: Styles<string>;
 }
