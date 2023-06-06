@@ -55,7 +55,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
       child.onAfterAdded(this);
     })
   }
-  insertBefore(anchor: View, ...children: View[]) {
+  insertChild(anchor: View, ...children: View[]) {
     children.forEach(child => {
       child.onBeforeAdded(this);
       this._inner.insertBefore(child.inner, anchor.inner);

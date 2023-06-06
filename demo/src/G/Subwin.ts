@@ -16,7 +16,7 @@ export class Subwin extends View<'div'> {
   set content(v) {
     if (this._content) { this.removeChild(this._content); }
     this._content = v;
-    if (v) { this.insertBefore(this._footer, v); }
+    if (v) { this.insertChild(this._footer, v); }
   }
 
   constructor() {

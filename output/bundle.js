@@ -810,7 +810,7 @@ class Subwin extends View_1.View {
         }
         this._content = v;
         if (v) {
-            this.insertBefore(this._footer, v);
+            this.insertChild(this._footer, v);
         }
     }
     constructor() {
@@ -1153,7 +1153,7 @@ class View {
             child.onAfterAdded(this);
         });
     }
-    insertBefore(anchor, ...children) {
+    insertChild(anchor, ...children) {
         children.forEach(child => {
             child.onBeforeAdded(this);
             this._inner.insertBefore(child.inner, anchor.inner);
