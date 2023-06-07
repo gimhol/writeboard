@@ -17,7 +17,8 @@ import { SubwinWorkspace } from "./G/Helper/SubwinWorkspace";
 import { RGBA } from "./colorPalette/Color";
 import demo_helloworld from "./demo_helloworld";
 import demo_rect_n_oval from "./demo_rect_n_oval";
-import { LayersView, ToolsView } from "./layers_view";
+import { LayersView } from "./LayersView";
+import { ToolsView } from "./ToolsView";
 
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let board: WhiteBoard
@@ -25,7 +26,7 @@ let board: WhiteBoard
 const mergedSubwin2 = new MergedSubwin();
 const mergedSubwin = new MergedSubwin();
 
-const layersView = new LayersView({ factory });
+const layersView = new LayersView();
 
 layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
   const layerItem = layersView.addLayer({
@@ -41,19 +42,14 @@ layersView.addEventListener(LayersView.EventType.LayerVisibleChanged, e => {
   if (!layer) { return; }
   layer.opacity = visible ? 1 : 0;
 })
-
+layersView.addEventListener(LayersView.EventType.LayerActived, e => {
+  const { id } = e.detail;
+  board.editLayer(id);
+})
 layersView.addLayer({
   name: '' + Date.now(),
   id: factory.newLayerId()
 });
-
-
-
-
-
-
-
-
 
 
 const toolsView = new ToolsView;
@@ -123,21 +119,23 @@ toyView.content.styles().apply('', {
   overflowY: 'auto',
   overflowX: 'hidden'
 })
-toyView.content.addChild(new Button({
+toyView.content.addChild()
+
+new Button({
   content: 'select all'
-}).onClick(() => board.selectAll()))
+}).addEventListener('click', () => board.selectAll())
 
 toyView.content.addChild(new Button({
   content: 'remove selected'
-}).onClick(() => board.removeSelected()))
+}).addEventListener('click', () => board.removeSelected()))
 
 toyView.content.addChild(new Button({
   content: 'remove all'
-}).onClick(() => board.removeAll()))
+}).addEventListener('click', () => board.removeAll()))
 
 toyView.content.addChild(new Button({
   content: 'random add 1000 rect'
-}).onClick(() => {
+}).addEventListener('click', () => {
   const items: Shape[] = []
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Rect)
@@ -156,7 +154,7 @@ toyView.content.addChild(new Button({
 
 toyView.content.addChild(new Button({
   content: 'random add 1000 oval'
-}).onClick(() => {
+}).addEventListener('click', () => {
   const items: Shape[] = []
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Oval)
@@ -175,7 +173,7 @@ toyView.content.addChild(new Button({
 
 toyView.content.addChild(new Button({
   content: 'random draw 1000 pen'
-}).onClick(() => {
+}).addEventListener('click', () => {
   const items: Shape[] = []
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Pen) as ShapePen
@@ -206,10 +204,10 @@ jsonView.header.title = 'json';
 jsonView.content = new View('div');
 jsonView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
 const _recorder_textarea = new View('textarea')
-jsonView.content.addChild(new Button({ content: 'JSON化' }).onClick(() => {
+jsonView.content.addChild(new Button({ content: 'JSON化' }).addEventListener('click', () => {
 
 }));
-jsonView.content.addChild(new Button({ content: '反JSON化' }).onClick(() => {
+jsonView.content.addChild(new Button({ content: '反JSON化' }).addEventListener('click', () => {
 
 }));
 jsonView.content.addChild(_recorder_textarea);
@@ -239,18 +237,18 @@ workspace.addSubWin(jsonView);
   recorderView.content = new View('div');
   recorderView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
   const _json_textarea = new View('textarea')
-  recorderView.content.addChild(new Button({ content: '开始录制' }).onClick(startRecord));
-  recorderView.content.addChild(new Button({ content: '停止录制' }).onClick(endRecord));
-  recorderView.content.addChild(new Button({ content: '回放' }).onClick(() => {
+  recorderView.content.addChild(new Button({ content: '开始录制' }).addEventListener('click', startRecord));
+  recorderView.content.addChild(new Button({ content: '停止录制' }).addEventListener('click', endRecord));
+  recorderView.content.addChild(new Button({ content: '回放' }).addEventListener('click', () => {
     endRecord()
     replay(_recorder_textarea.inner.value)
   }));
 
-  recorderView.content.addChild(new Button({ content: 'replay: write "hello world"' }).onClick(() => {
+  recorderView.content.addChild(new Button({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
     endRecord()
     replay(demo_helloworld)
   }));
-  recorderView.content.addChild(new Button({ content: 'replay: rect & oval' }).onClick(() => {
+  recorderView.content.addChild(new Button({ content: 'replay: rect & oval' }).addEventListener('click', () => {
     endRecord()
     replay(demo_rect_n_oval)
   }));

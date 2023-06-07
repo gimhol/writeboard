@@ -5,27 +5,20 @@ import { Styles } from "./Styles";
 
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
 
-  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): View<T>;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-  addEventListener(arg0: any, arg1: any, arg2: any): void {
-    this.inner.addEventListener(arg0, arg1, arg2)
+  addEventListener(arg0: any, arg1: any, arg2: any): View<T> {
+    this.inner.addEventListener(arg0, arg1, arg2);
+    return this;
   }
-  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
-  removeEventListener(arg0: any, arg1: any, arg2: any): void {
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): View<T>;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): View<T>;
+  removeEventListener(arg0: any, arg1: any, arg2: any): View<T> {
     this.inner.removeEventListener(arg0, arg1, arg2)
+    return this;
   }
   protected _inner: HTMLElementTagNameMap[T];
-  private _cb?: (self: View) => void
-  private _handleClick = () => { this._cb?.(this) };
-  protected get cb() { return this._cb; }
-  protected set cb(v) { this._cb = v; }
-  protected get handleClick() { return this._handleClick; }
-  protected set handleClick(v) {
-    this._inner.removeEventListener('click', this._handleClick)
-    this._handleClick = v;
-    this._inner.addEventListener('click', this._handleClick)
-  }
+
   get id() { return this.inner.id; }
   set id(v) { this.inner.id = v; }
   get inner() { return this._inner; }
@@ -96,11 +89,6 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   }
   removeSelf() {
     this.parent?.removeChild(this);
-  }
-  onClick(cb: (self: View) => void): View {
-    this.handleClick = () => this.cb?.(this);
-    this.cb = cb as any;
-    return this;
   }
   styles(): Styles<string> {
     this._styles = this._styles ?? new Styles<string>(this)

@@ -28,6 +28,8 @@ export class Button extends View<'button'> {
   protected _titles: [string, string] = ['', ''];
   protected _checked = false;
   protected _checkable = false;
+  protected _handleClick: (this: HTMLObjectElement, ev: MouseEvent) => any;
+  protected _cb?: (self: Button) => void;
   get checked() { return this._checked; }
   set checked(v) {
     this._checked = v;
@@ -95,23 +97,19 @@ export class Button extends View<'button'> {
     this.editStyle(false, true, false, { background: '#444444' })
     this.editStyle(false, false, true, {})
     this.editStyle(false, false, false, {})
-    this.handleClick = () => {
+    this._handleClick = () => {
       if (this._checkable) { this._checked = !this._checked; }
-      this.cb?.(this as any);
       this.updateStyle()
       this.updateContent();
       this.updateTitle();
     };
+    this.addEventListener('click', this._handleClick)
     this.updateContent();
     this.updateTitle();
     this.updateSize();
   }
   override onHover(hover: boolean): void {
     this.updateStyle();
-  }
-  override onClick(cb: (self: Button) => void): Button {
-    this.cb = cb as any;
-    return this;
   }
   private _prevStyleNames = ''
   updateStyle() {

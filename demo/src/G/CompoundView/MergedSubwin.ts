@@ -120,7 +120,7 @@ export class MergedSubwin extends Subwin {
 
     this._dragOutOB.addDraggble(tab.inner);
     this.dragger.ignores?.push(tab)
-    tab.onClick(handleClick)
+    tab.addEventListener('click', handleClick)
     handleClick();
   }
 }

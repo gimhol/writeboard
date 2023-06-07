@@ -16,8 +16,4 @@ export class IconButton extends Button {
       }));
     this.updateSize()
   }
-  override onClick(cb: (self: IconButton) => void): IconButton {
-    this.cb = cb as any;
-    return this;
-  }
 }
