@@ -53,9 +53,9 @@ export class PenTool implements ITool {
   pointerMove(dot: IDot): void { }
   pointerDown(dot: IDot): void {
     const board = this.board
-    if (!board) return
+    if (!board) return;
     this._curShape = board.factory.newShape(ShapeEnum.Pen) as ShapePen
-    this._curShape.data.layer = board.currentLayer().info.name;
+    this._curShape.data.layer = board.layer().id;
     this._curShape.data.editing = true
     board.add(this._curShape)
     this.addDot(dot, 'first')

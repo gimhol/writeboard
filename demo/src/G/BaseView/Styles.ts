@@ -62,12 +62,16 @@ export class Styles<T extends string = string>{
     this.register(name, style).add(name).refresh();
     return this;
   }
+  resetCls(...names: string[]): Styles<T> {
+    this.view.inner.className = '';
+    return this.applyCls(...names);
+  }
   applyCls(...names: string[]): Styles<T> {
-    names.forEach(name => this.view.inner.classList.add(name))
+    this.view.inner.classList.add(...names)
     return this;
   }
   removeCls(...names: string[]): Styles<T> {
-    names.forEach(name => this.view.inner.classList.remove(name))
+    this.view.inner.classList.remove(...names)
     return this;
   }
   private makeUp(style: Style): Style {

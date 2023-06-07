@@ -11,17 +11,18 @@ import type { ShapeType } from "../shape/ShapeEnum";
 import type { ToolType } from "../tools/ToolEnum";
 
 export interface IFactory {
-  get type(): FactoryType
-  shapeTemplate(shapeType: ShapeType): ShapeData
-  setShapeTemplate(shapeType: ShapeType, template: ShapeData): void
-  newWhiteBoard(options: WhiteBoardOptions): WhiteBoard
-  newShapesMgr(): IShapesMgr
-  newTool(toolType: ToolType): ITool
-  newShapeData(shapeType: ShapeType): ShapeData
-  newId(data: ShapeData): string
-  newZ(data: ShapeData): number
+  get type(): FactoryType;
+  shapeTemplate(shapeType: ShapeType): ShapeData;
+  setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
+  newWhiteBoard(options: WhiteBoardOptions): WhiteBoard;
+  newShapesMgr(): IShapesMgr;
+  newTool(toolType: ToolType): ITool;
+  newShapeData(shapeType: ShapeType): ShapeData;
+  newId(data: ShapeData): string;
+  newZ(data: ShapeData): number;
   newShape(shapeType: ShapeType): Shape;
   newShape(shapeData: IShapeData): Shape;
+  newLayerId(): string
 }
 
 const Tag = '[Factory]';
@@ -90,6 +91,9 @@ export class Factory implements IFactory {
     }
     const create = FactoryMgr.shapes[type];
     return create ? create(data) : new Shape(data);
+  }
+  newLayerId(): string {
+    return `layer_${Date.now()}_${++this._time}`
   }
 }
 

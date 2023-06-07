@@ -1,4 +1,4 @@
-import { ILayerInfoInit, ToolEnum, ToolType } from "../../dist";
+import { IFactory, ILayerInfoInit, ToolEnum, ToolType } from "../../dist";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { SizeType } from "./G/BaseView/SizeType";
 import { IconButton } from "./G/BaseView/IconButton";
@@ -59,24 +59,52 @@ export class ToolsView extends Subwin {
     this.removeChild(this.footer);
   }
 }
+
+export enum LayersViewEventType {
+  LayerAdded = 'LayerAdded',
+  LayerRemoved = 'LayerRemoved',
+  LayerNameChanged = 'LayerNameChanged',
+  LayerVisibleChanged = 'LayerVisibleChanged',
+}
+export interface LayersViewEventEventMap {
+  [LayersViewEventType.LayerAdded]: CustomEvent<string>;
+  [LayersViewEventType.LayerRemoved]: CustomEvent<string>;
+  [LayersViewEventType.LayerNameChanged]: CustomEvent<{ id: string, visible: boolean }>;
+  [LayersViewEventType.LayerVisibleChanged]: CustomEvent<{ id: string, visible: boolean }>;
+}
+
+export interface ILayersViewInits {
+  factory: IFactory;
+}
 export class LayersView extends Subwin {
+  static EventType = LayersViewEventType;
   private _layers: LayerItemView[] = [];
-  constructor() {
+  override addEventListener<K extends keyof LayersViewEventEventMap>
+    (type: K, listener: (this: HTMLObjectElement, ev: LayersViewEventEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): void;
+  override addEventListener<K extends keyof HTMLElementEventMap>
+    (type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): void;
+  override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
+  override addEventListener(arg0: any, arg1: any, arg2?: any): void {
+    return super.addEventListener(arg0, arg1, arg2)
+  }
+  constructor(inits: ILayersViewInits) {
     super()
     this.header.title = 'layers'
     this.content = new View('div');
     this.content.styles().apply("", {
-      flex: '1',
+      flex: 1,
       overflowY: 'auto',
       overflowX: 'hidden'
-
     })
     this.styles().apply("", {
       minWidth: '225px',
       width: 225,
     })
 
-    const btnAddLayer = new IconButton({ content: '📃', title: '新建图层', size: SizeType.Small })
+    const btnAddLayer = new IconButton({ content: '📃', title: '新建图层', size: SizeType.Small }).onClick((e) => {
+      const event = new CustomEvent<string>(LayersViewEventType.LayerAdded, { detail: '' + Date.now() });
+      this.inner.dispatchEvent(event);
+    })
     this.footer.addChild(btnAddLayer);
 
     const btnAddFolder = new IconButton({ content: '📂', title: '新建图层组', size: SizeType.Small })
@@ -92,10 +120,13 @@ export class LayersView extends Subwin {
       this.content?.children?.forEach(v => v.selected = false)
       item.selected = true;
     })
+    return item;
   }
 }
+
 export class LayerItemView extends View<'div'> {
   private _state = {
+    id: '',
     visible: true,
     locked: false,
     name: '',
@@ -121,6 +152,7 @@ export class LayerItemView extends View<'div'> {
 
   constructor(inits: ILayerInfoInit) {
     super('div')
+    this._state.id = inits.id;
     this._state.name = inits.name;
     this.styles().apply("", {
       display: 'flex',
@@ -149,6 +181,12 @@ export class LayerItemView extends View<'div'> {
       contents: ['🙈', '🐵']
     }).onClick(btn => {
       this._state.visible = btn.checked;
+      type Detail = LayersViewEventEventMap[LayersViewEventType.LayerVisibleChanged]['detail'];
+      const detail: Detail = {
+        id: this.state.id,
+        visible: btn.checked
+      }
+      this.parent?.parent?.inner.dispatchEvent(new CustomEvent<Detail>(LayersViewEventType.LayerVisibleChanged, { detail }))
     })
     this.addChild(btn1);
 
@@ -171,16 +209,14 @@ export class LayerItemView extends View<'div'> {
         background: '#00000022'
       })
       .editStyle(true, true, false, {
-        outline: 'none',
-        border: 'none',
         color: 'white',
       })
       .editStyle(false, true, false, {
-        outline: 'none',
-        border: 'none',
         color: 'white',
       })
       .styles().apply("", {
+        outline: 'none',
+        border: 'none',
         minWidth: 100,
         flex: 1,
         height: 24,
@@ -193,9 +229,7 @@ export class LayerItemView extends View<'div'> {
     inputName.disabled = true;
     this.addChild(inputName);
 
-    new FocusOb(inputName.inner, (v) => {
-      if (!v) inputName.disabled = true;
-    })
+    new FocusOb(inputName.inner, (v) => inputName.disabled = !v)
 
     const btn3 = new IconButton({
       content: '🖊️'
@@ -205,9 +239,4 @@ export class LayerItemView extends View<'div'> {
     })
     this.addChild(btn3);
   }
-}
-
-function also<T>(t: T, func: (t: T) => void) {
-  func(t);
-  return t;
 }

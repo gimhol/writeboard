@@ -2,6 +2,7 @@ import { SubwinFooter } from "./SubwinFooter";
 import { SubwinHeader } from "./SubwinHeader";
 import type { SubwinWorkspace } from "../Helper/SubwinWorkspace";
 import { View } from "../BaseView/View";
+import { ViewDragger } from "../Helper/ViewDragger";
 export enum StyleNames {
   Root = 'subwin',
   Raised = 'subwin_raised',
@@ -14,6 +15,8 @@ export class Subwin extends View<'div'> {
   private _header = new SubwinHeader();
   private _footer = new SubwinFooter();
   private _content?: View | null;
+  protected _dragger: ViewDragger;
+  get dragger() { return this._dragger; }
   get workspace() { return this._workspace; }
   set workspace(v) { this._workspace = v; }
   get header() { return this._header; };
@@ -52,8 +55,17 @@ export class Subwin extends View<'div'> {
       flexDirection: 'column',
       transition: 'box-shadow 200ms'
     })
-    this.addChild(this._header);
-    this.addChild(this._footer);
+    this.addChild(this._header, this._footer);
+    this.addChild();
+
+
+    this._dragger = new ViewDragger({
+      view: this,
+      handles: [
+        this.header.titleView,
+        this.header.iconView
+      ]
+    }); 
 
     new ResizeObserver(() => {
       const { width, height } = getComputedStyle(this.inner);

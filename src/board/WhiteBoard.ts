@@ -22,9 +22,7 @@ export interface IPointerEventHandler { (ev: PointerEvent): void }
 export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
-  private _layers: Layer[];
-  private _currentLayer?: Layer;
-  private _layerMap: { [x in string]: Layer | undefined } = {}
+  private _layers = new Map<string, Layer>();
   private _shapesMgr: IShapesMgr
   private _mousedown = false
   private _tools: { [key in ToolEnum | string]?: ITool } = {}
@@ -33,59 +31,70 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _eventsObserver = new Observer()
   private _eventEmitter = new Emitter()
   private _operator = 'whiteboard'
+  private _editingLayerId: string = '';
+  private _width = 512;
+  private _height = 512;
+
   get width() {
-    return this._layers[0].width;
+    return this._width;
   }
   set width(v: number) {
+    this._width = v;
     this._layers.forEach(l => l.width = v);
   }
   get height() {
-    return this._layers[0].height;
+    return this._height;
   }
   set height(v: number) {
+    this._height = v;
     this._layers.forEach(l => l.height = v);
   }
-  layer(idx: number): ILayer {
-    return this._layers[idx];
-  }
-  setCurrentLayer(idx: number): boolean {
-    if (idx < 0) { return false }
-    if (idx > this._layers.length - 1) { return false }
-    for (let i = 0; i < this._layers.length; ++i) {
-      this._layers[i].onscreen.style.pointerEvents = 'none'
+  addLayer(init: ILayerInits): boolean {
+    if (this._layers.has(init.info.id)) {
+      console.error(`[WhiteBoard] addLayer(): layerId already existed! id = ${init.info.id}`)
+      return false;
     }
-    this._currentLayer = this._layers[idx];
-    this._currentLayer.onscreen.style.pointerEvents = ''
+    const layer = new Layer(init);
+    layer.width = this.width;
+    layer.height = this.height;
+    layer.onscreen.style.pointerEvents = 'none'
+    this._layers.set(init.info.id, layer)
+    this.listenTo(layer.onscreen, 'pointerdown', this.pointerdown)
+    this.listenTo(layer.onscreen, 'pointermove', this.pointermove)
+    this.listenTo(layer.onscreen, 'pointerup', this.pointerup)
+    layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
     return true;
   }
-  constructor(factory: IFactory, options: WhiteBoardOptions) {
-    this._factory = factory
-    this._shapesMgr = this._factory.newShapesMgr()
-    this._layers = options.layers.map(v => {
-      const ret = new Layer(v);
-      this._layerMap[ret.name] = ret
-      return ret;
+  editLayer(layerId: string): boolean {
+    if (!this._layers.has(layerId)) {
+      console.error(`[WhiteBoard] editLayer(): layer not found! id = ${layerId}`)
+      return false;
+    }
+    this._layers.forEach((layer, id) => {
+      layer.onscreen.style.pointerEvents = id === layerId ? '' : 'none'
     })
+    this._editingLayerId = layerId;
+    return true;
+  }
 
-    if (options.width) {
-      this.width = options.width;
-    }
-    if (options.height) {
-      this.height = options.height;
-    }
-    this._dirty = { x: 0, y: 0, w: this.onscreen()!.width, h: this.onscreen()!.height }
+  layer(): Layer;
+  layer(id: string): Layer | undefined;
+  layer(id: string = this._editingLayerId): Layer | undefined {
+    return this._layers.get(id);
+  }
+  constructor(factory: IFactory, options: WhiteBoardOptions) {
+    this._factory = factory;
+    this._shapesMgr = this._factory.newShapesMgr();
+    
+    options.width && (this._width = options.width)
+    options.height && (this._height = options.height)
+    options.toolType && (this._toolType = options.toolType)
 
-    for (let i = 0; i < this._layers.length; ++i) {
-      this.listenTo(this._layers[i].onscreen, 'pointerdown', this.pointerdown)
-      this.listenTo(this._layers[i].onscreen, 'pointermove', this.pointermove)
-      this.listenTo(this._layers[i].onscreen, 'pointerup', this.pointerup)
-      this._layers[i].onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
-    }
-    this.setCurrentLayer(0);
+    options.layers.forEach(v => this.addLayer(v))
+    this.editLayer(options.layers[0].info.id);
+
+    this._dirty = { x: 0, y: 0, w: this.onscreen().width, h: this.onscreen().height }
     this.render()
-    if (options.toolType) {
-      this.toolType = options.toolType;
-    }
   }
 
   finds(ids: string[]): Shape[] {
@@ -97,8 +106,8 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   toJson(): any {
     return {
       x: 0, y: 0,
-      w: this._layers[0].onscreen.width,
-      h: this._layers[0].onscreen.height,
+      w: this.width,
+      h: this.height,
       shapes: this.shapes().map(v => v.data)
     }
   }
@@ -106,11 +115,11 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     return JSON.stringify(this.toJson())
   }
   fromJson(jobj: any) {
-    this.removeAll()
-    this._layers[0].onscreen.width = jobj.w
-    this._layers[0].onscreen.height = jobj.h
-    this._layers[0].onscreen.width = jobj.w
-    this._layers[0].onscreen.height = jobj.h
+    this.removeAll();
+    this._layers.forEach(layer => {
+      layer.onscreen.width = jobj.w
+      layer.onscreen.height = jobj.h
+    })
     const shapes = jobj.shapes.map((v: ShapeData) => this.factory.newShape(v))
     this.add(...shapes)
   }
@@ -164,20 +173,30 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
 
   get factory() { return this._factory }
   set factory(v) { this._factory = v }
-  currentLayer(): ILayer {
-    return this._currentLayer!;
+
+
+  ctx(): CanvasRenderingContext2D
+  ctx(layerId: string): CanvasRenderingContext2D | null | undefined
+  ctx(layerId: string = this._editingLayerId): CanvasRenderingContext2D | null | undefined {
+    return this.onscreen(layerId)?.getContext('2d');
   }
-  ctx(idx: number = 0): CanvasRenderingContext2D | null | undefined {
-    return this.onscreen(idx)?.getContext('2d');
+
+  octx(): CanvasRenderingContext2D
+  octx(layerId: string): CanvasRenderingContext2D | null | undefined
+  octx(layerId: string = this._editingLayerId): CanvasRenderingContext2D | null | undefined {
+    return this.offscreen(layerId)?.getContext('2d')
   }
-  octx(idx: number = 0): CanvasRenderingContext2D | null | undefined {
-    return this.offscreen(idx)?.getContext('2d')
+
+  onscreen(): HTMLCanvasElement;
+  onscreen(layerId: string): HTMLCanvasElement | undefined;
+  onscreen(layerId: string = this._editingLayerId): HTMLCanvasElement | undefined {
+    return this.layer(layerId)?.onscreen;
   }
-  onscreen(idx: number = 0): HTMLCanvasElement | undefined {
-    return this._layers[idx].onscreen;
-  }
-  offscreen(idx: number = 0): HTMLCanvasElement | undefined {
-    return this._layers[idx].offscreen;
+
+  offscreen(): HTMLCanvasElement;
+  offscreen(layerId: string): HTMLCanvasElement | undefined;
+  offscreen(layerId: string = this._editingLayerId): HTMLCanvasElement | undefined {
+    return this.layer(layerId)?.offscreen;
   }
 
   get toolType() { return this._toolType }
@@ -203,7 +222,6 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
       item.board = this
       if (item.selected) this._selects.push(item)
       this.markDirty(item.boundingRect())
-
     })
     const e = new ShapesAddedEvent(this._operator, { shapeDatas: shapes.map(v => v.data.copy()) })
     this.emit(e)
@@ -244,7 +262,8 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     return ret
   }
   getDot(ev: MouseEvent | PointerEvent): IDot {
-    const ele = this._layers[0].onscreen;
+    const layer = this.layer();
+    const ele = layer.onscreen;
     const sw = ele.width / ele.offsetWidth
     const sh = ele.height / ele.offsetHeight
     const { pressure = 0.5 } = ev as any
@@ -275,7 +294,7 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
       e.stopPropagation()
       return
     }
-    this._mousedown = true
+    this._mousedown = true;
     this.tool?.pointerDown(this.getDot(e))
   }
 
@@ -301,26 +320,27 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     if (!dirty)
       return
 
-    for (let i = 0; i < this._layers.length; ++i) {
-      this._layers[i].ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
-      this._layers[i].octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
-    }
+    this._layers.forEach(layer => {
+      layer.ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
+      layer.octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
+    })
+
     this._shapesMgr.shapes().forEach(v => {
       const br = v.boundingRect()
-      const layer = this._layerMap[v.data.layer]
+      const layer = this._layers.get(v.data.layer)
       if (Rect.hit(br, dirty) && layer) v.render(layer.octx)
     })
-    this.tool?.render(this.currentLayer().octx)
 
-    for (let i = 0; i < this._layers.length; ++i) {
-      const { ctx, offscreen } = this._layers[i]
+    this.tool?.render(this.layer().octx)
+
+    this._layers.forEach(layer => {
+      const { ctx, offscreen } = layer
       ctx.drawImage(
         offscreen,
         dirty.x, dirty.y, dirty.w, dirty.h,
         dirty.x, dirty.y, dirty.w, dirty.h
       )
-    }
-
+    })
     delete this._dirty
   }
 }

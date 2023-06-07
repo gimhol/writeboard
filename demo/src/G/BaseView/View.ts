@@ -4,6 +4,17 @@ import { Style } from "./StyleType";
 import { Styles } from "./Styles";
 
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
+
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(arg0: any, arg1: any, arg2: any): void {
+    this.inner.addEventListener(arg0, arg1, arg2)
+  }
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+  removeEventListener(arg0: any, arg1: any, arg2: any): void {
+    this.inner.removeEventListener(arg0, arg1, arg2)
+  }
   protected _inner: HTMLElementTagNameMap[T];
   private _cb?: (self: View) => void
   private _handleClick = () => { this._cb?.(this) };
@@ -22,13 +33,21 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   get children() { return Array.from(this._inner.children).map(v => (v as any)?.view) }
   get draggable() { return this._inner.draggable; }
   set draggable(v) { this._inner.draggable = v; }
-  constructor(tagName: T) {
-    if (tagName === 'body') {
+
+  static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]) {
+    return (ele as any).view ?? new View(ele);
+  }
+  constructor(element: HTMLElementTagNameMap[T]);
+  constructor(tagName: T);
+  constructor(arg0: any) {
+    if (arg0 === 'body') {
       this._inner = <any>document.body ?? document.createElement('body');
-    } else if (tagName === 'head') {
+    } else if (arg0 === 'head') {
       this._inner = <any>document.head ?? document.createElement('head');
+    } else if (typeof arg0 === 'string') {
+      this._inner = document.createElement(arg0 as T);
     } else {
-      this._inner = document.createElement(tagName);
+      this._inner = arg0;
     }
     (this._inner as any).view = this;
   }

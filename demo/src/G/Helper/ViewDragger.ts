@@ -2,19 +2,20 @@ import { EventType } from "../Events/EventType";
 import { View } from "../BaseView/View";
 
 export interface IViewDraggerInits {
-  handles: HTMLElement[];
+  handles?: View[];
   view?: View;
+  ignores?: View[];
 }
 export class ViewDragger {
-  private _handles: HTMLElement[] = [];
-  private _ignores: HTMLElement[] = [];
+  private _handles: View[] = [];
+  private _ignores: View[] = [];
   private _view?: View;
   private _offsetX = 0;
   private _offsetY = 0;
   private _down = false;
   private _disabled = false;
-  private isIgnore(ele: HTMLElement) {
-    return this._ignores.indexOf(ele) >= 0;
+  private isIgnore(target: HTMLElement) {
+    return this._ignores.indexOf(View.get(target)) >= 0;
   }
   private _ondown = (target: HTMLElement, pageX: number, pageY: number) => {
     if (!this._view) { return; }
@@ -130,6 +131,7 @@ export class ViewDragger {
   constructor(inits?: IViewDraggerInits) {
     this.view = inits?.view;
     this._handles = inits?.handles ?? [];
+    this._ignores = inits?.ignores ?? [];
     this.startListen();
   }
   destory() {

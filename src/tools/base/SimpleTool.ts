@@ -70,7 +70,7 @@ export class SimpleTool implements ITool {
     const board = this.board
     if (!board) return
     this._curShape = board.factory.newShape(this._shapeType)
-    this._curShape.data.layer = board.currentLayer().info.name;
+    this._curShape.data.layer = board.layer().id;
     const shape = this._curShape
     if (!shape) return
     board.add(shape)

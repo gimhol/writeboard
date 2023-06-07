@@ -32,6 +32,8 @@ export class Button extends View<'button'> {
   set checked(v) {
     this._checked = v;
     this.updateStyle();
+    this.updateTitle();
+    this.updateContent();
   }
   get disabled() { return this._inner.disabled }
   set disabled(v) {
@@ -53,7 +55,9 @@ export class Button extends View<'button'> {
         [inits?.title, inits?.title] :
         this._titles;
     this._size = inits?.size ?? this._size;
-    this._checkable = inits?.checkable ?? this._checkable;
+    this._checkable = inits?.checkable === true;
+    this._checked = inits?.checked === true;
+
     this.styles().register(StyleNames.Hover, {
       background: '#00000022'
     }).register(StyleNames.Small, {
@@ -114,8 +118,7 @@ export class Button extends View<'button'> {
     const styles = this.styles();
     this.hover ? styles.add(StyleNames.Hover) : styles.remove(StyleNames.Hover)
     const styleName = `${this.hover}_${this.checked}_${this.disabled}`
-    styles.remove(this._prevStyleNames).add(styleName)
-    styles.refresh();
+    styles.remove(this._prevStyleNames).add(styleName).refresh();
     this._prevStyleNames = styleName;
   }
   editStyle(hover: boolean, checked: boolean, disabled: boolean, style: ReValue<Style>) {

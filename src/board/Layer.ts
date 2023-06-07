@@ -1,4 +1,5 @@
 export interface ILayerInfoInit {
+  readonly id: string;
   readonly name: string;
 }
 export interface ILayerInits {
@@ -6,6 +7,7 @@ export interface ILayerInits {
   readonly onscreen: HTMLCanvasElement;
 }
 export interface ILayerInfo {
+  id: string;
   name: string;
 }
 export interface ILayer {
@@ -18,9 +20,12 @@ export interface ILayer {
   opacity: number;
 }
 export class LayerInfo implements ILayerInfo {
+  protected _id: string;
   protected _name: string;
+  get id() { return this._id; }
   get name() { return this._name };
   constructor(inits: ILayerInfoInit) {
+    this._id = inits.id;
     this._name = inits.name;
   }
 }
@@ -38,7 +43,8 @@ export class Layer implements ILayer {
   get ctx() { return this._ctx };
   get octx() { return this._octx };
   get opacity() { return Number(this._offscreen.style.opacity) };
-  set opacity(v) { this._offscreen.style.opacity = '' + v };
+  set opacity(v) { this._onscreen.style.opacity = '' + v };
+  get id() { return this._info.id; }
 
   constructor(inits: ILayerInits) {
     this._info = new LayerInfo(inits.info);

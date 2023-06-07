@@ -18,7 +18,6 @@ export enum StyleNames {
 export class SubwinHeader extends View<'div'> {
   static ClassNames = Classnames;
   static StyleNames = StyleNames;
-  protected _dragger: ViewDragger;
   private _titleView: View<"div">;
   private _iconView: View<"div">;
   private _btnClose: IconButton;
@@ -28,7 +27,6 @@ export class SubwinHeader extends View<'div'> {
   set titleView(v) { this._titleView = v; }
   get title() { return this._titleView.inner.innerHTML; }
   set title(v) { this._titleView.inner.innerHTML = v; }
-  get dragger() { return this._dragger; }
   constructor() {
     super('div');
     new FocusOb(this.inner, v => alert(v))
@@ -81,16 +79,6 @@ export class SubwinHeader extends View<'div'> {
         height: 28,
       })
     this.addChild(this._btnClose);
-
-    this._dragger = new ViewDragger({
-      handles: [
-        this._titleView.inner,
-        this._iconView.inner
-      ]
-    });
-  }
-  override onAfterAdded(parent: View<keyof HTMLElementTagNameMap>): void {
-    this._dragger.view = parent;
   }
 }
 

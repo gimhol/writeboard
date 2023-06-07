@@ -18,15 +18,43 @@ import { RGBA } from "./colorPalette/Color";
 import demo_helloworld from "./demo_helloworld";
 import demo_rect_n_oval from "./demo_rect_n_oval";
 import { LayersView, ToolsView } from "./layers_view";
-import { UI } from "./ui/ele";
 
+const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let board: WhiteBoard
+
 const mergedSubwin2 = new MergedSubwin();
 const mergedSubwin = new MergedSubwin();
 
-const layersView = new LayersView;
-layersView.addLayer({ name: 'Default' });
-layersView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '150px' }))
+const layersView = new LayersView({ factory });
+
+layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
+  const layerItem = layersView.addLayer({
+    name: '' + Date.now(),
+    id: factory.newLayerId()
+  });
+  const canvas = addLayerCanvas();
+  board.addLayer({ info: layerItem.state, onscreen: canvas.inner });
+})
+layersView.addEventListener(LayersView.EventType.LayerVisibleChanged, e => {
+  const { id, visible } = e.detail;
+  const layer = board.layer(id);
+  if (!layer) { return; }
+  layer.opacity = visible ? 1 : 0;
+})
+
+layersView.addLayer({
+  name: '' + Date.now(),
+  id: factory.newLayerId()
+});
+
+
+
+
+
+
+
+
+
 
 const toolsView = new ToolsView;
 toolsView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
@@ -113,7 +141,7 @@ toyView.content.addChild(new Button({
   const items: Shape[] = []
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Rect)
-    item.data.layer = board.currentLayer().info.name;
+    item.data.layer = board.layer().id;
     item.geo(
       Math.floor(Math.random() * board.width),
       Math.floor(Math.random() * board.height!), 50, 50)
@@ -132,7 +160,7 @@ toyView.content.addChild(new Button({
   const items: Shape[] = []
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Oval)
-    item.data.layer = board.currentLayer().info.name;
+    item.data.layer = board.layer().id;
     item.geo(
       Math.floor(Math.random() * board.width!),
       Math.floor(Math.random() * board.height!), 50, 50)
@@ -151,7 +179,7 @@ toyView.content.addChild(new Button({
   const items: Shape[] = []
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Pen) as ShapePen
-    item.data.layer = board.currentLayer().info.name;
+    item.data.layer = board.layer().id;
     let x = Math.floor(Math.random() * board.width!)
     let y = Math.floor(Math.random() * board.height!)
     const lenth = Math.floor(Math.random() * 100)
@@ -169,7 +197,6 @@ toyView.content.addChild(new Button({
   board.add(...items)
 }))
 
-const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let _recorder: Recorder | undefined
 let _player: Player | undefined
 
@@ -232,42 +259,41 @@ workspace.addSubWin(jsonView);
   workspace.addSubWin(recorderView);
 }
 
-(window as any).ui = new UI<{}, string, 'hello'>(
-  document.body,
-  () => ({}),
-  (ui) => {
-    ui.ele('div', {
-      className: 'root'
-    }, () => {
-      ui.ele('br')
-      ui.ele('div', {
-        alias: 'hello',
-        className: 'blackboard',
-        style: {
-          position: 'relative'
-        }
-      }, () => {
-        const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
-          const canvas = new Canvas();
-          canvas.styles().apply('', {
-            position: idx === 0 ? 'relative' : 'absolute',
-            touchAction: 'none',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-          })
-          canvas.inner.addEventListener('contextmenu', (e) => {
-            menu.move(e.x, e.y);
-            menu.show();
-          })
-          ui.current()?.append(canvas.inner)
-          return { info: layer.state, onscreen: canvas.inner }
-        })
-        board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 })
-      })
-    })
+const rootView = new View('div');
+rootView.styles().applyCls('root');
+mainView.addChild(rootView);
+
+const blackboard = new View('div');
+blackboard.styles().applyCls('blackboard');
+rootView.addChild(blackboard);
+
+function addLayerCanvas() {
+  const canvas = new Canvas();
+  canvas.styles().apply('', {
+    position: 'absolute',
+    touchAction: 'none',
+    userSelect: 'none',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    transition: 'opacity 200ms'
   })
+  canvas.inner.addEventListener('contextmenu', (e) => {
+    menu.move(e.x, e.y);
+    menu.show();
+  })
+  blackboard.addChild(canvas);
+  return canvas;
+}
+
+const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
+  const canvas = addLayerCanvas();
+  return { info: layer.state, onscreen: canvas.inner }
+})
+board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
+
+
 const menu = new Menu({
   items: [{
     key: 'shit',
