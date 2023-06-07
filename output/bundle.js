@@ -2202,7 +2202,6 @@ workspace.addSubWin(jsonView);
         _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
         _recorder = new dist_1.Recorder();
         _recorder.start(board);
-        alert(board);
     };
     const endRecord = () => {
         if (!_recorder_textarea || !_recorder)
