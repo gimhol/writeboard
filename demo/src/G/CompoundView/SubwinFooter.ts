@@ -1,4 +1,4 @@
-import { View } from "./View";
+import { View } from "../BaseView/View";
 
 export class SubwinFooter extends View<'div'> {
   constructor() {

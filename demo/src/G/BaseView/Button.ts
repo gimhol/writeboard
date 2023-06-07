@@ -1,12 +1,8 @@
+import { ReValue } from "../utils";
+import { SizeType } from "./SizeType";
 import { Style } from "./StyleType";
 import { View } from "./View";
-import { ReValue } from "./utils";
 
-export enum SizeType {
-  Small = 's',
-  Middle = 'm',
-  Large = 'l',
-}
 export type Content = string | View;
 export interface ButtonInits {
   contents?: [Content, Content];
@@ -17,8 +13,7 @@ export interface ButtonInits {
   checkable?: boolean;
   checked?: boolean;
 }
-
-export enum ButtonStyles {
+export enum StyleNames {
   Normal = 'normal',
   Hover = 'hover',
   Small = 'small',
@@ -26,6 +21,7 @@ export enum ButtonStyles {
   Large = 'large',
 }
 export class Button extends View<'button'> {
+  static StyleNames = StyleNames;
   protected _size: SizeType = SizeType.Middle;
   protected _preSize?: SizeType;
   protected _contents: [Content, Content] = ['', ''];
@@ -58,24 +54,24 @@ export class Button extends View<'button'> {
         this._titles;
     this._size = inits?.size ?? this._size;
     this._checkable = inits?.checkable ?? this._checkable;
-    this.styles().register(ButtonStyles.Hover, {
+    this.styles().register(StyleNames.Hover, {
       background: '#00000022'
-    }).register(ButtonStyles.Small, {
+    }).register(StyleNames.Small, {
       height: 18,
       lineHeight: 18,
       borderRadius: 5,
       fontSize: 12,
-    }).register(ButtonStyles.Middle, {
+    }).register(StyleNames.Middle, {
       height: 24,
       lineHeight: 24,
       borderRadius: 5,
       fontSize: 14,
-    }).register(ButtonStyles.Large, {
+    }).register(StyleNames.Large, {
       height: 32,
       lineHeight: 32,
       borderRadius: 5,
       fontSize: 24,
-    }).register(ButtonStyles.Normal, {
+    }).register(StyleNames.Normal, {
       userSelect: 'none',
       cursor: 'pointer',
       textAlign: 'center',
@@ -85,7 +81,7 @@ export class Button extends View<'button'> {
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center'
-    }).add(ButtonStyles.Normal).refresh();
+    }).add(StyleNames.Normal).refresh();
 
     this.editStyle(true, true, true, { background: '#333333' })
     this.editStyle(true, true, false, { background: '#333333' })
@@ -116,7 +112,7 @@ export class Button extends View<'button'> {
   private _prevStyleNames = ''
   updateStyle() {
     const styles = this.styles();
-    this.hover ? styles.add(ButtonStyles.Hover) : styles.remove(ButtonStyles.Hover)
+    this.hover ? styles.add(StyleNames.Hover) : styles.remove(StyleNames.Hover)
     const styleName = `${this.hover}_${this.checked}_${this.disabled}`
     styles.remove(this._prevStyleNames).add(styleName)
     styles.refresh();
@@ -138,10 +134,10 @@ export class Button extends View<'button'> {
   updateTitle() {
     this._inner.title = this._checked ? this._titles[1] : this._titles[0];
   }
-  private aaa: Record<SizeType, ButtonStyles> = {
-    [SizeType.Small]: ButtonStyles.Small,
-    [SizeType.Middle]: ButtonStyles.Middle,
-    [SizeType.Large]: ButtonStyles.Large
+  private aaa: Record<SizeType, StyleNames> = {
+    [SizeType.Small]: StyleNames.Small,
+    [SizeType.Middle]: StyleNames.Middle,
+    [SizeType.Large]: StyleNames.Large
   }
   updateSize() {
     this.styles()
@@ -152,46 +148,3 @@ export class Button extends View<'button'> {
   }
 }
 
-export enum ButtonGroupMode {
-  None = 0,
-  Single = 1,
-  Multipy = 2,
-}
-export interface ButtonGroupInits<B extends Button> {
-  buttons?: B[];
-  mode?: ButtonGroupMode;
-}
-export class ButtonGroup<B extends Button = Button> {
-  private _mode = ButtonGroupMode.Single;
-  private _buttons: B[] = [];
-  private _listeners = new Map<B, (e: MouseEvent) => void>();
-  private _onClick?: (target: B) => void;
-  set onClick(v: (target: B) => void) { this._onClick = v; }
-
-  private _handleClick = (target: B) => {
-    switch (this._mode) {
-      case ButtonGroupMode.Single:
-        this._buttons.forEach(btn => btn.checked = target === btn)
-        break;
-    }
-    this._onClick?.(target);
-  }
-  constructor(inits?: ButtonGroupInits<B>) {
-    if (inits?.buttons)
-      this.addButton(...inits.buttons)
-  }
-  addButton(...buttons: B[]) {
-    this._buttons.forEach(btn => {
-      const l = this._listeners.get(btn);
-      if (l) {
-        btn.inner.removeEventListener('click', l);
-      }
-    });
-    this._buttons = Array.from(new Set(this._buttons.concat(buttons)));
-    this._buttons.forEach(btn => {
-      const l = () => this._handleClick(btn);
-      this._listeners.set(btn, l);
-      btn.inner.addEventListener('click', l)
-    });
-  }
-}

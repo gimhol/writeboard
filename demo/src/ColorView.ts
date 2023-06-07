@@ -1,12 +1,11 @@
-import { Subwin } from "./G/Subwin";
-import { View } from "./G/View";
+import { Button, ButtonInits, StyleNames } from "./G/BaseView/Button";
+import { ButtonGroup } from "./G/Helper/ButtonGroup";
+import { Canvas } from "./G/BaseView/Canvas";
+import { NumberInput } from "./G/BaseView/NumberInput";
+import { View } from "./G/BaseView/View";
+import { Subwin } from "./G/CompoundView/Subwin";
 import { RGBA } from "./colorPalette/Color";
 import { ColorPalette } from "./colorPalette/ColorPalette";
-import { NumberInput } from "./G/TextInput";
-import { Canvas } from "./G/Canvas";
-import { Button, ButtonGroup, ButtonInits, ButtonStyles } from "./G/Button";
-
-
 enum ColorKind {
   Line = 'Line',
   Fill = 'Fill'
@@ -49,7 +48,7 @@ class ColorKindButton extends Button {
     this._contents[1] = content;
     this.updateContent();
 
-    this.editStyle(false, true, false, this.styles().read(ButtonStyles.Hover) || {})
+    this.editStyle(false, true, false, this.styles().read(StyleNames.Hover) || {})
   }
 }
 export enum ColorViewEventTypes {

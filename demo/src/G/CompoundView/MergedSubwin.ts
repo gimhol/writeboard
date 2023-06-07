@@ -1,6 +1,6 @@
-import { View } from "./View";
+import { View } from "../BaseView/View";
+import { DragInOutOB } from "../Observer/DragInOutOB";
 import { Subwin } from "./Subwin";
-import { DragInOutOB } from "./HoverOb";
 export interface SubwinTabInits {
   title: string;
   color: string;
@@ -41,6 +41,7 @@ export class MergedSubwin extends Subwin {
 
   constructor() {
     super();
+    this.header.styles()
     const onDragIn = (e: DragEvent, ele: HTMLElement) => {
       console.log(ele.innerHTML, 'in')
     }

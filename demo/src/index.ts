@@ -1,5 +1,4 @@
 import {
-  EventEnum,
   FactoryEnum, FactoryMgr,
   ILayerInits,
   Player, Recorder,
@@ -7,44 +6,31 @@ import {
   ShapeEnum, ShapePen,
   WhiteBoard
 } from "../../dist";
-import { LayersView, ToolsView } from "./layers_view";
+import { Menu } from '../../dist/features/Menu';
 import ColorView from "./ColorView";
-import { ColorPalette } from "./colorPalette/ColorPalette"
-import demo_helloworld from "./demo_helloworld"
-import demo_rect_n_oval from "./demo_rect_n_oval"
-import { UI } from "./ui/ele"
-import { Menu } from '../../dist/features/Menu'
-import { SubwinWorkspace } from "./G/SubwinWorkspace";
-import { MergedSubwin } from "./G/MergedSubwin";
+import { Button } from "./G/BaseView/Button";
+import { Canvas } from "./G/BaseView/Canvas";
+import { View } from "./G/BaseView/View";
+import { MergedSubwin } from "./G/CompoundView/MergedSubwin";
+import { Subwin } from "./G/CompoundView/Subwin";
+import { SubwinWorkspace } from "./G/Helper/SubwinWorkspace";
 import { RGBA } from "./colorPalette/Color";
+import demo_helloworld from "./demo_helloworld";
+import demo_rect_n_oval from "./demo_rect_n_oval";
+import { LayersView, ToolsView } from "./layers_view";
+import { UI } from "./ui/ele";
 
-type State = {
-  count: number
-  width?: number
-  height?: number
-}
-let whiteBoard: WhiteBoard
+let board: WhiteBoard
 const mergedSubwin2 = new MergedSubwin();
 const mergedSubwin = new MergedSubwin();
 
-document.body.appendChild(mergedSubwin2.inner);
-document.body.appendChild(mergedSubwin.inner);
-
 const layersView = new LayersView;
-layersView.addLayer({ name: 'layer_0' });
-layersView.addLayer({ name: 'layer_1' });
-layersView.addLayer({ name: 'layer_2' });
-layersView.addLayer({ name: 'layer_3' });
-layersView.addLayer({ name: 'layer_4' });
-layersView.addLayer({ name: 'layer_5' });
-layersView.addLayer({ name: 'layer_6' });
-layersView.addLayer({ name: 'layer_7' });
-layersView.addLayer({ name: 'layer_8' });
+layersView.addLayer({ name: 'Default' });
 layersView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '150px' }))
 
 const toolsView = new ToolsView;
 toolsView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
-toolsView.onToolClick = (btn) => whiteBoard.setToolType(btn.toolType)
+toolsView.onToolClick = (btn) => board.setToolType(btn.toolType)
 
 const colorView = new ColorView;
 colorView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
@@ -58,7 +44,7 @@ colorView.inner.addEventListener(ColorView.EventTypes.LineColorChange, (e) => {
   FactoryMgr.listTools().forEach(toolType => {
     const shape = FactoryMgr.toolInfo(toolType)?.shape
     if (!shape) return;
-    const template = whiteBoard.factory.shapeTemplate(shape);
+    const template = board.factory.shapeTemplate(shape);
     template.strokeStyle = '' + rgba.toHex();
   })
 })
@@ -67,13 +53,21 @@ colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
   FactoryMgr.listTools().forEach(toolType => {
     const shape = FactoryMgr.toolInfo(toolType)?.shape
     if (!shape) return;
-    const template = whiteBoard.factory.shapeTemplate(shape);
+    const template = board.factory.shapeTemplate(shape);
     template.fillStyle = '' + rgba.toHex();
   })
 })
 
+const toyView = new Subwin();
+toyView.header.title = 'others';
+
+const mainView = new View('body');
+mainView.addChild(toyView);
+mainView.addChild(mergedSubwin2);
+mainView.addChild(mergedSubwin);
 
 const workspace = new SubwinWorkspace({
+  view: mainView,
   rect() {
     return {
       x: 0, y: 0,
@@ -88,189 +82,164 @@ const workspace = new SubwinWorkspace({
     colorView,
     mergedSubwin,
     mergedSubwin2,
+    toyView
   ]
 });
+window.addEventListener('resize', () => workspace.clampAllSubwin())
 
-window.addEventListener('resize', () => {
-  workspace.clampAllSubwin();
+toyView.content = new View('div');
+toyView.content.styles().apply('', {
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  overflowY: 'auto',
+  overflowX: 'hidden'
 })
+toyView.content.addChild(new Button({
+  content: 'select all'
+}).onClick(() => board.selectAll()))
+
+toyView.content.addChild(new Button({
+  content: 'remove selected'
+}).onClick(() => board.removeSelected()))
+
+toyView.content.addChild(new Button({
+  content: 'remove all'
+}).onClick(() => board.removeAll()))
+
+toyView.content.addChild(new Button({
+  content: 'random add 1000 rect'
+}).onClick(() => {
+  const items: Shape[] = []
+  for (let i = 0; i < 1000; ++i) {
+    const item = board.factory.newShape(ShapeEnum.Rect)
+    item.data.layer = board.currentLayer().info.name;
+    item.geo(
+      Math.floor(Math.random() * board.width),
+      Math.floor(Math.random() * board.height!), 50, 50)
+    const r = Math.floor(Math.random() * 255)
+    const g = Math.floor(Math.random() * 255)
+    const b = Math.floor(Math.random() * 255)
+    item.data.fillStyle = `rgb(${r},${g},${b})`
+    items.push(item)
+  }
+  board.add(...items)
+}))
+
+toyView.content.addChild(new Button({
+  content: 'random add 1000 oval'
+}).onClick(() => {
+  const items: Shape[] = []
+  for (let i = 0; i < 1000; ++i) {
+    const item = board.factory.newShape(ShapeEnum.Oval)
+    item.data.layer = board.currentLayer().info.name;
+    item.geo(
+      Math.floor(Math.random() * board.width!),
+      Math.floor(Math.random() * board.height!), 50, 50)
+    const r = Math.floor(Math.random() * 255)
+    const g = Math.floor(Math.random() * 255)
+    const b = Math.floor(Math.random() * 255)
+    item.data.fillStyle = `rgb(${r},${g},${b})`
+    items.push(item)
+  }
+  board.add(...items)
+}))
+
+toyView.content.addChild(new Button({
+  content: 'random draw 1000 pen'
+}).onClick(() => {
+  const items: Shape[] = []
+  for (let i = 0; i < 1000; ++i) {
+    const item = board.factory.newShape(ShapeEnum.Pen) as ShapePen
+    item.data.layer = board.currentLayer().info.name;
+    let x = Math.floor(Math.random() * board.width!)
+    let y = Math.floor(Math.random() * board.height!)
+    const lenth = Math.floor(Math.random() * 100)
+    for (let j = 0; j < lenth; ++j) {
+      x += Math.floor(Math.random() * 5)
+      y += Math.floor(Math.random() * 5)
+      item.appendDot({ x, y, p: 0.5 })
+    }
+    const r = Math.floor(Math.random() * 255)
+    const g = Math.floor(Math.random() * 255)
+    const b = Math.floor(Math.random() * 255)
+    item.data.strokeStyle = `rgb(${r},${g},${b})`
+    items.push(item)
+  }
+  board.add(...items)
+}))
 
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let _recorder: Recorder | undefined
 let _player: Player | undefined
-let initState: State = {
-  count: 1,
-  width: 2048,
-  height: 2048,
-};
 
-(window as any).ui = new UI<State, keyof State, 'hello'>(
+
+const jsonView = new Subwin();
+jsonView.header.title = 'json';
+jsonView.content = new View('div');
+jsonView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
+const _recorder_textarea = new View('textarea')
+jsonView.content.addChild(new Button({ content: 'JSON化' }).onClick(() => {
+
+}));
+jsonView.content.addChild(new Button({ content: '反JSON化' }).onClick(() => {
+
+}));
+jsonView.content.addChild(_recorder_textarea);
+mergedSubwin.addSubWin(jsonView);
+workspace.addSubWin(jsonView);
+
+{
+  const startRecord = () => {
+    _recorder?.destory();
+    _recorder = new Recorder();
+    _recorder.start(board);
+  }
+  const endRecord = () => {
+    if (!_recorder_textarea || !_recorder)
+      return
+    _recorder_textarea.inner.value = _recorder.toJsonStr()
+    _recorder?.destory()
+    _recorder = undefined
+  }
+  const replay = (str: string) => {
+    _player?.stop()
+    _player = new Player()
+    _player.start(board, JSON.parse(str))
+  }
+  const recorderView = new Subwin();
+  recorderView.header.title = 'recorder';
+  recorderView.content = new View('div');
+  recorderView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
+  const _json_textarea = new View('textarea')
+  recorderView.content.addChild(new Button({ content: '开始录制' }).onClick(startRecord));
+  recorderView.content.addChild(new Button({ content: '停止录制' }).onClick(endRecord));
+  recorderView.content.addChild(new Button({ content: '回放' }).onClick(() => {
+    endRecord()
+    replay(_recorder_textarea.inner.value)
+  }));
+
+  recorderView.content.addChild(new Button({ content: 'replay: write "hello world"' }).onClick(() => {
+    endRecord()
+    replay(demo_helloworld)
+  }));
+  recorderView.content.addChild(new Button({ content: 'replay: rect & oval' }).onClick(() => {
+    endRecord()
+    replay(demo_rect_n_oval)
+  }));
+  recorderView.content.addChild(_json_textarea);
+  mergedSubwin.addSubWin(recorderView);
+  workspace.addSubWin(recorderView);
+}
+
+(window as any).ui = new UI<{}, string, 'hello'>(
   document.body,
-  () => initState,
+  () => ({}),
   (ui) => {
     ui.ele('div', {
       className: 'root'
     }, () => {
-      ui.ele('div', {
-        className: 'tool_bar'
-      }, () => {
-        ui.ele('br')
-        ui.ele('button', { className: 'tool_button', innerText: 'select all', on: { click: () => whiteBoard.selectAll() } })
-        ui.ele('button', { className: 'tool_button', innerText: 'remove selected', on: { click: () => whiteBoard.removeSelected() } })
-        ui.ele('button', { className: 'tool_button', innerText: 'remove all', on: { click: () => whiteBoard.removeAll() } })
-        ui.ele('br')
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: '随机加1000个矩形',
-          on: {
-            click: (e, ele, ui) => {
-              const items: Shape[] = []
-              for (let i = 0; i < 1000; ++i) {
-                const item = whiteBoard.factory.newShape(ShapeEnum.Rect)
-                item.data.layer = whiteBoard.currentLayer().info.name;
-                item.geo(
-                  Math.floor(Math.random() * ui.state.width!),
-                  Math.floor(Math.random() * ui.state.height!), 50, 50)
-                const r = Math.floor(Math.random() * 255)
-                const g = Math.floor(Math.random() * 255)
-                const b = Math.floor(Math.random() * 255)
-                item.data.fillStyle = `rgb(${r},${g},${b})`
-                items.push(item)
-              }
-              whiteBoard.add(...items)
-            }
-          },
-          listens: [
-            [['count', 'height', 'width']]
-          ]
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: '随机加1000个圆',
-          on: {
-            click: () => {
-              const items: Shape[] = []
-              for (let i = 0; i < 1000; ++i) {
-                const item = whiteBoard.factory.newShape(ShapeEnum.Oval)
-                item.data.layer = whiteBoard.currentLayer().info.name;
-                item.geo(
-                  Math.floor(Math.random() * ui.state.width!),
-                  Math.floor(Math.random() * ui.state.height!), 50, 50)
-                const r = Math.floor(Math.random() * 255)
-                const g = Math.floor(Math.random() * 255)
-                const b = Math.floor(Math.random() * 255)
-                item.data.fillStyle = `rgb(${r},${g},${b})`
-                items.push(item)
-              }
-              whiteBoard.add(...items)
-            }
-          }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: '随机画1000笔',
-          on: {
-            click: () => {
-              const items: Shape[] = []
-              for (let i = 0; i < 1000; ++i) {
-                const item = whiteBoard.factory.newShape(ShapeEnum.Pen) as ShapePen
-                item.data.layer = whiteBoard.currentLayer().info.name;
-                let x = Math.floor(Math.random() * ui.state.width!)
-                let y = Math.floor(Math.random() * ui.state.height!)
-                const lenth = Math.floor(Math.random() * 100)
-                for (let j = 0; j < lenth; ++j) {
-                  x += Math.floor(Math.random() * 5)
-                  y += Math.floor(Math.random() * 5)
-                  item.appendDot({ x, y, p: 0.5 })
-                }
-                const r = Math.floor(Math.random() * 255)
-                const g = Math.floor(Math.random() * 255)
-                const b = Math.floor(Math.random() * 255)
-                item.data.strokeStyle = `rgb(${r},${g},${b})`
-                items.push(item)
-              }
-              whiteBoard.add(...items)
-              console.log(items)
-            }
-          }
-        })
-        ui.ele('br')
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: 'JSON化',
-          on: {
-            click: () => {
-              _json_textarea.value = whiteBoard.toJsonStr()
-            }
-          }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: '反JSON化',
-          on: {
-            click: () => {
-              whiteBoard.fromJsonStr(_json_textarea.value)
-            }
-          }
-        })
-        const _json_textarea = ui.ele('textarea')
-        const startRecord = () => {
-          _recorder?.destory()
-          _recorder = new Recorder()
-          _recorder.start(whiteBoard)
-        }
-        const endRecord = () => {
-          if (!_recorder_textarea || !_recorder)
-            return
-          _recorder_textarea.value = _recorder.toJsonStr()
-          _recorder?.destory()
-          _recorder = undefined
-        }
-        const replay = (str: string) => {
-          _player?.stop()
-          _player = new Player()
-          _player.start(whiteBoard, JSON.parse(str))
-        }
-        ui.ele('br')
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: '开始录制', on: { click: startRecord }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: '停止录制', on: { click: endRecord }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: '回放', on: {
-            click: () => {
-              endRecord()
-              replay(_recorder_textarea.value)
-            }
-          }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: `replay: write "hello world"`, on: {
-            click: () => {
-              endRecord()
-              replay(demo_helloworld)
-            }
-          }
-        })
-        ui.ele('button', {
-          className: 'tool_button',
-          innerText: `replay: rect & oval`, on: {
-            click: () => {
-              endRecord()
-              replay(demo_rect_n_oval)
-            }
-          }
-        })
-        const _recorder_textarea = ui.ele('textarea')
-      })
-
-
+      ui.ele('br')
       ui.ele('div', {
         alias: 'hello',
         className: 'blackboard',
@@ -279,34 +248,26 @@ let initState: State = {
         }
       }, () => {
         const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
-          const onscreen = ui.ele('canvas', {
-            style: {
-              position: idx === 0 ? 'relative' : 'absolute',
-              touchAction: 'none',
-              left: '0px',
-              right: '0px',
-              top: '0px',
-              bottom: '0px',
-            },
-            oncontextmenu: (e) => {
-              const ele = (e.target as HTMLElement);
-              const { left, top } = ele.getBoundingClientRect()
-              menu.move(e.x, e.y);
-              menu.show();
-            }
+          const canvas = new Canvas();
+          canvas.styles().apply('', {
+            position: idx === 0 ? 'relative' : 'absolute',
+            touchAction: 'none',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
           })
-          return { info: layer.state, onscreen }
+          canvas.inner.addEventListener('contextmenu', (e) => {
+            menu.move(e.x, e.y);
+            menu.show();
+          })
+          ui.current()?.append(canvas.inner)
+          return { info: layer.state, onscreen: canvas.inner }
         })
-        whiteBoard = factory.newWhiteBoard({ layers, ...ui.state })
-        whiteBoard.on(EventEnum.ToolChanged, () => {
-          const { count } = ui.state;
-          ui.setState({ count: count + 1 })
-        })
-
+        board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 })
       })
     })
   })
-
 const menu = new Menu({
   items: [{
     key: 'shit',

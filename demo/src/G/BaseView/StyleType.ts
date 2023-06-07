@@ -47,7 +47,8 @@ export interface Style extends Partial<Omit<CSSStyleDeclaration,
   'borderTopLeftRadius' |
   'borderTopRightRadius' |
   'borderBottomLeftRadius' |
-  'borderBottomRightRadius'
+  'borderBottomRightRadius' |
+  'opacity'
 >> {
   flex?: number | string;
   objectFit?: CssObjectFit | 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
@@ -97,4 +98,5 @@ export interface Style extends Partial<Omit<CSSStyleDeclaration,
   marginRight?: number | string;
   marginBottom?: number | string;
   marginTop?: number | string;
+  opacity?: number | string;
 };

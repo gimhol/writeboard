@@ -1,7 +1,7 @@
-import { FocusOb, HoverOb } from "./HoverOb";
+import { HoverOb } from "../Observer/HoverOb";
+import { FocusOb } from "../Observer/FocusOb";
 import { Style } from "./StyleType";
 import { Styles } from "./Styles";
-
 
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
   protected _inner: HTMLElementTagNameMap[T];
@@ -18,12 +18,18 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   get id() { return this.inner.id; }
   set id(v) { this.inner.id = v; }
   get inner() { return this._inner; }
-  get parent() { return (this._inner.parentElement as any)?.view; }
+  get parent() { return <View | undefined>(this._inner.parentElement as any)?.view; }
   get children() { return Array.from(this._inner.children).map(v => (v as any)?.view) }
   get draggable() { return this._inner.draggable; }
   set draggable(v) { this._inner.draggable = v; }
   constructor(tagName: T) {
-    this._inner = document.createElement(tagName);
+    if (tagName === 'body') {
+      this._inner = <any>document.body ?? document.createElement('body');
+    } else if (tagName === 'head') {
+      this._inner = <any>document.head ?? document.createElement('head');
+    } else {
+      this._inner = document.createElement(tagName);
+    }
     (this._inner as any).view = this;
   }
 
@@ -68,6 +74,9 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
       this._inner.removeChild(child.inner);
       child.onAfterRemoved(this);
     })
+  }
+  removeSelf() {
+    this.parent?.removeChild(this);
   }
   onClick(cb: (self: View) => void): View {
     this.handleClick = () => this.cb?.(this);

@@ -1,5 +1,5 @@
 import { Style } from "./StyleType";
-import { ReValue, reValue } from "./utils";
+import { ReValue, reValue } from "../utils";
 import { View } from "./View";
 
 export class Styles<T extends string = string>{
@@ -13,12 +13,22 @@ export class Styles<T extends string = string>{
   pool(): Map<T, Style> { return this._pool; }
   read(name: T): Style {
     const ret = this._pool.get(name);
-    if (!ret) { console.warn(`style '${name}' not found!`); }
+    if (!ret) { console.warn(`[styles] read(), style '${name}' not found!`); }
     return ret ?? {};
   }
 
   register(name: T, style: ReValue<Style>): Styles<T> {
     this._pool.set(name, reValue(style, this._pool.get(name) ?? {}));
+    return this;
+  }
+
+  edit(name: T, style: (s: Style) => Style): Styles<T> {
+    const old = this._pool.get(name);
+    if (!old) {
+      console.warn(`[styles] edit(), style '${name}' not found!`);
+      return this;
+    }
+    this._pool.set(name, style(old));
     return this;
   }
 

@@ -1,12 +1,16 @@
-import { GEventType } from "./Event";
-import { Subwin } from "./Subwin";
-import { GetValue, Rect, getValue } from "./utils";
+import { EventType } from "../Events/EventType";
+import { Subwin } from "../CompoundView/Subwin";
+import { View } from "../BaseView/View";
+import { GetValue, Rect, getValue } from "../utils";
+
 export interface SubwinWorkspaceInits {
+  view?: View;
   rect?: GetValue<Rect>;
   wins?: Subwin[];
   zIndex?: number;
 }
 export class SubwinWorkspace {
+  private _view?: View;
   private _rect?: GetValue<Rect>;
   private _zIndex: number = 0;
   private _wins: Subwin[] = [];
@@ -17,18 +21,7 @@ export class SubwinWorkspace {
         ...v,
         zIndex: `${this._zIndex + idx}`
       }))
-      if (idx < arr.length - 1) {
-        const style = {
-          opacity: '0.8'
-        };
-        win.header.styles().apply('not_top_in_workspace', style);
-        win.content?.styles().apply('not_top_in_workspace', style);
-        win.footer?.styles().apply('not_top_in_workspace', style);
-      } else {
-        win.header.styles().forgo('not_top_in_workspace').refresh();
-        win.content?.styles().forgo('not_top_in_workspace').refresh();
-        win.footer?.styles().forgo('not_top_in_workspace').refresh();
-      }
+      idx < arr.length - 1 ? win.lower() : win.raise();
     });
   }
   private _handleClick = (target: Subwin) => {
@@ -39,6 +32,7 @@ export class SubwinWorkspace {
   constructor(inits: SubwinWorkspaceInits) {
     this._rect = inits.rect;
     this._zIndex = inits?.zIndex ?? this._zIndex;
+    this._view = inits.view
     if (inits?.wins) {
       this.addSubWin(...inits.wins);
       this._updateSubWinStyle();
@@ -71,10 +65,9 @@ export class SubwinWorkspace {
       this._pointerdowns.set(subwin, listener);
       subwin.inner.addEventListener('pointerdown', listener);
       subwin.inner.addEventListener('touchstart', listener);
-
-      subwin.inner.addEventListener(GEventType.ViewDragStart, (e) => { })
-      subwin.inner.addEventListener(GEventType.ViewDragging, (e) => { })
-      subwin.inner.addEventListener(GEventType.ViewDragEnd, (e) => {
+      subwin.inner.addEventListener(EventType.ViewDragStart, (e) => { })
+      subwin.inner.addEventListener(EventType.ViewDragging, (e) => { })
+      subwin.inner.addEventListener(EventType.ViewDragEnd, (e) => {
         const rect = getValue(this._rect);
         if (!rect) { return; }
         this.clampSubwin(subwin, rect);

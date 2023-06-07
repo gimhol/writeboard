@@ -1,13 +1,14 @@
 import { ILayerInfoInit, ToolEnum, ToolType } from "../../dist";
-import { ButtonGroup, SizeType } from "./G/Button";
-import { FocusOb, HoverOb } from "./G/HoverOb";
-import { IconButton } from "./G/IconButton";
-import { Img } from "./G/Img";
-import { CssObjectFit } from "./G/StyleType";
-import { Subwin } from "./G/Subwin";
-import { TextInput } from "./G/TextInput";
-import { ToggleIconButton } from "./G/ToggleIconButton";
-import { View } from "./G/View";
+import { ButtonGroup } from "./G/Helper/ButtonGroup";
+import { SizeType } from "./G/BaseView/SizeType";
+import { IconButton } from "./G/BaseView/IconButton";
+import { Image } from "./G/BaseView/Image";
+import { CssObjectFit } from "./G/BaseView/StyleType";
+import { TextInput } from "./G/BaseView/TextInput";
+import { ToggleIconButton } from "./G/BaseView/ToggleIconButton";
+import { View } from "./G/BaseView/View";
+import { Subwin } from "./G/CompoundView/Subwin";
+import { FocusOb } from "./G/Observer/FocusOb";
 export interface ToolButtonInits {
   src: string;
   toolType: ToolType
@@ -17,7 +18,7 @@ export class ToolButton extends IconButton {
   get toolType() { return this._toolType; }
   constructor(inits: ToolButtonInits) {
     super({
-      content: new Img({
+      content: new Image({
         src: inits.src,
         styles: {
           width: 24,
@@ -46,7 +47,6 @@ export class ToolsView extends Subwin {
       overflowY: 'auto',
       overflowX: 'hidden'
     })
-
     const toolsBtns = [
       new ToolButton({ src: './ic_selector.svg', toolType: ToolEnum.Selector }),
       new ToolButton({ src: './ic_pen.svg', toolType: ToolEnum.Pen }),

@@ -1,14 +1,14 @@
 import { Style } from "./StyleType";
 import { View } from "./View";
-export interface ImgInit {
+export interface ImageInit {
   src?: string;
   styles?: Style;
 }
-export class Img extends View<'img'>{
+export class Image extends View<'img'>{
   get src() { return this._inner.src; }
   set src(v) { this._inner.src = v; }
 
-  constructor(inits?: ImgInit) {
+  constructor(inits?: ImageInit) {
     super('img');
     inits?.src && (this.src = inits.src);
     inits?.styles && (this.styles().apply('_', inits.styles))

@@ -1,4 +1,4 @@
-export enum GEventType {
+export enum EventType {
   ViewDragStart = 'viewdragstart',
   ViewDragging = 'viewdrag',
   ViewDragEnd = 'viewdragend',
