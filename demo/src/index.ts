@@ -3,6 +3,7 @@ import {
   ILayerInits,
   Player, Recorder,
   Shape,
+  ShapeData,
   ShapeEnum, ShapePen,
   WhiteBoard
 } from "../../dist";
@@ -133,6 +134,15 @@ toyView.content.addChild(new Button({
   content: 'remove all'
 }).addEventListener('click', () => board.removeAll()))
 
+function randomShapeItem(item: Shape<ShapeData>) {
+  const v255 = () => Math.floor(Math.random() * 255)
+  item.geo(
+    Math.floor(Math.random() * board.width),
+    Math.floor(Math.random() * board.height!), 50, 50)
+  item.data.fillStyle = `rgb(${v255()},${v255()},${v255()})`
+  item.data.strokeStyle = `rgb(${v255()},${v255()},${v255()})`
+}
+
 toyView.content.addChild(new Button({
   content: 'random add 1000 rect'
 }).addEventListener('click', () => {
@@ -140,13 +150,7 @@ toyView.content.addChild(new Button({
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Rect)
     item.data.layer = board.layer().id;
-    item.geo(
-      Math.floor(Math.random() * board.width),
-      Math.floor(Math.random() * board.height!), 50, 50)
-    const r = Math.floor(Math.random() * 255)
-    const g = Math.floor(Math.random() * 255)
-    const b = Math.floor(Math.random() * 255)
-    item.data.fillStyle = `rgb(${r},${g},${b})`
+    randomShapeItem(item);
     items.push(item)
   }
   board.add(...items)
@@ -159,13 +163,7 @@ toyView.content.addChild(new Button({
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Oval)
     item.data.layer = board.layer().id;
-    item.geo(
-      Math.floor(Math.random() * board.width!),
-      Math.floor(Math.random() * board.height!), 50, 50)
-    const r = Math.floor(Math.random() * 255)
-    const g = Math.floor(Math.random() * 255)
-    const b = Math.floor(Math.random() * 255)
-    item.data.fillStyle = `rgb(${r},${g},${b})`
+    randomShapeItem(item);
     items.push(item)
   }
   board.add(...items)
@@ -178,18 +176,16 @@ toyView.content.addChild(new Button({
   for (let i = 0; i < 1000; ++i) {
     const item = board.factory.newShape(ShapeEnum.Pen) as ShapePen
     item.data.layer = board.layer().id;
-    let x = Math.floor(Math.random() * board.width!)
-    let y = Math.floor(Math.random() * board.height!)
+    let x = Math.floor(Math.random() * board.width!);
+    let y = Math.floor(Math.random() * board.height!);
+    const v5 = () => Math.floor(Math.random() * 5)
     const lenth = Math.floor(Math.random() * 100)
     for (let j = 0; j < lenth; ++j) {
-      x += Math.floor(Math.random() * 5)
-      y += Math.floor(Math.random() * 5)
+      x += v5();
+      y += v5();
       item.appendDot({ x, y, p: 0.5 })
     }
-    const r = Math.floor(Math.random() * 255)
-    const g = Math.floor(Math.random() * 255)
-    const b = Math.floor(Math.random() * 255)
-    item.data.strokeStyle = `rgb(${r},${g},${b})`
+    randomShapeItem(item);
     items.push(item)
   }
   board.add(...items)
