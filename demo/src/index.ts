@@ -25,7 +25,17 @@ import demo_rect_n_oval from "./demo_rect_n_oval";
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let board: WhiteBoard
 
-const mainView = new View('body');
+const mainView = new SubwinWorkspace('body', {
+  rect() {
+    return {
+      x: 0, y: 0,
+      w: document.body.offsetWidth,
+      h: document.body.offsetHeight
+    }
+  },
+  zIndex: 1000,
+});
+
 const menu = new Menu(mainView, {
   items: [{
     key: 'tool_view',
@@ -117,8 +127,6 @@ const toolsView = new ToolsView;
 toolsView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType)
 
-
-
 const colorView = new ColorView;
 colorView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
 
@@ -152,26 +160,7 @@ mainView.addChild(toyView);
 mainView.addChild(mergedSubwin2);
 mainView.addChild(mergedSubwin);
 
-const workspace = new SubwinWorkspace({
-  view: mainView,
-  rect() {
-    return {
-      x: 0, y: 0,
-      w: document.body.offsetWidth,
-      h: document.body.offsetHeight
-    }
-  },
-  zIndex: 1000,
-  wins: [
-    toolsView,
-    layersView,
-    colorView,
-    mergedSubwin,
-    mergedSubwin2,
-    toyView
-  ]
-});
-window.addEventListener('resize', () => workspace.clampAllSubwin())
+window.addEventListener('resize', () => mainView.clampAllSubwin())
 
 toyView.content = new View('div');
 toyView.content.styles.apply('', {
@@ -268,7 +257,7 @@ jsonView.content.addChild(new Button({ content: '反JSON化' }).addEventListener
 }));
 jsonView.content.addChild(json_textarea);
 mergedSubwin.addSubWin(jsonView);
-workspace.addSubWin(jsonView);
+mainView.addSubWin(jsonView);
 
 {
   const startRecord = () => {
@@ -311,7 +300,7 @@ workspace.addSubWin(jsonView);
   }));
   recorderView.content.addChild(_recorder_textarea);
   mergedSubwin.addSubWin(recorderView);
-  workspace.addSubWin(recorderView);
+  mainView.addSubWin(recorderView);
 }
 
 const rootView = new View('div');
@@ -346,5 +335,14 @@ const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
   return { info: layer.state, onscreen: canvas.inner }
 })
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
+
+mainView.addSubWin(
+  toolsView,
+  layersView,
+  colorView,
+  mergedSubwin,
+  mergedSubwin2,
+  toyView
+);
 
 (window as any).board = board;

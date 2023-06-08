@@ -24,7 +24,7 @@ export class IconButton extends Button {
     if (init?.src) {
       const content = new Image({
         src: init.src,
-        styles: {
+        style: {
           width: '100%',
           height: '100%',
           objectFit: CssObjectFit.Contain,

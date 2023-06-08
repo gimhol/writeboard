@@ -349,7 +349,7 @@ class Image extends View_1.View {
     constructor(inits) {
         super('img');
         (inits === null || inits === void 0 ? void 0 : inits.src) && (this.src = inits.src);
-        (inits === null || inits === void 0 ? void 0 : inits.styles) && (this.styles.apply('_', inits.styles));
+        (inits === null || inits === void 0 ? void 0 : inits.style) && (this.styles.apply('_', inits.style));
     }
 }
 exports.Image = Image;
@@ -612,8 +612,13 @@ class View {
         var _a;
         return (_a = ele.view) !== null && _a !== void 0 ? _a : new View(ele);
     }
-    static try(ele) {
-        return ele.view;
+    static try(ele, cls) {
+        if (cls) {
+            return ele.view instanceof cls ? ele.view : undefined;
+        }
+        else {
+            return ele.view;
+        }
     }
     constructor(arg0) {
         var _a, _b;
@@ -698,7 +703,7 @@ class IconButton extends Button_1.Button {
         if (init === null || init === void 0 ? void 0 : init.src) {
             const content = new Image_1.Image({
                 src: init.src,
-                styles: {
+                style: {
                     width: '100%',
                     height: '100%',
                     objectFit: StyleType_1.CssObjectFit.Contain,
@@ -985,7 +990,7 @@ class MergedSubwin extends Subwin_1.Subwin {
             height: '100%',
             border: 'none',
             boxShadow: 'none',
-            resize: 'none'
+            resize: 'none',
         });
         subwin.header.styles.apply('merged', { display: 'none' });
         (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(subwin);
@@ -1260,16 +1265,51 @@ exports.ButtonGroup = ButtonGroup;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinWorkspace = void 0;
 const EventType_1 = require("../Events/EventType");
+const Subwin_1 = require("../CompoundView/Subwin");
+const View_1 = require("../BaseView/View");
 const utils_1 = require("../utils");
-class SubwinWorkspace {
+const Image_1 = require("../BaseView/Image");
+const _dragInStyle = {
+    position: 'fixed',
+    width: 64,
+    height: 64,
+    zIndex: '10000',
+    userSelect: 'none',
+    background: '#000000FF',
+    borderRadius: 5,
+    opacity: 0.4,
+    transform: 'translate(-50%, -50%)',
+    transition: 'all 200ms',
+};
+const _dragInHoverStyle = {
+    opacity: 0.8
+};
+class DragInImage extends Image_1.Image {
+    constructor(inits) {
+        super({ src: inits.src });
+        this.styles
+            .register('hover', _dragInHoverStyle)
+            .apply('normal', _dragInStyle)
+            .apply('', inits.style);
+        this.hoverOb;
+    }
+    onHover(hover) {
+        this.styles[hover ? 'add' : 'remove']('hover').refresh();
+    }
+    onBeforeRemoved(parent) {
+        this.styles.remove('hover').refresh();
+    }
+}
+class SubwinWorkspace extends View_1.View {
     _updateSubWinStyle() {
         this._wins.forEach((win, idx, arr) => {
             win.styles.apply('in_workspace', v => (Object.assign(Object.assign({}, v), { zIndex: `${this._zIndex + idx}` })));
             idx < arr.length - 1 ? win.lower() : win.raise();
         });
     }
-    constructor(inits) {
+    constructor(arg0, inits) {
         var _a;
+        super(arg0);
         this._zIndex = 0;
         this._wins = [];
         this._pointerdowns = new Map();
@@ -1278,13 +1318,51 @@ class SubwinWorkspace {
             this._wins.push(target);
             this._updateSubWinStyle();
         };
+        this._dragInLeft = new DragInImage({ src: './ic_dock_to_left.svg', style: { left: 64, top: '50%' } });
+        this._dragInTop = new DragInImage({ src: './ic_dock_to_top.svg', style: { left: '50%', top: 64 } });
+        this._dragInRight = new DragInImage({ src: './ic_dock_to_right.svg', style: { right: 64, top: '50%' } });
+        this._dragInBottom = new DragInImage({ src: './ic_dock_to_bottom.svg', style: { left: '50%', bottom: 64 } });
+        this._onViewDragStart = (e) => {
+            const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
+            if (!subwin) {
+                return;
+            }
+            this.addChild(this._dragInLeft);
+            this.addChild(this._dragInRight);
+            this.addChild(this._dragInTop);
+            this.addChild(this._dragInBottom);
+        };
+        this._onViewDragging = (e) => {
+            const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
+            if (!subwin) {
+                return;
+            }
+        };
+        this._onViewDragEnd = (e) => {
+            const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
+            if (!subwin) {
+                return;
+            }
+            (this._dragInLeft).removeSelf();
+            (this._dragInRight).removeSelf();
+            (this._dragInTop).removeSelf();
+            (this._dragInBottom).removeSelf();
+            const rect = (0, utils_1.getValue)(this._rect);
+            if (!rect) {
+                return;
+            }
+            this.clampSubwin(subwin, rect);
+        };
         this._rect = inits.rect;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
-        this._view = inits.view;
         if (inits === null || inits === void 0 ? void 0 : inits.wins) {
             this.addSubWin(...inits.wins);
             this._updateSubWinStyle();
         }
+        (this._dragInLeft).draggable = false;
+        (this._dragInRight).draggable = false;
+        (this._dragInTop).draggable = false;
+        (this._dragInBottom).draggable = false;
     }
     clampAllSubwin() {
         const rect = (0, utils_1.getValue)(this._rect);
@@ -1314,25 +1392,22 @@ class SubwinWorkspace {
     }
     subwinListening(subwin, listen) {
         if (listen) {
-            const listener = () => this._handleClick(subwin);
-            this._pointerdowns.set(subwin, listener);
-            subwin.inner.addEventListener('pointerdown', listener);
-            subwin.inner.addEventListener('touchstart', listener);
-            subwin.inner.addEventListener(EventType_1.EventType.ViewDragStart, (e) => { });
-            subwin.inner.addEventListener(EventType_1.EventType.ViewDragging, (e) => { });
-            subwin.inner.addEventListener(EventType_1.EventType.ViewDragEnd, (e) => {
-                const rect = (0, utils_1.getValue)(this._rect);
-                if (!rect) {
-                    return;
-                }
-                this.clampSubwin(subwin, rect);
-            });
+            const ondown = () => this._handleClick(subwin);
+            this._pointerdowns.set(subwin, ondown);
+            subwin.inner.addEventListener('pointerdown', ondown);
+            subwin.inner.addEventListener('touchstart', ondown);
+            subwin.inner.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
+            subwin.inner.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
+            subwin.inner.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
         }
         else {
             const listener = this._pointerdowns.get(subwin);
             if (listener) {
                 subwin.inner.removeEventListener('pointerdown', listener);
                 subwin.inner.removeEventListener('touchstart', listener);
+                subwin.inner.removeEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
+                subwin.inner.removeEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
+                subwin.inner.removeEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
             }
         }
     }
@@ -1340,15 +1415,17 @@ class SubwinWorkspace {
         this._wins.forEach(v => this.subwinListening(v, false));
         this._wins = Array.from(new Set(this._wins.concat(subwins)));
         this._wins.forEach(v => this.subwinListening(v, true));
+        this._updateSubWinStyle();
     }
     removeSubwin(...subwins) {
         subwins.forEach(v => this.subwinListening(v, false));
         this._wins.filter(v => subwins.indexOf(v) < 0);
+        this._updateSubWinStyle();
     }
 }
 exports.SubwinWorkspace = SubwinWorkspace;
 
-},{"../Events/EventType":18,"../utils":25}],21:[function(require,module,exports){
+},{"../BaseView/Image":4,"../BaseView/View":11,"../CompoundView/Subwin":15,"../Events/EventType":18,"../utils":25}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ViewDragger = void 0;
@@ -2479,7 +2556,16 @@ const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
 const demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
 const factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 let board;
-const mainView = new View_1.View('body');
+const mainView = new SubwinWorkspace_1.SubwinWorkspace('body', {
+    rect() {
+        return {
+            x: 0, y: 0,
+            w: document.body.offsetWidth,
+            h: document.body.offsetHeight
+        };
+    },
+    zIndex: 1000,
+});
 const menu = new Menu_1.Menu(mainView, {
     items: [{
             key: 'tool_view',
@@ -2599,26 +2685,7 @@ toyView.header.title = 'others';
 mainView.addChild(toyView);
 mainView.addChild(mergedSubwin2);
 mainView.addChild(mergedSubwin);
-const workspace = new SubwinWorkspace_1.SubwinWorkspace({
-    view: mainView,
-    rect() {
-        return {
-            x: 0, y: 0,
-            w: document.body.offsetWidth,
-            h: document.body.offsetHeight
-        };
-    },
-    zIndex: 1000,
-    wins: [
-        toolsView,
-        layersView,
-        colorView,
-        mergedSubwin,
-        mergedSubwin2,
-        toyView
-    ]
-});
-window.addEventListener('resize', () => workspace.clampAllSubwin());
+window.addEventListener('resize', () => mainView.clampAllSubwin());
 toyView.content = new View_1.View('div');
 toyView.content.styles.apply('', {
     display: 'flex',
@@ -2703,7 +2770,7 @@ jsonView.content.addChild(new Button_1.Button({ content: '反JSON化' }).addEven
 }));
 jsonView.content.addChild(json_textarea);
 mergedSubwin.addSubWin(jsonView);
-workspace.addSubWin(jsonView);
+mainView.addSubWin(jsonView);
 {
     const startRecord = () => {
         _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
@@ -2743,7 +2810,7 @@ workspace.addSubWin(jsonView);
     }));
     recorderView.content.addChild(_recorder_textarea);
     mergedSubwin.addSubWin(recorderView);
-    workspace.addSubWin(recorderView);
+    mainView.addSubWin(recorderView);
 }
 const rootView = new View_1.View('div');
 rootView.styles.applyCls('root');
@@ -2774,6 +2841,7 @@ const layers = layersView.layers().map((layer, idx) => {
     return { info: layer.state, onscreen: canvas.inner };
 });
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
+mainView.addSubWin(toolsView, layersView, colorView, mergedSubwin, mergedSubwin2, toyView);
 window.board = board;
 
 },{"../../dist":43,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":11,"./G/CompoundView/Menu":13,"./G/CompoundView/MergedSubwin":14,"./G/CompoundView/Subwin":15,"./G/Helper/SubwinWorkspace":20,"./LayersView":26,"./ToolsView":27,"./demo_helloworld":30,"./demo_rect_n_oval":31}],33:[function(require,module,exports){

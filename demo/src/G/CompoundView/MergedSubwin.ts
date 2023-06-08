@@ -53,8 +53,6 @@ export class MergedSubwin extends Subwin {
       onDragOut,
       onDragIn,
     });
-
-
     this.header.iconView.contents = ['▨', '▨'];
 
     this.content = new View('div');
@@ -94,10 +92,9 @@ export class MergedSubwin extends Subwin {
       height: '100%',
       border: 'none',
       boxShadow: 'none',
-      resize: 'none'
+      resize: 'none',
     });
     subwin.header.styles.apply('merged', { display: 'none' });
-
     this.content?.addChild(subwin);
     const tab = new SubwinTab({
       title: subwin.header.title,

@@ -30,8 +30,14 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> {
     return (ele as any).view ?? new View(ele);
   }
-  static try<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> | undefined {
-    return (ele as any).view;
+  static try<V extends View>(ele: any, view: new (...args: any[]) => V): V | undefined;
+  static try<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> | undefined;
+  static try(ele: any, cls?: any) {
+    if (cls) {
+      return ele.view instanceof cls ? ele.view : undefined;
+    } else {
+      return ele.view;
+    }
   }
   constructor(element: HTMLElementTagNameMap[T]);
   constructor(tagName: T);
