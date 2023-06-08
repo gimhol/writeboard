@@ -21,11 +21,12 @@ const _dragInStyle: Style = {
   background: '#000000FF',
   borderRadius: 5,
   opacity: 0.4,
-  transform: 'translate(-50%, -50%)',
   transition: 'all 200ms',
 }
 const _dragInHoverStyle: Style = {
-  opacity: 0.8
+  opacity: 0.8,
+  width: 80,
+  height: 80,
 }
 
 class DragInImage extends Image {
@@ -63,10 +64,10 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
     this._updateSubWinStyle();
   }
 
-  private _dragInLeft = new DragInImage({ src: './ic_dock_to_left.svg', style: { left: 64, top: '50%' } })
-  private _dragInTop = new DragInImage({ src: './ic_dock_to_top.svg', style: { left: '50%', top: 64 } })
-  private _dragInRight = new DragInImage({ src: './ic_dock_to_right.svg', style: { right: 64, top: '50%' } })
-  private _dragInBottom = new DragInImage({ src: './ic_dock_to_bottom.svg', style: { left: '50%', bottom: 64 } })
+  private _dragInLeft = new DragInImage({ src: './ic_dock_to_left.svg', style: { left: 64, top: '50%', transform: 'translate(-50%, -50%)' } })
+  private _dragInTop = new DragInImage({ src: './ic_dock_to_top.svg', style: { left: '50%', top: 64, transform: 'translate(-50%, -50%)' } })
+  private _dragInRight = new DragInImage({ src: './ic_dock_to_right.svg', style: { right: 64, top: '50%', transform: 'translate(50%, -50%)' } })
+  private _dragInBottom = new DragInImage({ src: './ic_dock_to_bottom.svg', style: { left: '50%', bottom: 64, transform: 'translate(-50%, 50%)' } })
 
   constructor(element: HTMLElementTagNameMap[T], inits: SubwinWorkspaceInits);
   constructor(tagName: T, inits: SubwinWorkspaceInits);

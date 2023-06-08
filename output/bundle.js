@@ -1278,11 +1278,12 @@ const _dragInStyle = {
     background: '#000000FF',
     borderRadius: 5,
     opacity: 0.4,
-    transform: 'translate(-50%, -50%)',
     transition: 'all 200ms',
 };
 const _dragInHoverStyle = {
-    opacity: 0.8
+    opacity: 0.8,
+    width: 80,
+    height: 80,
 };
 class DragInImage extends Image_1.Image {
     constructor(inits) {
@@ -1318,10 +1319,10 @@ class SubwinWorkspace extends View_1.View {
             this._wins.push(target);
             this._updateSubWinStyle();
         };
-        this._dragInLeft = new DragInImage({ src: './ic_dock_to_left.svg', style: { left: 64, top: '50%' } });
-        this._dragInTop = new DragInImage({ src: './ic_dock_to_top.svg', style: { left: '50%', top: 64 } });
-        this._dragInRight = new DragInImage({ src: './ic_dock_to_right.svg', style: { right: 64, top: '50%' } });
-        this._dragInBottom = new DragInImage({ src: './ic_dock_to_bottom.svg', style: { left: '50%', bottom: 64 } });
+        this._dragInLeft = new DragInImage({ src: './ic_dock_to_left.svg', style: { left: 64, top: '50%', transform: 'translate(-50%, -50%)' } });
+        this._dragInTop = new DragInImage({ src: './ic_dock_to_top.svg', style: { left: '50%', top: 64, transform: 'translate(-50%, -50%)' } });
+        this._dragInRight = new DragInImage({ src: './ic_dock_to_right.svg', style: { right: 64, top: '50%', transform: 'translate(50%, -50%)' } });
+        this._dragInBottom = new DragInImage({ src: './ic_dock_to_bottom.svg', style: { left: '50%', bottom: 64, transform: 'translate(-50%, 50%)' } });
         this._onViewDragStart = (e) => {
             const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
             if (!subwin) {
