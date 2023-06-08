@@ -90,22 +90,22 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
 
   private _dragInLeft = new IndicatorImage({
     src: './ic_dock_to_left.svg', style: {
-      position: 'absolute', left: 64, top: '50%'
+      position: 'absolute', left: 16, top: '50%'
     }
   })
   private _dragInTop = new IndicatorImage({
     src: './ic_dock_to_top.svg', style: {
-      position: 'absolute', left: '50%', top: 64
+      position: 'absolute', left: '50%', top: 16
     }
   })
   private _dragInRight = new IndicatorImage({
     src: './ic_dock_to_right.svg', style: {
-      position: 'absolute', right: 64, top: '50%'
+      position: 'absolute', right: 16, top: '50%'
     }
   })
   private _dragInBottom = new IndicatorImage({
     src: './ic_dock_to_bottom.svg', style: {
-      position: 'absolute', left: '50%', bottom: 64
+      position: 'absolute', left: '50%', bottom: 16
     }
   })
 
