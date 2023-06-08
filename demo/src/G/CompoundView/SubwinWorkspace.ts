@@ -75,7 +75,10 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
   private _pointerdowns = new Map<Subwin, () => void>();
   private _updateSubWinStyle() {
     this._wins.forEach((win, idx, arr) => {
-      win.styles.apply('in_workspace', v => ({ ...v, zIndex: `${this._zIndex + idx}` }))
+      win.styles.apply('in_workspace', v => ({
+        ...v, zIndex: `${this._zIndex + idx}`,
+        maxWidth: '100%', maxHeight: '100%'
+      }))
       idx < arr.length - 1 ? win.lower() : win.raise();
     });
   }
@@ -138,8 +141,6 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
       top: '' + y + 'px',
     });
   }
-
-
 
   private _onViewDragStart = (e: Event) => {
     const subwin = View.try(e.target, Subwin);

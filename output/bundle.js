@@ -1268,7 +1268,7 @@ class IndicatorView extends View_1.View {
 class SubwinWorkspace extends View_1.View {
     _updateSubWinStyle() {
         this._wins.forEach((win, idx, arr) => {
-            win.styles.apply('in_workspace', v => (Object.assign(Object.assign({}, v), { zIndex: `${this._zIndex + idx}` })));
+            win.styles.apply('in_workspace', v => (Object.assign(Object.assign({}, v), { zIndex: `${this._zIndex + idx}`, maxWidth: '100%', maxHeight: '100%' })));
             idx < arr.length - 1 ? win.lower() : win.raise();
         });
     }
