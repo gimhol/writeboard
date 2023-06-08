@@ -13,9 +13,7 @@ export enum CssPosition {
   Fixed = 'fixed',
   Sticky = 'sticky',
 }
-export interface Style extends Partial<Omit<CSSStyleDeclaration,
-  'length' | 'parentRule' |
-
+type OverrideKeys = 'length' | 'parentRule' |
   'flex' |
   'objectFit' |
   'position' |
@@ -48,8 +46,10 @@ export interface Style extends Partial<Omit<CSSStyleDeclaration,
   'borderTopRightRadius' |
   'borderBottomLeftRadius' |
   'borderBottomRightRadius' |
-  'opacity'
->> {
+  'opacity' |
+  'zIndex'
+
+export interface Style extends Partial<Omit<CSSStyleDeclaration, OverrideKeys>> {
   flex?: number | string;
   objectFit?: CssObjectFit | 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
   position?: CssPosition | 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky';
@@ -99,4 +99,5 @@ export interface Style extends Partial<Omit<CSSStyleDeclaration,
   marginBottom?: number | string;
   marginTop?: number | string;
   opacity?: number | string;
+  zIndex?: number | string;
 };

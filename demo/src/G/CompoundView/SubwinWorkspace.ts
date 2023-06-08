@@ -73,6 +73,7 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
   private _zIndex: number = 0;
   private _wins: Subwin[] = [];
   private _pointerdowns = new Map<Subwin, () => void>();
+  private _draggingSubwin: Subwin | undefined;
   private _updateSubWinStyle() {
     this._wins.forEach((win, idx, arr) => {
       win.styles.apply('in_workspace', v => ({
@@ -142,14 +143,17 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
     });
   }
 
+  private _onPointerMove = (e: PointerEvent) => {}
+
   private _onViewDragStart = (e: Event) => {
-    const subwin = View.try(e.target, Subwin);
-    if (!subwin) { return; }
+    this._draggingSubwin = View.try(e.target, Subwin);
+    if (!this._draggingSubwin) { return; }
 
     this.addChild(this._dragInLeft);
     this.addChild(this._dragInRight);
     this.addChild(this._dragInTop);
     this.addChild(this._dragInBottom);
+    this.addEventListener('pointermove', this._onPointerMove, true)
   }
   private _onViewDragging = (e: Event) => {
     const subwin = View.try(e.target, Subwin);
@@ -158,6 +162,7 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
   private _onViewDragEnd = (e: Event) => {
     const subwin = View.try(e.target, Subwin);
     if (!subwin) { return; }
+    this.removeEventListener('pointermove', this._onPointerMove, true)
 
     this._dragInLeft.removeSelf();
     this._dragInRight.removeSelf();
@@ -167,6 +172,7 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
     const rect = getValue(this._rect);
     if (!rect) { return; }
     this.clampSubwin(subwin, rect);
+    delete this._draggingSubwin;
   }
 
   private subwinListening(subwin: Subwin, listen: boolean) {
@@ -189,7 +195,6 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
       }
     }
   }
-
   addSubWin(...subwins: Subwin[]) {
     this._wins.forEach(v => this.subwinListening(v, false));
     this._wins = Array.from(new Set(this._wins.concat(subwins)));

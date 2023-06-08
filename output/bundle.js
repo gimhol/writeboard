@@ -1303,15 +1303,17 @@ class SubwinWorkspace extends View_1.View {
                 position: 'absolute', left: '50%', bottom: 16
             }
         });
+        this._onPointerMove = (e) => { };
         this._onViewDragStart = (e) => {
-            const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
-            if (!subwin) {
+            this._draggingSubwin = View_1.View.try(e.target, Subwin_1.Subwin);
+            if (!this._draggingSubwin) {
                 return;
             }
             this.addChild(this._dragInLeft);
             this.addChild(this._dragInRight);
             this.addChild(this._dragInTop);
             this.addChild(this._dragInBottom);
+            this.addEventListener('pointermove', this._onPointerMove, true);
         };
         this._onViewDragging = (e) => {
             const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
@@ -1324,6 +1326,7 @@ class SubwinWorkspace extends View_1.View {
             if (!subwin) {
                 return;
             }
+            this.removeEventListener('pointermove', this._onPointerMove, true);
             this._dragInLeft.removeSelf();
             this._dragInRight.removeSelf();
             this._dragInTop.removeSelf();
@@ -1333,6 +1336,7 @@ class SubwinWorkspace extends View_1.View {
                 return;
             }
             this.clampSubwin(subwin, rect);
+            delete this._draggingSubwin;
         };
         this._rect = inits.rect;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
