@@ -1,10 +1,9 @@
-import { EventType } from "../Events/EventType";
-import { Subwin } from "../CompoundView/Subwin";
-import { View } from "../BaseView/View";
-import { GetValue, Rect, getValue } from "../utils";
 import { Image } from "../BaseView/Image";
 import { Style } from "../BaseView/StyleType";
-import { HoverOb } from "../Observer/HoverOb";
+import { View } from "../BaseView/View";
+import { Subwin } from "./Subwin";
+import { EventType } from "../Events/EventType";
+import { GetValue, Rect, getValue } from "../utils";
 
 export interface SubwinWorkspaceInits {
   rect?: GetValue<Rect>;
@@ -12,39 +11,63 @@ export interface SubwinWorkspaceInits {
   zIndex?: number;
 }
 
-const _dragInStyle: Style = {
-  position: 'fixed',
-  width: 64,
-  height: 64,
-  zIndex: '10000',
-  userSelect: 'none',
-  background: '#000000FF',
-  borderRadius: 5,
-  opacity: 0.4,
-  transition: 'all 200ms',
-}
-const _dragInHoverStyle: Style = {
-  opacity: 0.8,
-  width: 80,
-  height: 80,
-}
-
-class DragInImage extends Image {
-  constructor(inits: { src: string, style: Style }) {
+export class IndicatorImage extends Image {
+  constructor(inits: { src: string, style?: Style }) {
     super({ src: inits.src });
     this.styles
-      .register('hover', _dragInHoverStyle)
-      .apply('normal', _dragInStyle)
-      .apply('', inits.style);
+      .register('hover', {
+        opacity: 0.8,
+      })
+      .register('normal', {
+        width: 32,
+        height: 32,
+        zIndex: '10000',
+        userSelect: 'none',
+        background: '#000000FF',
+        borderRadius: 5,
+        opacity: 0.3,
+        transition: 'all 200ms',
+      })
+      .register('', { ...inits.style })
+      .add('normal', '')
+      .refresh();
+    this.draggable = false;
     this.hoverOb;
   }
   override onHover(hover: boolean): void {
+    console.log(this.styles.applieds)
     this.styles[hover ? 'add' : 'remove']('hover').refresh()
   }
   override onBeforeRemoved(parent: View<keyof HTMLElementTagNameMap>): void {
     this.styles.remove('hover').refresh()
   }
 }
+
+class IndicatorView extends View<'div'> {
+  private _left = new IndicatorImage({ src: './ic_dock_to_left.svg' })
+  private _top = new IndicatorImage({ src: './ic_dock_to_top.svg' })
+  private _right = new IndicatorImage({ src: './ic_dock_to_right.svg' })
+  private _bottom = new IndicatorImage({ src: './ic_dock_to_bottom.svg' })
+  private _center = new IndicatorImage({ src: '' });
+  constructor() {
+    super('div');
+    this.styles.apply('normal', {
+      display: 'grid',
+      gridTemplateColumns: '33% 33% 33%',
+      position: 'absolute',
+      left: '50%',
+      top: '50%',
+      transform: 'translate(-50%, -50%)',
+      zIndex: '10000'
+    })
+    this.addChild(
+      new View('div'), this._top, new View('div'),
+      this._left, this._center, this._right,
+      new View('div'), this._bottom, new View('div'),
+    )
+  }
+}
+
 export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> extends View<T> {
   private _rect?: GetValue<Rect>;
   private _zIndex: number = 0;
@@ -52,9 +75,7 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
   private _pointerdowns = new Map<Subwin, () => void>();
   private _updateSubWinStyle() {
     this._wins.forEach((win, idx, arr) => {
-      win.styles.apply('in_workspace', v => ({
-        ...v, zIndex: `${this._zIndex + idx}`
-      }))
+      win.styles.apply('in_workspace', v => ({ ...v, zIndex: `${this._zIndex + idx}` }))
       idx < arr.length - 1 ? win.lower() : win.raise();
     });
   }
@@ -64,10 +85,26 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
     this._updateSubWinStyle();
   }
 
-  private _dragInLeft = new DragInImage({ src: './ic_dock_to_left.svg', style: { left: 64, top: '50%', transform: 'translate(-50%, -50%)' } })
-  private _dragInTop = new DragInImage({ src: './ic_dock_to_top.svg', style: { left: '50%', top: 64, transform: 'translate(-50%, -50%)' } })
-  private _dragInRight = new DragInImage({ src: './ic_dock_to_right.svg', style: { right: 64, top: '50%', transform: 'translate(50%, -50%)' } })
-  private _dragInBottom = new DragInImage({ src: './ic_dock_to_bottom.svg', style: { left: '50%', bottom: 64, transform: 'translate(-50%, 50%)' } })
+  private _dragInLeft = new IndicatorImage({
+    src: './ic_dock_to_left.svg', style: {
+      position: 'absolute', left: 64, top: '50%'
+    }
+  })
+  private _dragInTop = new IndicatorImage({
+    src: './ic_dock_to_top.svg', style: {
+      position: 'absolute', left: '50%', top: 64
+    }
+  })
+  private _dragInRight = new IndicatorImage({
+    src: './ic_dock_to_right.svg', style: {
+      position: 'absolute', right: 64, top: '50%'
+    }
+  })
+  private _dragInBottom = new IndicatorImage({
+    src: './ic_dock_to_bottom.svg', style: {
+      position: 'absolute', left: '50%', bottom: 64
+    }
+  })
 
   constructor(element: HTMLElementTagNameMap[T], inits: SubwinWorkspaceInits);
   constructor(tagName: T, inits: SubwinWorkspaceInits);
@@ -79,11 +116,6 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
       this.addSubWin(...inits.wins);
       this._updateSubWinStyle();
     }
-
-    (this._dragInLeft).draggable = false;
-    (this._dragInRight).draggable = false;
-    (this._dragInTop).draggable = false;
-    (this._dragInBottom).draggable = false;
   }
   clampAllSubwin() {
     const rect = getValue(this._rect);
@@ -126,10 +158,10 @@ export class SubwinWorkspace<T extends keyof HTMLElementTagNameMap = keyof HTMLE
     const subwin = View.try(e.target, Subwin);
     if (!subwin) { return; }
 
-    (this._dragInLeft).removeSelf();
-    (this._dragInRight).removeSelf();
-    (this._dragInTop).removeSelf();
-    (this._dragInBottom).removeSelf();
+    this._dragInLeft.removeSelf();
+    this._dragInRight.removeSelf();
+    this._dragInTop.removeSelf();
+    this._dragInBottom.removeSelf();
 
     const rect = getValue(this._rect);
     if (!rect) { return; }

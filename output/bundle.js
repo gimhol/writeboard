@@ -177,7 +177,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
     }
 }
 
-},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":11,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":19,"./colorPalette/Color":28,"./colorPalette/ColorPalette":29}],2:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":11,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":20,"./colorPalette/Color":28,"./colorPalette/ColorPalette":29}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.StyleNames = void 0;
@@ -1207,98 +1207,62 @@ SubwinHeader.StyleNames = StyleNames;
 },{"../BaseView/View":11,"../Observer/FocusOb":23,"./IconButton":12}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventType = void 0;
-var EventType;
-(function (EventType) {
-    EventType["ViewDragStart"] = "viewdragstart";
-    EventType["ViewDragging"] = "viewdrag";
-    EventType["ViewDragEnd"] = "viewdragend";
-})(EventType = exports.EventType || (exports.EventType = {}));
-
-},{}],19:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ButtonGroup = exports.ButtonGroupMode = void 0;
-var ButtonGroupMode;
-(function (ButtonGroupMode) {
-    ButtonGroupMode[ButtonGroupMode["None"] = 0] = "None";
-    ButtonGroupMode[ButtonGroupMode["Single"] = 1] = "Single";
-    ButtonGroupMode[ButtonGroupMode["Multipy"] = 2] = "Multipy";
-})(ButtonGroupMode = exports.ButtonGroupMode || (exports.ButtonGroupMode = {}));
-class ButtonGroup {
-    set onClick(v) { this._onClick = v; }
-    constructor(inits) {
-        this._mode = ButtonGroupMode.Single;
-        this._buttons = [];
-        this._listeners = new Map();
-        this._handleClick = (target) => {
-            var _a;
-            switch (this._mode) {
-                case ButtonGroupMode.Single:
-                    this._buttons.forEach(btn => btn.checked = target === btn);
-                    break;
-            }
-            (_a = this._onClick) === null || _a === void 0 ? void 0 : _a.call(this, target);
-        };
-        if (inits === null || inits === void 0 ? void 0 : inits.buttons)
-            this.addButton(...inits.buttons);
-    }
-    addButton(...buttons) {
-        this._buttons.forEach(btn => {
-            const l = this._listeners.get(btn);
-            if (l) {
-                btn.inner.removeEventListener('click', l);
-            }
-        });
-        this._buttons = Array.from(new Set(this._buttons.concat(buttons)));
-        this._buttons.forEach(btn => {
-            const l = () => this._handleClick(btn);
-            this._listeners.set(btn, l);
-            btn.inner.addEventListener('click', l);
-        });
-    }
-}
-exports.ButtonGroup = ButtonGroup;
-
-},{}],20:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SubwinWorkspace = void 0;
-const EventType_1 = require("../Events/EventType");
-const Subwin_1 = require("../CompoundView/Subwin");
-const View_1 = require("../BaseView/View");
-const utils_1 = require("../utils");
+exports.SubwinWorkspace = exports.IndicatorImage = void 0;
 const Image_1 = require("../BaseView/Image");
-const _dragInStyle = {
-    position: 'fixed',
-    width: 64,
-    height: 64,
-    zIndex: '10000',
-    userSelect: 'none',
-    background: '#000000FF',
-    borderRadius: 5,
-    opacity: 0.4,
-    transition: 'all 200ms',
-};
-const _dragInHoverStyle = {
-    opacity: 0.8,
-    width: 80,
-    height: 80,
-};
-class DragInImage extends Image_1.Image {
+const View_1 = require("../BaseView/View");
+const Subwin_1 = require("./Subwin");
+const EventType_1 = require("../Events/EventType");
+const utils_1 = require("../utils");
+class IndicatorImage extends Image_1.Image {
     constructor(inits) {
         super({ src: inits.src });
         this.styles
-            .register('hover', _dragInHoverStyle)
-            .apply('normal', _dragInStyle)
-            .apply('', inits.style);
+            .register('hover', {
+            opacity: 0.8,
+        })
+            .register('normal', {
+            width: 32,
+            height: 32,
+            zIndex: '10000',
+            userSelect: 'none',
+            background: '#000000FF',
+            borderRadius: 5,
+            opacity: 0.3,
+            transition: 'all 200ms',
+        })
+            .register('', Object.assign({}, inits.style))
+            .add('normal', '')
+            .refresh();
+        this.draggable = false;
         this.hoverOb;
     }
     onHover(hover) {
+        console.log(this.styles.applieds);
         this.styles[hover ? 'add' : 'remove']('hover').refresh();
     }
     onBeforeRemoved(parent) {
         this.styles.remove('hover').refresh();
+    }
+}
+exports.IndicatorImage = IndicatorImage;
+class IndicatorView extends View_1.View {
+    constructor() {
+        super('div');
+        this._left = new IndicatorImage({ src: './ic_dock_to_left.svg' });
+        this._top = new IndicatorImage({ src: './ic_dock_to_top.svg' });
+        this._right = new IndicatorImage({ src: './ic_dock_to_right.svg' });
+        this._bottom = new IndicatorImage({ src: './ic_dock_to_bottom.svg' });
+        this._center = new IndicatorImage({ src: '' });
+        this.styles.apply('normal', {
+            display: 'grid',
+            gridTemplateColumns: '33% 33% 33%',
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: '10000'
+        });
+        this.addChild(new View_1.View('div'), this._top, new View_1.View('div'), this._left, this._center, this._right, new View_1.View('div'), this._bottom, new View_1.View('div'));
     }
 }
 class SubwinWorkspace extends View_1.View {
@@ -1319,10 +1283,26 @@ class SubwinWorkspace extends View_1.View {
             this._wins.push(target);
             this._updateSubWinStyle();
         };
-        this._dragInLeft = new DragInImage({ src: './ic_dock_to_left.svg', style: { left: 64, top: '50%', transform: 'translate(-50%, -50%)' } });
-        this._dragInTop = new DragInImage({ src: './ic_dock_to_top.svg', style: { left: '50%', top: 64, transform: 'translate(-50%, -50%)' } });
-        this._dragInRight = new DragInImage({ src: './ic_dock_to_right.svg', style: { right: 64, top: '50%', transform: 'translate(50%, -50%)' } });
-        this._dragInBottom = new DragInImage({ src: './ic_dock_to_bottom.svg', style: { left: '50%', bottom: 64, transform: 'translate(-50%, 50%)' } });
+        this._dragInLeft = new IndicatorImage({
+            src: './ic_dock_to_left.svg', style: {
+                position: 'absolute', left: 64, top: '50%'
+            }
+        });
+        this._dragInTop = new IndicatorImage({
+            src: './ic_dock_to_top.svg', style: {
+                position: 'absolute', left: '50%', top: 64
+            }
+        });
+        this._dragInRight = new IndicatorImage({
+            src: './ic_dock_to_right.svg', style: {
+                position: 'absolute', right: 64, top: '50%'
+            }
+        });
+        this._dragInBottom = new IndicatorImage({
+            src: './ic_dock_to_bottom.svg', style: {
+                position: 'absolute', left: '50%', bottom: 64
+            }
+        });
         this._onViewDragStart = (e) => {
             const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
             if (!subwin) {
@@ -1344,10 +1324,10 @@ class SubwinWorkspace extends View_1.View {
             if (!subwin) {
                 return;
             }
-            (this._dragInLeft).removeSelf();
-            (this._dragInRight).removeSelf();
-            (this._dragInTop).removeSelf();
-            (this._dragInBottom).removeSelf();
+            this._dragInLeft.removeSelf();
+            this._dragInRight.removeSelf();
+            this._dragInTop.removeSelf();
+            this._dragInBottom.removeSelf();
             const rect = (0, utils_1.getValue)(this._rect);
             if (!rect) {
                 return;
@@ -1360,10 +1340,6 @@ class SubwinWorkspace extends View_1.View {
             this.addSubWin(...inits.wins);
             this._updateSubWinStyle();
         }
-        (this._dragInLeft).draggable = false;
-        (this._dragInRight).draggable = false;
-        (this._dragInTop).draggable = false;
-        (this._dragInBottom).draggable = false;
     }
     clampAllSubwin() {
         const rect = (0, utils_1.getValue)(this._rect);
@@ -1426,7 +1402,63 @@ class SubwinWorkspace extends View_1.View {
 }
 exports.SubwinWorkspace = SubwinWorkspace;
 
-},{"../BaseView/Image":4,"../BaseView/View":11,"../CompoundView/Subwin":15,"../Events/EventType":18,"../utils":25}],21:[function(require,module,exports){
+},{"../BaseView/Image":4,"../BaseView/View":11,"../Events/EventType":19,"../utils":25,"./Subwin":15}],19:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EventType = void 0;
+var EventType;
+(function (EventType) {
+    EventType["ViewDragStart"] = "viewdragstart";
+    EventType["ViewDragging"] = "viewdrag";
+    EventType["ViewDragEnd"] = "viewdragend";
+})(EventType = exports.EventType || (exports.EventType = {}));
+
+},{}],20:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ButtonGroup = exports.ButtonGroupMode = void 0;
+var ButtonGroupMode;
+(function (ButtonGroupMode) {
+    ButtonGroupMode[ButtonGroupMode["None"] = 0] = "None";
+    ButtonGroupMode[ButtonGroupMode["Single"] = 1] = "Single";
+    ButtonGroupMode[ButtonGroupMode["Multipy"] = 2] = "Multipy";
+})(ButtonGroupMode = exports.ButtonGroupMode || (exports.ButtonGroupMode = {}));
+class ButtonGroup {
+    set onClick(v) { this._onClick = v; }
+    constructor(inits) {
+        this._mode = ButtonGroupMode.Single;
+        this._buttons = [];
+        this._listeners = new Map();
+        this._handleClick = (target) => {
+            var _a;
+            switch (this._mode) {
+                case ButtonGroupMode.Single:
+                    this._buttons.forEach(btn => btn.checked = target === btn);
+                    break;
+            }
+            (_a = this._onClick) === null || _a === void 0 ? void 0 : _a.call(this, target);
+        };
+        if (inits === null || inits === void 0 ? void 0 : inits.buttons)
+            this.addButton(...inits.buttons);
+    }
+    addButton(...buttons) {
+        this._buttons.forEach(btn => {
+            const l = this._listeners.get(btn);
+            if (l) {
+                btn.inner.removeEventListener('click', l);
+            }
+        });
+        this._buttons = Array.from(new Set(this._buttons.concat(buttons)));
+        this._buttons.forEach(btn => {
+            const l = () => this._handleClick(btn);
+            this._listeners.set(btn, l);
+            btn.inner.addEventListener('click', l);
+        });
+    }
+}
+exports.ButtonGroup = ButtonGroup;
+
+},{}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ViewDragger = void 0;
@@ -1577,7 +1609,7 @@ class ViewDragger {
 }
 exports.ViewDragger = ViewDragger;
 
-},{"../BaseView/View":11,"../Events/EventType":18}],22:[function(require,module,exports){
+},{"../BaseView/View":11,"../Events/EventType":19}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DragInOutOB = void 0;
@@ -1959,7 +1991,7 @@ class ToolsView extends Subwin_1.Subwin {
 }
 exports.ToolsView = ToolsView;
 
-},{"../../dist":43,"./G/BaseView/SizeType":6,"./G/BaseView/View":11,"./G/CompoundView/IconButton":12,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":19}],28:[function(require,module,exports){
+},{"../../dist":43,"./G/BaseView/SizeType":6,"./G/BaseView/View":11,"./G/CompoundView/IconButton":12,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":20}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.clampI = exports.clampF = void 0;
@@ -2550,7 +2582,7 @@ const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
 const MergedSubwin_1 = require("./G/CompoundView/MergedSubwin");
 const Subwin_1 = require("./G/CompoundView/Subwin");
-const SubwinWorkspace_1 = require("./G/Helper/SubwinWorkspace");
+const SubwinWorkspace_1 = require("./G/CompoundView/SubwinWorkspace");
 const LayersView_1 = require("./LayersView");
 const ToolsView_1 = require("./ToolsView");
 const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
@@ -2845,7 +2877,7 @@ board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
 mainView.addSubWin(toolsView, layersView, colorView, mergedSubwin, mergedSubwin2, toyView);
 window.board = board;
 
-},{"../../dist":43,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":11,"./G/CompoundView/Menu":13,"./G/CompoundView/MergedSubwin":14,"./G/CompoundView/Subwin":15,"./G/Helper/SubwinWorkspace":20,"./LayersView":26,"./ToolsView":27,"./demo_helloworld":30,"./demo_rect_n_oval":31}],33:[function(require,module,exports){
+},{"../../dist":43,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":11,"./G/CompoundView/Menu":13,"./G/CompoundView/MergedSubwin":14,"./G/CompoundView/Subwin":15,"./G/CompoundView/SubwinWorkspace":18,"./LayersView":26,"./ToolsView":27,"./demo_helloworld":30,"./demo_rect_n_oval":31}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;

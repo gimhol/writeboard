@@ -1,6 +1,6 @@
 import { SubwinFooter } from "./SubwinFooter";
 import { SubwinHeader } from "./SubwinHeader";
-import type { SubwinWorkspace } from "../Helper/SubwinWorkspace";
+import type { SubwinWorkspace } from "./SubwinWorkspace";
 import { View } from "../BaseView/View";
 import { ViewDragger } from "../Helper/ViewDragger";
 export enum StyleNames {
