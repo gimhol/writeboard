@@ -1,4 +1,4 @@
-import { IconButton, IconButtonInits } from "./IconButton";
+import { IconButton, IconButtonInits } from "../CompoundView/IconButton";
 
 export interface IToggleIconButtonInits extends IconButtonInits { }
 

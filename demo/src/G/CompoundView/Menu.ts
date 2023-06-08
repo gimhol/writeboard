@@ -97,11 +97,27 @@ export enum MenuEventType {
 export interface MenuEventMap<K extends string | number | symbol> {
   [MenuEventType.ItemClick]: CustomEvent<IMenuItemInfo<K>>;
 }
+
+class GlobalDown extends View<'div'>{
+  constructor() {
+    super('div');
+    document.addEventListener('pointerdown', e => {
+      if (findParent(e.target as HTMLElement, ele => (ele as any).view instanceof Menu)) {
+        return;
+      }
+      this.inner.dispatchEvent(new PointerEvent('fired'))
+    })
+  }
+}
+const globalDown = new GlobalDown();
+
 export class Menu<K extends string | number | symbol> extends View<'div'> implements IMenu<K>{
   static StyleNames = StyleNames;
   static EventType = MenuEventType;
   private _items: MenuItemView<K>[] = [];
   private _container: View;
+  private _onitemclick?: () => void;
+  private _onsubmenuitemclick?: (e: CustomEvent<IMenuItemInfo<K>>) => void;
   get container() { return this._container; }
   constructor(container: View, inits?: IMenuInits<K>) {
     super('div');
@@ -116,12 +132,7 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
       transition: 'opacity 200ms',
     })
     this.setup(inits?.items ?? []);
-    document.body.addEventListener('pointerdown', e => { 
-      if (this.inner.style.display !== 'none') {
-        this.hide();
-      //   e.stopImmediatePropagation();
-      }
-    });
+    globalDown.addEventListener('fired', () => this.hide());
     window.addEventListener('blur', () => this.hide());
   }
 
@@ -149,22 +160,61 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
     return super.addEventListener(arg0, arg1, arg2) as any
   }
 
+  override removeEventListener<T extends keyof MenuEventMap<K>>(
+    type: T,
+    listener: (this: HTMLObjectElement, ev: MenuEventMap<K>[T]) => any,
+    options?: boolean | AddEventListenerOptions
+  ): Menu<K>;
+
+  override removeEventListener<T extends keyof HTMLElementEventMap>(
+    type: T,
+    listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[T]) => any,
+    options?: boolean | AddEventListenerOptions
+  ): Menu<K>;
+
+  override removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): Menu<K>;
+
+  override removeEventListener(
+    arg0: any, arg1: any, arg2?: any
+  ): Menu<K> {
+    return super.removeEventListener(arg0, arg1, arg2) as any
+  }
+
   item(key: K): IMenuItemInfo<K> | undefined {
     return this._items.find(v => v.info.key === key)?.info;
   }
 
   setup(items: IMenuItemInfo<K>[]): Menu<K> {
-    this._items.forEach(view => this.removeChild(view));
+    this._items.forEach(item => {
+      item.removeEventListener('click', this._onitemclick!);
+      item.submenu?.removeEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick!);
+
+      item.submenu?.removeSelf();
+      this.removeChild(item);
+    });
+
+
     this._items = items.map(info => {
+      this._onitemclick = () => {
+        this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: info }))
+        this.hide();
+      }
+      this._onsubmenuitemclick = (e: CustomEvent<IMenuItemInfo<K>>) => {
+        this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: e.detail }))
+        this.hide();
+      }
+
       const view = new MenuItemView(this, info);
       this.addChild(view);
 
-      view.addEventListener('click', () => {
-        this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: info }))
-      })
-      view.submenu?.addEventListener(MenuEventType.ItemClick, e => {
-        this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: e.detail }))
-      })
+
+      view.addEventListener('click', this._onitemclick);
+      view.submenu?.addEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick);
+
       new HoverOb(view.inner, (hover) => {
         if (!hover) { return; }
         this._items.forEach(other => {
@@ -192,7 +242,7 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
   hide(): Menu<K> {
     this._items.forEach(item => item.submenu?.hide())
     this.styles.merge(StyleNames.Normal, { display: 'none' }).refresh();
-    this.removeSelf();
+    this.removeSelf()
     return this;
   }
 }

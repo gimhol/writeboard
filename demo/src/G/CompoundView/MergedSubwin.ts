@@ -55,7 +55,7 @@ export class MergedSubwin extends Subwin {
     });
 
 
-    this.header.iconView.inner.innerHTML = '▨';
+    this.header.iconView.contents = ['▨', '▨'];
 
     this.content = new View('div');
     this.content?.styles.apply('_', {

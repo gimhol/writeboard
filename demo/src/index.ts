@@ -117,6 +117,8 @@ const toolsView = new ToolsView;
 toolsView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType)
 
+
+
 const colorView = new ColorView;
 colorView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
 

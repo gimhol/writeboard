@@ -30,6 +30,11 @@ export class Button extends View<'button'> {
   protected _checkable = false;
   protected _handleClick: (this: HTMLObjectElement, ev: MouseEvent) => any;
   protected _cb?: (self: Button) => void;
+  get contents() { return this._contents; }
+  set contents(v) { 
+    this._contents = v; 
+    this.updateContent();
+  }
   get checked() { return this._checked; }
   set checked(v) {
     this._checked = v;

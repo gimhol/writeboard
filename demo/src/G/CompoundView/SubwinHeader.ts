@@ -1,8 +1,10 @@
 import { SizeType } from "../BaseView/SizeType";
-import { IconButton } from "../BaseView/IconButton";
+import { IconButton } from "./IconButton";
 import { View } from "../BaseView/View";
 import { ViewDragger } from "../Helper/ViewDragger";
 import { FocusOb } from "../Observer/FocusOb";
+import { Image } from "../BaseView/Image";
+import { CssObjectFit } from "../BaseView/StyleType";
 export enum Classnames {
   Root = 'subwin_header',
   IconView = 'subwinheader_iconview',
@@ -19,7 +21,7 @@ export class SubwinHeader extends View<'div'> {
   static ClassNames = Classnames;
   static StyleNames = StyleNames;
   private _titleView: View<"div">;
-  private _iconView: View<"div">;
+  private _iconView: IconButton;
   private _btnClose: IconButton;
   get iconView() { return this._iconView; }
   set iconView(v) { this._iconView = v; }
@@ -42,20 +44,16 @@ export class SubwinHeader extends View<'div'> {
         display: 'flex',
         boxSizing: 'border-box',
         alignItems: 'stretch',
-        height: 28
+        height: 28,
       });
 
-    this._iconView = new View('div')
-    this._iconView.inner.innerHTML = '';
+    this._iconView = new IconButton()
     this._iconView
       .styles
       .applyCls(Classnames.IconView)
       .apply(StyleNames.IconView, {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 28,
-        height: 28,
+        alignSelf: 'center',
+        marginLeft: 2,
       })
 
     this.addChild(this._iconView);
@@ -70,13 +68,12 @@ export class SubwinHeader extends View<'div'> {
       });
     this.addChild(this._titleView);
 
-    this._btnClose = new IconButton({ content: '❎', size: SizeType.Small })
+    this._btnClose = new IconButton({ src: './ic_btn_close.svg' })
     this._btnClose.styles
       .applyCls(Classnames.BtnClose)
       .apply(StyleNames.BtnClose, {
         alignSelf: 'center',
-        width: 28,
-        height: 28,
+        marginRight: 2,
       })
     this.addChild(this._btnClose);
   }

@@ -1,5 +1,5 @@
 import { ILayerInfoInit } from "../../dist";
-import { IconButton } from "./G/BaseView/IconButton";
+import { IconButton } from "./G/CompoundView/IconButton";
 import { SizeType } from "./G/BaseView/SizeType";
 import { TextInput } from "./G/BaseView/TextInput";
 import { ToggleIconButton } from "./G/BaseView/ToggleIconButton";

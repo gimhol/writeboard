@@ -3,7 +3,7 @@ import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { View } from "./G/BaseView/View";
 import { Image } from "./G/BaseView/Image";
 import { Subwin } from "./G/CompoundView/Subwin";
-import { IconButton } from "./G/BaseView/IconButton";
+import { IconButton } from "./G/CompoundView/IconButton";
 import { CssObjectFit } from "./G/BaseView/StyleType";
 import { SizeType } from "./G/BaseView/SizeType";
 export interface ToolButtonInits {
@@ -15,18 +15,10 @@ export class ToolButton extends IconButton {
   get toolType() { return this._toolType; }
   constructor(inits: ToolButtonInits) {
     super({
-      content: new Image({
-        src: inits.src,
-        styles: {
-          width: 24,
-          height: 24,
-          objectFit: CssObjectFit.Contain,
-        }
-      }),
+      src: inits.src,
       checkable: true,
       size: SizeType.Large
     })
-
     this._toolType = inits.toolType;
   }
 }
