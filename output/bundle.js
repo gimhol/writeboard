@@ -1285,22 +1285,22 @@ class SubwinWorkspace extends View_1.View {
         };
         this._dragInLeft = new IndicatorImage({
             src: './ic_dock_to_left.svg', style: {
-                position: 'absolute', left: 64, top: '50%'
+                position: 'absolute', left: 16, top: '50%'
             }
         });
         this._dragInTop = new IndicatorImage({
             src: './ic_dock_to_top.svg', style: {
-                position: 'absolute', left: '50%', top: 64
+                position: 'absolute', left: '50%', top: 16
             }
         });
         this._dragInRight = new IndicatorImage({
             src: './ic_dock_to_right.svg', style: {
-                position: 'absolute', right: 64, top: '50%'
+                position: 'absolute', right: 16, top: '50%'
             }
         });
         this._dragInBottom = new IndicatorImage({
             src: './ic_dock_to_bottom.svg', style: {
-                position: 'absolute', left: '50%', bottom: 64
+                position: 'absolute', left: '50%', bottom: 16
             }
         });
         this._onViewDragStart = (e) => {
