@@ -8,7 +8,7 @@ export interface SubwinTabInits {
 export class SubwinTab extends View<'div'>{
   constructor(inits: SubwinTabInits) {
     super('div');
-    this.styles().applyCls('subwin_tab').apply('_', {
+    this.styles.applyCls('subwin_tab').apply('_', {
       backgroundColor: inits.color,
       marginTop: 5,
       paddingLeft: 5,
@@ -41,7 +41,7 @@ export class MergedSubwin extends Subwin {
 
   constructor() {
     super();
-    this.header.styles()
+    this.header.styles
     const onDragIn = (e: DragEvent, ele: HTMLElement) => {
       console.log(ele.innerHTML, 'in')
     }
@@ -58,17 +58,17 @@ export class MergedSubwin extends Subwin {
     this.header.iconView.inner.innerHTML = '▨';
 
     this.content = new View('div');
-    this.content?.styles().apply('_', {
+    this.content?.styles.apply('_', {
       position: 'relative',
       flex: 1,
       minWidth: '250px',
       minHeight: '200px',
     });
-    this.styles().apply('normal', v => ({
+    this.styles.apply('normal', v => ({
       ...v
     }));
     this.removeChild(this.footer);
-    this.header.titleView.styles().apply('_', {
+    this.header.titleView.styles.apply('_', {
       display: 'flex',
       overflow: 'hidden'
     })
@@ -77,14 +77,14 @@ export class MergedSubwin extends Subwin {
     const idx = this.subwins.indexOf(subwin)
     if (idx < 0) { return; }
     this.subwins.splice(idx, 1);
-    subwin.styles().forgo('merged');
-    subwin.header.styles().forgo('merged');
+    subwin.styles.forgo('merged');
+    subwin.header.styles.forgo('merged');
 
   }
   addSubWin(subwin: Subwin) {
     if (this.subwins.indexOf(subwin) >= 0) { return; }
     this.subwins.push(subwin);
-    subwin.styles().apply('merged', {
+    subwin.styles.apply('merged', {
       position: 'absolute',
       left: 0,
       right: 0,
@@ -96,7 +96,7 @@ export class MergedSubwin extends Subwin {
       boxShadow: 'none',
       resize: 'none'
     });
-    subwin.header.styles().apply('merged', { display: 'none' });
+    subwin.header.styles.apply('merged', { display: 'none' });
 
     this.content?.addChild(subwin);
     const tab = new SubwinTab({
@@ -109,11 +109,11 @@ export class MergedSubwin extends Subwin {
     const handleClick = () => {
       this.tabs.forEach((v, subwin) => {
         if (v === tab) {
-          v.styles().forgo('disactived');
-          subwin.styles().forgo('disactived');
+          v.styles.forgo('disactived');
+          subwin.styles.forgo('disactived');
         } else {
-          v.styles().apply('disactived', { opacity: '0.5' });
-          subwin.styles().apply('disactived', { display: 'none' });
+          v.styles.apply('disactived', { opacity: '0.5' });
+          subwin.styles.apply('disactived', { display: 'none' });
         }
       })
     }

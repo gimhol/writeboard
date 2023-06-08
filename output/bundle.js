@@ -17,20 +17,20 @@ var ColorKind;
 })(ColorKind || (ColorKind = {}));
 class ColorKindButton extends Button_1.Button {
     get kind() { return this._kind; }
-    set color(v) { this._colorBrick.styles().apply('_', old => (Object.assign(Object.assign({}, old), { background: '' + v }))); }
+    set color(v) { this._colorBrick.styles.apply('_', old => (Object.assign(Object.assign({}, old), { background: '' + v }))); }
     constructor(inits) {
         super(inits);
         this._kind = inits.kind;
-        this.styles().apply('normal', v => (Object.assign(Object.assign({}, v), { paddingLeft: 5, paddingRight: 5 })));
+        this.styles.apply('normal', v => (Object.assign(Object.assign({}, v), { paddingLeft: 5, paddingRight: 5 })));
         const content = new View_1.View('div');
-        content.styles().apply('_', {
+        content.styles.apply('_', {
             display: 'inline-flex',
             alignItems: 'center',
             color: 'white'
         });
         content.inner.append(inits.kind + ' ');
         this._colorBrick = new View_1.View('div');
-        this._colorBrick.styles().apply('_', {
+        this._colorBrick.styles.apply('_', {
             marginLeft: 5,
             background: '' + inits.defaultColor,
             width: 16,
@@ -40,7 +40,7 @@ class ColorKindButton extends Button_1.Button {
         this._contents[0] = content;
         this._contents[1] = content;
         this.updateContent();
-        this.editStyle(false, true, false, this.styles().read(Button_1.StyleNames.Hover) || {});
+        this.editStyle(false, true, false, this.styles.read(Button_1.StyleNames.Hover) || {});
     }
 }
 var ColorViewEventTypes;
@@ -71,9 +71,9 @@ class ColorView extends Subwin_1.Subwin {
             [ColorKind.Fill]: new ColorKindButton({ checkable: true, kind: ColorKind.Fill, defaultColor: this._colors[ColorKind.Fill] })
         };
         this.header.title = 'color';
-        this.styles().apply('_', {});
+        this.styles.apply('_', {});
         this.content = new View_1.View('div');
-        this.content.styles().apply('_', {
+        this.content.styles.apply('_', {
             flex: 1,
             position: 'relative',
             display: 'flex',
@@ -83,7 +83,7 @@ class ColorView extends Subwin_1.Subwin {
             minHeight: '200px',
         });
         const currentColorWrapper = new View_1.View('div');
-        currentColorWrapper.styles().apply('_', {
+        currentColorWrapper.styles.apply('_', {
             display: 'flex',
             padding: '5px 5px',
         });
@@ -94,7 +94,7 @@ class ColorView extends Subwin_1.Subwin {
         });
         buttonGroup.onClick = btn => this.setEditingColor(btn.kind);
         const canvasWrapper = new View_1.View('div');
-        canvasWrapper.styles().apply('_', {
+        canvasWrapper.styles.apply('_', {
             flex: 1,
             position: 'relative',
         });
@@ -103,7 +103,7 @@ class ColorView extends Subwin_1.Subwin {
         canvas.draggable = false;
         canvas.width = 1;
         canvas.height = 1;
-        canvas.styles().apply('_', {
+        canvas.styles.apply('_', {
             position: 'absolute',
             left: '10px',
             right: '10px',
@@ -118,7 +118,7 @@ class ColorView extends Subwin_1.Subwin {
             this._colorPalette.update();
         })).observe(canvasWrapper.inner);
         const inputWrapper = new View_1.View('div');
-        inputWrapper.styles().apply('_', {
+        inputWrapper.styles.apply('_', {
             display: 'grid',
             padding: '0px 5px',
             gridTemplateColumns: 'repeat(4, 10px auto)',
@@ -163,7 +163,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
         super();
         this.max = 255;
         this.min = 0;
-        this.styles().apply('_', {
+        this.styles.apply('_', {
             minWidth: 0,
             flex: 1,
             background: 'transparent',
@@ -177,7 +177,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
     }
 }
 
-},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":6,"./G/BaseView/View":12,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":18,"./colorPalette/Color":27,"./colorPalette/ColorPalette":28}],2:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":6,"./G/BaseView/View":12,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":19,"./colorPalette/Color":28,"./colorPalette/ColorPalette":29}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.StyleNames = void 0;
@@ -232,7 +232,7 @@ class Button extends View_1.View {
         this._size = (_a = inits === null || inits === void 0 ? void 0 : inits.size) !== null && _a !== void 0 ? _a : this._size;
         this._checkable = (inits === null || inits === void 0 ? void 0 : inits.checkable) === true;
         this._checked = (inits === null || inits === void 0 ? void 0 : inits.checked) === true;
-        this.styles().register(StyleNames.Hover, {
+        this.styles.register(StyleNames.Hover, {
             background: '#00000022'
         }).register(StyleNames.Small, {
             height: 18,
@@ -285,14 +285,14 @@ class Button extends View_1.View {
         this.updateStyle();
     }
     updateStyle() {
-        const styles = this.styles();
+        const styles = this.styles;
         this.hover ? styles.add(StyleNames.Hover) : styles.remove(StyleNames.Hover);
         const styleName = `${this.hover}_${this.checked}_${this.disabled}`;
         styles.remove(this._prevStyleNames).add(styleName).refresh();
         this._prevStyleNames = styleName;
     }
     editStyle(hover, checked, disabled, style) {
-        this.styles().register(`${hover}_${checked}_${disabled}`, style);
+        this.styles.register(`${hover}_${checked}_${disabled}`, style);
         return this;
     }
     updateContent() {
@@ -309,7 +309,7 @@ class Button extends View_1.View {
         this._inner.title = this._checked ? this._titles[1] : this._titles[0];
     }
     updateSize() {
-        this.styles()
+        this.styles
             .remove(this.aaa[this._preSize])
             .add(this.aaa[this._size])
             .refresh();
@@ -341,7 +341,7 @@ const Button_1 = require("../BaseView/Button");
 class IconButton extends Button_1.Button {
     constructor(init) {
         super(init);
-        this.styles()
+        this.styles
             .register(Button_1.StyleNames.Small, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.StyleNames.Middle, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.StyleNames.Large, v => (Object.assign(Object.assign({}, v), { width: v.height })));
         this.updateSize();
     }
@@ -359,7 +359,7 @@ class Image extends View_1.View {
     constructor(inits) {
         super('img');
         (inits === null || inits === void 0 ? void 0 : inits.src) && (this.src = inits.src);
-        (inits === null || inits === void 0 ? void 0 : inits.styles) && (this.styles().apply('_', inits.styles));
+        (inits === null || inits === void 0 ? void 0 : inits.styles) && (this.styles.apply('_', inits.styles));
     }
 }
 exports.Image = Image;
@@ -454,6 +454,15 @@ class Styles {
         this._pool.set(name, style(old));
         return this;
     }
+    merge(name, style) {
+        const old = this._pool.get(name);
+        if (!old) {
+            console.warn(`[styles] merge(), style '${name}' not found!`);
+            return this;
+        }
+        this._pool.set(name, Object.assign(Object.assign({}, old), style));
+        return this;
+    }
     add(...names) {
         names.forEach(name => this._applieds.add(name));
         return this;
@@ -536,7 +545,7 @@ const autoPxKeys = new Set([
     'marginTop',
 ]);
 
-},{"../utils":24}],10:[function(require,module,exports){
+},{"../utils":25}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextInput = void 0;
@@ -558,11 +567,11 @@ class TextInput extends View_1.View {
     }
     updateStyle() {
         const styleName = `${this.hover}_${this.focused}_${this.disabled}`;
-        this.styles().remove(this._prevStyleNames).add(styleName).refresh();
+        this.styles.remove(this._prevStyleNames).add(styleName).refresh();
         this._prevStyleNames = styleName;
     }
     editStyle(hover, focused, disabled, style) {
-        this.styles().register(`${hover}_${focused}_${disabled}`, style);
+        this.styles.register(`${hover}_${focused}_${disabled}`, style);
         return this;
     }
     onHover(hover) {
@@ -612,6 +621,9 @@ class View {
     static get(ele) {
         var _a;
         return (_a = ele.view) !== null && _a !== void 0 ? _a : new View(ele);
+    }
+    static try(ele) {
+        return ele.view;
     }
     constructor(arg0) {
         var _a, _b;
@@ -672,7 +684,7 @@ class View {
         var _a;
         (_a = this.parent) === null || _a === void 0 ? void 0 : _a.removeChild(this);
     }
-    styles() {
+    get styles() {
         var _a;
         this._styles = (_a = this._styles) !== null && _a !== void 0 ? _a : new Styles_1.Styles(this);
         return this._styles;
@@ -680,7 +692,167 @@ class View {
 }
 exports.View = View;
 
-},{"../Observer/FocusOb":22,"../Observer/HoverOb":23,"./Styles":9}],13:[function(require,module,exports){
+},{"../Observer/FocusOb":23,"../Observer/HoverOb":24,"./Styles":9}],13:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Menu = exports.MenuEventType = exports.MenuItemView = exports.StyleNames = void 0;
+const StyleType_1 = require("../BaseView/StyleType");
+const View_1 = require("../BaseView/View");
+const HoverOb_1 = require("../Observer/HoverOb");
+var StyleNames;
+(function (StyleNames) {
+    StyleNames["Normal"] = "Normal";
+    StyleNames["ItemDivider"] = "ItemDivider";
+    StyleNames["ItemNormal"] = "ItemNormal";
+    StyleNames["ItemHover"] = "ItemHover";
+})(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
+class MenuItemView extends View_1.View {
+    get menu() { return this._menu; }
+    get submenu() { return this._submenu; }
+    get info() { return this._info; }
+    setup(info = this._info) {
+        var _a, _b;
+        this._info = info;
+        if (info.divider) {
+            this.styles.clear().add(StyleNames.ItemDivider).refresh();
+        }
+        else {
+            this.styles.clear().add(StyleNames.ItemNormal).refresh();
+        }
+        const label = new View_1.View('div');
+        label.styles.apply('', { flex: 1 });
+        label.inner.innerText = (_a = info.label) !== null && _a !== void 0 ? _a : '';
+        this.addChild(label);
+        if ((_b = info.items) === null || _b === void 0 ? void 0 : _b.length) {
+            const more = document.createElement('div');
+            more.style.marginLeft = '5px';
+            more.innerText = '>';
+            this.inner.appendChild(more);
+            this._submenu = new Menu(this._menu.container, info);
+        }
+        this.hoverOb;
+    }
+    onHover(hover) {
+        var _a;
+        if (hover) {
+            this.styles.add(StyleNames.ItemHover).refresh();
+        }
+        else {
+            this.styles.remove(StyleNames.ItemHover).refresh();
+        }
+        if (hover) {
+            const { left, top, width, height } = this.inner.getBoundingClientRect();
+            (_a = this._submenu) === null || _a === void 0 ? void 0 : _a.move(left + width, top).show();
+        }
+    }
+    constructor(menu, info) {
+        super('div');
+        this._menu = menu;
+        this._info = info;
+        this.styles.register(StyleNames.ItemDivider, {
+            height: 1,
+            background: '#00000011'
+        }).register(StyleNames.ItemHover, {
+            background: '#00000011'
+        }).register(StyleNames.ItemNormal, {
+            display: 'flex',
+            borderRadius: 5,
+            paddingTop: 5,
+            paddingBottom: 5,
+            paddingLeft: 10,
+            paddingRight: 10,
+            fontSize: 12,
+        });
+        this.setup();
+    }
+}
+exports.MenuItemView = MenuItemView;
+var MenuEventType;
+(function (MenuEventType) {
+    MenuEventType["ItemClick"] = "onItemClick";
+})(MenuEventType = exports.MenuEventType || (exports.MenuEventType = {}));
+class Menu extends View_1.View {
+    get container() { return this._container; }
+    constructor(container, inits) {
+        var _a;
+        super('div');
+        this._items = [];
+        this._container = container;
+        this.styles.apply(StyleNames.Normal, {
+            position: StyleType_1.CssPosition.Fixed,
+            display: 'none',
+            gridTemplateColumns: 'auto',
+            background: 'white',
+            borderRadius: 5,
+            userSelect: 'none',
+            transition: 'opacity 200ms',
+        });
+        this.setup((_a = inits === null || inits === void 0 ? void 0 : inits.items) !== null && _a !== void 0 ? _a : []);
+        document.body.addEventListener('pointerdown', e => {
+            if (this.inner.style.display !== 'none') {
+                this.hide();
+                //   e.stopImmediatePropagation();
+            }
+        });
+        window.addEventListener('blur', () => this.hide());
+    }
+    addEventListener(arg0, arg1, arg2) {
+        return super.addEventListener(arg0, arg1, arg2);
+    }
+    item(key) {
+        var _a;
+        return (_a = this._items.find(v => v.info.key === key)) === null || _a === void 0 ? void 0 : _a.info;
+    }
+    setup(items) {
+        this._items.forEach(view => this.removeChild(view));
+        this._items = items.map(info => {
+            var _a;
+            const view = new MenuItemView(this, info);
+            this.addChild(view);
+            view.addEventListener('click', () => {
+                this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: info }));
+            });
+            (_a = view.submenu) === null || _a === void 0 ? void 0 : _a.addEventListener(MenuEventType.ItemClick, e => {
+                this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: e.detail }));
+            });
+            new HoverOb_1.HoverOb(view.inner, (hover) => {
+                if (!hover) {
+                    return;
+                }
+                this._items.forEach(other => {
+                    var _a;
+                    if (other === view) {
+                        return;
+                    }
+                    (_a = other.submenu) === null || _a === void 0 ? void 0 : _a.hide();
+                });
+            });
+            return view;
+        });
+        return this;
+    }
+    move(x, y) {
+        this._items.forEach(item => { var _a; return (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.hide(); });
+        this.styles.merge(StyleNames.Normal, { left: x, top: y }).refresh();
+        return this;
+    }
+    show() {
+        this.styles.merge(StyleNames.Normal, { display: 'grid' }).refresh();
+        this.container.addChild(this);
+        return this;
+    }
+    hide() {
+        this._items.forEach(item => { var _a; return (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.hide(); });
+        this.styles.merge(StyleNames.Normal, { display: 'none' }).refresh();
+        this.removeSelf();
+        return this;
+    }
+}
+exports.Menu = Menu;
+Menu.StyleNames = StyleNames;
+Menu.EventType = MenuEventType;
+
+},{"../BaseView/StyleType":8,"../BaseView/View":12,"../Observer/HoverOb":24}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MergedSubwin = exports.SubwinTab = void 0;
@@ -690,7 +862,7 @@ const Subwin_1 = require("./Subwin");
 class SubwinTab extends View_1.View {
     constructor(inits) {
         super('div');
-        this.styles().applyCls('subwin_tab').apply('_', {
+        this.styles.applyCls('subwin_tab').apply('_', {
             backgroundColor: inits.color,
             marginTop: 5,
             paddingLeft: 5,
@@ -721,7 +893,7 @@ class MergedSubwin extends Subwin_1.Subwin {
         super();
         this.subwins = [];
         this.tabs = new Map();
-        this.header.styles();
+        this.header.styles;
         const onDragIn = (e, ele) => {
             console.log(ele.innerHTML, 'in');
         };
@@ -735,15 +907,15 @@ class MergedSubwin extends Subwin_1.Subwin {
         });
         this.header.iconView.inner.innerHTML = '▨';
         this.content = new View_1.View('div');
-        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles().apply('_', {
+        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.apply('_', {
             position: 'relative',
             flex: 1,
             minWidth: '250px',
             minHeight: '200px',
         });
-        this.styles().apply('normal', v => (Object.assign({}, v)));
+        this.styles.apply('normal', v => (Object.assign({}, v)));
         this.removeChild(this.footer);
-        this.header.titleView.styles().apply('_', {
+        this.header.titleView.styles.apply('_', {
             display: 'flex',
             overflow: 'hidden'
         });
@@ -754,8 +926,8 @@ class MergedSubwin extends Subwin_1.Subwin {
             return;
         }
         this.subwins.splice(idx, 1);
-        subwin.styles().forgo('merged');
-        subwin.header.styles().forgo('merged');
+        subwin.styles.forgo('merged');
+        subwin.header.styles.forgo('merged');
     }
     addSubWin(subwin) {
         var _a, _b;
@@ -763,7 +935,7 @@ class MergedSubwin extends Subwin_1.Subwin {
             return;
         }
         this.subwins.push(subwin);
-        subwin.styles().apply('merged', {
+        subwin.styles.apply('merged', {
             position: 'absolute',
             left: 0,
             right: 0,
@@ -775,7 +947,7 @@ class MergedSubwin extends Subwin_1.Subwin {
             boxShadow: 'none',
             resize: 'none'
         });
-        subwin.header.styles().apply('merged', { display: 'none' });
+        subwin.header.styles.apply('merged', { display: 'none' });
         (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(subwin);
         const tab = new SubwinTab({
             title: subwin.header.title,
@@ -787,12 +959,12 @@ class MergedSubwin extends Subwin_1.Subwin {
         const handleClick = () => {
             this.tabs.forEach((v, subwin) => {
                 if (v === tab) {
-                    v.styles().forgo('disactived');
-                    subwin.styles().forgo('disactived');
+                    v.styles.forgo('disactived');
+                    subwin.styles.forgo('disactived');
                 }
                 else {
-                    v.styles().apply('disactived', { opacity: '0.5' });
-                    subwin.styles().apply('disactived', { display: 'none' });
+                    v.styles.apply('disactived', { opacity: '0.5' });
+                    subwin.styles.apply('disactived', { display: 'none' });
                 }
             });
         };
@@ -804,7 +976,7 @@ class MergedSubwin extends Subwin_1.Subwin {
 }
 exports.MergedSubwin = MergedSubwin;
 
-},{"../BaseView/View":12,"../Observer/DragInOutOB":21,"./Subwin":14}],14:[function(require,module,exports){
+},{"../BaseView/View":12,"../Observer/DragInOutOB":22,"./Subwin":15}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subwin = exports.StyleNames = void 0;
@@ -839,23 +1011,23 @@ class Subwin extends View_1.View {
     }
     raise() {
         var _a, _b;
-        this.styles().add(StyleNames.Raised).refresh();
-        this.header.styles().remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
-        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles().remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
-        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles().remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
+        this.styles.add(StyleNames.Raised).refresh();
+        this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
+        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
+        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
     }
     lower() {
         var _a, _b;
-        this.styles().remove(StyleNames.Raised).refresh();
-        this.header.styles().remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles().remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles().remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+        this.styles.remove(StyleNames.Raised).refresh();
+        this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
     }
     constructor() {
         super('div');
         this._header = new SubwinHeader_1.SubwinHeader();
         this._footer = new SubwinFooter_1.SubwinFooter();
-        this.styles().register(StyleNames.Raised, {
+        this.styles.register(StyleNames.Raised, {
             boxShadow: '5px 5px 10px 10px #00000022',
         }).apply(StyleNames.Root, {
             position: 'fixed',
@@ -880,14 +1052,14 @@ class Subwin extends View_1.View {
         });
         new ResizeObserver(() => {
             const { width, height } = getComputedStyle(this.inner);
-            this.styles().edit(StyleNames.Root, v => (Object.assign(Object.assign({}, v), { width, height })));
+            this.styles.edit(StyleNames.Root, v => (Object.assign(Object.assign({}, v), { width, height })));
         }).observe(this.inner);
     }
 }
 exports.Subwin = Subwin;
 Subwin.StyleNames = StyleNames;
 
-},{"../BaseView/View":12,"../Helper/ViewDragger":20,"./SubwinFooter":15,"./SubwinHeader":16}],15:[function(require,module,exports){
+},{"../BaseView/View":12,"../Helper/ViewDragger":21,"./SubwinFooter":16,"./SubwinHeader":17}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinFooter = void 0;
@@ -895,7 +1067,7 @@ const View_1 = require("../BaseView/View");
 class SubwinFooter extends View_1.View {
     constructor() {
         super('div');
-        this.styles().apply('normal', {
+        this.styles.apply('normal', {
             userSelect: 'none',
             width: '100%',
             color: '#FFFFFF88',
@@ -910,7 +1082,7 @@ class SubwinFooter extends View_1.View {
 }
 exports.SubwinFooter = SubwinFooter;
 
-},{"../BaseView/View":12}],16:[function(require,module,exports){
+},{"../BaseView/View":12}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinHeader = exports.StyleNames = exports.Classnames = void 0;
@@ -942,7 +1114,7 @@ class SubwinHeader extends View_1.View {
     constructor() {
         super('div');
         new FocusOb_1.FocusOb(this.inner, v => alert(v));
-        this.styles()
+        this.styles
             .applyCls(Classnames.Root)
             .apply(StyleNames.Root, {
             userSelect: 'none',
@@ -959,7 +1131,7 @@ class SubwinHeader extends View_1.View {
         this._iconView = new View_1.View('div');
         this._iconView.inner.innerHTML = '';
         this._iconView
-            .styles()
+            .styles
             .applyCls(Classnames.IconView)
             .apply(StyleNames.IconView, {
             display: 'flex',
@@ -970,7 +1142,7 @@ class SubwinHeader extends View_1.View {
         });
         this.addChild(this._iconView);
         this._titleView = new View_1.View('div');
-        this._titleView.styles()
+        this._titleView.styles
             .applyCls(Classnames.TitleView)
             .apply(StyleNames.TitleView, {
             display: 'flex',
@@ -979,7 +1151,7 @@ class SubwinHeader extends View_1.View {
         });
         this.addChild(this._titleView);
         this._btnClose = new IconButton_1.IconButton({ content: '❎', size: SizeType_1.SizeType.Small });
-        this._btnClose.styles()
+        this._btnClose.styles
             .applyCls(Classnames.BtnClose)
             .apply(StyleNames.BtnClose, {
             alignSelf: 'center',
@@ -993,7 +1165,7 @@ exports.SubwinHeader = SubwinHeader;
 SubwinHeader.ClassNames = Classnames;
 SubwinHeader.StyleNames = StyleNames;
 
-},{"../BaseView/IconButton":4,"../BaseView/SizeType":7,"../BaseView/View":12,"../Observer/FocusOb":22}],17:[function(require,module,exports){
+},{"../BaseView/IconButton":4,"../BaseView/SizeType":7,"../BaseView/View":12,"../Observer/FocusOb":23}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventType = void 0;
@@ -1004,7 +1176,7 @@ var EventType;
     EventType["ViewDragEnd"] = "viewdragend";
 })(EventType = exports.EventType || (exports.EventType = {}));
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ButtonGroup = exports.ButtonGroupMode = void 0;
@@ -1049,7 +1221,7 @@ class ButtonGroup {
 }
 exports.ButtonGroup = ButtonGroup;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinWorkspace = void 0;
@@ -1058,7 +1230,7 @@ const utils_1 = require("../utils");
 class SubwinWorkspace {
     _updateSubWinStyle() {
         this._wins.forEach((win, idx, arr) => {
-            win.styles().apply('in_workspace', v => (Object.assign(Object.assign({}, v), { zIndex: `${this._zIndex + idx}` })));
+            win.styles.apply('in_workspace', v => (Object.assign(Object.assign({}, v), { zIndex: `${this._zIndex + idx}` })));
             idx < arr.length - 1 ? win.lower() : win.raise();
         });
     }
@@ -1101,7 +1273,7 @@ class SubwinWorkspace {
         if (x < rect.x) {
             x = rect.x;
         }
-        subwin.styles().apply('drag_by_dragger', {
+        subwin.styles.apply('drag_by_dragger', {
             left: '' + x + 'px',
             top: '' + y + 'px',
         });
@@ -1142,7 +1314,7 @@ class SubwinWorkspace {
 }
 exports.SubwinWorkspace = SubwinWorkspace;
 
-},{"../Events/EventType":17,"../utils":24}],20:[function(require,module,exports){
+},{"../Events/EventType":18,"../utils":25}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ViewDragger = void 0;
@@ -1236,7 +1408,7 @@ class ViewDragger {
             if (!this._view || !this._down) {
                 return;
             }
-            this._view.styles().apply('drag_by_dragger', v => (Object.assign(Object.assign({}, v), { left: `${pageX - this._offsetX}px`, top: `${pageY - this._offsetY}px` })));
+            this._view.styles.apply('drag_by_dragger', v => (Object.assign(Object.assign({}, v), { left: `${pageX - this._offsetX}px`, top: `${pageY - this._offsetY}px` })));
             (_a = this.view) === null || _a === void 0 ? void 0 : _a.inner.dispatchEvent(new Event(EventType_1.EventType.ViewDragging));
         };
         this._onup = () => {
@@ -1293,7 +1465,7 @@ class ViewDragger {
 }
 exports.ViewDragger = ViewDragger;
 
-},{"../BaseView/View":12,"../Events/EventType":17}],21:[function(require,module,exports){
+},{"../BaseView/View":12,"../Events/EventType":18}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DragInOutOB = void 0;
@@ -1391,7 +1563,7 @@ class DragInOutOB {
 }
 exports.DragInOutOB = DragInOutOB;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FocusOb = void 0;
@@ -1412,7 +1584,7 @@ class FocusOb {
 }
 exports.FocusOb = FocusOb;
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HoverOb = void 0;
@@ -1433,10 +1605,10 @@ class HoverOb {
 }
 exports.HoverOb = HoverOb;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reValue = exports.getValue = void 0;
+exports.findParent = exports.reValue = exports.getValue = void 0;
 function getValue(v) {
     return (typeof v !== 'function') ? v : v();
 }
@@ -1445,8 +1617,15 @@ function reValue(next, prev) {
     return (typeof next !== 'function') ? next : next(prev);
 }
 exports.reValue = reValue;
+function findParent(ele, check) {
+    while (ele && !check(ele)) {
+        ele = ele.parentElement;
+    }
+    return ele;
+}
+exports.findParent = findParent;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LayerItemView = exports.LayersView = exports.LayersViewEventType = void 0;
@@ -1474,12 +1653,12 @@ class LayersView extends Subwin_1.Subwin {
         this._layers = [];
         this.header.title = 'layers';
         this.content = new View_1.View('div');
-        this.content.styles().apply("", {
+        this.content.styles.apply("", {
             flex: 1,
             overflowY: 'auto',
             overflowX: 'hidden'
         });
-        this.styles().apply("", {
+        this.styles.apply("", {
             minWidth: '225px',
             width: 225,
         });
@@ -1515,11 +1694,11 @@ class LayerItemView extends View_1.View {
     get selected() { return this._state.selected; }
     set selected(v) {
         this._state.selected = v;
-        this.styles().apply("", v => (Object.assign(Object.assign({}, v), { background: this.state.selected ? '#00000044' : '' })));
+        this.styles.apply("", v => (Object.assign(Object.assign({}, v), { background: this.state.selected ? '#00000044' : '' })));
     }
     updateStyle() {
         const styleName = `${this.hover}_${this.selected}`;
-        this.styles().remove(this._prevStyleName).add(styleName).refresh();
+        this.styles.remove(this._prevStyleName).add(styleName).refresh();
         this._prevStyleName = styleName;
     }
     onHover(hover) { this.updateStyle(); }
@@ -1534,7 +1713,7 @@ class LayerItemView extends View_1.View {
         };
         this._state.id = inits.id;
         this._state.name = inits.name;
-        this.styles()
+        this.styles
             .register('false_false', {})
             .register('true_false', { background: '#00000022' })
             .register('false_true', { background: '#00000033' })
@@ -1592,7 +1771,7 @@ class LayerItemView extends View_1.View {
             .editStyle(false, true, false, {
             color: 'white',
         })
-            .styles().apply("", {
+            .styles.apply("", {
             outline: 'none',
             border: 'none',
             minWidth: 100,
@@ -1619,7 +1798,7 @@ class LayerItemView extends View_1.View {
 }
 exports.LayerItemView = LayerItemView;
 
-},{"./G/BaseView/IconButton":4,"./G/BaseView/SizeType":7,"./G/BaseView/TextInput":10,"./G/BaseView/ToggleIconButton":11,"./G/BaseView/View":12,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":22}],26:[function(require,module,exports){
+},{"./G/BaseView/IconButton":4,"./G/BaseView/SizeType":7,"./G/BaseView/TextInput":10,"./G/BaseView/ToggleIconButton":11,"./G/BaseView/View":12,"./G/CompoundView/Subwin":15,"./G/Observer/FocusOb":23}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
@@ -1658,7 +1837,7 @@ class ToolsView extends Subwin_1.Subwin {
         super();
         this.header.title = 'tools';
         this.content = new View_1.View('div');
-        this.content.styles().apply("", {
+        this.content.styles.apply("", {
             flex: '1',
             overflowY: 'auto',
             overflowX: 'hidden'
@@ -1677,7 +1856,7 @@ class ToolsView extends Subwin_1.Subwin {
 }
 exports.ToolsView = ToolsView;
 
-},{"../../dist":48,"./G/BaseView/IconButton":4,"./G/BaseView/Image":5,"./G/BaseView/SizeType":7,"./G/BaseView/StyleType":8,"./G/BaseView/View":12,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":18}],27:[function(require,module,exports){
+},{"../../dist":43,"./G/BaseView/IconButton":4,"./G/BaseView/Image":5,"./G/BaseView/SizeType":7,"./G/BaseView/StyleType":8,"./G/BaseView/View":12,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":19}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.clampI = exports.clampF = void 0;
@@ -1875,7 +2054,7 @@ class HSB {
 }
 exports.HSB = HSB;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ColorPalette = void 0;
@@ -2244,37 +2423,95 @@ class ColorPalette {
 }
 exports.ColorPalette = ColorPalette;
 
-},{"../../../dist/utils/Rect":95,"../../../dist/utils/Vector":97,"./Color":27}],29:[function(require,module,exports){
+},{"../../../dist/utils/Rect":90,"../../../dist/utils/Vector":92,"./Color":28}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = `{"snapshot":{"x":0,"y":0,"w":4096,"h":4096,"shapes":[]},"events":[{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328524304,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285243041","x":0,"y":0,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524304,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":159,"y":199,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[159,199]},{"t":1,"i":"1_16653285243041","x":0,"y":0,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524343,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":199,"w":2,"h":1,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[158,200,157,200]},{"t":1,"i":"1_16653285243041","x":159,"y":199,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524395,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":184,"w":13,"h":16,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[157,197,162,191,170,184]},{"t":1,"i":"1_16653285243041","x":157,"y":199,"w":2,"h":1,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524443,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":28,"h":19,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[178,181,185,182]},{"t":1,"i":"1_16653285243041","x":157,"y":184,"w":13,"h":16,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524477,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":58,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[191,191,194,215,194,239]},{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":28,"h":19,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524530,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":117,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[191,262,187,298]},{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":58,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182,191,191,194,215,194,239]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524573,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":118,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[187,299,187,299]},{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":117,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182,191,191,194,215,194,239,191,262,187,298]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328524692,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285246922","x":0,"y":0,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524693,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[239,159]},{"t":1,"i":"1_16653285246922","x":0,"y":0,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524745,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":36,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[239,165,239,175,239,195]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524795,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":14,"h":97,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[242,221,245,235,253,256]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":36,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524845,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[258,266,263,274,264,275]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":14,"h":97,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524896,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[262,273,255,265,246,254]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524946,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":222,"y":159,"w":42,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[235,242,229,239,222,241]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524996,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[217,244,214,246,214,247]},{"t":1,"i":"1_16653285246922","x":222,"y":159,"w":42,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525044,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[217,250,224,253]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525079,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":57,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[240,256,255,257,271,253]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525129,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":92,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[286,249,297,243,306,235]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":57,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525179,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[307,226,306,222,300,221]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":92,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525228,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[294,223,286,229]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525262,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[280,239,277,254,279,267]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525312,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[284,273,292,276,302,273]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525362,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":125,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[313,263,329,235,339,210]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525412,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":143,"w":144,"h":133,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[350,176,353,162,358,143]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":125,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525462,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[359,134,357,133,353,139]},{"t":1,"i":"1_16653285246922","x":214,"y":143,"w":144,"h":133,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525513,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[348,153,342,174,335,207]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525563,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[332,235,333,251,337,260]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525613,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[342,263,348,257,355,242]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525663,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":172,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[369,201,378,176,386,156]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525711,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[392,143,395,138]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":172,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525746,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[395,137,392,145,386,167]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525796,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[382,192,380,215,380,234]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525846,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":182,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[383,246,389,252,396,250]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525896,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":203,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[405,235,411,219,417,206]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":182,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525947,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[419,200,420,204,416,211]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":203,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525997,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[415,221,415,230,420,239]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526047,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":226,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[423,242,433,242,440,237]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526096,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[447,227,451,216,451,207]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":226,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526147,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[448,206,435,212,426,219]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526197,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[420,225,419,227,427,223]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207,448,206,435,212,426,219]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526235,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[434,219,434,219]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207,448,206,435,212,426,219,420,225,419,227,427,223]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328526782,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285267823","x":0,"y":0,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526782,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":522,"y":203,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[522,203]},{"t":1,"i":"1_16653285267823","x":0,"y":0,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526847,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":512,"y":203,"w":10,"h":17,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[520,205,516,211,512,220]},{"t":1,"i":"1_16653285267823","x":522,"y":203,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526896,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":12,"h":33,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[510,227,510,236]},{"t":1,"i":"1_16653285267823","x":512,"y":203,"w":10,"h":17,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526930,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":24,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[517,247,522,250,534,253]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":12,"h":33,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526980,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[542,248,550,235,553,222]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":24,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527033,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[553,213,551,209,551,208]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527084,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[551,212,551,214]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527132,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":45,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[553,229,554,239,555,243]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527179,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":54,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[559,246,564,247]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":45,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527215,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":74,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[569,242,577,232,584,217]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":54,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527265,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[586,209,587,204,586,202]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":74,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527315,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[579,204,574,205,571,207]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527366,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[570,208,575,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527415,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":88,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[581,209,588,209,598,209]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527463,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":100,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[603,209,610,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":88,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527499,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[611,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":100,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527538,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[610,208,608,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527580,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[606,208,602,213]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527614,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[598,223,597,231,598,239]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527663,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[601,243,606,244]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527696,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":108,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[611,242,618,231]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527731,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[621,218,621,211,616,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":108,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527780,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[613,208,605,213]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527814,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[601,215,601,216,609,212]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527864,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":118,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[620,207,628,204]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527898,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[644,202,648,202,650,209]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":118,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527948,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[650,217,650,230,650,240]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527998,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[650,246,650,248,650,243]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528048,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":150,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[650,233,652,219,660,205]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528098,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":166,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[666,200,673,199,676,202]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":150,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528148,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":168,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[677,208,678,217,678,225]},{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":166,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205,666,200,673,199,676,202]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528197,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":168,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[677,230,675,225,675,225]},{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":168,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205,666,200,673,199,676,202,677,208,678,217,678,225]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328528642,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285286424","x":0,"y":0,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528642,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":729,"y":138,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[729,138]},{"t":1,"i":"1_16653285286424","x":0,"y":0,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528681,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":729,"y":137,"w":1,"h":1,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[730,137]},{"t":1,"i":"1_16653285286424","x":729,"y":138,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528731,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":725,"y":137,"w":5,"h":8,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[729,139,725,145]},{"t":1,"i":"1_16653285286424","x":729,"y":137,"w":1,"h":1,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528766,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":702,"y":137,"w":28,"h":56,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[720,154,713,168,702,193]},{"t":1,"i":"1_16653285286424","x":725,"y":137,"w":5,"h":8,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528815,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":111,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[694,214,687,238,687,248]},{"t":1,"i":"1_16653285286424","x":702,"y":137,"w":28,"h":56,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145,720,154,713,168,702,193]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528867,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":119,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[693,254,699,256]},{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":111,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145,720,154,713,168,702,193,694,214,687,238,687,248]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528915,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":119,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[714,249,719,245,719,245]},{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":119,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145,720,154,713,168,702,193,694,214,687,238,687,248,693,254,699,256]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328529023,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285290235","x":0,"y":0,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529023,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":750,"y":210,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[750,210]},{"t":1,"i":"1_16653285290235","x":0,"y":0,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529065,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":746,"y":210,"w":4,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[747,211,746,211]},{"t":1,"i":"1_16653285290235","x":750,"y":210,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529099,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":742,"y":210,"w":8,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[744,211,742,211]},{"t":1,"i":"1_16653285290235","x":746,"y":210,"w":4,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529150,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":729,"y":210,"w":21,"h":20,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[740,212,736,217,729,230]},{"t":1,"i":"1_16653285290235","x":742,"y":210,"w":8,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529200,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":27,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[724,243,723,248,728,250]},{"t":1,"i":"1_16653285290235","x":729,"y":210,"w":21,"h":20,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529250,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":42,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[735,246,747,236,765,214]},{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":27,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529300,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":151,"w":76,"h":99,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[779,194,793,167,799,151]},{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":42,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529349,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":139,"w":78,"h":111,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[801,142,801,139]},{"t":1,"i":"1_16653285290235","x":723,"y":151,"w":76,"h":99,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529383,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[796,138,791,145,783,159]},{"t":1,"i":"1_16653285290235","x":723,"y":139,"w":78,"h":111,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529433,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[773,179,762,209,759,228]},{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529483,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":116,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[760,243,770,253,781,254]},{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159,773,179,762,209,759,228]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529532,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":85,"h":116,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[792,248,805,232,808,227,808,227]},{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":116,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159,773,179,762,209,759,228,760,243,770,253,781,254]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328531790,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285317906","x":0,"y":0,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531790,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":349,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[401,349]},{"t":1,"i":"1_16653285317906","x":0,"y":0,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531835,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":339,"w":10,"h":10,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[403,347,406,344,411,339]},{"t":1,"i":"1_16653285317906","x":401,"y":349,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531885,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":331,"w":21,"h":18,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[416,335,422,331]},{"t":1,"i":"1_16653285317906","x":401,"y":339,"w":10,"h":10,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531920,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":51,"h":21,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[433,328,442,328,452,334]},{"t":1,"i":"1_16653285317906","x":401,"y":331,"w":21,"h":18,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339,416,335,422,331]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531969,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":65,"h":25,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[460,342,466,353]},{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":51,"h":21,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339,416,335,422,331,433,328,442,328,452,334]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532003,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":66,"h":31,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[467,359,466,357,466,357]},{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":65,"h":25,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339,416,335,422,331,433,328,442,328,452,334,460,342,466,353]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328532414,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285324147","x":0,"y":0,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532414,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":354,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[499,354]},{"t":1,"i":"1_16653285324147","x":0,"y":0,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532502,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":348,"w":2,"h":6,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[500,353,500,351,501,348]},{"t":1,"i":"1_16653285324147","x":499,"y":354,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532552,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":335,"w":20,"h":19,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[504,344,510,339,519,335]},{"t":1,"i":"1_16653285324147","x":499,"y":348,"w":2,"h":6,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354,500,353,500,351,501,348]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532601,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":334,"w":37,"h":20,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[526,334,536,339]},{"t":1,"i":"1_16653285324147","x":499,"y":335,"w":20,"h":19,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354,500,353,500,351,501,348,504,344,510,339,519,335]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532666,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":334,"w":53,"h":25,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[549,352,552,359,552,359]},{"t":1,"i":"1_16653285324147","x":499,"y":334,"w":37,"h":20,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354,500,353,500,351,501,348,504,344,510,339,519,335,526,334,536,339]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328533166,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285331668","x":0,"y":0,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533166,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[428,408]},{"t":1,"i":"1_16653285331668","x":0,"y":0,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533221,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":3,"h":8,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[428,410,429,413,431,416]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533270,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":19,"h":26,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[433,420,439,427,447,434]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":3,"h":8,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533318,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":46,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[457,440,474,446]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":19,"h":26,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416,433,420,439,427,447,434]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533352,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":82,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[489,446,510,438]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":46,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416,433,420,439,427,447,434,457,440,474,446]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533405,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":118,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[539,418,546,411,546,411]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":82,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416,433,420,439,427,447,434,457,440,474,446,489,446,510,438]}]]}}]}`;
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = `{"snapshot":{"x":0,"y":0,"w":4096,"h":4096,"shapes":[]},"events":[{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328594833,"detail":{"from":"TOOL_SELECTOR","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328595289,"detail":{"shapeDatas":[{"t":2,"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0,"z":1665328595290,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595306,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0},{"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595348,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2},{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595365,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8},{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595400,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18},{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595432,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32},{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595466,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39},{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595519,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40},{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595552,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43},{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595583,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45},{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595608,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51},{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595632,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54},{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595650,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60},{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595681,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63},{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595698,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66},{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595715,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68},{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595733,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72},{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595766,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74},{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595784,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80},{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595817,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86},{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595850,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93},{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595884,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99},{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595917,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106},{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595948,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109},{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595965,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111},{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595982,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112},{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596000,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114},{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596034,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116},{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596083,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596388,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328598413,"detail":{"from":"TOOL_RECT","to":"TOOL_OVAL"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328598860,"detail":{"shapeDatas":[{"t":3,"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0,"z":1665328598862,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598876,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0},{"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598920,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7},{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598952,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14},{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598969,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30},{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599001,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38},{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599019,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53},{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599071,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63},{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599104,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71},{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599135,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80},{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599154,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87},{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599185,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89},{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599205,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96},{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599238,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101},{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599268,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104},{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599287,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109},{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599320,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113},{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599439,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114},{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599469,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115},{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599487,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117},{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599504,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121},{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599535,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122},{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599707,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":120},{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328601336,"detail":{"shapeDatas":[{"t":3,"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0,"z":1665328601339,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601353,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0},{"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601374,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3},{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601407,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13},{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601438,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22},{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601454,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32},{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601472,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51},{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601504,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57},{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601522,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68},{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601590,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81},{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601624,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90},{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601654,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92},{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601672,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94},{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601689,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95},{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601707,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97},{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601740,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98},{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601771,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99},{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601892,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101},{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601921,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103},{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601939,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108},{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601972,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114},{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602004,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116},{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602023,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119},{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602054,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120},{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602073,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123},{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602106,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126},{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602138,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128},{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602157,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130},{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602188,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131},{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602206,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602363,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328603214,"detail":{"from":"TOOL_OVAL","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328603748,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0,"z":1665328603752,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603766,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0},{"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603823,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0},{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603840,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15},{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603873,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27},{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603891,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46},{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603924,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51},{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603941,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55},{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603994,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58},{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604021,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62},{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604041,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67},{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604058,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75},{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604091,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79},{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604108,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85},{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604140,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88},{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604159,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94},{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604192,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97},{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604226,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99},{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604258,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100},{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604275,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103},{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604323,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104},{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604371,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105},{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604469,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":197,"w":123,"h":106},{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328605718,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0,"z":1665328605723,"style":{"b":"#ff0000","a":"rgba(85,51,51,1.00)","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605736,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0},{"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605827,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6},{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605858,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15},{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605875,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27},{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605892,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39},{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605908,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48},{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605926,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57},{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605942,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68},{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605975,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72},{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605992,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77},{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606011,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80},{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606044,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87},{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606109,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96},{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606125,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98},{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606142,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99},{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606160,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101},{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606193,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102},{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606211,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105},{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606242,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107},{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606259,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107},{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606276,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108},{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606294,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110},{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606326,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111},{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606374,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112},{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606443,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112},{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606477,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112},{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606510,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112},{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606543,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112},{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606577,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112},{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606593,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111},{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606627,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111},{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606659,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110},{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606794,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":157,"w":127,"h":111},{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110}]]}}]}`;
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
-const Menu_1 = require("../../dist/features/Menu");
 const ColorView_1 = __importDefault(require("./ColorView"));
 const Button_1 = require("./G/BaseView/Button");
 const Canvas_1 = require("./G/BaseView/Canvas");
 const View_1 = require("./G/BaseView/View");
+const Menu_1 = require("./G/CompoundView/Menu");
 const MergedSubwin_1 = require("./G/CompoundView/MergedSubwin");
 const Subwin_1 = require("./G/CompoundView/Subwin");
 const SubwinWorkspace_1 = require("./G/Helper/SubwinWorkspace");
-const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
-const demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
 const LayersView_1 = require("./LayersView");
 const ToolsView_1 = require("./ToolsView");
+const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
+const demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
 const factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 let board;
+const mainView = new View_1.View('body');
+const menu = new Menu_1.Menu(mainView, {
+    items: [{
+            key: 'tool_view',
+            label: '工具',
+            items: [{
+                    key: dist_1.ToolEnum.Selector,
+                    label: dist_1.ToolEnum.Selector,
+                }, {
+                    key: dist_1.ToolEnum.Pen,
+                    label: dist_1.ToolEnum.Pen,
+                }, {
+                    key: dist_1.ToolEnum.Rect,
+                    label: dist_1.ToolEnum.Rect,
+                }, {
+                    key: dist_1.ToolEnum.Oval,
+                    label: dist_1.ToolEnum.Oval,
+                }, {
+                    key: dist_1.ToolEnum.Text,
+                    label: dist_1.ToolEnum.Text,
+                }]
+        }, {
+            key: 'menu_item_1',
+            label: 'menu_item_1'
+        }, {
+            key: 'menu_item_2',
+            divider: true
+        }, {
+            key: 'menu_item_3',
+            label: 'menu_item_3',
+            items: [{
+                    key: 'menu_item_3_0',
+                    label: 'menu_item_3_0'
+                }, {
+                    key: 'menu_item_3_1',
+                    label: 'menu_item_3_1'
+                }, {
+                    key: 'menu_item_3_2',
+                    divider: true
+                }, {
+                    key: 'menu_item_3_3',
+                    label: 'menu_item_3_3',
+                }]
+        }]
+});
+menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
+    console.log(e.detail.key);
+    switch (e.detail.key) {
+        case dist_1.ToolEnum.Rect:
+        case dist_1.ToolEnum.Oval:
+        case dist_1.ToolEnum.Pen:
+        case dist_1.ToolEnum.Polygon:
+        case dist_1.ToolEnum.Text:
+        case dist_1.ToolEnum.Selector:
+            board.setToolType(e.detail.key);
+            break;
+    }
+});
 const mergedSubwin2 = new MergedSubwin_1.MergedSubwin();
 const mergedSubwin = new MergedSubwin_1.MergedSubwin();
 const layersView = new LayersView_1.LayersView();
@@ -2303,10 +2540,10 @@ layersView.addLayer({
     id: factory.newLayerId()
 });
 const toolsView = new ToolsView_1.ToolsView;
-toolsView.styles().apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: 5 })));
+toolsView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: 5 })));
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType);
 const colorView = new ColorView_1.default;
-colorView.styles().apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '400px' })));
+colorView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '400px' })));
 mergedSubwin.addSubWin(layersView);
 mergedSubwin.addSubWin(toolsView);
 mergedSubwin.addSubWin(colorView);
@@ -2334,7 +2571,6 @@ colorView.inner.addEventListener(ColorView_1.default.EventTypes.FillColorChange,
 });
 const toyView = new Subwin_1.Subwin();
 toyView.header.title = 'others';
-const mainView = new View_1.View('body');
 mainView.addChild(toyView);
 mainView.addChild(mergedSubwin2);
 mainView.addChild(mergedSubwin);
@@ -2359,7 +2595,7 @@ const workspace = new SubwinWorkspace_1.SubwinWorkspace({
 });
 window.addEventListener('resize', () => workspace.clampAllSubwin());
 toyView.content = new View_1.View('div');
-toyView.content.styles().apply('', {
+toyView.content.styles.apply('', {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
@@ -2432,13 +2668,15 @@ let _player;
 const jsonView = new Subwin_1.Subwin();
 jsonView.header.title = 'json';
 jsonView.content = new View_1.View('div');
-jsonView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
-const _recorder_textarea = new View_1.View('textarea');
+jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
+const json_textarea = new View_1.View('textarea');
 jsonView.content.addChild(new Button_1.Button({ content: 'JSON化' }).addEventListener('click', () => {
+    json_textarea.inner.value = board.toJsonStr();
 }));
 jsonView.content.addChild(new Button_1.Button({ content: '反JSON化' }).addEventListener('click', () => {
+    board.fromJsonStr(json_textarea.inner.value);
 }));
-jsonView.content.addChild(_recorder_textarea);
+jsonView.content.addChild(json_textarea);
 mergedSubwin.addSubWin(jsonView);
 workspace.addSubWin(jsonView);
 {
@@ -2462,8 +2700,8 @@ workspace.addSubWin(jsonView);
     const recorderView = new Subwin_1.Subwin();
     recorderView.header.title = 'recorder';
     recorderView.content = new View_1.View('div');
-    recorderView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
-    const _json_textarea = new View_1.View('textarea');
+    recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
+    const _recorder_textarea = new View_1.View('textarea');
     recorderView.content.addChild(new Button_1.Button({ content: '开始录制' }).addEventListener('click', startRecord));
     recorderView.content.addChild(new Button_1.Button({ content: '停止录制' }).addEventListener('click', endRecord));
     recorderView.content.addChild(new Button_1.Button({ content: '回放' }).addEventListener('click', () => {
@@ -2478,19 +2716,19 @@ workspace.addSubWin(jsonView);
         endRecord();
         replay(demo_rect_n_oval_1.default);
     }));
-    recorderView.content.addChild(_json_textarea);
+    recorderView.content.addChild(_recorder_textarea);
     mergedSubwin.addSubWin(recorderView);
     workspace.addSubWin(recorderView);
 }
 const rootView = new View_1.View('div');
-rootView.styles().applyCls('root');
+rootView.styles.applyCls('root');
 mainView.addChild(rootView);
 const blackboard = new View_1.View('div');
-blackboard.styles().applyCls('blackboard');
+blackboard.styles.applyCls('blackboard');
 rootView.addChild(blackboard);
 function addLayerCanvas() {
     const canvas = new Canvas_1.Canvas();
-    canvas.styles().apply('', {
+    canvas.styles.apply('', {
         position: 'absolute',
         touchAction: 'none',
         userSelect: 'none',
@@ -2501,8 +2739,7 @@ function addLayerCanvas() {
         transition: 'opacity 200ms'
     });
     canvas.inner.addEventListener('contextmenu', (e) => {
-        menu.move(e.x, e.y);
-        menu.show();
+        menu.move(e.x, e.y).show();
     });
     blackboard.addChild(canvas);
     return canvas;
@@ -2512,24 +2749,9 @@ const layers = layersView.layers().map((layer, idx) => {
     return { info: layer.state, onscreen: canvas.inner };
 });
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
-const menu = new Menu_1.Menu({
-    items: [{
-            key: 'shit',
-            label: 'world'
-        }, {
-            key: 'shit0',
-            label: 'world'
-        }, {
-            key: 'shit2',
-            divider: true
-        }, {
-            key: 'shit1',
-            label: 'world'
-        }]
-});
-document.body.appendChild(menu.element());
+window.board = board;
 
-},{"../../dist":48,"../../dist/features/Menu":43,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":12,"./G/CompoundView/MergedSubwin":13,"./G/CompoundView/Subwin":14,"./G/Helper/SubwinWorkspace":19,"./LayersView":25,"./ToolsView":26,"./demo_helloworld":29,"./demo_rect_n_oval":30}],32:[function(require,module,exports){
+},{"../../dist":43,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":12,"./G/CompoundView/Menu":13,"./G/CompoundView/MergedSubwin":14,"./G/CompoundView/Subwin":15,"./G/Helper/SubwinWorkspace":20,"./LayersView":26,"./ToolsView":27,"./demo_helloworld":30,"./demo_rect_n_oval":31}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2587,7 +2809,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhiteBoard = void 0;
@@ -2621,10 +2843,22 @@ class WhiteBoard {
         layer.height = this.height;
         layer.onscreen.style.pointerEvents = 'none';
         this._layers.set(init.info.id, layer);
-        this.listenTo(layer.onscreen, 'pointerdown', this.pointerdown);
-        this.listenTo(layer.onscreen, 'pointermove', this.pointermove);
-        this.listenTo(layer.onscreen, 'pointerup', this.pointerup);
+        layer.onscreen.addEventListener('pointerdown', this.pointerdown);
+        layer.onscreen.addEventListener('pointermove', this.pointermove);
+        layer.onscreen.addEventListener('pointerup', this.pointerup);
         layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); });
+        return true;
+    }
+    removeLayer(layerId) {
+        if (this._layers.has(layerId)) {
+            console.error(`[WhiteBoard] removeLayer(): layer not found! id = ${layerId}`);
+            return false;
+        }
+        const layer = this._layers.get(layerId);
+        layer.onscreen.removeEventListener('pointerdown', this.pointerdown);
+        layer.onscreen.removeEventListener('pointermove', this.pointermove);
+        layer.onscreen.removeEventListener('pointerup', this.pointerup);
+        layer.onscreen.removeEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); });
         return true;
     }
     editLayer(layerId) {
@@ -2647,8 +2881,7 @@ class WhiteBoard {
         this._mousedown = false;
         this._tools = {};
         this._selects = [];
-        this._eventsObserver = new event_1.Observer();
-        this._eventEmitter = new event_1.Emitter();
+        this._eventEmitter = document.createElement('div');
         this._operator = 'whiteboard';
         this._editingLayerId = '';
         this._width = 512;
@@ -2726,28 +2959,15 @@ class WhiteBoard {
     hits(rect) {
         return this._shapesMgr.hits(rect);
     }
-    addEventListener(type, callback) {
-        return this._eventEmitter.addEventListener(type, callback);
+    addEventListener(arg0, arg1, arg2) {
+        return this._eventEmitter.addEventListener(arg0, arg1, arg2);
     }
-    removeEventListener(type, callback) {
-        return this._eventEmitter.removeEventListener(type, callback);
+    removeEventListener(arg0, arg1, arg2) {
+        return this._eventEmitter.removeEventListener(arg0, arg1, arg2);
     }
     dispatchEvent(e) {
         return this._eventEmitter.dispatchEvent(e);
     }
-    on(type, callback) {
-        return this._eventEmitter.on(type, callback);
-    }
-    once(type, callback) {
-        return this._eventEmitter.once(type, callback);
-    }
-    emit(e) {
-        return this._eventEmitter.emit(e);
-    }
-    listenTo(target, type, callback) {
-        return this._eventsObserver.listenTo(target, type, callback);
-    }
-    destory() { return this._eventsObserver.destory(); }
     get factory() { return this._factory; }
     set factory(v) { this._factory = v; }
     ctx(layerId = this._editingLayerId) {
@@ -2773,7 +2993,7 @@ class WhiteBoard {
             return;
         const from = this._toolType;
         this._toolType = to;
-        this.emit(new event_1.ToolChangedEvent(this._operator, { from, to }));
+        this.dispatchEvent(event_1.WhiteBoardEvent.toolChanged({ operator: this._operator, from, to }));
     }
     get selects() {
         return this._selects;
@@ -2793,8 +3013,11 @@ class WhiteBoard {
                 this._selects.push(item);
             this.markDirty(item.boundingRect());
         });
-        const e = new event_1.ShapesAddedEvent(this._operator, { shapeDatas: shapes.map(v => v.data.copy()) });
-        this.emit(e);
+        const e = event_1.WhiteBoardEvent.shapesAdded({
+            operator: this._operator,
+            shapeDatas: shapes.map(v => v.data.copy())
+        });
+        this.dispatchEvent(e);
         return ret;
     }
     remove(...shapes) {
@@ -2805,8 +3028,11 @@ class WhiteBoard {
             this.markDirty(item.boundingRect());
             item.board = undefined;
         });
-        const e = new event_1.ShapesRemovedEvent(this._operator, { shapeDatas: shapes.map(v => v.data.copy()) });
-        this.emit(e);
+        const e = event_1.WhiteBoardEvent.shapesRemoved({
+            operator: this._operator,
+            shapeDatas: shapes.map(v => v.data.copy())
+        });
+        this.dispatchEvent(e);
         return ret;
     }
     removeAll() {
@@ -2889,7 +3115,7 @@ class WhiteBoard {
 }
 exports.WhiteBoard = WhiteBoard;
 
-},{"../event":42,"../tools":86,"../utils":98,"./Layer":32}],34:[function(require,module,exports){
+},{"../event":38,"../tools":81,"../utils":93,"./Layer":33}],35:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2909,116 +3135,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Layer"), exports);
 __exportStar(require("./WhiteBoard"), exports);
 
-},{"./Layer":32,"./WhiteBoard":33}],35:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Emitter = void 0;
-const Array_1 = require("../utils/Array");
-;
-class Emitter {
-    constructor() {
-        this._listenersMap = {};
-    }
-    addEventListener(type, callback) {
-        const listeners = this._listenersMap[type] || [];
-        const canceller = () => this.removeEventListener(type, callback);
-        const listener = { times: -1, callback, type, target: this, canceller };
-        listeners.push(listener);
-        this._listenersMap[type] = listeners;
-        return listener;
-    }
-    removeEventListener(type, callback) {
-        const listeners = this._listenersMap[type];
-        const idx = listeners && (0, Array_1.findIndex)(listeners, v => v.type === type && v.callback === callback);
-        if (idx !== undefined && idx >= 0)
-            this._listenersMap[type] = listeners === null || listeners === void 0 ? void 0 : listeners.filter((_, i) => (i !== idx));
-    }
-    dispatchEvent(e) {
-        const listeners = this._listenersMap[e.type];
-        if (!listeners) {
-            return;
-        }
-        for (let i = 0; i < listeners.length; ++i) {
-            const listener = listeners[i];
-            if (listener.target instanceof Emitter) {
-                const { times, callback } = listener;
-                if (times > 1) {
-                    listeners[i].times = times - 1;
-                }
-                else if (times === 0) {
-                    listeners.splice(i, 1);
-                }
-                callback(e);
-            }
-        }
-        return;
-    }
-    on(type, callback) {
-        const listener = this.addEventListener(type, callback);
-        return listener.canceller;
-    }
-    once(type, callback) {
-        const listener = this.addEventListener(type, callback);
-        listener.times = 0;
-        return listener.canceller;
-    }
-    emit(e) {
-        this.dispatchEvent(e);
-    }
-}
-exports.Emitter = Emitter;
-
-},{"../utils/Array":89}],36:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
-},{}],37:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventDataVisitor = void 0;
-const utils_1 = require("../utils");
-const EventType_1 = require("./EventType");
-class EventDataVisitor {
-    static create(options) {
-        return {
-            a: options.type,
-            b: options.operator,
-            c: options.timeStamp,
-            d: options.detail
-        };
-    }
-    static getType(e) {
-        return e.a || e.type || EventType_1.EventEnum.Invalid;
-    }
-    static setType(e, v) {
-        e.a = (0, utils_1.getValue)(v, this.getType(e));
-        return this;
-    }
-    static getOperator(e) {
-        return e.b || e.operator || EventType_1.EventEnum.Invalid;
-    }
-    static setOperator(e, v) {
-        e.b = (0, utils_1.getValue)(v, this.getOperator(e));
-        return this;
-    }
-    static getTime(e) {
-        return e.c || e.timeStamp || 0;
-    }
-    static setTime(e, v) {
-        e.c = (0, utils_1.getValue)(v, this.getTime(e));
-        return this;
-    }
-    static getDetail(e) {
-        return e.d || e.detail;
-    }
-    static setDetail(e, v) {
-        e.d = (0, utils_1.getValue)(v, this.getDetail(e));
-        return this;
-    }
-}
-exports.EventDataVisitor = EventDataVisitor;
-
-},{"../utils":98,"./EventType":38}],38:[function(require,module,exports){
+},{"./Layer":33,"./WhiteBoard":34}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventEnum = void 0;
@@ -3028,185 +3145,63 @@ var EventEnum;
     EventEnum["ShapesAdded"] = "SHAPES_ADDED";
     EventEnum["ShapesRemoved"] = "SHAPES_REMOVED";
     EventEnum["ShapesChanged"] = "SHAPES_CHANGED";
+    EventEnum["ShapesMoved"] = "SHAPES_MOVED";
+    EventEnum["ShapesResized"] = "SHAPES_RESIZED";
     EventEnum["ToolChanged"] = "TOOL_CHANGED";
 })(EventEnum = exports.EventEnum || (exports.EventEnum = {}));
 
-},{}],39:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ToolChangedEvent = exports.ShapesGeoEvent = exports.pickShapeGeoData = exports.ShapesMovedEvent = exports.pickShapePositionData = exports.ShapesChangedEvent = exports.ShapesChangedEnum = exports.ShapesRemovedEvent = exports.ShapesAddedEvent = exports.ShapesEvent = exports.BaseEvent = void 0;
-const EventDataVisitor_1 = require("./EventDataVisitor");
+exports.WhiteBoardEvent = void 0;
 const EventType_1 = require("./EventType");
-class BaseEvent {
-    get operator() { return this._operator; }
-    get detail() { return this._detail; }
-    get type() { return this._type; }
-    constructor(type, operator, detail) {
-        this._bubbles = true;
-        this._cancelBubble = true;
-        this._cancelable = true;
-        this._composed = true;
-        this._currentTarget = null;
-        this._defaultPrevented = false;
-        this._eventPhase = 0;
-        this._isTrusted = true;
-        this._returnValue = true;
-        this._srcElement = null;
-        this._target = null;
-        this._timeStamp = Date.now();
-        this._type = type;
-        this._operator = operator;
-        this._detail = detail;
+var WhiteBoardEvent;
+(function (WhiteBoardEvent) {
+    function shapesAdded(detail) {
+        return new CustomEvent(EventType_1.EventEnum.ShapesAdded, { detail });
     }
-    get bubbles() { return this._bubbles; }
-    get cancelBubble() { return this._cancelBubble; }
-    get cancelable() { return this._cancelable; }
-    get composed() { return this._composed; }
-    get currentTarget() { return this._currentTarget; }
-    get defaultPrevented() { return this._defaultPrevented; }
-    get eventPhase() { return this._eventPhase; }
-    get isTrusted() { return this._isTrusted; }
-    get returnValue() { return this._returnValue; }
-    get srcElement() { return this._srcElement; }
-    get target() { return this._target; }
-    get timeStamp() { return this._timeStamp; }
-    set target(v) {
-        this._target = v;
-        this._currentTarget = v;
+    WhiteBoardEvent.shapesAdded = shapesAdded;
+    function shapesRemoved(detail) {
+        return new CustomEvent(EventType_1.EventEnum.ShapesRemoved, { detail });
     }
-    composedPath() { return []; }
-    initEvent(type, bubbles, cancelable) {
-        this._type = type;
-        this._bubbles = !!bubbles;
-        this._cancelable = !!cancelable;
+    WhiteBoardEvent.shapesRemoved = shapesRemoved;
+    function shapesChanged(detail) {
+        return new CustomEvent(EventType_1.EventEnum.ShapesChanged, { detail });
     }
-    preventDefault() {
-        this._defaultPrevented = true;
+    WhiteBoardEvent.shapesChanged = shapesChanged;
+    function shapesMoved(detail) {
+        return new CustomEvent(EventType_1.EventEnum.ShapesMoved, { detail });
     }
-    stopImmediatePropagation() { }
-    stopPropagation() { }
-    pure() {
-        return EventDataVisitor_1.EventDataVisitor.create(this);
+    WhiteBoardEvent.shapesMoved = shapesMoved;
+    function shapesResized(detail) {
+        return new CustomEvent(EventType_1.EventEnum.ShapesResized, { detail });
     }
-}
-exports.BaseEvent = BaseEvent;
-class ShapesEvent extends BaseEvent {
-    constructor(type, operator, detail) {
-        super(type, operator, detail);
+    WhiteBoardEvent.shapesResized = shapesResized;
+    function pickShapePositionData(data) {
+        return {
+            i: data.i,
+            x: data.x,
+            y: data.y
+        };
     }
-}
-exports.ShapesEvent = ShapesEvent;
-class ShapesAddedEvent extends ShapesEvent {
-    constructor(operator, detail) {
-        super(EventType_1.EventEnum.ShapesAdded, operator, detail);
+    WhiteBoardEvent.pickShapePositionData = pickShapePositionData;
+    function pickShapeGeoData(data) {
+        return {
+            i: data.i,
+            x: data.x,
+            y: data.y,
+            w: data.w,
+            h: data.h
+        };
     }
-}
-exports.ShapesAddedEvent = ShapesAddedEvent;
-class ShapesRemovedEvent extends ShapesEvent {
-    constructor(operator, detail) {
-        super(EventType_1.EventEnum.ShapesRemoved, operator, detail);
+    WhiteBoardEvent.pickShapeGeoData = pickShapeGeoData;
+    function toolChanged(detail) {
+        return new CustomEvent(EventType_1.EventEnum.ToolChanged, { detail });
     }
-}
-exports.ShapesRemovedEvent = ShapesRemovedEvent;
-var ShapesChangedEnum;
-(function (ShapesChangedEnum) {
-    ShapesChangedEnum[ShapesChangedEnum["Invalid"] = 0] = "Invalid";
-    ShapesChangedEnum[ShapesChangedEnum["Any"] = 1] = "Any";
-    ShapesChangedEnum[ShapesChangedEnum["Moved"] = 2] = "Moved";
-    ShapesChangedEnum[ShapesChangedEnum["Resized"] = 3] = "Resized";
-})(ShapesChangedEnum = exports.ShapesChangedEnum || (exports.ShapesChangedEnum = {}));
-class ShapesChangedEvent extends BaseEvent {
-    get changedType() { return this._changedType; }
-    constructor(operator, detail) {
-        super(EventType_1.EventEnum.ShapesChanged, operator, detail);
-        this._changedType = ShapesChangedEnum.Any;
-    }
-}
-exports.ShapesChangedEvent = ShapesChangedEvent;
-function pickShapePositionData(data) {
-    return {
-        i: data.i,
-        x: data.x,
-        y: data.y
-    };
-}
-exports.pickShapePositionData = pickShapePositionData;
-class ShapesMovedEvent extends ShapesChangedEvent {
-    constructor(operator, detail) {
-        super(operator, detail);
-        this._changedType = ShapesChangedEnum.Moved;
-    }
-}
-exports.ShapesMovedEvent = ShapesMovedEvent;
-function pickShapeGeoData(data) {
-    return {
-        i: data.i,
-        x: data.x,
-        y: data.y,
-        w: data.w,
-        h: data.h
-    };
-}
-exports.pickShapeGeoData = pickShapeGeoData;
-class ShapesGeoEvent extends ShapesChangedEvent {
-    constructor(operator, detail) {
-        super(operator, detail);
-        this._changedType = ShapesChangedEnum.Resized;
-    }
-}
-exports.ShapesGeoEvent = ShapesGeoEvent;
-class ToolChangedEvent extends BaseEvent {
-    constructor(operator, detail) {
-        super(EventType_1.EventEnum.ToolChanged, operator, detail);
-    }
-}
-exports.ToolChangedEvent = ToolChangedEvent;
+    WhiteBoardEvent.toolChanged = toolChanged;
+})(WhiteBoardEvent = exports.WhiteBoardEvent || (exports.WhiteBoardEvent = {}));
 
-},{"./EventDataVisitor":37,"./EventType":38}],40:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
-},{}],41:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Observer = void 0;
-const Emitter_1 = require("./Emitter");
-;
-;
-;
-;
-;
-class Observer {
-    constructor() {
-        this._listeners = [];
-    }
-    listenTo(target, type, callback) {
-        if (target instanceof Emitter_1.Emitter) {
-            const listener = target.addEventListener(type, callback);
-            this._listeners.push(listener);
-            return listener.canceller;
-        }
-        else {
-            const canceller = () => target.removeEventListener(type, callback);
-            target.addEventListener(type, callback, undefined);
-            const listener = {
-                times: -1,
-                target,
-                type,
-                callback: callback,
-                canceller
-            };
-            this._listeners.push(listener);
-            return canceller;
-        }
-    }
-    destory() {
-        this._listeners.forEach(v => v.canceller());
-    }
-}
-exports.Observer = Observer;
-
-},{"./Emitter":35}],42:[function(require,module,exports){
+},{"./EventType":36}],38:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3223,97 +3218,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./Emitter"), exports);
-__exportStar(require("./EventData"), exports);
-__exportStar(require("./EventDataVisitor"), exports);
 __exportStar(require("./Events"), exports);
 __exportStar(require("./EventType"), exports);
-__exportStar(require("./IEventDataMaker"), exports);
-__exportStar(require("./Observer"), exports);
 
-},{"./Emitter":35,"./EventData":36,"./EventDataVisitor":37,"./EventType":38,"./Events":39,"./IEventDataMaker":40,"./Observer":41}],43:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Menu = void 0;
-class Menu {
-    constructor(inits) {
-        this._items = [];
-        this._subMenus = {};
-        this._itemElements = [];
-        this._element = document.createElement('div');
-        this._element.style.position = 'absolute';
-        this._element.style.display = 'none';
-        this._element.style.gridTemplateColumns = 'auto';
-        this._element.style.background = 'white';
-        this._element.style.borderRadius = '5px';
-        this._element.style.userSelect = 'none';
-        (inits === null || inits === void 0 ? void 0 : inits.items) && this.setup(inits.items);
-        document.body.addEventListener('click', () => this.hide());
-        window.addEventListener('blur', () => this.hide());
-    }
-    itemEle(item) {
-        var _a;
-        const ele = document.createElement('div');
-        if (item.divider) {
-            ele.style.height = '1px';
-            ele.style.background = '#00000011';
-        }
-        else {
-            ele.style.display = 'flex';
-            ele.style.borderRadius = '5px';
-            ele.style.padding = '5px';
-            ele.style.fontSize = '12px';
-            ele.addEventListener('click', (e) => { });
-            ele.addEventListener('mouseenter', () => {
-                ele.style.background = '#00000011';
-            });
-            ele.addEventListener('mouseleave', () => {
-                ele.style.background = '';
-            });
-            const label = document.createElement('div');
-            if (item.label) {
-                label.innerText = item.label;
-            }
-            label.style.flex = '1';
-            ele.appendChild(label);
-            if ((_a = item.items) === null || _a === void 0 ? void 0 : _a.length) {
-                const more = document.createElement('p');
-                more.innerText = '>';
-                ele.appendChild(more);
-                this._subMenus[item.key] = new Menu(item);
-            }
-        }
-        return ele;
-    }
-    item(key) {
-        return this._items.find(v => v.key === key);
-    }
-    setup(items) {
-        this._itemElements.forEach(ele => { var _a; return (_a = this._element) === null || _a === void 0 ? void 0 : _a.removeChild(ele); });
-        this._items = items;
-        this._itemElements = items.map(v => {
-            const ele = this.itemEle(v);
-            this.element().appendChild(ele);
-            return ele;
-        });
-    }
-    element() {
-        return this._element;
-    }
-    move(x, y) {
-        this.element().style.left = '' + x + 'px';
-        this.element().style.top = '' + y + 'px';
-    }
-    show() {
-        this.element().style.display = 'grid';
-    }
-    hide() {
-        this.element().style.display = 'none';
-    }
-}
-exports.Menu = Menu;
-
-},{}],44:[function(require,module,exports){
+},{"./EventType":36,"./Events":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
@@ -3347,7 +3255,7 @@ class Player {
         const event = screenplay.events[this.eventIdx];
         if (!event)
             return this.stop();
-        let timeStamp = event_1.EventDataVisitor.getTime(event);
+        let timeStamp = event.timeStamp;
         if (!this.firstEventTime && timeStamp)
             this.firstEventTime = timeStamp;
         this.applyEvent(event);
@@ -3355,25 +3263,29 @@ class Player {
         const next = screenplay.events[this.eventIdx];
         if (!next)
             return this.stop();
-        timeStamp = event_1.EventDataVisitor.getTime(next);
+        timeStamp = next.timeStamp;
         const diff = Math.max(1, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
         this.timer = setTimeout(() => this.tick(), diff);
     }
     applyEvent(e) {
+        var _a, _b;
+        console.log('[Player] applyEvent(), e = ', e);
         const actor = this.actor;
-        if (!actor)
+        if (!actor) {
             return;
-        const type = event_1.EventDataVisitor.getType(e);
-        switch (type) {
+        }
+        switch (e.type) {
             case event_1.EventEnum.ShapesAdded: {
-                const event = e;
-                const shapes = event_1.EventDataVisitor.getDetail(event).shapeDatas.map(v => actor.factory.newShape(v));
-                actor.add(...shapes);
+                const event = (e);
+                const shapes = (_a = event.detail.shapeDatas) === null || _a === void 0 ? void 0 : _a.map(v => actor.factory.newShape(v));
+                shapes && actor.add(...shapes);
                 break;
             }
+            case event_1.EventEnum.ShapesMoved:
+            case event_1.EventEnum.ShapesResized:
             case event_1.EventEnum.ShapesChanged: {
-                const event = e;
-                event_1.EventDataVisitor.getDetail(event).shapeDatas.forEach(([curr, prev]) => {
+                const event = (e);
+                event.detail.shapeDatas.forEach(([curr]) => {
                     var _a;
                     const id = curr.i;
                     id && ((_a = actor.find(id)) === null || _a === void 0 ? void 0 : _a.merge(curr));
@@ -3381,9 +3293,9 @@ class Player {
                 break;
             }
             case event_1.EventEnum.ShapesRemoved: {
-                const event = e;
-                const shapes = event_1.EventDataVisitor.getDetail(event).shapeDatas.map(data => actor.find(data.i)).filter(v => v);
-                actor.remove(...shapes);
+                const event = (e);
+                const shapes = (_b = event.detail.shapeDatas) === null || _b === void 0 ? void 0 : _b.map(data => actor.find(data.i)).filter(v => v);
+                shapes && actor.remove(...shapes);
                 break;
             }
         }
@@ -3391,12 +3303,11 @@ class Player {
 }
 exports.Player = Player;
 
-},{"../event":42}],45:[function(require,module,exports){
+},{"../event":38}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recorder = void 0;
 const event_1 = require("../event");
-const EventDataVisitor_1 = require("../event/EventDataVisitor");
 class Recorder {
     constructor() {
         this.cancellers = [];
@@ -3407,13 +3318,15 @@ class Recorder {
         };
     }
     destory() {
+        console.log('[Recorder] destory()');
         this.cancellers.forEach(v => v());
         this.cancellers = [];
     }
     start(actor) {
+        console.log('[Recorder] start()');
         this.cancellers.forEach(v => v());
         this.cancellers = [];
-        const startTime = Date.now();
+        const startTime = new CustomEvent('').timeStamp;
         this._screenplay = {
             startTime,
             snapshot: actor.toJson(),
@@ -3422,11 +3335,14 @@ class Recorder {
         for (const key in event_1.EventEnum) {
             const v = event_1.EventEnum[key];
             const func = (e) => {
-                const puree = e.pure();
-                EventDataVisitor_1.EventDataVisitor.setTime(puree, v => v - startTime);
-                this._screenplay.events.push(puree);
+                this._screenplay.events.push({
+                    timeStamp: e.timeStamp - startTime,
+                    type: e.type,
+                    detail: e.detail
+                });
             };
-            const canceller = actor.on(v, func);
+            actor.addEventListener(v, func);
+            const canceller = () => actor.removeEventListener(v, func);
             this.cancellers.push(canceller);
         }
     }
@@ -3434,16 +3350,16 @@ class Recorder {
         return this._screenplay;
     }
     toJsonStr() {
-        return JSON.stringify(this.toJson());
+        return JSON.stringify(this.toJson(), null, 2);
     }
 }
 exports.Recorder = Recorder;
 
-},{"../event":42,"../event/EventDataVisitor":37}],46:[function(require,module,exports){
+},{"../event":38}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],47:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3464,7 +3380,7 @@ __exportStar(require("./Player"), exports);
 __exportStar(require("./Recorder"), exports);
 __exportStar(require("./Screenplay"), exports);
 
-},{"./Player":44,"./Recorder":45,"./Screenplay":46}],48:[function(require,module,exports){
+},{"./Player":39,"./Recorder":40,"./Screenplay":41}],43:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3483,14 +3399,14 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./tools");
 __exportStar(require("./board"), exports);
-__exportStar(require("./event"), exports);
+// export * from './event'
 __exportStar(require("./features"), exports);
 __exportStar(require("./mgr"), exports);
 __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":34,"./event":42,"./features":47,"./mgr":53,"./shape":59,"./tools":86,"./utils":98}],49:[function(require,module,exports){
+},{"./board":35,"./features":42,"./mgr":48,"./shape":54,"./tools":81,"./utils":93}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Factory = void 0;
@@ -3575,7 +3491,7 @@ class Factory {
 exports.Factory = Factory;
 FactoryMgr_1.FactoryMgr.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new Factory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":34,"../shape/base/Data":55,"../shape/base/Shape":56,"../tools/base/InvalidTool":82,"./FactoryEnum":50,"./FactoryMgr":51,"./ShapesMgr":52}],50:[function(require,module,exports){
+},{"../board":35,"../shape/base/Data":50,"../shape/base/Shape":51,"../tools/base/InvalidTool":77,"./FactoryEnum":45,"./FactoryMgr":46,"./ShapesMgr":47}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -3593,7 +3509,7 @@ function getFactoryName(type) {
 }
 exports.getFactoryName = getFactoryName;
 
-},{}],51:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FactoryMgr = void 0;
@@ -3655,7 +3571,7 @@ FactoryMgr.shapeInfos = {};
 FactoryMgr.factorys = {};
 FactoryMgr.factoryInfos = {};
 
-},{"../shape/ShapeEnum":54,"../tools/ToolEnum":81}],52:[function(require,module,exports){
+},{"../shape/ShapeEnum":49,"../tools/ToolEnum":76}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapesMgr = void 0;
@@ -3732,7 +3648,7 @@ class ShapesMgr {
 }
 exports.ShapesMgr = ShapesMgr;
 
-},{"../utils/Array":89,"../utils/Rect":95}],53:[function(require,module,exports){
+},{"../utils/Array":84,"../utils/Rect":90}],48:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3754,7 +3670,7 @@ __exportStar(require("./FactoryEnum"), exports);
 __exportStar(require("./FactoryMgr"), exports);
 __exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":49,"./FactoryEnum":50,"./FactoryMgr":51,"./ShapesMgr":52}],54:[function(require,module,exports){
+},{"./Factory":44,"./FactoryEnum":45,"./FactoryMgr":46,"./ShapesMgr":47}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -3780,7 +3696,7 @@ function getShapeName(type) {
 }
 exports.getShapeName = getShapeName;
 
-},{}],55:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
@@ -3965,7 +3881,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":54}],56:[function(require,module,exports){
+},{"../ShapeEnum":49}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = void 0;
@@ -4105,7 +4021,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":95}],57:[function(require,module,exports){
+},{"../../utils/Rect":90}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -4139,7 +4055,7 @@ class ShapeNeedPath extends Shape_1.Shape {
 }
 exports.ShapeNeedPath = ShapeNeedPath;
 
-},{"./Shape":56}],58:[function(require,module,exports){
+},{"./Shape":51}],53:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4160,7 +4076,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./ShapeNeedPath"), exports);
 
-},{"./Data":55,"./Shape":56,"./ShapeNeedPath":57}],59:[function(require,module,exports){
+},{"./Data":50,"./Shape":51,"./ShapeNeedPath":52}],54:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4185,7 +4101,7 @@ __exportStar(require("./rect"), exports);
 __exportStar(require("./ShapeEnum"), exports);
 __exportStar(require("./text"), exports);
 
-},{"./ShapeEnum":54,"./base":58,"./oval":63,"./pen":67,"./polygon":71,"./rect":75,"./text":80}],60:[function(require,module,exports){
+},{"./ShapeEnum":49,"./base":53,"./oval":58,"./pen":62,"./polygon":66,"./rect":70,"./text":75}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalData = void 0;
@@ -4205,7 +4121,7 @@ class OvalData extends base_1.ShapeData {
 }
 exports.OvalData = OvalData;
 
-},{"../ShapeEnum":54,"../base":58}],61:[function(require,module,exports){
+},{"../ShapeEnum":49,"../base":53}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeOval = void 0;
@@ -4229,7 +4145,7 @@ class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeOval = ShapeOval;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
 
-},{"../../mgr/FactoryMgr":51,"../ShapeEnum":54,"../base/ShapeNeedPath":57,"./Data":60}],62:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../ShapeEnum":49,"../base/ShapeNeedPath":52,"./Data":55}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
@@ -4271,7 +4187,7 @@ class OvalTool extends SimpleTool_1.SimpleTool {
 exports.OvalTool = OvalTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/FactoryMgr":51,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":54}],63:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../../tools/ToolEnum":76,"../../tools/base/SimpleTool":78,"../ShapeEnum":49}],58:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4292,7 +4208,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":60,"./Shape":61,"./Tool":62}],64:[function(require,module,exports){
+},{"./Data":55,"./Shape":56,"./Tool":57}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenData = exports.DotsType = void 0;
@@ -4339,7 +4255,7 @@ class PenData extends base_1.ShapeData {
 }
 exports.PenData = PenData;
 
-},{"../ShapeEnum":54,"../base":58}],65:[function(require,module,exports){
+},{"../ShapeEnum":49,"../base":53}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePen = void 0;
@@ -4485,15 +4401,15 @@ class ShapePen extends base_1.Shape {
 exports.ShapePen = ShapePen;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
 
-},{"../../mgr/FactoryMgr":51,"../ShapeEnum":54,"../base":58,"./Data":64}],66:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../ShapeEnum":49,"../base":53,"./Data":59}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const FactoryMgr_1 = require("../../mgr/FactoryMgr");
 const ShapeEnum_1 = require("../ShapeEnum");
-const Events_1 = require("../../event/Events");
 const Data_1 = require("./Data");
+const event_1 = require("../../event");
 const Tag = '[PenTool]';
 class PenTool {
     start() {
@@ -4523,7 +4439,7 @@ class PenTool {
             const curr = shape.data.copy();
             curr.dotsType = Data_1.DotsType.Append;
             curr.coords.splice(0, prev.coords.length);
-            board.emit(new Events_1.ShapesChangedEvent(this.type, { shapeDatas: [[curr, prev]] }));
+            board.dispatchEvent(event_1.WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }));
             delete this._prevData;
         };
         this._prevData = shape.data.copy();
@@ -4562,9 +4478,9 @@ class PenTool {
 exports.PenTool = PenTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event/Events":39,"../../mgr/FactoryMgr":51,"../../tools/ToolEnum":81,"../ShapeEnum":54,"./Data":64}],67:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":64,"./Shape":65,"./Tool":66,"dup":63}],68:[function(require,module,exports){
+},{"../../event":38,"../../mgr/FactoryMgr":46,"../../tools/ToolEnum":76,"../ShapeEnum":49,"./Data":59}],62:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"./Data":59,"./Shape":60,"./Tool":61,"dup":58}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonData = void 0;
@@ -4591,7 +4507,7 @@ class PolygonData extends base_1.ShapeData {
 }
 exports.PolygonData = PolygonData;
 
-},{"../ShapeEnum":54,"../base":58}],69:[function(require,module,exports){
+},{"../ShapeEnum":49,"../base":53}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePolygon = void 0;
@@ -4610,7 +4526,7 @@ class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapePolygon = ShapePolygon;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
 
-},{"../../mgr/FactoryMgr":51,"../ShapeEnum":54,"../base/ShapeNeedPath":57,"./Data":68}],70:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../ShapeEnum":49,"../base/ShapeNeedPath":52,"./Data":63}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonTool = void 0;
@@ -4624,9 +4540,9 @@ const desc = {
 };
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
 
-},{"../../mgr/FactoryMgr":51,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":54}],71:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":68,"./Shape":69,"./Tool":70,"dup":63}],72:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../../tools/ToolEnum":76,"../../tools/base/SimpleTool":78,"../ShapeEnum":49}],66:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"./Data":63,"./Shape":64,"./Tool":65,"dup":58}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectData = void 0;
@@ -4646,7 +4562,7 @@ class RectData extends base_1.ShapeData {
 }
 exports.RectData = RectData;
 
-},{"../ShapeEnum":54,"../base":58}],73:[function(require,module,exports){
+},{"../ShapeEnum":49,"../base":53}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRect = void 0;
@@ -4665,7 +4581,7 @@ class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeRect = ShapeRect;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
 
-},{"../../mgr/FactoryMgr":51,"../ShapeEnum":54,"../base/ShapeNeedPath":57,"./Data":72}],74:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../ShapeEnum":49,"../base/ShapeNeedPath":52,"./Data":67}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -4676,9 +4592,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/FactoryMgr":51,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":54}],75:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":72,"./Shape":73,"./Tool":74,"dup":63}],76:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../../tools/ToolEnum":76,"../../tools/base/SimpleTool":78,"../ShapeEnum":49}],70:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"./Data":67,"./Shape":68,"./Tool":69,"dup":58}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextData = void 0;
@@ -4720,7 +4636,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../ShapeEnum":54,"../base":58}],77:[function(require,module,exports){
+},{"../ShapeEnum":49,"../base":53}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -4876,7 +4792,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/FactoryMgr":51,"../../utils/Rect":95,"../ShapeEnum":54,"../base":58,"./Data":76,"./TextSelection":78}],78:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":46,"../../utils/Rect":90,"../ShapeEnum":49,"../base":53,"./Data":71,"./TextSelection":73}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -4893,14 +4809,14 @@ class TextSelection {
 }
 exports.TextSelection = TextSelection;
 
-},{}],79:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
 const FactoryMgr_1 = require("../../mgr/FactoryMgr");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
-const Events_1 = require("../../event/Events");
+const event_1 = require("../../event");
 const Tag = '[TextTool]';
 class TextTool {
     constructor() {
@@ -4953,7 +4869,7 @@ class TextTool {
             if (!board)
                 return;
             const curr = shape.data.copy();
-            board.emit(new Events_1.ShapesChangedEvent(this.type, { shapeDatas: [[curr, prev]] }));
+            board.dispatchEvent(event_1.WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }));
         };
         this._editor.wrap = 'off';
         this._editor.style.display = 'none';
@@ -5021,7 +4937,7 @@ class TextTool {
 exports.TextTool = TextTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event/Events":39,"../../mgr/FactoryMgr":51,"../../tools/ToolEnum":81,"../ShapeEnum":54}],80:[function(require,module,exports){
+},{"../../event":38,"../../mgr/FactoryMgr":46,"../../tools/ToolEnum":76,"../ShapeEnum":49}],75:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5043,7 +4959,7 @@ __exportStar(require("./Shape"), exports);
 __exportStar(require("./TextSelection"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":76,"./Shape":77,"./TextSelection":78,"./Tool":79}],81:[function(require,module,exports){
+},{"./Data":71,"./Shape":72,"./TextSelection":73,"./Tool":74}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToolName = exports.ToolEnum = void 0;
@@ -5070,7 +4986,7 @@ function getToolName(type) {
 }
 exports.getToolName = getToolName;
 
-},{}],82:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidTool = void 0;
@@ -5108,11 +5024,11 @@ class InvalidTool {
 }
 exports.InvalidTool = InvalidTool;
 
-},{"../ToolEnum":81}],83:[function(require,module,exports){
+},{"../ToolEnum":76}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
-const Events_1 = require("../../event/Events");
+const event_1 = require("../../event");
 const RectHelper_1 = require("../../utils/RectHelper");
 const Tag = '[SimpleTool]';
 class SimpleTool {
@@ -5209,11 +5125,11 @@ class SimpleTool {
             this.applyRect();
             return;
         }
-        this._prevData = (0, Events_1.pickShapeGeoData)(shape.data);
+        this._prevData = event_1.WhiteBoardEvent.pickShapeGeoData(shape.data);
         const prev = this._prevData;
         const emitEvent = () => {
-            const curr = (0, Events_1.pickShapeGeoData)(shape.data);
-            board.emit(new Events_1.ShapesGeoEvent(this.type, { shapeDatas: [[curr, prev]] }));
+            const curr = event_1.WhiteBoardEvent.pickShapeGeoData(shape.data);
+            board.dispatchEvent(event_1.WhiteBoardEvent.shapesResized({ shapeDatas: [[curr, prev]] }));
             delete this._prevData;
         };
         this.applyRect();
@@ -5222,11 +5138,11 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event/Events":39,"../../utils/RectHelper":96}],84:[function(require,module,exports){
+},{"../../event":38,"../../utils/RectHelper":91}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],85:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5247,7 +5163,7 @@ __exportStar(require("./InvalidTool"), exports);
 __exportStar(require("./SimpleTool"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./InvalidTool":82,"./SimpleTool":83,"./Tool":84}],86:[function(require,module,exports){
+},{"./InvalidTool":77,"./SimpleTool":78,"./Tool":79}],81:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5268,7 +5184,7 @@ __exportStar(require("./base"), exports);
 __exportStar(require("./selector"), exports);
 __exportStar(require("./ToolEnum"), exports);
 
-},{"./ToolEnum":81,"./base":85,"./selector":88}],87:[function(require,module,exports){
+},{"./ToolEnum":76,"./base":80,"./selector":83}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
@@ -5276,8 +5192,8 @@ const RectHelper_1 = require("../../utils/RectHelper");
 const Data_1 = require("../../shape/base/Data");
 const FactoryMgr_1 = require("../../mgr/FactoryMgr");
 const Shape_1 = require("../../shape/rect/Shape");
-const Events_1 = require("../../event/Events");
 const ToolEnum_1 = require("../ToolEnum");
+const Events_1 = require("../../event/Events");
 var SelectorStatus;
 (function (SelectorStatus) {
     SelectorStatus["Invalid"] = "SELECTOR_STATUS_INVALID";
@@ -5364,7 +5280,7 @@ class SelectorTool {
             }
             case SelectorStatus.Dragging: {
                 this._shapes.forEach(v => {
-                    v.prevData = (0, Events_1.pickShapePositionData)(v.shape.data);
+                    v.prevData = Events_1.WhiteBoardEvent.pickShapePositionData(v.shape.data);
                     v.shape.moveBy(diffX, diffY);
                 });
                 this.emitEvent(false);
@@ -5379,9 +5295,9 @@ class SelectorTool {
         const board = this.board;
         if (!board)
             return;
-        board.emit(new Events_1.ShapesMovedEvent(this.type, {
+        board.dispatchEvent(Events_1.WhiteBoardEvent.shapesMoved({
             shapeDatas: this._shapes.map(v => {
-                return [(0, Events_1.pickShapePositionData)(v.shape.data), v.prevData];
+                return [Events_1.WhiteBoardEvent.pickShapePositionData(v.shape.data), v.prevData];
             })
         }));
         setTimeout(() => { this._waiting = false; }, 1000 / 30);
@@ -5403,7 +5319,7 @@ FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Selector, () => new Sel
     desc: 'selector'
 });
 
-},{"../../event/Events":39,"../../mgr/FactoryMgr":51,"../../shape/base/Data":55,"../../shape/rect/Shape":73,"../../utils/RectHelper":96,"../ToolEnum":81}],88:[function(require,module,exports){
+},{"../../event/Events":37,"../../mgr/FactoryMgr":46,"../../shape/base/Data":50,"../../shape/rect/Shape":68,"../../utils/RectHelper":91,"../ToolEnum":76}],83:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5422,7 +5338,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./SelectorTool"), exports);
 
-},{"./SelectorTool":87}],89:[function(require,module,exports){
+},{"./SelectorTool":82}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findIndex = void 0;
@@ -5435,7 +5351,7 @@ const findIndex = (arr, func) => {
 };
 exports.findIndex = findIndex;
 
-},{}],90:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
@@ -5457,7 +5373,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],91:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -5614,15 +5530,15 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":90}],92:[function(require,module,exports){
+},{"./BinaryRange":85}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],93:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],94:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -5853,7 +5769,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":95}],95:[function(require,module,exports){
+},{"./Rect":90}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -5924,7 +5840,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],96:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -6029,7 +5945,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":97}],97:[function(require,module,exports){
+},{"./Vector":92}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -6056,7 +5972,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],98:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6087,4 +6003,4 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 
-},{"./Array":89,"./BinaryRange":90,"./BinaryTree":91,"./Dot":92,"./ITree":93,"./QuadTree":94,"./Rect":95,"./Vector":97}]},{},[31]);
+},{"./Array":84,"./BinaryRange":85,"./BinaryTree":86,"./Dot":87,"./ITree":88,"./QuadTree":89,"./Rect":90,"./Vector":92}]},{},[32]);

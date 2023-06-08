@@ -2,13 +2,13 @@ import { RectHelper } from "../../utils/RectHelper"
 import { ShapeData } from "../../shape/base/Data"
 import { FactoryMgr } from "../../mgr/FactoryMgr"
 import { ShapeRect } from "../../shape/rect/Shape"
-import { IShapePositionData, pickShapePositionData, ShapesMovedEvent } from "../../event/Events"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { Shape } from "../../shape/base"
 import { IVector } from "../../utils/Vector"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../base/Tool"
 import { WhiteBoard } from "../../board"
+import { WhiteBoardEvent } from "../../event/Events"
 export enum SelectorStatus {
   Invalid = 'SELECTOR_STATUS_INVALID',
   Dragging = 'SELECTOR_STATUS_DRAGGING',
@@ -23,7 +23,7 @@ export class SelectorTool implements ITool {
   private _prevPos: IVector = { x: 0, y: 0 }
   private _shapes: {
     shape: Shape,
-    prevData: IShapePositionData
+    prevData: WhiteBoardEvent.IShapePositionData
   }[] = []
   get board(): WhiteBoard | undefined {
     return this._rect.board
@@ -92,7 +92,7 @@ export class SelectorTool implements ITool {
       }
       case SelectorStatus.Dragging: {
         this._shapes.forEach(v => {
-          v.prevData = pickShapePositionData(v.shape.data)
+          v.prevData = WhiteBoardEvent.pickShapePositionData(v.shape.data)
           v.shape.moveBy(diffX, diffY)
         })
         this.emitEvent(false)
@@ -107,9 +107,9 @@ export class SelectorTool implements ITool {
     this._waiting = true
     const board = this.board
     if (!board) return
-    board.emit(new ShapesMovedEvent(this.type, {
+    board.dispatchEvent(WhiteBoardEvent.shapesMoved({
       shapeDatas: this._shapes.map(v => {
-        return [pickShapePositionData(v.shape.data), v.prevData]
+        return [WhiteBoardEvent.pickShapePositionData(v.shape.data), v.prevData]
       })
     }))
     setTimeout(() => { this._waiting = false }, 1000 / 30)

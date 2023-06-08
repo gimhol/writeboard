@@ -27,8 +27,11 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   get draggable() { return this._inner.draggable; }
   set draggable(v) { this._inner.draggable = v; }
 
-  static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]) {
+  static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> {
     return (ele as any).view ?? new View(ele);
+  }
+  static try<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> | undefined {
+    return (ele as any).view;
   }
   constructor(element: HTMLElementTagNameMap[T]);
   constructor(tagName: T);
@@ -90,7 +93,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   removeSelf() {
     this.parent?.removeChild(this);
   }
-  styles(): Styles<string> {
+  get styles(): Styles<string> {
     this._styles = this._styles ?? new Styles<string>(this)
     return this._styles;
   }

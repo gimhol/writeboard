@@ -17,7 +17,7 @@ export class SubwinWorkspace {
   private _pointerdowns = new Map<Subwin, () => void>();
   private _updateSubWinStyle() {
     this._wins.forEach((win, idx, arr) => {
-      win.styles().apply('in_workspace', v => ({
+      win.styles.apply('in_workspace', v => ({
         ...v,
         zIndex: `${this._zIndex + idx}`
       }))
@@ -54,7 +54,7 @@ export class SubwinWorkspace {
     if (y + h > rect.y + rect.h) { y = rect.y + rect.h - h }
     if (y < rect.y) { y = rect.y; }
     if (x < rect.x) { x = rect.x; }
-    subwin.styles().apply('drag_by_dragger', {
+    subwin.styles.apply('drag_by_dragger', {
       left: '' + x + 'px',
       top: '' + y + 'px',
     });

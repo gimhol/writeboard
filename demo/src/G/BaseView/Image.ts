@@ -11,6 +11,6 @@ export class Image extends View<'img'>{
   constructor(inits?: ImageInit) {
     super('img');
     inits?.src && (this.src = inits.src);
-    inits?.styles && (this.styles().apply('_', inits.styles))
+    inits?.styles && (this.styles.apply('_', inits.styles))
   }
 }

@@ -31,6 +31,15 @@ export class Styles<T extends string = string>{
     this._pool.set(name, style(old));
     return this;
   }
+  merge(name: T, style: Style): Styles<T> {
+    const old = this._pool.get(name);
+    if (!old) {
+      console.warn(`[styles] merge(), style '${name}' not found!`);
+      return this;
+    }
+    this._pool.set(name, { ...old, ...style });
+    return this;
+  }
 
   add(...names: T[]): Styles<T> {
     names.forEach(name => this._applieds.add(name));

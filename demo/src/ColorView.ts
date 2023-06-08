@@ -18,18 +18,18 @@ class ColorKindButton extends Button {
   private _kind: ColorKind;
   private _colorBrick: View<"div">;
   public get kind(): ColorKind { return this._kind; }
-  public set color(v: RGBA) { this._colorBrick.styles().apply('_', old => ({ ...old, background: '' + v })) }
+  public set color(v: RGBA) { this._colorBrick.styles.apply('_', old => ({ ...old, background: '' + v })) }
   constructor(inits: ColorKindButtonInits) {
     super(inits);
     this._kind = inits.kind;
-    this.styles().apply('normal', v => ({
+    this.styles.apply('normal', v => ({
       ...v,
       paddingLeft: 5,
       paddingRight: 5,
     }))
 
     const content = new View('div');
-    content.styles().apply('_', {
+    content.styles.apply('_', {
       display: 'inline-flex',
       alignItems: 'center',
       color: 'white'
@@ -37,7 +37,7 @@ class ColorKindButton extends Button {
     content.inner.append(inits.kind + ' ')
 
     this._colorBrick = new View('div');
-    this._colorBrick.styles().apply('_', {
+    this._colorBrick.styles.apply('_', {
       marginLeft: 5,
       background: '' + inits.defaultColor,
       width: 16,
@@ -48,7 +48,7 @@ class ColorKindButton extends Button {
     this._contents[1] = content;
     this.updateContent();
 
-    this.editStyle(false, true, false, this.styles().read(StyleNames.Hover) || {})
+    this.editStyle(false, true, false, this.styles.read(StyleNames.Hover) || {})
   }
 }
 export enum ColorViewEventTypes {
@@ -86,9 +86,9 @@ export default class ColorView extends Subwin {
     super();
 
     this.header.title = 'color';
-    this.styles().apply('_', {});
+    this.styles.apply('_', {});
     this.content = new View('div');
-    this.content.styles().apply('_', {
+    this.content.styles.apply('_', {
       flex: 1,
       position: 'relative',
       display: 'flex',
@@ -99,7 +99,7 @@ export default class ColorView extends Subwin {
     });
 
     const currentColorWrapper = new View('div');
-    currentColorWrapper.styles().apply('_', {
+    currentColorWrapper.styles.apply('_', {
       display: 'flex',
       padding: '5px 5px',
     })
@@ -112,7 +112,7 @@ export default class ColorView extends Subwin {
     buttonGroup.onClick = btn => this.setEditingColor(btn.kind);
 
     const canvasWrapper = new View('div');
-    canvasWrapper.styles().apply('_', {
+    canvasWrapper.styles.apply('_', {
       flex: 1,
       position: 'relative',
     });
@@ -122,7 +122,7 @@ export default class ColorView extends Subwin {
     canvas.draggable = false;
     canvas.width = 1;
     canvas.height = 1;
-    canvas.styles().apply('_', {
+    canvas.styles.apply('_', {
       position: 'absolute',
       left: '10px',
       right: '10px',
@@ -140,7 +140,7 @@ export default class ColorView extends Subwin {
     })).observe(canvasWrapper.inner);
 
     const inputWrapper = new View('div');
-    inputWrapper.styles().apply('_', {
+    inputWrapper.styles.apply('_', {
       display: 'grid',
       padding: '0px 5px',
       gridTemplateColumns: 'repeat(4, 10px auto)',
@@ -186,7 +186,7 @@ class ColorNumInput extends NumberInput {
     super();
     this.max = 255;
     this.min = 0;
-    this.styles().apply('_', {
+    this.styles.apply('_', {
       minWidth: 0,
       flex: 1,
       background: 'transparent',

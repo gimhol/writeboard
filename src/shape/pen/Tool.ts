@@ -3,10 +3,10 @@ import { ToolEnum } from "../../tools/ToolEnum"
 import { FactoryMgr } from "../../mgr/FactoryMgr"
 import { ShapePen } from "./Shape"
 import { ShapeEnum } from "../ShapeEnum"
-import { ShapesChangedEvent } from "../../event/Events"
 import { DotsType, PenData } from "./Data"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../../tools/base/Tool"
+import { WhiteBoardEvent } from "../../event"
 const Tag = '[PenTool]'
 export class PenTool implements ITool {
   start(): void {
@@ -36,7 +36,9 @@ export class PenTool implements ITool {
       const curr = shape.data.copy()
       curr.dotsType = DotsType.Append
       curr.coords.splice(0, prev.coords.length)
-      board.emit(new ShapesChangedEvent(this.type, { shapeDatas: [[curr, prev]] }))
+      board.dispatchEvent(
+        WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] })
+      )
       delete this._prevData
     }
     this._prevData = shape.data.copy()

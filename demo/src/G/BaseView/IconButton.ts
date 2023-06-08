@@ -3,7 +3,7 @@ export interface IconButtonInits extends ButtonInits { }
 export class IconButton extends Button {
   constructor(init?: IconButtonInits) {
     super(init);
-    this.styles()
+    this.styles
       .register(StyleNames.Small, v => ({
         ...v,
         width: v.height

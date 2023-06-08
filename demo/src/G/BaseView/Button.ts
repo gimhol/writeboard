@@ -60,7 +60,7 @@ export class Button extends View<'button'> {
     this._checkable = inits?.checkable === true;
     this._checked = inits?.checked === true;
 
-    this.styles().register(StyleNames.Hover, {
+    this.styles.register(StyleNames.Hover, {
       background: '#00000022'
     }).register(StyleNames.Small, {
       height: 18,
@@ -113,14 +113,14 @@ export class Button extends View<'button'> {
   }
   private _prevStyleNames = ''
   updateStyle() {
-    const styles = this.styles();
+    const styles = this.styles;
     this.hover ? styles.add(StyleNames.Hover) : styles.remove(StyleNames.Hover)
     const styleName = `${this.hover}_${this.checked}_${this.disabled}`
     styles.remove(this._prevStyleNames).add(styleName).refresh();
     this._prevStyleNames = styleName;
   }
   editStyle(hover: boolean, checked: boolean, disabled: boolean, style: ReValue<Style>) {
-    this.styles().register(`${hover}_${checked}_${disabled}`, style);
+    this.styles.register(`${hover}_${checked}_${disabled}`, style);
     return this;
   }
   updateContent() {
@@ -141,7 +141,7 @@ export class Button extends View<'button'> {
     [SizeType.Large]: StyleNames.Large
   }
   updateSize() {
-    this.styles()
+    this.styles
       .remove(this.aaa[this._preSize!])
       .add(this.aaa[this._size])
       .refresh();

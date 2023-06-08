@@ -1,10 +1,4 @@
-import {
-  BaseEvent,
-  Emitter, EventMap,
-  ICallback,
-  IEmitter, IObserver, Listener, Observer,
-  ShapesAddedEvent, ShapesRemovedEvent, ToolChangedEvent
-} from "../event"
+import { WhiteBoardEvent } from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
 import { Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
@@ -19,7 +13,7 @@ export interface WhiteBoardOptions {
   toolType?: ToolType
 }
 export interface IPointerEventHandler { (ev: PointerEvent): void }
-export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
+export class WhiteBoard implements IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
   private _layers = new Map<string, Layer>();
@@ -28,8 +22,7 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   private _tools: { [key in ToolEnum | string]?: ITool } = {}
   private _tool: ITool | undefined
   private _selects: Shape[] = []
-  private _eventsObserver = new Observer()
-  private _eventEmitter = new Emitter()
+  private _eventEmitter = document.createElement('div');
   private _operator = 'whiteboard'
   private _editingLayerId: string = '';
   private _width = 512;
@@ -59,12 +52,26 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     layer.height = this.height;
     layer.onscreen.style.pointerEvents = 'none'
     this._layers.set(init.info.id, layer)
-    this.listenTo(layer.onscreen, 'pointerdown', this.pointerdown)
-    this.listenTo(layer.onscreen, 'pointermove', this.pointermove)
-    this.listenTo(layer.onscreen, 'pointerup', this.pointerup)
+    layer.onscreen.addEventListener('pointerdown', this.pointerdown)
+    layer.onscreen.addEventListener('pointermove', this.pointermove)
+    layer.onscreen.addEventListener('pointerup', this.pointerup)
     layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
     return true;
   }
+  removeLayer(layerId: string): boolean {
+    if (this._layers.has(layerId)) {
+      console.error(`[WhiteBoard] removeLayer(): layer not found! id = ${layerId}`)
+      return false;
+    }
+    const layer = this._layers.get(layerId)!;
+    layer.onscreen.removeEventListener('pointerdown', this.pointerdown)
+    layer.onscreen.removeEventListener('pointermove', this.pointermove)
+    layer.onscreen.removeEventListener('pointerup', this.pointerup)
+    layer.onscreen.removeEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
+    return true;
+  }
+
+
   editLayer(layerId: string): boolean {
     if (!this._layers.has(layerId)) {
       console.error(`[WhiteBoard] editLayer(): layer not found! id = ${layerId}`)
@@ -85,7 +92,7 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   constructor(factory: IFactory, options: WhiteBoardOptions) {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();
-    
+
     options.width && (this._width = options.width)
     options.height && (this._height = options.height)
     options.toolType && (this._toolType = options.toolType)
@@ -138,42 +145,25 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
   hits(rect: IRect): Shape<ShapeData>[] {
     return this._shapesMgr.hits(rect)
   }
-  addEventListener<K extends keyof EventMap>(type: K, callback: (e: EventMap[K]) => any): Listener;
-  addEventListener(type: string, callback: ICallback): Listener {
-    return this._eventEmitter.addEventListener(type, callback);
-  }
-  removeEventListener<K extends keyof EventMap>(type: K, callback: (e: EventMap[K]) => any): void;
-  removeEventListener(type: string, callback: ICallback): void {
-    return this._eventEmitter.removeEventListener(type, callback);
-  }
-  dispatchEvent(e: BaseEvent): void {
-    return this._eventEmitter.dispatchEvent(e);
-  }
-  on<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any): () => void;
-  on(type: string, callback: ICallback) {
-    return this._eventEmitter.on(type, callback);
-  }
-  once<K extends keyof EventMap>(type: K, callback: (evt: EventMap[K]) => any): () => void;
-  once(type: string, callback: ICallback) {
-    return this._eventEmitter.once(type, callback);
-  }
-  emit(e: BaseEvent): void {
-    return this._eventEmitter.emit(e)
+
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLDivElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(arg0: any, arg1: any, arg2: any): void {
+    return this._eventEmitter.addEventListener(arg0, arg1, arg2);
   }
 
-  listenTo<K extends keyof GlobalEventHandlersEventMap>(target: EventTarget, type: K, callback: (e: GlobalEventHandlersEventMap[K]) => any): () => void;
-  listenTo(target: EventTarget, type: string, callback: (e: Event) => void): () => void;
-  listenTo(target: Emitter, type: string, callback: ICallback): () => void;
-  listenTo(target: Emitter | EventTarget, type: string, callback: ICallback | ((e: Event) => void)): () => void;
-  listenTo(target: Emitter | EventTarget, type: string, callback: ICallback | ((e: Event) => void)) {
-    return this._eventsObserver.listenTo(target, type, callback)
-  }
 
-  destory() { return this._eventsObserver.destory() }
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLDivElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+  removeEventListener(arg0: any, arg1: any, arg2: any): void {
+    return this._eventEmitter.removeEventListener(arg0, arg1, arg2);
+  }
+  dispatchEvent(e: CustomEvent<any>): boolean {
+    return this._eventEmitter.dispatchEvent(e)
+  }
 
   get factory() { return this._factory }
   set factory(v) { this._factory = v }
-
 
   ctx(): CanvasRenderingContext2D
   ctx(layerId: string): CanvasRenderingContext2D | null | undefined
@@ -205,7 +195,7 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
     if (this._toolType === to) return
     const from = this._toolType
     this._toolType = to
-    this.emit(new ToolChangedEvent(this._operator, { from, to }))
+    this.dispatchEvent(WhiteBoardEvent.toolChanged({ operator: this._operator, from, to }))
   }
   get selects() {
     return this._selects
@@ -223,8 +213,11 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
       if (item.selected) this._selects.push(item)
       this.markDirty(item.boundingRect())
     })
-    const e = new ShapesAddedEvent(this._operator, { shapeDatas: shapes.map(v => v.data.copy()) })
-    this.emit(e)
+    const e = WhiteBoardEvent.shapesAdded({
+      operator: this._operator,
+      shapeDatas: shapes.map(v => v.data.copy())
+    })
+    this.dispatchEvent(e)
     return ret
   }
   remove(...shapes: Shape[]) {
@@ -234,8 +227,11 @@ export class WhiteBoard implements IObserver, IEmitter, IShapesMgr {
       this.markDirty(item.boundingRect())
       item.board = undefined
     })
-    const e = new ShapesRemovedEvent(this._operator, { shapeDatas: shapes.map(v => v.data.copy()) })
-    this.emit(e)
+    const e = WhiteBoardEvent.shapesRemoved({
+      operator: this._operator,
+      shapeDatas: shapes.map(v => v.data.copy())
+    })
+    this.dispatchEvent(e)
     return ret
   }
   removeAll() {

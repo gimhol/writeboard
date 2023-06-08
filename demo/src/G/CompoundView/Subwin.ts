@@ -28,20 +28,20 @@ export class Subwin extends View<'div'> {
     if (v) { this.insertChild(this._footer, v); }
   }
   raise() {
-    this.styles().add(StyleNames.Raised).refresh();
-    this.header.styles().remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
-    this.content?.styles().remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
-    this.footer?.styles().remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
+    this.styles.add(StyleNames.Raised).refresh();
+    this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
+    this.content?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
+    this.footer?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
   }
   lower() {
-    this.styles().remove(StyleNames.Raised).refresh();
-    this.header.styles().remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-    this.content?.styles().remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-    this.footer?.styles().remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+    this.styles.remove(StyleNames.Raised).refresh();
+    this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+    this.content?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+    this.footer?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
   }
   constructor() {
     super('div');
-    this.styles().register(StyleNames.Raised, {
+    this.styles.register(StyleNames.Raised, {
       boxShadow: '5px 5px 10px 10px #00000022',
     }).apply(StyleNames.Root, {
       position: 'fixed',
@@ -69,7 +69,7 @@ export class Subwin extends View<'div'> {
 
     new ResizeObserver(() => {
       const { width, height } = getComputedStyle(this.inner);
-      this.styles().edit(StyleNames.Root, v => ({ ...v, width, height }))
+      this.styles.edit(StyleNames.Root, v => ({ ...v, width, height }))
     }).observe(this.inner);
   }
 }

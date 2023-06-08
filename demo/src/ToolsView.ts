@@ -39,7 +39,7 @@ export class ToolsView extends Subwin {
     super();
     this.header.title = 'tools';
     this.content = new View('div');
-    this.content.styles().apply("", {
+    this.content.styles.apply("", {
       flex: '1',
       overflowY: 'auto',
       overflowX: 'hidden'

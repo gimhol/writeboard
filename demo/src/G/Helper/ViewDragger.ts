@@ -44,7 +44,7 @@ export class ViewDragger {
   }
   private _onmove = (pageX: number, pageY: number) => {
     if (!this._view || !this._down) { return; }
-    this._view.styles().apply('drag_by_dragger', v => ({
+    this._view.styles.apply('drag_by_dragger', v => ({
       ...v,
       left: `${pageX - this._offsetX}px`,
       top: `${pageY - this._offsetY}px`,

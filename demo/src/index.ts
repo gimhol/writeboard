@@ -5,24 +5,84 @@ import {
   Shape,
   ShapeData,
   ShapeEnum, ShapePen,
+  ToolEnum,
   WhiteBoard
 } from "../../dist";
-import { Menu } from '../../dist/features/Menu';
 import ColorView from "./ColorView";
 import { Button } from "./G/BaseView/Button";
 import { Canvas } from "./G/BaseView/Canvas";
 import { View } from "./G/BaseView/View";
+import { Menu } from "./G/CompoundView/Menu";
 import { MergedSubwin } from "./G/CompoundView/MergedSubwin";
 import { Subwin } from "./G/CompoundView/Subwin";
 import { SubwinWorkspace } from "./G/Helper/SubwinWorkspace";
+import { LayersView } from "./LayersView";
+import { ToolsView } from "./ToolsView";
 import { RGBA } from "./colorPalette/Color";
 import demo_helloworld from "./demo_helloworld";
 import demo_rect_n_oval from "./demo_rect_n_oval";
-import { LayersView } from "./LayersView";
-import { ToolsView } from "./ToolsView";
 
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let board: WhiteBoard
+
+const mainView = new View('body');
+const menu = new Menu(mainView, {
+  items: [{
+    key: 'tool_view',
+    label: '工具',
+    items: [{
+      key: <string>ToolEnum.Selector,
+      label: <string>ToolEnum.Selector,
+    }, {
+      key: <string>ToolEnum.Pen,
+      label: <string>ToolEnum.Pen,
+    }, {
+      key: <string>ToolEnum.Rect,
+      label: <string>ToolEnum.Rect,
+    }, {
+      key: <string>ToolEnum.Oval,
+      label: <string>ToolEnum.Oval,
+    }, {
+      key: <string>ToolEnum.Text,
+      label: <string>ToolEnum.Text,
+    }]
+  }, {
+    key: 'menu_item_1',
+    label: 'menu_item_1'
+  }, {
+    key: 'menu_item_2',
+    divider: true
+  }, {
+    key: 'menu_item_3',
+    label: 'menu_item_3',
+    items: [{
+      key: 'menu_item_3_0',
+      label: 'menu_item_3_0'
+    }, {
+      key: 'menu_item_3_1',
+      label: 'menu_item_3_1'
+    }, {
+      key: 'menu_item_3_2',
+      divider: true
+    }, {
+      key: 'menu_item_3_3',
+      label: 'menu_item_3_3',
+    }]
+  }]
+});
+menu.addEventListener(Menu.EventType.ItemClick, (e) => {
+  console.log(e.detail.key)
+  switch (e.detail.key) {
+    case ToolEnum.Rect:
+    case ToolEnum.Oval:
+    case ToolEnum.Pen:
+    case ToolEnum.Polygon:
+    case ToolEnum.Text:
+    case ToolEnum.Selector:
+      board.setToolType(e.detail.key);
+      break;
+  }
+});
 
 const mergedSubwin2 = new MergedSubwin();
 const mergedSubwin = new MergedSubwin();
@@ -54,11 +114,11 @@ layersView.addLayer({
 
 
 const toolsView = new ToolsView;
-toolsView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
+toolsView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType)
 
 const colorView = new ColorView;
-colorView.styles().apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
+colorView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
 
 mergedSubwin.addSubWin(layersView)
 mergedSubwin.addSubWin(toolsView)
@@ -86,7 +146,6 @@ colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
 const toyView = new Subwin();
 toyView.header.title = 'others';
 
-const mainView = new View('body');
 mainView.addChild(toyView);
 mainView.addChild(mergedSubwin2);
 mainView.addChild(mergedSubwin);
@@ -113,7 +172,7 @@ const workspace = new SubwinWorkspace({
 window.addEventListener('resize', () => workspace.clampAllSubwin())
 
 toyView.content = new View('div');
-toyView.content.styles().apply('', {
+toyView.content.styles.apply('', {
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
@@ -194,19 +253,18 @@ toyView.content.addChild(new Button({
 let _recorder: Recorder | undefined
 let _player: Player | undefined
 
-
 const jsonView = new Subwin();
 jsonView.header.title = 'json';
 jsonView.content = new View('div');
-jsonView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
-const _recorder_textarea = new View('textarea')
+jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
+const json_textarea = new View('textarea')
 jsonView.content.addChild(new Button({ content: 'JSON化' }).addEventListener('click', () => {
-
+  json_textarea.inner.value = board.toJsonStr();
 }));
 jsonView.content.addChild(new Button({ content: '反JSON化' }).addEventListener('click', () => {
-
+  board.fromJsonStr(json_textarea.inner.value)
 }));
-jsonView.content.addChild(_recorder_textarea);
+jsonView.content.addChild(json_textarea);
 mergedSubwin.addSubWin(jsonView);
 workspace.addSubWin(jsonView);
 
@@ -228,11 +286,12 @@ workspace.addSubWin(jsonView);
     _player = new Player()
     _player.start(board, JSON.parse(str))
   }
+
   const recorderView = new Subwin();
   recorderView.header.title = 'recorder';
   recorderView.content = new View('div');
-  recorderView.content.styles().apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
-  const _json_textarea = new View('textarea')
+  recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
+  const _recorder_textarea = new View('textarea')
   recorderView.content.addChild(new Button({ content: '开始录制' }).addEventListener('click', startRecord));
   recorderView.content.addChild(new Button({ content: '停止录制' }).addEventListener('click', endRecord));
   recorderView.content.addChild(new Button({ content: '回放' }).addEventListener('click', () => {
@@ -248,22 +307,22 @@ workspace.addSubWin(jsonView);
     endRecord()
     replay(demo_rect_n_oval)
   }));
-  recorderView.content.addChild(_json_textarea);
+  recorderView.content.addChild(_recorder_textarea);
   mergedSubwin.addSubWin(recorderView);
   workspace.addSubWin(recorderView);
 }
 
 const rootView = new View('div');
-rootView.styles().applyCls('root');
+rootView.styles.applyCls('root');
 mainView.addChild(rootView);
 
 const blackboard = new View('div');
-blackboard.styles().applyCls('blackboard');
+blackboard.styles.applyCls('blackboard');
 rootView.addChild(blackboard);
 
 function addLayerCanvas() {
   const canvas = new Canvas();
-  canvas.styles().apply('', {
+  canvas.styles.apply('', {
     position: 'absolute',
     touchAction: 'none',
     userSelect: 'none',
@@ -274,8 +333,7 @@ function addLayerCanvas() {
     transition: 'opacity 200ms'
   })
   canvas.inner.addEventListener('contextmenu', (e) => {
-    menu.move(e.x, e.y);
-    menu.show();
+    menu.move(e.x, e.y).show();
   })
   blackboard.addChild(canvas);
   return canvas;
@@ -287,20 +345,4 @@ const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
 })
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
 
-
-const menu = new Menu({
-  items: [{
-    key: 'shit',
-    label: 'world'
-  }, {
-    key: 'shit0',
-    label: 'world'
-  }, {
-    key: 'shit2',
-    divider: true
-  }, {
-    key: 'shit1',
-    label: 'world'
-  }]
-});
-document.body.appendChild(menu.element());
+(window as any).board = board;

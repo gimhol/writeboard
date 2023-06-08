@@ -1,5 +1,5 @@
 import { WhiteBoard } from "../../board/WhiteBoard"
-import { IShapeGeoData, pickShapeGeoData, ShapesGeoEvent } from "../../event/Events"
+import { WhiteBoardEvent as Event } from "../../event"
 import { Shape } from "../../shape/base/Shape"
 import type { ShapeType } from "../../shape/ShapeEnum"
 import type { IDot } from "../../utils/Dot"
@@ -102,18 +102,18 @@ export class SimpleTool implements ITool {
       return
     }
 
-    this._prevData = pickShapeGeoData(shape.data)
+    this._prevData = Event.pickShapeGeoData(shape.data)
     const prev = this._prevData
     const emitEvent = () => {
-      const curr = pickShapeGeoData(shape.data)
-      board.emit(new ShapesGeoEvent(this.type, { shapeDatas: [[curr, prev]] }))
+      const curr = Event.pickShapeGeoData(shape.data)
+      board.dispatchEvent(Event.shapesResized({ shapeDatas: [[curr, prev]] }))
       delete this._prevData
     }
 
     this.applyRect();
     setTimeout(emitEvent, 1000 / 60)
   }
-  protected _prevData: IShapeGeoData | undefined
+  protected _prevData: Event.IShapeGeoData | undefined
   protected _curShape: Shape | undefined
   protected _board: WhiteBoard | undefined
   protected _rect = new RectHelper()

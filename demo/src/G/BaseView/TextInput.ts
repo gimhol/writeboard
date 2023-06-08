@@ -22,11 +22,11 @@ export class TextInput extends View<'input'>{
   }
   updateStyle() {
     const styleName = `${this.hover}_${this.focused}_${this.disabled}`
-    this.styles().remove(this._prevStyleNames!).add(styleName).refresh();
+    this.styles.remove(this._prevStyleNames!).add(styleName).refresh();
     this._prevStyleNames = styleName;
   }
   editStyle(hover: boolean, focused: boolean, disabled: boolean, style: ReValue<Style>) {
-    this.styles().register(`${hover}_${focused}_${disabled}`, style);
+    this.styles.register(`${hover}_${focused}_${disabled}`, style);
     return this;
   }
   override onHover(hover: boolean): void {

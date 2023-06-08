@@ -30,7 +30,7 @@ export class SubwinHeader extends View<'div'> {
   constructor() {
     super('div');
     new FocusOb(this.inner, v => alert(v))
-    this.styles()
+    this.styles
       .applyCls(Classnames.Root)
       .apply(StyleNames.Root, {
         userSelect: 'none',
@@ -48,7 +48,7 @@ export class SubwinHeader extends View<'div'> {
     this._iconView = new View('div')
     this._iconView.inner.innerHTML = '';
     this._iconView
-      .styles()
+      .styles
       .applyCls(Classnames.IconView)
       .apply(StyleNames.IconView, {
         display: 'flex',
@@ -61,7 +61,7 @@ export class SubwinHeader extends View<'div'> {
     this.addChild(this._iconView);
 
     this._titleView = new View('div')
-    this._titleView.styles()
+    this._titleView.styles
       .applyCls(Classnames.TitleView)
       .apply(StyleNames.TitleView, {
         display: 'flex',
@@ -71,7 +71,7 @@ export class SubwinHeader extends View<'div'> {
     this.addChild(this._titleView);
 
     this._btnClose = new IconButton({ content: '❎', size: SizeType.Small })
-    this._btnClose.styles()
+    this._btnClose.styles
       .applyCls(Classnames.BtnClose)
       .apply(StyleNames.BtnClose, {
         alignSelf: 'center',

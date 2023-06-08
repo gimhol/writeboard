@@ -1,7 +1,11 @@
-import { EventData } from "../event/EventData";
 
+export interface PureCustomEvent<T = any> {
+  readonly timeStamp: number;
+  readonly type: string;
+  readonly detail: T;
+}
 export interface Screenplay {
-  startTime: number,
-  snapshot: any;
-  events: EventData<any>[];
+  readonly startTime: number,
+  readonly snapshot: any;
+  readonly events: PureCustomEvent<any>[];
 }

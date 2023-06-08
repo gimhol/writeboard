@@ -1,23 +1,24 @@
 import { WhiteBoard } from "../board";
-import { EventEnum, BaseEvent } from "../event";
-import { EventDataVisitor } from "../event/EventDataVisitor";
+import { EventEnum } from "../event";
 import { Screenplay } from "./Screenplay";
 
 export class Recorder {
   private cancellers: (() => void)[] = []
-  destory(): void {
-    this.cancellers.forEach(v => v())
-    this.cancellers = []
-  }
   private _screenplay: Screenplay = {
     startTime: Date.now(),
     snapshot: {},
     events: []
   }
-  start(actor: WhiteBoard) {
+  destory(): void {
+    console.log('[Recorder] destory()')
     this.cancellers.forEach(v => v())
     this.cancellers = []
-    const startTime = Date.now()
+  }
+  start(actor: WhiteBoard) {
+    console.log('[Recorder] start()')
+    this.cancellers.forEach(v => v())
+    this.cancellers = []
+    const startTime = new CustomEvent('').timeStamp;
     this._screenplay = {
       startTime,
       snapshot: actor.toJson(),
@@ -25,20 +26,23 @@ export class Recorder {
     }
     for (const key in EventEnum) {
       const v = (EventEnum as any)[key]
-      const func = (e: BaseEvent) => {
-        const puree = e.pure()
-        EventDataVisitor.setTime(puree, v => v - startTime)
-        this._screenplay.events.push(puree)
-      }
-      const canceller = actor.on(v, func)
-      this.cancellers.push(canceller)
+      const func = (e: CustomEvent) => {
+        this._screenplay.events.push({
+          timeStamp: e.timeStamp - startTime,
+          type: e.type,
+          detail: e.detail
+        })
+      };
+      actor.addEventListener(v, func);
+      const canceller = () => actor.removeEventListener(v, func);
+      this.cancellers.push(canceller);
     }
   }
   toJson(): Screenplay {
     return this._screenplay
   }
   toJsonStr(): string {
-    return JSON.stringify(this.toJson())
+    return JSON.stringify(this.toJson(), null, 2)
   }
 }
 
