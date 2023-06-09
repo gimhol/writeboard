@@ -6,10 +6,17 @@ export interface IconButtonInits extends ButtonInits {
   srcs?: [string, string];
 }
 export class IconButton extends Button {
-  protected _srcs = new Map<ButtonState, string>();
-
-  constructor(inits?: IconButtonInits) {
-    super(inits);
+  protected private?: Map<ButtonState, string>;
+  get srcs(): Map<ButtonState, string> {
+    this.private = this.private ?? new Map<ButtonState, string>();
+    return this.private;
+  }
+  set srcs(v) {
+    this.private = v;
+    this.updateContent();
+  }
+  constructor() {
+    super();
     this.styles
       .register(ButtonStyleNames.Small, v => ({
         ...v, width: v.height
@@ -18,42 +25,35 @@ export class IconButton extends Button {
       })).register(ButtonStyleNames.Large, v => ({
         ...v, width: v.height
       }));
-    this.updateSize();
-
-    if (inits?.srcs) {
-      this._srcs.set(ButtonState.Normal, inits.srcs[0])
-      this._srcs.set(ButtonState.Checked, inits.srcs[1])
-    } else if (inits?.src) {
-      this._srcs.set(ButtonState.Normal, inits.src)
-      this._srcs.set(ButtonState.Checked, inits.src)
-    }
-
-    const content = new Image({
-      style: {
-        width: '100%',
-        height: '100%',
-        objectFit: CssObjectFit.Contain,
-      }
-    })
-    this._contents.set(ButtonState.Normal, content)
-    this._contents.set(ButtonState.Checked, content)
-    this.updateContent();
   }
-
+  override init(inits?: IconButtonInits | undefined): this {
+    const superInits: ButtonInits = {
+      ...inits,
+      content: new Image({
+        style: {
+          width: '100%',
+          height: '100%',
+          objectFit: CssObjectFit.Contain,
+        }
+      })
+    }
+    if (inits?.srcs) {
+      this.srcs.set(ButtonState.Normal, inits.srcs[0])
+      this.srcs.set(ButtonState.Checked, inits.srcs[1])
+    } else if (inits?.src) {
+      this.srcs.set(ButtonState.Normal, inits.src)
+      this.srcs.set(ButtonState.Checked, inits.src)
+    }
+    return super.init(superInits);
+  }
   override updateContent(): void {
-    const src = this._srcs.get(
-      this._checked ? ButtonState.Checked : ButtonState.Normal
+    const src = this.srcs.get(
+      this.checked ? ButtonState.Checked : ButtonState.Normal
     );
-    if (!src) {
-      return super.updateContent();
-    }
-    const content = this._contents.get(
-      this._checked ? ButtonState.Checked : ButtonState.Normal
-    );
+    const content = this.content;
     if (content instanceof Image) {
-      content.src = src;
-    } else {
-      super.updateContent();
+      content.src = src!;
     }
+    super.updateContent();
   }
 }

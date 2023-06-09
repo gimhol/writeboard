@@ -5,6 +5,7 @@ import { TextInput } from "./G/BaseView/TextInput";
 import { View, ViewEventMap } from "./G/BaseView/View";
 import { Subwin } from "./G/CompoundView/Subwin";
 import { FocusOb } from "./G/Observer/FocusOb";
+import { Button } from "./G/BaseView/Button";
 
 export enum LayersViewEventType {
   LayerAdded = 'LayerAdded',
@@ -48,13 +49,13 @@ export class LayersView extends Subwin {
       width: 225,
     })
 
-    const btnAddLayer = new IconButton({ content: '📃', title: '新建图层', size: SizeType.Small }).addEventListener('click', (e) => {
+    const btnAddLayer = new IconButton().init({ content: '📃', title: '新建图层', size: SizeType.Small }).addEventListener('click', (e) => {
       const event = new CustomEvent<string>(LayersViewEventType.LayerAdded, { detail: '' + Date.now() });
       this.inner.dispatchEvent(event);
     })
     this.footer.addChild(btnAddLayer);
 
-    const btnAddFolder = new IconButton({ content: '📂', title: '新建图层组', size: SizeType.Small })
+    const btnAddFolder = new IconButton().init({ content: '📂', title: '新建图层组', size: SizeType.Small })
     this.footer.addChild(btnAddFolder);
   }
   layers() { return this._layers }
@@ -119,7 +120,7 @@ export class LayerItemView extends View<'div'> {
       })
 
 
-    const btn0 = new IconButton({
+    const btn0 = new IconButton().init({
       checkable: true,
       checked: this._state.locked,
       contents: ['🔓', '🔒']
@@ -129,7 +130,7 @@ export class LayerItemView extends View<'div'> {
     })
     this.addChild(btn0);
 
-    const btn1 = new IconButton({
+    const btn1 = new Button().init({
       checkable: true,
       checked: this._state.visible,
       contents: ['🙈', '🐵']
@@ -145,7 +146,7 @@ export class LayerItemView extends View<'div'> {
     })
     this.addChild(btn1);
 
-    const btn2 = new IconButton({
+    const btn2 = new Button().init({
       checkable: true,
       checked: this._state.visible,
       contents: ['➕', '➖']
@@ -188,7 +189,7 @@ export class LayerItemView extends View<'div'> {
 
     new FocusOb(inputName.inner, (v) => inputName.disabled = !v)
 
-    const btn3 = new IconButton({
+    const btn3 = new Button().init({
       content: '🖊️'
     })
     btn3.addEventListener('click', () => {

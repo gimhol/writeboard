@@ -129,7 +129,7 @@ layersView.addLayer({
 const toolsView = new ToolsView;
 workspace.addChild(toolsView).addSubWin(toolsView)
 toolsView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
-toolsView.onToolClick = (btn) => board.setToolType(btn.toolType)
+toolsView.onToolClick = (btn) => board.setToolType(btn.toolType!)
 
 const colorView = new ColorView;
 workspace.addChild(colorView).addSubWin(colorView)
@@ -170,15 +170,15 @@ toyView.content.styles.apply('', {
 })
 toyView.content.addChild()
 
-new Button({
+new Button().init({
   content: 'select all'
 }).addEventListener('click', () => board.selectAll())
 
-toyView.content.addChild(new Button({
+toyView.content.addChild(new Button().init({
   content: 'remove selected'
 }).addEventListener('click', () => board.removeSelected()))
 
-toyView.content.addChild(new Button({
+toyView.content.addChild(new Button().init({
   content: 'remove all'
 }).addEventListener('click', () => board.removeAll()))
 
@@ -191,7 +191,7 @@ function randomShapeItem(item: Shape<ShapeData>) {
   item.data.strokeStyle = `rgb(${v255()},${v255()},${v255()})`
 }
 
-toyView.content.addChild(new Button({
+toyView.content.addChild(new Button().init({
   content: 'random add 1000 rect'
 }).addEventListener('click', () => {
   const items: Shape[] = []
@@ -204,7 +204,7 @@ toyView.content.addChild(new Button({
   board.add(...items)
 }))
 
-toyView.content.addChild(new Button({
+toyView.content.addChild(new Button().init({
   content: 'random add 1000 oval'
 }).addEventListener('click', () => {
   const items: Shape[] = []
@@ -217,7 +217,7 @@ toyView.content.addChild(new Button({
   board.add(...items)
 }))
 
-toyView.content.addChild(new Button({
+toyView.content.addChild(new Button().init({
   content: 'random draw 1000 pen'
 }).addEventListener('click', () => {
   const items: Shape[] = []
@@ -248,10 +248,10 @@ jsonView.header.title = 'json';
 jsonView.content = new View('div');
 jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
 const json_textarea = new View('textarea')
-jsonView.content.addChild(new Button({ content: 'JSON化' }).addEventListener('click', () => {
+jsonView.content.addChild(new Button().init({ content: 'JSON化' }).addEventListener('click', () => {
   json_textarea.inner.value = board.toJsonStr();
 }));
-jsonView.content.addChild(new Button({ content: '反JSON化' }).addEventListener('click', () => {
+jsonView.content.addChild(new Button().init({ content: '反JSON化' }).addEventListener('click', () => {
   board.fromJsonStr(json_textarea.inner.value)
 }));
 jsonView.content.addChild(json_textarea);
@@ -281,18 +281,18 @@ recorderView.header.title = 'recorder';
 recorderView.content = new View('div');
 recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
 const _recorder_textarea = new View('textarea')
-recorderView.content.addChild(new Button({ content: '开始录制' }).addEventListener('click', startRecord));
-recorderView.content.addChild(new Button({ content: '停止录制' }).addEventListener('click', endRecord));
-recorderView.content.addChild(new Button({ content: '回放' }).addEventListener('click', () => {
+recorderView.content.addChild(new Button().init({ content: '开始录制' }).addEventListener('click', startRecord));
+recorderView.content.addChild(new Button().init({ content: '停止录制' }).addEventListener('click', endRecord));
+recorderView.content.addChild(new Button().init({ content: '回放' }).addEventListener('click', () => {
   endRecord()
   replay(_recorder_textarea.inner.value)
 }));
 
-recorderView.content.addChild(new Button({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
+recorderView.content.addChild(new Button().init({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
   endRecord()
   replay(demo_helloworld)
 }));
-recorderView.content.addChild(new Button({ content: 'replay: rect & oval' }).addEventListener('click', () => {
+recorderView.content.addChild(new Button().init({ content: 'replay: rect & oval' }).addEventListener('click', () => {
   endRecord()
   replay(demo_rect_n_oval)
 }));

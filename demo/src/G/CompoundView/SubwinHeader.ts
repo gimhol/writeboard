@@ -5,6 +5,7 @@ import { ViewDragger } from "../Helper/ViewDragger";
 import { FocusOb } from "../Observer/FocusOb";
 import { Image } from "../BaseView/Image";
 import { CssObjectFit } from "../BaseView/StyleType";
+import { Button } from "../BaseView/Button";
 export enum Classnames {
   Root = 'subwin_header',
   IconView = 'subwinheader_iconview',
@@ -21,7 +22,7 @@ export class SubwinHeader extends View<'div'> {
   static ClassNames = Classnames;
   static StyleNames = StyleNames;
   private _titleView: View<"div">;
-  private _iconView: IconButton;
+  private _iconView: Button;
   private _btnClose: IconButton;
   get iconView() { return this._iconView; }
   set iconView(v) { this._iconView = v; }
@@ -47,7 +48,7 @@ export class SubwinHeader extends View<'div'> {
         height: 28,
       });
 
-    this._iconView = new IconButton()
+    this._iconView = new Button()
     this._iconView
       .styles
       .applyCls(Classnames.IconView)
@@ -68,7 +69,7 @@ export class SubwinHeader extends View<'div'> {
       });
     this.addChild(this._titleView);
 
-    this._btnClose = new IconButton({ src: './ic_btn_close.svg' })
+    this._btnClose = new IconButton().init({ src: './ic_btn_close.svg' })
     this._btnClose.styles
       .applyCls(Classnames.BtnClose)
       .apply(StyleNames.BtnClose, {

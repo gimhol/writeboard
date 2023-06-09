@@ -1,25 +1,26 @@
 import { ToolEnum, ToolType } from "../../dist";
-import { ButtonGroup } from "./G/Helper/ButtonGroup";
-import { View } from "./G/BaseView/View";
-import { Image } from "./G/BaseView/Image";
-import { Subwin } from "./G/CompoundView/Subwin";
-import { IconButton } from "./G/CompoundView/IconButton";
-import { CssObjectFit } from "./G/BaseView/StyleType";
 import { SizeType } from "./G/BaseView/SizeType";
-export interface ToolButtonInits {
+import { View } from "./G/BaseView/View";
+import { IconButton, IconButtonInits } from "./G/CompoundView/IconButton";
+import { Subwin } from "./G/CompoundView/Subwin";
+import { ButtonGroup } from "./G/Helper/ButtonGroup";
+export interface ToolButtonInits extends IconButtonInits {
   src: string;
   toolType: ToolType
 }
 export class ToolButton extends IconButton {
-  private _toolType: string;
+  private _toolType?: string;
   get toolType() { return this._toolType; }
-  constructor(inits: ToolButtonInits) {
-    super({
-      src: inits.src,
+  constructor() {
+    super()
+  }
+  override init(inits?: ToolButtonInits | undefined): this {
+    this._toolType = inits?.toolType;
+    return super.init({
+      ...inits,
       checkable: true,
       size: SizeType.Large
     })
-    this._toolType = inits.toolType;
   }
 }
 export class ToolsView extends Subwin {
@@ -37,11 +38,11 @@ export class ToolsView extends Subwin {
       overflowX: 'hidden'
     });
     const toolsBtns = [
-      new ToolButton({ src: './ic_selector.svg', toolType: ToolEnum.Selector }),
-      new ToolButton({ src: './ic_pen.svg', toolType: ToolEnum.Pen }),
-      new ToolButton({ src: './ic_rect.svg', toolType: ToolEnum.Rect }),
-      new ToolButton({ src: './ic_oval.svg', toolType: ToolEnum.Oval }),
-      new ToolButton({ src: './ic_text.svg', toolType: ToolEnum.Text })
+      new ToolButton().init({ src: './ic_selector.svg', toolType: ToolEnum.Selector }),
+      new ToolButton().init({ src: './ic_pen.svg', toolType: ToolEnum.Pen }),
+      new ToolButton().init({ src: './ic_rect.svg', toolType: ToolEnum.Rect }),
+      new ToolButton().init({ src: './ic_oval.svg', toolType: ToolEnum.Oval }),
+      new ToolButton().init({ src: './ic_text.svg', toolType: ToolEnum.Text })
     ];
     toolsBtns.forEach(btn => this.content?.addChild(btn));
     this._toolButtonGroup = new ButtonGroup({ buttons: toolsBtns });

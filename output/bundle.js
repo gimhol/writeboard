@@ -17,10 +17,13 @@ var ColorKind;
 })(ColorKind || (ColorKind = {}));
 class ColorKindButton extends Button_1.Button {
     get kind() { return this._kind; }
-    set color(v) { this._colorBrick.styles.apply('_', old => (Object.assign(Object.assign({}, old), { background: '' + v }))); }
-    constructor(inits) {
-        super(inits);
-        this._kind = inits.kind;
+    set color(v) { var _a; (_a = this._colorBrick) === null || _a === void 0 ? void 0 : _a.styles.apply('_', old => (Object.assign(Object.assign({}, old), { background: '' + v }))); }
+    constructor() {
+        super();
+    }
+    init(inits) {
+        super.init(inits);
+        this._kind = inits === null || inits === void 0 ? void 0 : inits.kind;
         this.styles.apply('normal', v => (Object.assign(Object.assign({}, v), { paddingLeft: 5, paddingRight: 5 })));
         const content = new View_1.View('div');
         content.styles.apply('_', {
@@ -28,17 +31,18 @@ class ColorKindButton extends Button_1.Button {
             alignItems: 'center',
             color: 'white'
         });
-        content.inner.append(inits.kind + ' ');
+        content.inner.append((inits === null || inits === void 0 ? void 0 : inits.kind) + ' ');
         this._colorBrick = new View_1.View('div');
         this._colorBrick.styles.apply('_', {
             marginLeft: 5,
-            background: '' + inits.defaultColor,
+            background: '' + (inits === null || inits === void 0 ? void 0 : inits.defaultColor),
             width: 16,
             height: 16,
         });
         content.addChild(this._colorBrick);
         this.content = content;
         this.editStyle(false, true, false, this.styles.read(Button_1.ButtonStyleNames.Hover) || {});
+        return this;
     }
 }
 var ColorViewEventTypes;
@@ -48,6 +52,9 @@ var ColorViewEventTypes;
 })(ColorViewEventTypes = exports.ColorViewEventTypes || (exports.ColorViewEventTypes = {}));
 class ColorView extends Subwin_1.Subwin {
     setEditingColor(v) {
+        if (!v) {
+            return;
+        }
         this._editing = v;
         this._colorPalette.value = this._colors[this._editing];
     }
@@ -65,8 +72,8 @@ class ColorView extends Subwin_1.Subwin {
             [ColorKind.Fill]: new Color_1.RGBA(100, 100, 100, 255)
         };
         this._btnColors = {
-            [ColorKind.Line]: new ColorKindButton({ checkable: true, kind: ColorKind.Line, defaultColor: this._colors[ColorKind.Line] }),
-            [ColorKind.Fill]: new ColorKindButton({ checkable: true, kind: ColorKind.Fill, defaultColor: this._colors[ColorKind.Fill] })
+            [ColorKind.Line]: new ColorKindButton().init({ checkable: true, kind: ColorKind.Line, defaultColor: this._colors[ColorKind.Line] }),
+            [ColorKind.Fill]: new ColorKindButton().init({ checkable: true, kind: ColorKind.Fill, defaultColor: this._colors[ColorKind.Fill] })
         };
         this.header.title = 'color';
         this.styles.apply('_', {});
@@ -90,7 +97,7 @@ class ColorView extends Subwin_1.Subwin {
         const buttonGroup = new ButtonGroup_1.ButtonGroup({
             buttons: [this._btnColors.Line, this._btnColors.Fill]
         });
-        buttonGroup.onClick = btn => this.setEditingColor(btn.kind);
+        buttonGroup.onClick = btn => this.setEditingColor(btn === null || btn === void 0 ? void 0 : btn.kind);
         const canvasWrapper = new View_1.View('div');
         canvasWrapper.styles.apply('_', {
             flex: 1,
@@ -196,30 +203,38 @@ var ButtonState;
     ButtonState[ButtonState["Checked"] = 1] = "Checked";
 })(ButtonState = exports.ButtonState || (exports.ButtonState = {}));
 class Button extends View_1.View {
-    get title() { return this._titles.get(ButtonState.Normal); }
+    get title() { return this.titles.get(ButtonState.Normal); }
     set title(v) {
         if (v === undefined) {
             return;
         }
-        this._titles.set(ButtonState.Normal, v);
-        this._titles.set(ButtonState.Checked, v);
+        this.titles.set(ButtonState.Normal, v);
+        this.titles.set(ButtonState.Checked, v);
         this.updateTitle();
     }
-    get titles() { return this._titles; }
+    get titles() {
+        var _a;
+        this._titles = (_a = this._titles) !== null && _a !== void 0 ? _a : new Map();
+        return this._titles;
+    }
     set titles(v) {
         this._titles = v;
         this.updateTitle();
     }
-    get content() { return this._contents.get(ButtonState.Normal); }
+    get content() { return this.contents.get(ButtonState.Normal); }
     set content(v) {
         if (v === undefined) {
             return;
         }
-        this._contents.set(ButtonState.Normal, v);
-        this._contents.set(ButtonState.Checked, v);
+        this.contents.set(ButtonState.Normal, v);
+        this.contents.set(ButtonState.Checked, v);
         this.updateContent();
     }
-    get contents() { return this._contents; }
+    get contents() {
+        var _a;
+        this._contents = (_a = this._contents) !== null && _a !== void 0 ? _a : new Map();
+        return this._contents;
+    }
     set contents(v) {
         this._contents = v;
         this.updateContent();
@@ -236,12 +251,35 @@ class Button extends View_1.View {
         this._inner.disabled = v;
         this.updateStyle();
     }
-    constructor(inits) {
+    init(inits) {
         var _a;
+        this._size = (_a = inits === null || inits === void 0 ? void 0 : inits.size) !== null && _a !== void 0 ? _a : this._size;
+        this._checkable = (inits === null || inits === void 0 ? void 0 : inits.checkable) === true;
+        this._checked = (inits === null || inits === void 0 ? void 0 : inits.checked) === true;
+        if (inits === null || inits === void 0 ? void 0 : inits.contents) {
+            this.contents.set(ButtonState.Normal, inits.contents[0]);
+            this.contents.set(ButtonState.Checked, inits.contents[1]);
+        }
+        else if (inits === null || inits === void 0 ? void 0 : inits.content) {
+            this.contents.set(ButtonState.Normal, inits.content);
+            this.contents.set(ButtonState.Checked, inits.content);
+        }
+        if (inits === null || inits === void 0 ? void 0 : inits.titles) {
+            this.titles.set(ButtonState.Normal, inits.titles[0]);
+            this.titles.set(ButtonState.Checked, inits.titles[1]);
+        }
+        else if (inits === null || inits === void 0 ? void 0 : inits.title) {
+            this.titles.set(ButtonState.Normal, inits.title);
+            this.titles.set(ButtonState.Checked, inits.title);
+        }
+        this.updateContent();
+        this.updateTitle();
+        this.updateSize();
+        return this;
+    }
+    constructor() {
         super('button');
         this._size = SizeType_1.SizeType.Middle;
-        this._contents = new Map();
-        this._titles = new Map();
         this._checked = false;
         this._checkable = false;
         this._prevStyleNames = '';
@@ -251,25 +289,6 @@ class Button extends View_1.View {
             [SizeType_1.SizeType.Large]: ButtonStyleNames.Large
         };
         this.hoverOb;
-        if (inits === null || inits === void 0 ? void 0 : inits.contents) {
-            this._contents.set(ButtonState.Normal, inits.contents[0]);
-            this._contents.set(ButtonState.Checked, inits.contents[1]);
-        }
-        else if (inits === null || inits === void 0 ? void 0 : inits.content) {
-            this._contents.set(ButtonState.Normal, inits.content);
-            this._contents.set(ButtonState.Checked, inits.content);
-        }
-        if (inits === null || inits === void 0 ? void 0 : inits.titles) {
-            this._titles.set(ButtonState.Normal, inits.titles[0]);
-            this._titles.set(ButtonState.Checked, inits.titles[1]);
-        }
-        else if (inits === null || inits === void 0 ? void 0 : inits.title) {
-            this._titles.set(ButtonState.Normal, inits.title);
-            this._titles.set(ButtonState.Checked, inits.title);
-        }
-        this._size = (_a = inits === null || inits === void 0 ? void 0 : inits.size) !== null && _a !== void 0 ? _a : this._size;
-        this._checkable = (inits === null || inits === void 0 ? void 0 : inits.checkable) === true;
-        this._checked = (inits === null || inits === void 0 ? void 0 : inits.checked) === true;
         this.styles.register(ButtonStyleNames.Hover, {
             background: '#00000022'
         }).register(ButtonStyleNames.Small, {
@@ -306,18 +325,14 @@ class Button extends View_1.View {
         this.editStyle(false, true, false, { background: '#444444' });
         this.editStyle(false, false, true, {});
         this.editStyle(false, false, false, {});
-        this._handleClick = () => {
+        this.addEventListener('click', () => {
             if (this._checkable) {
                 this._checked = !this._checked;
             }
             this.updateStyle();
             this.updateContent();
             this.updateTitle();
-        };
-        this.addEventListener('click', this._handleClick);
-        this.updateContent();
-        this.updateTitle();
-        this.updateSize();
+        });
     }
     onHover(hover) {
         this.updateStyle();
@@ -334,25 +349,25 @@ class Button extends View_1.View {
         return this;
     }
     updateContent() {
-        const content = this._contents.get(this._checked ? ButtonState.Checked : ButtonState.Normal);
+        const content = this.contents.get(this._checked ? ButtonState.Checked : ButtonState.Normal);
         if (content === undefined) {
-            this._inner.innerText = '';
+            this.inner.innerText = '';
         }
         else if (typeof content === 'string') {
-            this._inner.innerText = content;
+            this.inner.innerText = content;
         }
         else {
-            this._inner.innerHTML = '';
+            this.inner.innerHTML = '';
             this.addChild(content);
         }
     }
     updateTitle() {
-        const title = this._titles.get(this._checked ? ButtonState.Checked : ButtonState.Normal);
+        const title = this.titles.get(this._checked ? ButtonState.Checked : ButtonState.Normal);
         if (title === undefined) {
-            this._inner.removeAttribute('title');
+            this.inner.removeAttribute('title');
         }
         else {
-            this._inner.setAttribute('title', title);
+            this.inner.setAttribute('title', title);
         }
     }
     updateSize() {
@@ -752,43 +767,45 @@ const Button_1 = require("../BaseView/Button");
 const Image_1 = require("../BaseView/Image");
 const StyleType_1 = require("../BaseView/StyleType");
 class IconButton extends Button_1.Button {
-    constructor(inits) {
-        super(inits);
-        this._srcs = new Map();
-        this.styles
-            .register(Button_1.ButtonStyleNames.Small, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.ButtonStyleNames.Middle, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.ButtonStyleNames.Large, v => (Object.assign(Object.assign({}, v), { width: v.height })));
-        this.updateSize();
-        if (inits === null || inits === void 0 ? void 0 : inits.srcs) {
-            this._srcs.set(Button_1.ButtonState.Normal, inits.srcs[0]);
-            this._srcs.set(Button_1.ButtonState.Checked, inits.srcs[1]);
-        }
-        else if (inits === null || inits === void 0 ? void 0 : inits.src) {
-            this._srcs.set(Button_1.ButtonState.Normal, inits.src);
-            this._srcs.set(Button_1.ButtonState.Checked, inits.src);
-        }
-        const content = new Image_1.Image({
-            style: {
-                width: '100%',
-                height: '100%',
-                objectFit: StyleType_1.CssObjectFit.Contain,
-            }
-        });
-        this._contents.set(Button_1.ButtonState.Normal, content);
-        this._contents.set(Button_1.ButtonState.Checked, content);
+    get srcs() {
+        var _a;
+        this.private = (_a = this.private) !== null && _a !== void 0 ? _a : new Map();
+        return this.private;
+    }
+    set srcs(v) {
+        this.private = v;
         this.updateContent();
     }
-    updateContent() {
-        const src = this._srcs.get(this._checked ? Button_1.ButtonState.Checked : Button_1.ButtonState.Normal);
-        if (!src) {
-            return super.updateContent();
+    constructor() {
+        super();
+        this.styles
+            .register(Button_1.ButtonStyleNames.Small, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.ButtonStyleNames.Middle, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.ButtonStyleNames.Large, v => (Object.assign(Object.assign({}, v), { width: v.height })));
+    }
+    init(inits) {
+        const superInits = Object.assign(Object.assign({}, inits), { content: new Image_1.Image({
+                style: {
+                    width: '100%',
+                    height: '100%',
+                    objectFit: StyleType_1.CssObjectFit.Contain,
+                }
+            }) });
+        if (inits === null || inits === void 0 ? void 0 : inits.srcs) {
+            this.srcs.set(Button_1.ButtonState.Normal, inits.srcs[0]);
+            this.srcs.set(Button_1.ButtonState.Checked, inits.srcs[1]);
         }
-        const content = this._contents.get(this._checked ? Button_1.ButtonState.Checked : Button_1.ButtonState.Normal);
+        else if (inits === null || inits === void 0 ? void 0 : inits.src) {
+            this.srcs.set(Button_1.ButtonState.Normal, inits.src);
+            this.srcs.set(Button_1.ButtonState.Checked, inits.src);
+        }
+        return super.init(superInits);
+    }
+    updateContent() {
+        const src = this.srcs.get(this.checked ? Button_1.ButtonState.Checked : Button_1.ButtonState.Normal);
+        const content = this.content;
         if (content instanceof Image_1.Image) {
             content.src = src;
         }
-        else {
-            super.updateContent();
-        }
+        super.updateContent();
     }
 }
 exports.IconButton = IconButton;
@@ -1211,6 +1228,7 @@ exports.SubwinHeader = exports.StyleNames = exports.Classnames = void 0;
 const IconButton_1 = require("./IconButton");
 const View_1 = require("../BaseView/View");
 const FocusOb_1 = require("../Observer/FocusOb");
+const Button_1 = require("../BaseView/Button");
 var Classnames;
 (function (Classnames) {
     Classnames["Root"] = "subwin_header";
@@ -1249,7 +1267,7 @@ class SubwinHeader extends View_1.View {
             alignItems: 'stretch',
             height: 28,
         });
-        this._iconView = new IconButton_1.IconButton();
+        this._iconView = new Button_1.Button();
         this._iconView
             .styles
             .applyCls(Classnames.IconView)
@@ -1267,7 +1285,7 @@ class SubwinHeader extends View_1.View {
             flex: 1,
         });
         this.addChild(this._titleView);
-        this._btnClose = new IconButton_1.IconButton({ src: './ic_btn_close.svg' });
+        this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg' });
         this._btnClose.styles
             .applyCls(Classnames.BtnClose)
             .apply(StyleNames.BtnClose, {
@@ -1281,7 +1299,7 @@ exports.SubwinHeader = SubwinHeader;
 SubwinHeader.ClassNames = Classnames;
 SubwinHeader.StyleNames = StyleNames;
 
-},{"../BaseView/View":10,"../Observer/FocusOb":22,"./IconButton":11}],17:[function(require,module,exports){
+},{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":22,"./IconButton":11}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkspaceView = exports.DockView = exports.IndicatorImage = void 0;
@@ -2011,6 +2029,7 @@ const TextInput_1 = require("./G/BaseView/TextInput");
 const View_1 = require("./G/BaseView/View");
 const Subwin_1 = require("./G/CompoundView/Subwin");
 const FocusOb_1 = require("./G/Observer/FocusOb");
+const Button_1 = require("./G/BaseView/Button");
 var LayersViewEventType;
 (function (LayersViewEventType) {
     LayersViewEventType["LayerAdded"] = "LayerAdded";
@@ -2037,12 +2056,12 @@ class LayersView extends Subwin_1.Subwin {
             minWidth: '225px',
             width: 225,
         });
-        const btnAddLayer = new IconButton_1.IconButton({ content: '📃', title: '新建图层', size: SizeType_1.SizeType.Small }).addEventListener('click', (e) => {
+        const btnAddLayer = new IconButton_1.IconButton().init({ content: '📃', title: '新建图层', size: SizeType_1.SizeType.Small }).addEventListener('click', (e) => {
             const event = new CustomEvent(LayersViewEventType.LayerAdded, { detail: '' + Date.now() });
             this.inner.dispatchEvent(event);
         });
         this.footer.addChild(btnAddLayer);
-        const btnAddFolder = new IconButton_1.IconButton({ content: '📂', title: '新建图层组', size: SizeType_1.SizeType.Small });
+        const btnAddFolder = new IconButton_1.IconButton().init({ content: '📂', title: '新建图层组', size: SizeType_1.SizeType.Small });
         this.footer.addChild(btnAddFolder);
     }
     layers() { return this._layers; }
@@ -2100,7 +2119,7 @@ class LayerItemView extends View_1.View {
             borderBottom: '1px solid #00000022',
             transition: 'all 200ms',
         });
-        const btn0 = new IconButton_1.IconButton({
+        const btn0 = new IconButton_1.IconButton().init({
             checkable: true,
             checked: this._state.locked,
             contents: ['🔓', '🔒']
@@ -2109,7 +2128,7 @@ class LayerItemView extends View_1.View {
             this._state.locked = btn0.checked;
         });
         this.addChild(btn0);
-        const btn1 = new IconButton_1.IconButton({
+        const btn1 = new Button_1.Button().init({
             checkable: true,
             checked: this._state.visible,
             contents: ['🙈', '🐵']
@@ -2124,7 +2143,7 @@ class LayerItemView extends View_1.View {
             (_b = (_a = this.parent) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.inner.dispatchEvent(new CustomEvent(LayersViewEventType.LayerVisibleChanged, { detail }));
         });
         this.addChild(btn1);
-        const btn2 = new IconButton_1.IconButton({
+        const btn2 = new Button_1.Button().init({
             checkable: true,
             checked: this._state.visible,
             contents: ['➕', '➖']
@@ -2164,7 +2183,7 @@ class LayerItemView extends View_1.View {
         inputName.disabled = true;
         this.addChild(inputName);
         new FocusOb_1.FocusOb(inputName.inner, (v) => inputName.disabled = !v);
-        const btn3 = new IconButton_1.IconButton({
+        const btn3 = new Button_1.Button().init({
             content: '🖊️'
         });
         btn3.addEventListener('click', () => {
@@ -2176,25 +2195,24 @@ class LayerItemView extends View_1.View {
 }
 exports.LayerItemView = LayerItemView;
 
-},{"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/IconButton":11,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":22}],26:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/IconButton":11,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":22}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
 const dist_1 = require("../../dist");
-const ButtonGroup_1 = require("./G/Helper/ButtonGroup");
-const View_1 = require("./G/BaseView/View");
-const Subwin_1 = require("./G/CompoundView/Subwin");
-const IconButton_1 = require("./G/CompoundView/IconButton");
 const SizeType_1 = require("./G/BaseView/SizeType");
+const View_1 = require("./G/BaseView/View");
+const IconButton_1 = require("./G/CompoundView/IconButton");
+const Subwin_1 = require("./G/CompoundView/Subwin");
+const ButtonGroup_1 = require("./G/Helper/ButtonGroup");
 class ToolButton extends IconButton_1.IconButton {
     get toolType() { return this._toolType; }
-    constructor(inits) {
-        super({
-            src: inits.src,
-            checkable: true,
-            size: SizeType_1.SizeType.Large
-        });
-        this._toolType = inits.toolType;
+    constructor() {
+        super();
+    }
+    init(inits) {
+        this._toolType = inits === null || inits === void 0 ? void 0 : inits.toolType;
+        return super.init(Object.assign(Object.assign({}, inits), { checkable: true, size: SizeType_1.SizeType.Large }));
     }
 }
 exports.ToolButton = ToolButton;
@@ -2212,11 +2230,11 @@ class ToolsView extends Subwin_1.Subwin {
             overflowX: 'hidden'
         });
         const toolsBtns = [
-            new ToolButton({ src: './ic_selector.svg', toolType: dist_1.ToolEnum.Selector }),
-            new ToolButton({ src: './ic_pen.svg', toolType: dist_1.ToolEnum.Pen }),
-            new ToolButton({ src: './ic_rect.svg', toolType: dist_1.ToolEnum.Rect }),
-            new ToolButton({ src: './ic_oval.svg', toolType: dist_1.ToolEnum.Oval }),
-            new ToolButton({ src: './ic_text.svg', toolType: dist_1.ToolEnum.Text })
+            new ToolButton().init({ src: './ic_selector.svg', toolType: dist_1.ToolEnum.Selector }),
+            new ToolButton().init({ src: './ic_pen.svg', toolType: dist_1.ToolEnum.Pen }),
+            new ToolButton().init({ src: './ic_rect.svg', toolType: dist_1.ToolEnum.Rect }),
+            new ToolButton().init({ src: './ic_oval.svg', toolType: dist_1.ToolEnum.Oval }),
+            new ToolButton().init({ src: './ic_text.svg', toolType: dist_1.ToolEnum.Text })
         ];
         toolsBtns.forEach(btn => { var _a; return (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(btn); });
         this._toolButtonGroup = new ButtonGroup_1.ButtonGroup({ buttons: toolsBtns });
@@ -2963,13 +2981,13 @@ toyView.content.styles.apply('', {
     overflowX: 'hidden'
 });
 toyView.content.addChild();
-new Button_1.Button({
+new Button_1.Button().init({
     content: 'select all'
 }).addEventListener('click', () => board.selectAll());
-toyView.content.addChild(new Button_1.Button({
+toyView.content.addChild(new Button_1.Button().init({
     content: 'remove selected'
 }).addEventListener('click', () => board.removeSelected()));
-toyView.content.addChild(new Button_1.Button({
+toyView.content.addChild(new Button_1.Button().init({
     content: 'remove all'
 }).addEventListener('click', () => board.removeAll()));
 function randomShapeItem(item) {
@@ -2978,7 +2996,7 @@ function randomShapeItem(item) {
     item.data.fillStyle = `rgb(${v255()},${v255()},${v255()})`;
     item.data.strokeStyle = `rgb(${v255()},${v255()},${v255()})`;
 }
-toyView.content.addChild(new Button_1.Button({
+toyView.content.addChild(new Button_1.Button().init({
     content: 'random add 1000 rect'
 }).addEventListener('click', () => {
     const items = [];
@@ -2990,7 +3008,7 @@ toyView.content.addChild(new Button_1.Button({
     }
     board.add(...items);
 }));
-toyView.content.addChild(new Button_1.Button({
+toyView.content.addChild(new Button_1.Button().init({
     content: 'random add 1000 oval'
 }).addEventListener('click', () => {
     const items = [];
@@ -3002,7 +3020,7 @@ toyView.content.addChild(new Button_1.Button({
     }
     board.add(...items);
 }));
-toyView.content.addChild(new Button_1.Button({
+toyView.content.addChild(new Button_1.Button().init({
     content: 'random draw 1000 pen'
 }).addEventListener('click', () => {
     const items = [];
@@ -3031,10 +3049,10 @@ jsonView.header.title = 'json';
 jsonView.content = new View_1.View('div');
 jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
 const json_textarea = new View_1.View('textarea');
-jsonView.content.addChild(new Button_1.Button({ content: 'JSON化' }).addEventListener('click', () => {
+jsonView.content.addChild(new Button_1.Button().init({ content: 'JSON化' }).addEventListener('click', () => {
     json_textarea.inner.value = board.toJsonStr();
 }));
-jsonView.content.addChild(new Button_1.Button({ content: '反JSON化' }).addEventListener('click', () => {
+jsonView.content.addChild(new Button_1.Button().init({ content: '反JSON化' }).addEventListener('click', () => {
     board.fromJsonStr(json_textarea.inner.value);
 }));
 jsonView.content.addChild(json_textarea);
@@ -3061,17 +3079,17 @@ recorderView.header.title = 'recorder';
 recorderView.content = new View_1.View('div');
 recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
 const _recorder_textarea = new View_1.View('textarea');
-recorderView.content.addChild(new Button_1.Button({ content: '开始录制' }).addEventListener('click', startRecord));
-recorderView.content.addChild(new Button_1.Button({ content: '停止录制' }).addEventListener('click', endRecord));
-recorderView.content.addChild(new Button_1.Button({ content: '回放' }).addEventListener('click', () => {
+recorderView.content.addChild(new Button_1.Button().init({ content: '开始录制' }).addEventListener('click', startRecord));
+recorderView.content.addChild(new Button_1.Button().init({ content: '停止录制' }).addEventListener('click', endRecord));
+recorderView.content.addChild(new Button_1.Button().init({ content: '回放' }).addEventListener('click', () => {
     endRecord();
     replay(_recorder_textarea.inner.value);
 }));
-recorderView.content.addChild(new Button_1.Button({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
+recorderView.content.addChild(new Button_1.Button().init({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
     endRecord();
     replay(demo_helloworld_1.default);
 }));
-recorderView.content.addChild(new Button_1.Button({ content: 'replay: rect & oval' }).addEventListener('click', () => {
+recorderView.content.addChild(new Button_1.Button().init({ content: 'replay: rect & oval' }).addEventListener('click', () => {
     endRecord();
     replay(demo_rect_n_oval_1.default);
 }));

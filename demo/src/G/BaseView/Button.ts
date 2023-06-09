@@ -29,35 +29,39 @@ export class Button extends View<'button'> {
   static StyleNames = ButtonStyleNames;
   protected _size: SizeType = SizeType.Middle;
   protected _preSize?: SizeType;
-  protected _contents = new Map<ButtonState, ButtonContent>()
-  protected _titles = new Map<ButtonState, string>();
+  protected _contents?: Map<ButtonState, ButtonContent>;
+  protected _titles?: Map<ButtonState, string>;
   protected _checked = false;
   protected _checkable = false;
-  protected _handleClick: (this: HTMLObjectElement, ev: MouseEvent) => any;
-  protected _cb?: (self: Button) => void;
 
-  get title() { return this._titles.get(ButtonState.Normal); }
+  get title() { return this.titles.get(ButtonState.Normal); }
   set title(v) {
     if (v === undefined) { return; }
-    this._titles.set(ButtonState.Normal, v);
-    this._titles.set(ButtonState.Checked, v);
+    this.titles.set(ButtonState.Normal, v);
+    this.titles.set(ButtonState.Checked, v);
     this.updateTitle();
   }
-  get titles() { return this._titles; }
-  set titles(v) {
+  get titles(): Map<ButtonState, string> {
+    this._titles = this._titles ?? new Map<ButtonState, string>();
+    return this._titles;
+  }
+  set titles(v: Map<ButtonState, string>) {
     this._titles = v;
     this.updateTitle();
   }
 
-  get content() { return this._contents.get(ButtonState.Normal); }
+  get content() { return this.contents.get(ButtonState.Normal); }
   set content(v) {
     if (v === undefined) { return; }
-    this._contents.set(ButtonState.Normal, v);
-    this._contents.set(ButtonState.Checked, v);
+    this.contents.set(ButtonState.Normal, v);
+    this.contents.set(ButtonState.Checked, v);
     this.updateContent();
   }
-  get contents() { return this._contents; }
-  set contents(v) {
+  get contents(): Map<ButtonState, ButtonContent> {
+    this._contents = this._contents ?? new Map<ButtonState, ButtonContent>();
+    return this._contents;
+  }
+  set contents(v: Map<ButtonState, ButtonContent>) {
     this._contents = v;
     this.updateContent();
   }
@@ -74,30 +78,32 @@ export class Button extends View<'button'> {
     this._inner.disabled = v;
     this.updateStyle();
   }
-  constructor(inits?: ButtonInits) {
-    super('button');
-    this.hoverOb;
-
-    if (inits?.contents) {
-      this._contents.set(ButtonState.Normal, inits.contents[0])
-      this._contents.set(ButtonState.Checked, inits.contents[1])
-    } else if (inits?.content) {
-      this._contents.set(ButtonState.Normal, inits.content)
-      this._contents.set(ButtonState.Checked, inits.content)
-    }
-
-    if (inits?.titles) {
-      this._titles.set(ButtonState.Normal, inits.titles[0])
-      this._titles.set(ButtonState.Checked, inits.titles[1])
-    } else if (inits?.title) {
-      this._titles.set(ButtonState.Normal, inits.title)
-      this._titles.set(ButtonState.Checked, inits.title)
-    }
-
+  init(inits?: ButtonInits): this {
     this._size = inits?.size ?? this._size;
     this._checkable = inits?.checkable === true;
     this._checked = inits?.checked === true;
-
+    if (inits?.contents) {
+      this.contents.set(ButtonState.Normal, inits.contents[0])
+      this.contents.set(ButtonState.Checked, inits.contents[1])
+    } else if (inits?.content) {
+      this.contents.set(ButtonState.Normal, inits.content)
+      this.contents.set(ButtonState.Checked, inits.content)
+    }
+    if (inits?.titles) {
+      this.titles.set(ButtonState.Normal, inits.titles[0])
+      this.titles.set(ButtonState.Checked, inits.titles[1])
+    } else if (inits?.title) {
+      this.titles.set(ButtonState.Normal, inits.title)
+      this.titles.set(ButtonState.Checked, inits.title)
+    }
+    this.updateContent();
+    this.updateTitle();
+    this.updateSize();
+    return this;
+  }
+  constructor() {
+    super('button');
+    this.hoverOb;
     this.styles.register(ButtonStyleNames.Hover, {
       background: '#00000022'
     }).register(ButtonStyleNames.Small, {
@@ -126,7 +132,6 @@ export class Button extends View<'button'> {
       alignItems: 'center',
       justifyContent: 'center'
     }).add(ButtonStyleNames.Normal).refresh();
-
     this.editStyle(true, true, true, { background: '#333333' })
     this.editStyle(true, true, false, { background: '#333333' })
     this.editStyle(true, false, true, {})
@@ -135,16 +140,12 @@ export class Button extends View<'button'> {
     this.editStyle(false, true, false, { background: '#444444' })
     this.editStyle(false, false, true, {})
     this.editStyle(false, false, false, {})
-    this._handleClick = () => {
+    this.addEventListener('click', () => {
       if (this._checkable) { this._checked = !this._checked; }
       this.updateStyle()
       this.updateContent();
       this.updateTitle();
-    };
-    this.addEventListener('click', this._handleClick)
-    this.updateContent();
-    this.updateTitle();
-    this.updateSize();
+    })
   }
   override onHover(hover: boolean): void {
     this.updateStyle();
@@ -162,26 +163,26 @@ export class Button extends View<'button'> {
     return this;
   }
   updateContent() {
-    const content = this._contents.get(
+    const content = this.contents.get(
       this._checked ? ButtonState.Checked : ButtonState.Normal
     );
     if (content === undefined) {
-      this._inner.innerText = '';
+      this.inner.innerText = '';
     } else if (typeof content === 'string') {
-      this._inner.innerText = content;
+      this.inner.innerText = content;
     } else {
-      this._inner.innerHTML = ''
+      this.inner.innerHTML = ''
       this.addChild(content);
     }
   }
   updateTitle() {
-    const title = this._titles.get(
+    const title = this.titles.get(
       this._checked ? ButtonState.Checked : ButtonState.Normal
     );
     if (title === undefined) {
-      this._inner.removeAttribute('title');
+      this.inner.removeAttribute('title');
     } else {
-      this._inner.setAttribute('title', title);
+      this.inner.setAttribute('title', title);
     }
   }
   private aaa: Record<SizeType, ButtonStyleNames> = {

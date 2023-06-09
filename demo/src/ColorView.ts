@@ -15,13 +15,16 @@ interface ColorKindButtonInits extends ButtonInits {
   defaultColor: RGBA;
 }
 class ColorKindButton extends Button {
-  private _kind: ColorKind;
-  private _colorBrick: View<"div">;
-  public get kind(): ColorKind { return this._kind; }
-  public set color(v: RGBA) { this._colorBrick.styles.apply('_', old => ({ ...old, background: '' + v })) }
-  constructor(inits: ColorKindButtonInits) {
-    super(inits);
-    this._kind = inits.kind;
+  private _kind?: ColorKind;
+  private _colorBrick?: View<"div">;
+  public get kind() { return this._kind; }
+  public set color(v: RGBA) { this._colorBrick?.styles.apply('_', old => ({ ...old, background: '' + v })) }
+  constructor() {
+    super();
+  }
+  override init(inits?: ColorKindButtonInits | undefined): this {
+    super.init(inits);
+    this._kind = inits?.kind;
     this.styles.apply('normal', v => ({
       ...v,
       paddingLeft: 5,
@@ -34,18 +37,19 @@ class ColorKindButton extends Button {
       alignItems: 'center',
       color: 'white'
     })
-    content.inner.append(inits.kind + ' ')
+    content.inner.append(inits?.kind + ' ')
 
     this._colorBrick = new View('div');
     this._colorBrick.styles.apply('_', {
       marginLeft: 5,
-      background: '' + inits.defaultColor,
+      background: '' + inits?.defaultColor,
       width: 16,
       height: 16,
     })
     content.addChild(this._colorBrick)
     this.content = content;
     this.editStyle(false, true, false, this.styles.read(ButtonStyleNames.Hover) || {})
+    return this;
   }
 }
 export enum ColorViewEventTypes {
@@ -69,12 +73,13 @@ export default class ColorView extends Subwin {
   };
 
   private _btnColors: Record<ColorKind, ColorKindButton> = {
-    [ColorKind.Line]: new ColorKindButton({ checkable: true, kind: ColorKind.Line, defaultColor: this._colors[ColorKind.Line] }),
-    [ColorKind.Fill]: new ColorKindButton({ checkable: true, kind: ColorKind.Fill, defaultColor: this._colors[ColorKind.Fill] })
+    [ColorKind.Line]: new ColorKindButton().init({ checkable: true, kind: ColorKind.Line, defaultColor: this._colors[ColorKind.Line] }),
+    [ColorKind.Fill]: new ColorKindButton().init({ checkable: true, kind: ColorKind.Fill, defaultColor: this._colors[ColorKind.Fill] })
   }
 
   private _colorPalette: ColorPalette;
-  private setEditingColor(v: ColorKind) {
+  private setEditingColor(v?: ColorKind) {
+    if (!v) { return }
     this._editing = v;
     this._colorPalette.value = this._colors[this._editing];
   }
@@ -106,7 +111,7 @@ export default class ColorView extends Subwin {
     const buttonGroup = new ButtonGroup<ColorKindButton>({
       buttons: [this._btnColors.Line, this._btnColors.Fill]
     })
-    buttonGroup.onClick = btn => this.setEditingColor(btn.kind);
+    buttonGroup.onClick = btn => this.setEditingColor(btn?.kind);
 
     const canvasWrapper = new View('div');
     canvasWrapper.styles.apply('_', {
