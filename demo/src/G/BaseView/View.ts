@@ -1,24 +1,39 @@
-import { HoverOb } from "../Observer/HoverOb";
 import { FocusOb } from "../Observer/FocusOb";
-import { Style } from "./StyleType";
+import { HoverOb } from "../Observer/HoverOb";
 import { Styles } from "./Styles";
 
+export enum ViewEventType {
+  OnAdded = 'OnAdded',
+  OnRemoved = 'OnRemoved',
+}
+export interface ViewEventMap {
+  [ViewEventType.OnAdded]: Event;
+  [ViewEventType.OnRemoved]: Event;
+}
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
 
-  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): View<T>;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-  addEventListener(arg0: any, arg1: any, arg2: any): View<T> {
+  addEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): this;
+  addEventListener(arg0: any, arg1: any, arg2: any): this {
     this.inner.addEventListener(arg0, arg1, arg2);
     return this;
   }
-  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): View<T>;
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): View<T>;
-  removeEventListener(arg0: any, arg1: any, arg2: any): View<T> {
+
+  removeEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | EventListenerOptions): this;
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): this;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): this;
+  removeEventListener(arg0: any, arg1: any, arg2: any): this {
     this.inner.removeEventListener(arg0, arg1, arg2)
     return this;
   }
   protected _inner: HTMLElementTagNameMap[T];
+  protected _styles?: Styles<string>;
 
+  get styles(): Styles<string> {
+    this._styles = this._styles ?? new Styles<string>(this)
+    return this._styles;
+  }
   get id() { return this.inner.id; }
   set id(v) { this.inner.id = v; }
   get inner() { return this._inner; }
@@ -62,64 +77,58 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     this._hoverOb = this._hoverOb ?? new HoverOb(this._inner, v => this.onHover(v))
     return this._hoverOb
   }
-  onHover(hover: boolean) { }
+
   protected _focusOb?: FocusOb;
   get focused() { return this.focusOb.focused }
   get focusOb(): FocusOb {
     this._focusOb = this._focusOb ?? new FocusOb(this._inner, v => this.onFocus(v))
     return this._focusOb
   }
-  onFocus(focused: boolean) { }
-  onBeforeAdded(parent: View): void { }
-  onAfterAdded(parent: View): void { }
-  onBeforeRemoved(parent: View): void { }
-  onAfterRemoved(parent: View): void { }
+
+  onHover(hover: boolean) { }
+  onFocus(focused: boolean): void { }
+  onAdded(): void { }
+  onRemoved(): void { }
+
   addChild(...children: View[]) {
     children.forEach(child => {
-      child.onBeforeAdded(this);
       this._inner.append(child.inner);
-      child.onAfterAdded(this);
+      child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+      child.onAdded();
     });
     return this;
   }
-  insertChild(anchor: View | number, ...children: View[]): this {
-    if (anchor === 0 && !this._inner.children.length) {
+  insertChild(anchorOrIdx: View | number, ...children: View[]): this {
+    if (anchorOrIdx === 0 && !this._inner.children.length) {
       this.addChild(...children.reverse());
-    } else if (typeof anchor === 'number') {
-      const ele = this._inner.children[anchor];
-      if (!ele) {
-        console.error('[View] insertChild failed! anchor element not found, idx = ', anchor)
-        return this;
-      }
-      children.forEach(child => {
-        child.onBeforeAdded(this);
-        this._inner.insertBefore(child.inner, ele);
-        child.onAfterAdded(this);
-      })
-    } else {
-      children.forEach(child => {
-        child.onBeforeAdded(this);
-        this._inner.insertBefore(child.inner, anchor.inner);
-        child.onAfterAdded(this);
-      })
+      return this;
     }
-    return this;
-  }
-  removeChild(...children: View[]): this {
+    const ele = (typeof anchorOrIdx === 'number') ?
+      this._inner.children[anchorOrIdx] :
+      anchorOrIdx.inner
+    if (!ele) {
+      console.error('[View] insertChild failed! anchor element not found, idx = ', anchorOrIdx)
+      return this;
+    }
     children.forEach(child => {
-      child.onBeforeRemoved(this);
-      this._inner.removeChild(child.inner);
-      child.onAfterRemoved(this);
+      this._inner.insertBefore(child.inner, ele);
+      child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+      child.onAdded();
     })
     return this;
   }
+
+  removeChild(...children: View[]): this {
+    children.forEach(child => {
+      this._inner.removeChild(child.inner);
+      child.inner.dispatchEvent(new Event(ViewEventType.OnRemoved));
+      child.onRemoved();
+    })
+    return this;
+  }
+
   removeSelf(): this {
     this.parent?.removeChild(this);
     return this;
   }
-  get styles(): Styles<string> {
-    this._styles = this._styles ?? new Styles<string>(this)
-    return this._styles;
-  }
-  private _styles?: Styles<string>;
 }

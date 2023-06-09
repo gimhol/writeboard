@@ -1,4 +1,4 @@
-import { Button, ButtonInits, StyleNames } from "./G/BaseView/Button";
+import { Button, ButtonInits, ButtonStyleNames } from "./G/BaseView/Button";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Canvas } from "./G/BaseView/Canvas";
 import { NumberInput } from "./G/BaseView/NumberInput";
@@ -44,11 +44,8 @@ class ColorKindButton extends Button {
       height: 16,
     })
     content.addChild(this._colorBrick)
-    this._contents[0] = content;
-    this._contents[1] = content;
-    this.updateContent();
-
-    this.editStyle(false, true, false, this.styles.read(StyleNames.Hover) || {})
+    this.content = content;
+    this.editStyle(false, true, false, this.styles.read(ButtonStyleNames.Hover) || {})
   }
 }
 export enum ColorViewEventTypes {

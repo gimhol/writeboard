@@ -38,7 +38,7 @@ export class IndicatorImage extends Image {
   override onHover(hover: boolean): void {
     this.styles[hover ? 'add' : 'remove']('hover').refresh()
   }
-  override onBeforeRemoved(parent: View<keyof HTMLElementTagNameMap>): void {
+  override onRemoved(): void {
     this.styles.remove('hover').refresh()
   }
   fakeIn() {

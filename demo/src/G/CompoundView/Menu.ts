@@ -1,5 +1,5 @@
 import { CssPosition } from "../BaseView/StyleType";
-import { View } from "../BaseView/View";
+import { View, ViewEventMap } from "../BaseView/View";
 import { HoverOb } from "../Observer/HoverOb";
 import { findParent } from "../utils";
 
@@ -140,23 +140,27 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
     type: T,
     listener: (this: HTMLObjectElement, ev: MenuEventMap<K>[T]) => any,
     options?: boolean | AddEventListenerOptions
-  ): Menu<K>;
-
+  ): this;
+  override addEventListener<T extends keyof ViewEventMap>(
+    type: T,
+    listener: (this: HTMLObjectElement, ev: ViewEventMap[T]) => any,
+    options?: boolean | AddEventListenerOptions
+  ): this;
   override addEventListener<T extends keyof HTMLElementEventMap>(
     type: T,
     listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[T]) => any,
     options?: boolean | AddEventListenerOptions
-  ): Menu<K>;
+  ): this;
 
   override addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
-  ): Menu<K>;
+  ): this;
 
   override addEventListener(
     arg0: any, arg1: any, arg2?: any
-  ): Menu<K> {
+  ): this {
     return super.addEventListener(arg0, arg1, arg2) as any
   }
 
@@ -164,23 +168,25 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
     type: T,
     listener: (this: HTMLObjectElement, ev: MenuEventMap<K>[T]) => any,
     options?: boolean | AddEventListenerOptions
-  ): Menu<K>;
-
+  ): this;
+  override removeEventListener<T extends keyof ViewEventMap>(
+    type: T,
+    listener: (this: HTMLObjectElement, ev: ViewEventMap[T]) => any,
+    options?: boolean | AddEventListenerOptions
+  ): this;
   override removeEventListener<T extends keyof HTMLElementEventMap>(
     type: T,
     listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[T]) => any,
     options?: boolean | AddEventListenerOptions
-  ): Menu<K>;
-
+  ): this;
   override removeEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
-  ): Menu<K>;
-
+  ): this;
   override removeEventListener(
     arg0: any, arg1: any, arg2?: any
-  ): Menu<K> {
+  ): this {
     return super.removeEventListener(arg0, arg1, arg2) as any
   }
 

@@ -2,8 +2,7 @@ import { ILayerInfoInit } from "../../dist";
 import { IconButton } from "./G/CompoundView/IconButton";
 import { SizeType } from "./G/BaseView/SizeType";
 import { TextInput } from "./G/BaseView/TextInput";
-import { ToggleIconButton } from "./G/BaseView/ToggleIconButton";
-import { View } from "./G/BaseView/View";
+import { View, ViewEventMap } from "./G/BaseView/View";
 import { Subwin } from "./G/CompoundView/Subwin";
 import { FocusOb } from "./G/Observer/FocusOb";
 
@@ -24,11 +23,14 @@ export interface LayersViewEventMap {
 export class LayersView extends Subwin {
   static EventType = LayersViewEventType;
   private _layers: LayerItemView[] = [];
+
   override addEventListener<K extends keyof LayersViewEventMap>
-    (type: K, listener: (this: HTMLObjectElement, ev: LayersViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): LayersView;
+    (type: K, listener: (this: HTMLObjectElement, ev: LayersViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): this;
+  override addEventListener<K extends keyof ViewEventMap>
+    (type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
   override addEventListener<K extends keyof HTMLElementEventMap>
-    (type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): LayersView;
-  override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): LayersView;
+    (type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): this;
+  override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): this;
   override addEventListener(arg0: any, arg1: any, arg2?: any): LayersView {
     return super.addEventListener(arg0, arg1, arg2) as any
   }
@@ -117,7 +119,8 @@ export class LayerItemView extends View<'div'> {
       })
 
 
-    const btn0 = new ToggleIconButton({
+    const btn0 = new IconButton({
+      checkable: true,
       checked: this._state.locked,
       contents: ['🔓', '🔒']
     })
@@ -126,7 +129,8 @@ export class LayerItemView extends View<'div'> {
     })
     this.addChild(btn0);
 
-    const btn1 = new ToggleIconButton({
+    const btn1 = new IconButton({
+      checkable: true,
       checked: this._state.visible,
       contents: ['🙈', '🐵']
     })
@@ -141,7 +145,8 @@ export class LayerItemView extends View<'div'> {
     })
     this.addChild(btn1);
 
-    const btn2 = new ToggleIconButton({
+    const btn2 = new IconButton({
+      checkable: true,
       checked: this._state.visible,
       contents: ['➕', '➖']
     })

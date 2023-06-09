@@ -1,3 +1,4 @@
+import { Button } from "../BaseView/Button";
 import { View } from "../BaseView/View";
 import { DragInOutOB } from "../Observer/DragInOutOB";
 import { Subwin } from "./Subwin";
@@ -53,7 +54,7 @@ export class MergedSubwin extends Subwin {
       onDragOut,
       onDragIn,
     });
-    this.header.iconView.contents = ['▨', '▨'];
+    this.header.iconView.content = '▨';
 
     this.content = new View('div');
     this.content?.styles.apply('_', {
