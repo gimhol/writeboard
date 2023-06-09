@@ -652,13 +652,17 @@ var ViewEventType;
     ViewEventType["OnRemoved"] = "OnRemoved";
 })(ViewEventType = exports.ViewEventType || (exports.ViewEventType = {}));
 class View {
-    addEventListener(arg0, arg1, arg2) {
-        this.inner.addEventListener(arg0, arg1, arg2);
-        return this;
+    get hover() { return this.hoverOb.hover; }
+    get hoverOb() {
+        var _a;
+        this._hoverOb = (_a = this._hoverOb) !== null && _a !== void 0 ? _a : new HoverOb_1.HoverOb(this._inner, v => this.onHover(v));
+        return this._hoverOb;
     }
-    removeEventListener(arg0, arg1, arg2) {
-        this.inner.removeEventListener(arg0, arg1, arg2);
-        return this;
+    get focused() { return this.focusOb.focused; }
+    get focusOb() {
+        var _a;
+        this._focusOb = (_a = this._focusOb) !== null && _a !== void 0 ? _a : new FocusOb_1.FocusOb(this._inner, v => this.onFocus(v));
+        return this._focusOb;
     }
     get styles() {
         var _a;
@@ -668,21 +672,25 @@ class View {
     get id() { return this.inner.id; }
     set id(v) { this.inner.id = v; }
     get inner() { return this._inner; }
-    get parent() { var _a; return (_a = this._inner.parentElement) === null || _a === void 0 ? void 0 : _a.view; }
+    get parent() { return View.get(this._inner.parentElement); }
     get children() { return Array.from(this._inner.children).map(v => View.get(v)); }
     get draggable() { return this._inner.draggable; }
     set draggable(v) { this._inner.draggable = v; }
     static get(ele) {
         var _a;
-        return (_a = ele.view) !== null && _a !== void 0 ? _a : new View(ele);
+        if (!ele) {
+            return null;
+        }
+        return (_a = View.try(ele, View)) !== null && _a !== void 0 ? _a : new View(ele);
     }
     static try(ele, cls) {
-        if (cls) {
-            return ele.view instanceof cls ? ele.view : undefined;
+        var _a;
+        if (!ele) {
+            return null;
         }
-        else {
-            return ele.view;
-        }
+        const view = (_a = ele[View.RAW_KEY_IN_ELEMENT]) !== null && _a !== void 0 ? _a : null;
+        cls = cls !== null && cls !== void 0 ? cls : View;
+        return (view instanceof cls) ? view : null;
     }
     constructor(arg0) {
         var _a, _b;
@@ -698,19 +706,7 @@ class View {
         else {
             this._inner = arg0;
         }
-        this._inner.view = this;
-    }
-    get hover() { return this.hoverOb.hover; }
-    get hoverOb() {
-        var _a;
-        this._hoverOb = (_a = this._hoverOb) !== null && _a !== void 0 ? _a : new HoverOb_1.HoverOb(this._inner, v => this.onHover(v));
-        return this._hoverOb;
-    }
-    get focused() { return this.focusOb.focused; }
-    get focusOb() {
-        var _a;
-        this._focusOb = (_a = this._focusOb) !== null && _a !== void 0 ? _a : new FocusOb_1.FocusOb(this._inner, v => this.onFocus(v));
-        return this._focusOb;
+        this._inner[View.RAW_KEY_IN_ELEMENT] = this;
     }
     onHover(hover) { }
     onFocus(focused) { }
@@ -756,8 +752,17 @@ class View {
         (_a = this.parent) === null || _a === void 0 ? void 0 : _a.removeChild(this);
         return this;
     }
+    addEventListener(arg0, arg1, arg2) {
+        this.inner.addEventListener(arg0, arg1, arg2);
+        return this;
+    }
+    removeEventListener(arg0, arg1, arg2) {
+        this.inner.removeEventListener(arg0, arg1, arg2);
+        return this;
+    }
 }
 exports.View = View;
+View.RAW_KEY_IN_ELEMENT = 'g_view';
 
 },{"../Observer/FocusOb":22,"../Observer/HoverOb":23,"./Styles":8}],11:[function(require,module,exports){
 "use strict";
@@ -894,7 +899,7 @@ class GlobalDown extends View_1.View {
     constructor() {
         super('div');
         document.addEventListener('pointerdown', e => {
-            if ((0, utils_1.findParent)(e.target, ele => ele.view instanceof Menu)) {
+            if ((0, utils_1.findParent)(e.target, ele => !!View_1.View.try(ele, Menu))) {
                 return;
             }
             this.inner.dispatchEvent(new PointerEvent('fired'));
@@ -1499,6 +1504,7 @@ class WorkspaceView extends View_1.View {
         this._zIndex = 0;
         this._wins = [];
         this._pointerdowns = new Map();
+        this._draggingSubwin = null;
         this._handleClick = (target) => {
             this._wins.splice(this._wins.indexOf(target), 1);
             this._wins.push(target);
@@ -1572,7 +1578,7 @@ class WorkspaceView extends View_1.View {
             this._dockRight.fakeOut();
             this._dockTop.fakeOut();
             this._dockBottom.fakeOut();
-            delete this._draggingSubwin;
+            this._draggingSubwin = null;
         };
         this.styles.applyCls('workspaceView');
         this._rect = inits.rect;
@@ -1962,18 +1968,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FocusOb = void 0;
 class FocusOb {
     get focused() { return this._focused; }
-    get destory() { return this._destory; }
+    get disabled() { return this._disabled; }
+    set disabled(v) {
+        if (this._disabled === v) {
+            return;
+        }
+        this._disabled = v;
+        if (v) {
+            this._ele.removeEventListener('focus', this._focus);
+            this._ele.removeEventListener('blur', this._blur);
+        }
+        else {
+            this._ele.addEventListener('focus', this._focus);
+            this._ele.addEventListener('blur', this._blur);
+        }
+    }
     constructor(ele, cb) {
         this._focused = false;
-        const focus = () => { this._focused = true; cb(this._focused); };
-        const blur = () => { this._focused = false; cb(this._focused); };
-        ele.addEventListener('focus', focus);
-        ele.addEventListener('blur', blur);
-        this._destory = () => {
-            ele.removeEventListener('focus', focus);
-            ele.removeEventListener('blur', blur);
-        };
+        this._disabled = false;
+        this._ele = ele;
+        this._focus = (e) => { this._focused = true; cb(this._focused, e); };
+        this._blur = (e) => { this._focused = false; cb(this._focused, e); };
     }
+    destory() { this.disabled = true; }
 }
 exports.FocusOb = FocusOb;
 
@@ -1984,18 +2001,30 @@ exports.HoverOb = void 0;
 class HoverOb {
     get hover() { return this._hover; }
     set hover(v) { this._hover = v; }
-    get destory() { return this._destory; }
-    constructor(ele, cb) {
-        this._hover = false;
-        const mouseenter = (e) => { this._hover = true; cb(this._hover); };
-        const mouseleave = (e) => { this._hover = false; cb(this._hover); };
-        ele.addEventListener('mouseenter', mouseenter);
-        ele.addEventListener('mouseleave', mouseleave);
-        this._destory = () => {
-            ele.removeEventListener('mouseenter', mouseenter);
-            ele.removeEventListener('mouseleave', mouseleave);
-        };
+    get disabled() { return this._disabled; }
+    set disabled(v) {
+        if (this._disabled === v) {
+            return;
+        }
+        this._disabled = v;
+        if (v) {
+            this._ele.removeEventListener('mouseenter', this._mouseenter);
+            this._ele.removeEventListener('mouseleave', this._mouseleave);
+        }
+        else {
+            this._ele.addEventListener('mouseenter', this._mouseenter);
+            this._ele.addEventListener('mouseleave', this._mouseleave);
+        }
     }
+    constructor(ele, cb) {
+        this._disabled = false;
+        this._hover = false;
+        this._ele = ele;
+        this._mouseenter = (e) => { this._hover = true; cb(this._hover, e); };
+        this._mouseleave = (e) => { this._hover = false; cb(this._hover, e); };
+        this.disabled = false;
+    }
+    destory() { this.disabled = true; }
 }
 exports.HoverOb = HoverOb;
 
@@ -2011,11 +2040,15 @@ function reValue(next, prev) {
     return (typeof next !== 'function') ? next : next(prev);
 }
 exports.reValue = reValue;
-function findParent(ele, check) {
-    while (ele && !check(ele)) {
-        ele = ele.parentElement;
+function findParent(any, check) {
+    if (any instanceof HTMLElement) {
+        let ret = any.parentElement;
+        while (ret && !check(ret)) {
+            ret = ret.parentElement;
+        }
+        return ret;
     }
-    return ele;
+    return null;
 }
 exports.findParent = findParent;
 

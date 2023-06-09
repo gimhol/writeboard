@@ -149,7 +149,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   private _zIndex: number = 0;
   private _wins: Subwin[] = [];
   private _pointerdowns = new Map<Subwin, () => void>();
-  private _draggingSubwin: Subwin | undefined;
+  private _draggingSubwin: Subwin | null = null;
   private _updateUndockedWinsStyle() {
     this.undockedWins.forEach((win, idx, arr) => {
       win.styles.apply(
@@ -307,7 +307,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._dockTop.fakeOut();
     this._dockBottom.fakeOut();
 
-    delete this._draggingSubwin;
+    this._draggingSubwin = null;
   }
 
   private subwinListening(subwin: Subwin, listen: boolean) {

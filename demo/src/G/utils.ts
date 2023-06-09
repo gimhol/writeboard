@@ -8,9 +8,13 @@ export function reValue<T = Exclude<any, Function>>(next: ReValue<T>, prev: T): 
 }
 export type Rect = { x: number; y: number; w: number; h: number }
 
-export function findParent(ele: HTMLElement | null, check: (ele: HTMLElement) => boolean): HTMLElement | null {
-  while (ele && !check(ele)) {
-    ele = ele.parentElement;
+export function findParent(any: any, check: (ele: HTMLElement) => boolean): HTMLElement | null {
+  if (any instanceof HTMLElement) {
+    let ret = <HTMLElement | null>any.parentElement;
+    while (ret && !check(ret)) {
+      ret = ret.parentElement;
+    }
+    return ret;
   }
-  return ele;
+  return null;
 }

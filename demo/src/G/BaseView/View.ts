@@ -11,25 +11,21 @@ export interface ViewEventMap {
   [ViewEventType.OnRemoved]: Event;
 }
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
-
-  addEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
-  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): this;
-  addEventListener(arg0: any, arg1: any, arg2: any): this {
-    this.inner.addEventListener(arg0, arg1, arg2);
-    return this;
-  }
-
-  removeEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | EventListenerOptions): this;
-  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): this;
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): this;
-  removeEventListener(arg0: any, arg1: any, arg2: any): this {
-    this.inner.removeEventListener(arg0, arg1, arg2)
-    return this;
-  }
+  static RAW_KEY_IN_ELEMENT = 'g_view'
   protected _inner: HTMLElementTagNameMap[T];
   protected _styles?: Styles<string>;
-
+  protected _hoverOb?: HoverOb;
+  protected _focusOb?: FocusOb;
+  get hover() { return this.hoverOb.hover }
+  get hoverOb(): HoverOb {
+    this._hoverOb = this._hoverOb ?? new HoverOb(this._inner, v => this.onHover(v))
+    return this._hoverOb
+  }
+  get focused() { return this.focusOb.focused }
+  get focusOb(): FocusOb {
+    this._focusOb = this._focusOb ?? new FocusOb(this._inner, v => this.onFocus(v))
+    return this._focusOb
+  }
   get styles(): Styles<string> {
     this._styles = this._styles ?? new Styles<string>(this)
     return this._styles;
@@ -37,24 +33,28 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   get id() { return this.inner.id; }
   set id(v) { this.inner.id = v; }
   get inner() { return this._inner; }
-  get parent() { return <View | undefined>(this._inner.parentElement as any)?.view; }
+  get parent() { return View.get(this._inner.parentElement) }
   get children() { return Array.from(this._inner.children).map(v => View.get(v)) }
   get draggable() { return this._inner.draggable; }
   set draggable(v) { this._inner.draggable = v; }
-
+  static get(ele: null): null;
   static get(ele: Element): View;
+  static get(ele: Element | null): View | null;
   static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T>;
-  static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> {
-    return (ele as any).view ?? new View(ele);
+  static get(ele: any): any {
+    if (!ele) { return null; }
+    return View.try(ele, View) ?? new View(ele);
   }
-  static try<V extends View>(ele: any, view: new (...args: any[]) => V): V | undefined;
-  static try<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> | undefined;
-  static try(ele: any, cls?: any) {
-    if (cls) {
-      return ele.view instanceof cls ? ele.view : undefined;
-    } else {
-      return ele.view;
-    }
+  static try(ele: null | undefined): null;
+  static try<V extends View>(ele: any, view: new (...args: any[]) => V): V | null;
+  static try<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T>;
+  static try<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T] | null): View<T> | null;
+  static try(ele: Element | null): View | null;
+  static try(ele: any, cls?: any): View | null {
+    if (!ele) { return null; }
+    const view = ele[View.RAW_KEY_IN_ELEMENT] ?? null;
+    cls = cls ?? View;
+    return (view instanceof cls) ? view : null;
   }
   constructor(element: HTMLElementTagNameMap[T]);
   constructor(tagName: T);
@@ -68,21 +68,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     } else {
       this._inner = arg0;
     }
-    (this._inner as any).view = this;
-  }
-
-  protected _hoverOb?: HoverOb;
-  get hover() { return this.hoverOb.hover }
-  get hoverOb(): HoverOb {
-    this._hoverOb = this._hoverOb ?? new HoverOb(this._inner, v => this.onHover(v))
-    return this._hoverOb
-  }
-
-  protected _focusOb?: FocusOb;
-  get focused() { return this.focusOb.focused }
-  get focusOb(): FocusOb {
-    this._focusOb = this._focusOb ?? new FocusOb(this._inner, v => this.onFocus(v))
-    return this._focusOb
+    (this._inner as any)[View.RAW_KEY_IN_ELEMENT] = this;
   }
 
   onHover(hover: boolean) { }
@@ -98,6 +84,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     });
     return this;
   }
+
   insertChild(anchorOrIdx: View | number, ...children: View[]): this {
     if (anchorOrIdx === 0 && !this._inner.children.length) {
       this.addChild(...children.reverse());
@@ -129,6 +116,22 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
 
   removeSelf(): this {
     this.parent?.removeChild(this);
+    return this;
+  }
+
+  addEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): this;
+  addEventListener(arg0: any, arg1: any, arg2: any): this {
+    this.inner.addEventListener(arg0, arg1, arg2);
+    return this;
+  }
+
+  removeEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | EventListenerOptions): this;
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): this;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): this;
+  removeEventListener(arg0: any, arg1: any, arg2: any): this {
+    this.inner.removeEventListener(arg0, arg1, arg2)
     return this;
   }
 }

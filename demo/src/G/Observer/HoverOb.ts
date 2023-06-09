@@ -1,18 +1,29 @@
 import { IObserver } from "./Base";
 export class HoverOb implements IObserver {
+  private _ele: HTMLElement;
+  private _disabled = false;
   private _hover = false;
-  private _destory: () => void;
+  private _mouseenter: (e: MouseEvent) => void;
+  private _mouseleave: (e: MouseEvent) => void;
   get hover() { return this._hover; }
   set hover(v) { this._hover = v; }
-  get destory() { return this._destory }
-  constructor(ele: HTMLElement, cb: (hover: boolean) => void) {
-    const mouseenter = (e: MouseEvent) => { this._hover = true; cb(this._hover); }
-    const mouseleave = (e: MouseEvent) => { this._hover = false; cb(this._hover); }
-    ele.addEventListener('mouseenter', mouseenter);
-    ele.addEventListener('mouseleave', mouseleave);
-    this._destory = () => {
-      ele.removeEventListener('mouseenter', mouseenter);
-      ele.removeEventListener('mouseleave', mouseleave);
+  get disabled() { return this._disabled }
+  set disabled(v) {
+    if (this._disabled === v) { return; }
+    this._disabled = v;
+    if (v) {
+      this._ele.removeEventListener('mouseenter', this._mouseenter);
+      this._ele.removeEventListener('mouseleave', this._mouseleave);
+    } else {
+      this._ele.addEventListener('mouseenter', this._mouseenter);
+      this._ele.addEventListener('mouseleave', this._mouseleave);
     }
   }
+  constructor(ele: HTMLElement, cb: (hover: boolean, e: MouseEvent) => void) {
+    this._ele = ele;
+    this._mouseenter = (e: MouseEvent) => { this._hover = true; cb(this._hover, e); }
+    this._mouseleave = (e: MouseEvent) => { this._hover = false; cb(this._hover, e); }
+    this.disabled = false;
+  }
+  destory() { this.disabled = true; }
 }

@@ -102,7 +102,7 @@ class GlobalDown extends View<'div'>{
   constructor() {
     super('div');
     document.addEventListener('pointerdown', e => {
-      if (findParent(e.target as HTMLElement, ele => (ele as any).view instanceof Menu)) {
+      if (findParent(e.target, ele => !!View.try(ele, Menu))) {
         return;
       }
       this.inner.dispatchEvent(new PointerEvent('fired'))
