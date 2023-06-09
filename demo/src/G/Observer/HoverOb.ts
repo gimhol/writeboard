@@ -17,6 +17,7 @@ export class HoverOb implements IObserver {
     if (this._disabled === v) { return; }
     this._disabled = v;
     if (v) {
+      this._hover = false;
       this._ele.removeEventListener('mouseenter', this._mouseenter);
       this._ele.removeEventListener('mouseleave', this._mouseleave);
     } else {

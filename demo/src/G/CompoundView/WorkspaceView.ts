@@ -28,6 +28,9 @@ export class IndicatorImage extends Image {
         borderRadius: 5,
         opacity: 0.0,
         transition: 'all 200ms',
+        pointerEvents: 'none'
+      }).register('appear', {
+        opacity: 0.3,
         pointerEvents: 'all'
       })
       .add('normal', '')
@@ -41,16 +44,13 @@ export class IndicatorImage extends Image {
     this.styles.remove('hover').refresh()
   }
   fakeIn() {
+    this.styles.add('appear').refresh();
     this.hoverOb.disabled = false;
-    this.styles.apply('appear', {
-      opacity: 0.3,
-      pointerEvents: 'all'
-    });
   }
   fakeOut() {
-    this.onHover(false);
     this.styles.remove('appear').refresh();
     this.hoverOb.disabled = true;
+    this.onHover(false);
   }
 }
 
