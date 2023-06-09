@@ -13,6 +13,12 @@ export enum CssPosition {
   Fixed = 'fixed',
   Sticky = 'sticky',
 }
+export enum CssFlexDirection {
+  row = 'row',
+  rowReverse = 'row-reverse',
+  column = 'column',
+  columnReverse = 'column-reverse'
+}
 type OverrideKeys = 'length' | 'parentRule' |
   'flex' |
   'objectFit' |
@@ -47,7 +53,8 @@ type OverrideKeys = 'length' | 'parentRule' |
   'borderBottomLeftRadius' |
   'borderBottomRightRadius' |
   'opacity' |
-  'zIndex'
+  'zIndex' |
+  'flexDirection'
 
 export interface Style extends Partial<Omit<CSSStyleDeclaration, OverrideKeys>> {
   flex?: number | string;
@@ -100,4 +107,35 @@ export interface Style extends Partial<Omit<CSSStyleDeclaration, OverrideKeys>> 
   marginTop?: number | string;
   opacity?: number | string;
   zIndex?: number | string;
+  flexDirection?: CssFlexDirection | 'row' | 'row-reverse' | 'column' | 'column-reverse'
 };
+
+export const autoPxKeys = new Set<keyof Style>([
+  'width',
+  'height',
+  'maxWidth',
+  'maxHeight',
+  'minWidth',
+  'minHeight',
+  'left',
+  'right',
+  'top',
+  'bottom',
+  'borderRadius',
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomLeftRadius',
+  'borderBottomRightRadius',
+  'fontSize',
+  'lineHeight',
+  'padding',
+  'paddingLeft',
+  'paddingRight',
+  'paddingBottom',
+  'paddingTop',
+  'margin',
+  'marginLeft',
+  'marginRight',
+  'marginBottom',
+  'marginTop',
+])

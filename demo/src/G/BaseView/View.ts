@@ -23,10 +23,12 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   set id(v) { this.inner.id = v; }
   get inner() { return this._inner; }
   get parent() { return <View | undefined>(this._inner.parentElement as any)?.view; }
-  get children() { return Array.from(this._inner.children).map(v => (v as any)?.view) }
+  get children() { return Array.from(this._inner.children).map(v => View.get(v)) }
   get draggable() { return this._inner.draggable; }
   set draggable(v) { this._inner.draggable = v; }
 
+  static get(ele: Element): View;
+  static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T>;
   static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T> {
     return (ele as any).view ?? new View(ele);
   }
@@ -61,7 +63,6 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     return this._hoverOb
   }
   onHover(hover: boolean) { }
-
   protected _focusOb?: FocusOb;
   get focused() { return this.focusOb.focused }
   get focusOb(): FocusOb {
@@ -69,8 +70,6 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     return this._focusOb
   }
   onFocus(focused: boolean) { }
-
-
   onBeforeAdded(parent: View): void { }
   onAfterAdded(parent: View): void { }
   onBeforeRemoved(parent: View): void { }
@@ -80,24 +79,43 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
       child.onBeforeAdded(this);
       this._inner.append(child.inner);
       child.onAfterAdded(this);
-    })
+    });
+    return this;
   }
-  insertChild(anchor: View, ...children: View[]) {
-    children.forEach(child => {
-      child.onBeforeAdded(this);
-      this._inner.insertBefore(child.inner, anchor.inner);
-      child.onAfterAdded(this);
-    })
+  insertChild(anchor: View | number, ...children: View[]): this {
+    if (anchor === 0 && !this._inner.children.length) {
+      this.addChild(...children.reverse());
+    } else if (typeof anchor === 'number') {
+      const ele = this._inner.children[anchor];
+      if (!ele) {
+        console.error('[View] insertChild failed! anchor element not found, idx = ', anchor)
+        return this;
+      }
+      children.forEach(child => {
+        child.onBeforeAdded(this);
+        this._inner.insertBefore(child.inner, ele);
+        child.onAfterAdded(this);
+      })
+    } else {
+      children.forEach(child => {
+        child.onBeforeAdded(this);
+        this._inner.insertBefore(child.inner, anchor.inner);
+        child.onAfterAdded(this);
+      })
+    }
+    return this;
   }
-  removeChild(...children: View[]) {
+  removeChild(...children: View[]): this {
     children.forEach(child => {
       child.onBeforeRemoved(this);
       this._inner.removeChild(child.inner);
       child.onAfterRemoved(this);
     })
+    return this;
   }
-  removeSelf() {
+  removeSelf(): this {
     this.parent?.removeChild(this);
+    return this;
   }
   get styles(): Styles<string> {
     this._styles = this._styles ?? new Styles<string>(this)

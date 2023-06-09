@@ -15,7 +15,7 @@ import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { MergedSubwin } from "./G/CompoundView/MergedSubwin";
 import { Subwin } from "./G/CompoundView/Subwin";
-import { SubwinWorkspace } from "./G/CompoundView/SubwinWorkspace";
+import { WorkspaceView } from "./G/CompoundView/WorkspaceView";
 import { LayersView } from "./LayersView";
 import { ToolsView } from "./ToolsView";
 import { RGBA } from "./colorPalette/Color";
@@ -25,7 +25,7 @@ import demo_rect_n_oval from "./demo_rect_n_oval";
 const factory = FactoryMgr.createFactory(FactoryEnum.Default)
 let board: WhiteBoard
 
-const mainView = new SubwinWorkspace('body', {
+const workspace = window.workspace = new WorkspaceView('body', {
   rect() {
     return {
       x: 0, y: 0,
@@ -36,7 +36,7 @@ const mainView = new SubwinWorkspace('body', {
   zIndex: 1000,
 });
 
-const menu = new Menu(mainView, {
+const menu = new Menu(workspace, {
   items: [{
     key: 'tool_view',
     label: '工具',
@@ -95,9 +95,13 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
 });
 
 const mergedSubwin2 = new MergedSubwin();
+workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2)
+
 const mergedSubwin = new MergedSubwin();
+workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2)
 
 const layersView = new LayersView();
+workspace.addChild(layersView).addSubWin(layersView)
 
 layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
   const layerItem = layersView.addLayer({
@@ -122,18 +126,14 @@ layersView.addLayer({
   id: factory.newLayerId()
 });
 
-
 const toolsView = new ToolsView;
+workspace.addChild(toolsView).addSubWin(toolsView)
 toolsView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType)
 
 const colorView = new ColorView;
+workspace.addChild(colorView).addSubWin(colorView)
 colorView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
-
-mergedSubwin.addSubWin(layersView)
-mergedSubwin.addSubWin(toolsView)
-mergedSubwin.addSubWin(colorView)
-
 colorView.inner.addEventListener(ColorView.EventTypes.LineColorChange, (e) => {
   const rgba = (e as CustomEvent).detail as RGBA;
   FactoryMgr.listTools().forEach(toolType => {
@@ -154,13 +154,11 @@ colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
 })
 
 const toyView = new Subwin();
+workspace.addChild(toyView).addSubWin(toyView)
 toyView.header.title = 'others';
+workspace.addChild(toyView);
 
-mainView.addChild(toyView);
-mainView.addChild(mergedSubwin2);
-mainView.addChild(mergedSubwin);
-
-window.addEventListener('resize', () => mainView.clampAllSubwin())
+window.addEventListener('resize', () => workspace.clampAllSubwin())
 
 toyView.content = new View('div');
 toyView.content.styles.apply('', {
@@ -245,6 +243,7 @@ let _recorder: Recorder | undefined
 let _player: Player | undefined
 
 const jsonView = new Subwin();
+workspace.addChild(jsonView).addSubWin(jsonView)
 jsonView.header.title = 'json';
 jsonView.content = new View('div');
 jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
@@ -256,56 +255,54 @@ jsonView.content.addChild(new Button({ content: '反JSON化' }).addEventListener
   board.fromJsonStr(json_textarea.inner.value)
 }));
 jsonView.content.addChild(json_textarea);
-mergedSubwin.addSubWin(jsonView);
-mainView.addSubWin(jsonView);
 
-{
-  const startRecord = () => {
-    _recorder?.destory();
-    _recorder = new Recorder();
-    _recorder.start(board);
-  }
-  const endRecord = () => {
-    if (!_recorder_textarea || !_recorder)
-      return
-    _recorder_textarea.inner.value = _recorder.toJsonStr()
-    _recorder?.destory()
-    _recorder = undefined
-  }
-  const replay = (str: string) => {
-    _player?.stop()
-    _player = new Player()
-    _player.start(board, JSON.parse(str))
-  }
 
-  const recorderView = new Subwin();
-  recorderView.header.title = 'recorder';
-  recorderView.content = new View('div');
-  recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
-  const _recorder_textarea = new View('textarea')
-  recorderView.content.addChild(new Button({ content: '开始录制' }).addEventListener('click', startRecord));
-  recorderView.content.addChild(new Button({ content: '停止录制' }).addEventListener('click', endRecord));
-  recorderView.content.addChild(new Button({ content: '回放' }).addEventListener('click', () => {
-    endRecord()
-    replay(_recorder_textarea.inner.value)
-  }));
-
-  recorderView.content.addChild(new Button({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
-    endRecord()
-    replay(demo_helloworld)
-  }));
-  recorderView.content.addChild(new Button({ content: 'replay: rect & oval' }).addEventListener('click', () => {
-    endRecord()
-    replay(demo_rect_n_oval)
-  }));
-  recorderView.content.addChild(_recorder_textarea);
-  mergedSubwin.addSubWin(recorderView);
-  mainView.addSubWin(recorderView);
+const startRecord = () => {
+  _recorder?.destory();
+  _recorder = new Recorder();
+  _recorder.start(board);
+}
+const endRecord = () => {
+  if (!_recorder_textarea || !_recorder)
+    return
+  _recorder_textarea.inner.value = _recorder.toJsonStr()
+  _recorder?.destory()
+  _recorder = undefined
+}
+const replay = (str: string) => {
+  _player?.stop()
+  _player = new Player()
+  _player.start(board, JSON.parse(str))
 }
 
+const recorderView = new Subwin();
+workspace.addChild(recorderView).addSubWin(recorderView)
+recorderView.header.title = 'recorder';
+recorderView.content = new View('div');
+recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
+const _recorder_textarea = new View('textarea')
+recorderView.content.addChild(new Button({ content: '开始录制' }).addEventListener('click', startRecord));
+recorderView.content.addChild(new Button({ content: '停止录制' }).addEventListener('click', endRecord));
+recorderView.content.addChild(new Button({ content: '回放' }).addEventListener('click', () => {
+  endRecord()
+  replay(_recorder_textarea.inner.value)
+}));
+
+recorderView.content.addChild(new Button({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
+  endRecord()
+  replay(demo_helloworld)
+}));
+recorderView.content.addChild(new Button({ content: 'replay: rect & oval' }).addEventListener('click', () => {
+  endRecord()
+  replay(demo_rect_n_oval)
+}));
+recorderView.content.addChild(_recorder_textarea);
+
+
 const rootView = new View('div');
-rootView.styles.applyCls('root');
-mainView.addChild(rootView);
+rootView.styles.apply('', { pointerEvents: 'all' }).applyCls('root');
+
+workspace.dockView.setContent(rootView);
 
 const blackboard = new View('div');
 blackboard.styles.applyCls('blackboard');
@@ -335,14 +332,4 @@ const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
   return { info: layer.state, onscreen: canvas.inner }
 })
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
-
-mainView.addSubWin(
-  toolsView,
-  layersView,
-  colorView,
-  mergedSubwin,
-  mergedSubwin2,
-  toyView
-);
-
 (window as any).board = board;

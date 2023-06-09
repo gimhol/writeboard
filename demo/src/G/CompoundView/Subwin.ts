@@ -1,6 +1,6 @@
 import { SubwinFooter } from "./SubwinFooter";
 import { SubwinHeader } from "./SubwinHeader";
-import type { SubwinWorkspace } from "./SubwinWorkspace";
+import type { WorkspaceView } from "./WorkspaceView";
 import { View } from "../BaseView/View";
 import { ViewDragger } from "../Helper/ViewDragger";
 export enum StyleNames {
@@ -11,7 +11,7 @@ export enum StyleNames {
 }
 export class Subwin extends View<'div'> {
   static StyleNames = StyleNames;
-  private _workspace?: SubwinWorkspace;
+  private _workspace?: WorkspaceView;
   private _header = new SubwinHeader();
   private _footer = new SubwinFooter();
   private _content?: View | null;

@@ -62,7 +62,7 @@ export class LayersView extends Subwin {
     this._layers.push(item);
     this.content?.addChild(item);
     item.addEventListener('click', () => {
-      this.content?.children?.forEach(v => v.selected = false)
+      this.content?.children?.forEach(v => (v as any).selected = false)
       item.selected = true;
 
       type Detail = LayersViewEventMap[LayersViewEventType.LayerActived]['detail'];

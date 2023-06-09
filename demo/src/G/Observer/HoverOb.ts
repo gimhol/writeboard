@@ -3,6 +3,7 @@ export class HoverOb implements IObserver {
   private _hover = false;
   private _destory: () => void;
   get hover() { return this._hover; }
+  set hover(v) { this._hover = v; }
   get destory() { return this._destory }
   constructor(ele: HTMLElement, cb: (hover: boolean) => void) {
     const mouseenter = (e: MouseEvent) => { this._hover = true; cb(this._hover); }

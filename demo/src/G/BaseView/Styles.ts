@@ -1,4 +1,4 @@
-import { Style } from "./StyleType";
+import { Style, autoPxKeys } from "./StyleType";
 import { ReValue, reValue } from "../utils";
 import { View } from "./View";
 
@@ -93,32 +93,3 @@ export class Styles<T extends string = string>{
     return ret;
   }
 }
-const autoPxKeys = new Set<keyof Style>([
-  'width',
-  'height',
-  'maxWidth',
-  'maxHeight',
-  'minWidth',
-  'minHeight',
-  'left',
-  'right',
-  'top',
-  'bottom',
-  'borderRadius',
-  'borderTopLeftRadius',
-  'borderTopRightRadius',
-  'borderBottomLeftRadius',
-  'borderBottomRightRadius',
-  'fontSize',
-  'lineHeight',
-  'padding',
-  'paddingLeft',
-  'paddingRight',
-  'paddingBottom',
-  'paddingTop',
-  'margin',
-  'marginLeft',
-  'marginRight',
-  'marginBottom',
-  'marginTop',
-])

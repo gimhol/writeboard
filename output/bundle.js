@@ -391,7 +391,7 @@ var SizeType;
 },{}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CssPosition = exports.CssObjectFit = void 0;
+exports.autoPxKeys = exports.CssFlexDirection = exports.CssPosition = exports.CssObjectFit = void 0;
 var CssObjectFit;
 (function (CssObjectFit) {
     CssObjectFit["Fill"] = "fill";
@@ -408,12 +408,49 @@ var CssPosition;
     CssPosition["Fixed"] = "fixed";
     CssPosition["Sticky"] = "sticky";
 })(CssPosition = exports.CssPosition || (exports.CssPosition = {}));
+var CssFlexDirection;
+(function (CssFlexDirection) {
+    CssFlexDirection["row"] = "row";
+    CssFlexDirection["rowReverse"] = "row-reverse";
+    CssFlexDirection["column"] = "column";
+    CssFlexDirection["columnReverse"] = "column-reverse";
+})(CssFlexDirection = exports.CssFlexDirection || (exports.CssFlexDirection = {}));
 ;
+exports.autoPxKeys = new Set([
+    'width',
+    'height',
+    'maxWidth',
+    'maxHeight',
+    'minWidth',
+    'minHeight',
+    'left',
+    'right',
+    'top',
+    'bottom',
+    'borderRadius',
+    'borderTopLeftRadius',
+    'borderTopRightRadius',
+    'borderBottomLeftRadius',
+    'borderBottomRightRadius',
+    'fontSize',
+    'lineHeight',
+    'padding',
+    'paddingLeft',
+    'paddingRight',
+    'paddingBottom',
+    'paddingTop',
+    'margin',
+    'marginLeft',
+    'marginRight',
+    'marginBottom',
+    'marginTop',
+]);
 
 },{}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Styles = void 0;
+const StyleType_1 = require("./StyleType");
 const utils_1 = require("../utils");
 class Styles {
     get view() { return this._view; }
@@ -496,7 +533,7 @@ class Styles {
     }
     makeUp(style) {
         const ret = Object.assign({}, style);
-        autoPxKeys.forEach(key => {
+        StyleType_1.autoPxKeys.forEach(key => {
             if (typeof ret[key] === 'number') {
                 ret[key] = `${ret[key]}px`;
             }
@@ -505,37 +542,8 @@ class Styles {
     }
 }
 exports.Styles = Styles;
-const autoPxKeys = new Set([
-    'width',
-    'height',
-    'maxWidth',
-    'maxHeight',
-    'minWidth',
-    'minHeight',
-    'left',
-    'right',
-    'top',
-    'bottom',
-    'borderRadius',
-    'borderTopLeftRadius',
-    'borderTopRightRadius',
-    'borderBottomLeftRadius',
-    'borderBottomRightRadius',
-    'fontSize',
-    'lineHeight',
-    'padding',
-    'paddingLeft',
-    'paddingRight',
-    'paddingBottom',
-    'paddingTop',
-    'margin',
-    'marginLeft',
-    'marginRight',
-    'marginBottom',
-    'marginTop',
-]);
 
-},{"../utils":25}],9:[function(require,module,exports){
+},{"../utils":25,"./StyleType":7}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextInput = void 0;
@@ -605,7 +613,7 @@ class View {
     set id(v) { this.inner.id = v; }
     get inner() { return this._inner; }
     get parent() { var _a; return (_a = this._inner.parentElement) === null || _a === void 0 ? void 0 : _a.view; }
-    get children() { return Array.from(this._inner.children).map(v => v === null || v === void 0 ? void 0 : v.view); }
+    get children() { return Array.from(this._inner.children).map(v => View.get(v)); }
     get draggable() { return this._inner.draggable; }
     set draggable(v) { this._inner.draggable = v; }
     static get(ele) {
@@ -660,13 +668,32 @@ class View {
             this._inner.append(child.inner);
             child.onAfterAdded(this);
         });
+        return this;
     }
     insertChild(anchor, ...children) {
-        children.forEach(child => {
-            child.onBeforeAdded(this);
-            this._inner.insertBefore(child.inner, anchor.inner);
-            child.onAfterAdded(this);
-        });
+        if (anchor === 0 && !this._inner.children.length) {
+            this.addChild(...children.reverse());
+        }
+        else if (typeof anchor === 'number') {
+            const ele = this._inner.children[anchor];
+            if (!ele) {
+                console.error('[View] insertChild failed! anchor element not found, idx = ', anchor);
+                return this;
+            }
+            children.forEach(child => {
+                child.onBeforeAdded(this);
+                this._inner.insertBefore(child.inner, ele);
+                child.onAfterAdded(this);
+            });
+        }
+        else {
+            children.forEach(child => {
+                child.onBeforeAdded(this);
+                this._inner.insertBefore(child.inner, anchor.inner);
+                child.onAfterAdded(this);
+            });
+        }
+        return this;
     }
     removeChild(...children) {
         children.forEach(child => {
@@ -674,10 +701,12 @@ class View {
             this._inner.removeChild(child.inner);
             child.onAfterRemoved(this);
         });
+        return this;
     }
     removeSelf() {
         var _a;
         (_a = this.parent) === null || _a === void 0 ? void 0 : _a.removeChild(this);
+        return this;
     }
     get styles() {
         var _a;
@@ -1207,41 +1236,52 @@ SubwinHeader.StyleNames = StyleNames;
 },{"../BaseView/View":11,"../Observer/FocusOb":23,"./IconButton":12}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SubwinWorkspace = exports.IndicatorImage = void 0;
+exports.WorkspaceView = exports.DockView = exports.IndicatorImage = void 0;
 const Image_1 = require("../BaseView/Image");
 const View_1 = require("../BaseView/View");
-const Subwin_1 = require("./Subwin");
 const EventType_1 = require("../Events/EventType");
 const utils_1 = require("../utils");
+const Subwin_1 = require("./Subwin");
 class IndicatorImage extends Image_1.Image {
     constructor(inits) {
         super({ src: inits.src });
         this.styles
+            .register('', Object.assign({}, inits.style))
             .register('hover', {
             opacity: 0.8,
         })
             .register('normal', {
-            width: 32,
-            height: 32,
+            width: 48,
+            height: 48,
             zIndex: '10000',
             userSelect: 'none',
             background: '#000000FF',
             borderRadius: 5,
-            opacity: 0.3,
+            opacity: 0.0,
             transition: 'all 200ms',
+            pointerEvents: 'all'
         })
-            .register('', Object.assign({}, inits.style))
             .add('normal', '')
             .refresh();
         this.draggable = false;
         this.hoverOb;
     }
     onHover(hover) {
-        console.log(this.styles.applieds);
         this.styles[hover ? 'add' : 'remove']('hover').refresh();
     }
     onBeforeRemoved(parent) {
         this.styles.remove('hover').refresh();
+    }
+    fakeIn() {
+        this.styles.apply('appear', {
+            opacity: 0.3,
+            pointerEvents: 'all'
+        });
+    }
+    fakeOut() {
+        this.hoverOb.hover = false;
+        this.onHover(false);
+        this.styles.remove('appear').refresh();
     }
 }
 exports.IndicatorImage = IndicatorImage;
@@ -1265,12 +1305,127 @@ class IndicatorView extends View_1.View {
         this.addChild(new View_1.View('div'), this._top, new View_1.View('div'), this._left, this._center, this._right, new View_1.View('div'), this._bottom, new View_1.View('div'));
     }
 }
-class SubwinWorkspace extends View_1.View {
-    _updateSubWinStyle() {
-        this._wins.forEach((win, idx, arr) => {
-            win.styles.apply('in_workspace', v => (Object.assign(Object.assign({}, v), { zIndex: `${this._zIndex + idx}`, maxWidth: '100%', maxHeight: '100%' })));
+class DockView extends View_1.View {
+    get direction() { return this._direction; }
+    constructor(direction = '') {
+        super('div');
+        this._direction = '';
+        this._direction = direction;
+        if (direction === 'h') {
+            this.styles.apply('', { display: "flex", flexDirection: 'row' });
+        }
+        else if (direction === 'v') {
+            this.styles.apply('', { display: "flex", flexDirection: 'column' });
+        }
+        this.styles.applyCls('DockView');
+        this.styles.apply('normal', {
+            pointerEvents: 'none',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            left: 0,
+            top: 0,
+            alignItems: 'stretch'
+        });
+    }
+    setContent(view) {
+        super.addChild(view);
+    }
+    addChild(...children) {
+        children.forEach(v => v.removeSelf());
+        super.addChild(...children);
+        this.updateChildrenStyles(children);
+        return this;
+    }
+    insertChild(anchor, ...children) {
+        children.forEach(v => v.removeSelf());
+        super.insertChild(anchor, ...children);
+        this.updateChildrenStyles(children);
+        return this;
+    }
+    updateChildrenStyles(children) {
+        children.forEach(v => {
+            if (v instanceof DockView) {
+                v.styles.apply('docked', {
+                    position: 'relative',
+                    flex: 1
+                });
+            }
+            else if (v instanceof Subwin_1.Subwin) {
+                v.dragger.disabled = true;
+                v.styles.apply('docked', {
+                    pointerEvents: 'all',
+                    position: 'relative',
+                    resize: 'none',
+                    width: 'unset',
+                    height: 'unset',
+                    left: 'unset',
+                    top: 'unset',
+                    boxShadow: 'unset',
+                    borderRadius: 0,
+                    zIndex: 'unset'
+                });
+            }
+        });
+    }
+}
+exports.DockView = DockView;
+class WorkspaceView extends View_1.View {
+    _updateUndockedWinsStyle() {
+        this.undockedWins.forEach((win, idx, arr) => {
+            win.styles.apply('free_in_workspace', {
+                zIndex: `${this._zIndex + idx}`,
+                maxWidth: '100%',
+                maxHeight: '100%'
+            });
             idx < arr.length - 1 ? win.lower() : win.raise();
         });
+    }
+    get dockView() { return this._dockView; }
+    dockToTop(subwin) {
+        console.log(`[Workspace] dockToTop()`);
+        if ('v' === this._dockView.direction) {
+            this._dockView.insertChild(0, subwin);
+        }
+        else {
+            this._dockView = new DockView('v').insertChild(0, this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    dockToBottom(subwin) {
+        console.log(`[Workspace] dockToBottom()`);
+        if ('v' === this._dockView.direction) {
+            this._dockView.addChild(subwin);
+        }
+        else {
+            this._dockView.removeSelf();
+            this._dockView = new DockView('v').addChild(this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    dockToLeft(subwin) {
+        console.log(`[Workspace] dockToLeft()`);
+        if ('h' === this._dockView.direction) {
+            this._dockView.insertChild(0, subwin);
+        }
+        else {
+            this._dockView.removeSelf();
+            this._dockView = new DockView('h').insertChild(0, this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    dockToRight(subwin) {
+        console.log(`[Workspace] dockToRight()`);
+        if ('h' === this._dockView.direction) {
+            this._dockView.addChild(subwin);
+        }
+        else {
+            this._dockView = new DockView('h').addChild(this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    freeSubwin(subwin) {
+        subwin.styles.forgo('dock_in_workspace');
     }
     constructor(arg0, inits) {
         var _a;
@@ -1281,38 +1436,39 @@ class SubwinWorkspace extends View_1.View {
         this._handleClick = (target) => {
             this._wins.splice(this._wins.indexOf(target), 1);
             this._wins.push(target);
-            this._updateSubWinStyle();
+            this._updateUndockedWinsStyle();
         };
-        this._dragInLeft = new IndicatorImage({
+        this._dockLeft = new IndicatorImage({
             src: './ic_dock_to_left.svg', style: {
                 position: 'absolute', left: 16, top: '50%'
             }
         });
-        this._dragInTop = new IndicatorImage({
+        this._dockTop = new IndicatorImage({
             src: './ic_dock_to_top.svg', style: {
                 position: 'absolute', left: '50%', top: 16
             }
         });
-        this._dragInRight = new IndicatorImage({
+        this._dockRight = new IndicatorImage({
             src: './ic_dock_to_right.svg', style: {
                 position: 'absolute', right: 16, top: '50%'
             }
         });
-        this._dragInBottom = new IndicatorImage({
+        this._dockBottom = new IndicatorImage({
             src: './ic_dock_to_bottom.svg', style: {
                 position: 'absolute', left: '50%', bottom: 16
             }
         });
+        this._dockView = new DockView();
         this._onPointerMove = (e) => { };
         this._onViewDragStart = (e) => {
             this._draggingSubwin = View_1.View.try(e.target, Subwin_1.Subwin);
             if (!this._draggingSubwin) {
                 return;
             }
-            this.addChild(this._dragInLeft);
-            this.addChild(this._dragInRight);
-            this.addChild(this._dragInTop);
-            this.addChild(this._dragInBottom);
+            this._dockLeft.fakeIn();
+            this._dockRight.fakeIn();
+            this._dockTop.fakeIn();
+            this._dockBottom.fakeIn();
             this.addEventListener('pointermove', this._onPointerMove, true);
         };
         this._onViewDragging = (e) => {
@@ -1327,30 +1483,50 @@ class SubwinWorkspace extends View_1.View {
                 return;
             }
             this.removeEventListener('pointermove', this._onPointerMove, true);
-            this._dragInLeft.removeSelf();
-            this._dragInRight.removeSelf();
-            this._dragInTop.removeSelf();
-            this._dragInBottom.removeSelf();
-            const rect = (0, utils_1.getValue)(this._rect);
-            if (!rect) {
-                return;
+            if (this._dockBottom.hover) {
+                this.dockToBottom(subwin);
             }
-            this.clampSubwin(subwin, rect);
+            else if (this._dockTop.hover) {
+                this.dockToTop(subwin);
+            }
+            else if (this._dockLeft.hover) {
+                this.dockToLeft(subwin);
+            }
+            else if (this._dockRight.hover) {
+                this.dockToRight(subwin);
+            }
+            else {
+                const rect = (0, utils_1.getValue)(this._rect);
+                if (!rect) {
+                    return;
+                }
+                this.clampSubwin(subwin, rect);
+            }
+            this._dockLeft.fakeOut();
+            this._dockRight.fakeOut();
+            this._dockTop.fakeOut();
+            this._dockBottom.fakeOut();
             delete this._draggingSubwin;
         };
+        this.styles.applyCls('workspaceView');
         this._rect = inits.rect;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
         if (inits === null || inits === void 0 ? void 0 : inits.wins) {
             this.addSubWin(...inits.wins);
-            this._updateSubWinStyle();
+            this._updateUndockedWinsStyle();
         }
+        this.addChild(this._dockView);
+        this.addChild(this._dockLeft);
+        this.addChild(this._dockRight);
+        this.addChild(this._dockTop);
+        this.addChild(this._dockBottom);
     }
     clampAllSubwin() {
         const rect = (0, utils_1.getValue)(this._rect);
         if (!rect) {
             return;
         }
-        this._wins.forEach(v => this.clampSubwin(v, rect));
+        this._wins.forEach(v => v.parent === this && this.clampSubwin(v, rect));
     }
     clampSubwin(subwin, rect) {
         let { offsetLeft: x, offsetTop: y, offsetWidth: w, offsetHeight: h, } = subwin.inner;
@@ -1396,15 +1572,18 @@ class SubwinWorkspace extends View_1.View {
         this._wins.forEach(v => this.subwinListening(v, false));
         this._wins = Array.from(new Set(this._wins.concat(subwins)));
         this._wins.forEach(v => this.subwinListening(v, true));
-        this._updateSubWinStyle();
+        this._updateUndockedWinsStyle();
     }
     removeSubwin(...subwins) {
         subwins.forEach(v => this.subwinListening(v, false));
         this._wins.filter(v => subwins.indexOf(v) < 0);
-        this._updateSubWinStyle();
+        this._updateUndockedWinsStyle();
+    }
+    get undockedWins() {
+        return this.children.filter(v => v instanceof Subwin_1.Subwin);
     }
 }
-exports.SubwinWorkspace = SubwinWorkspace;
+exports.WorkspaceView = WorkspaceView;
 
 },{"../BaseView/Image":4,"../BaseView/View":11,"../Events/EventType":19,"../utils":25,"./Subwin":15}],19:[function(require,module,exports){
 "use strict";
@@ -1738,6 +1917,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HoverOb = void 0;
 class HoverOb {
     get hover() { return this._hover; }
+    set hover(v) { this._hover = v; }
     get destory() { return this._destory; }
     constructor(ele, cb) {
         this._hover = false;
@@ -2586,14 +2766,14 @@ const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
 const MergedSubwin_1 = require("./G/CompoundView/MergedSubwin");
 const Subwin_1 = require("./G/CompoundView/Subwin");
-const SubwinWorkspace_1 = require("./G/CompoundView/SubwinWorkspace");
+const WorkspaceView_1 = require("./G/CompoundView/WorkspaceView");
 const LayersView_1 = require("./LayersView");
 const ToolsView_1 = require("./ToolsView");
 const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
 const demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
 const factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
 let board;
-const mainView = new SubwinWorkspace_1.SubwinWorkspace('body', {
+const workspace = window.workspace = new WorkspaceView_1.WorkspaceView('body', {
     rect() {
         return {
             x: 0, y: 0,
@@ -2603,7 +2783,7 @@ const mainView = new SubwinWorkspace_1.SubwinWorkspace('body', {
     },
     zIndex: 1000,
 });
-const menu = new Menu_1.Menu(mainView, {
+const menu = new Menu_1.Menu(workspace, {
     items: [{
             key: 'tool_view',
             label: '工具',
@@ -2661,8 +2841,11 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
     }
 });
 const mergedSubwin2 = new MergedSubwin_1.MergedSubwin();
+workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2);
 const mergedSubwin = new MergedSubwin_1.MergedSubwin();
+workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2);
 const layersView = new LayersView_1.LayersView();
+workspace.addChild(layersView).addSubWin(layersView);
 layersView.addEventListener(LayersView_1.LayersView.EventType.LayerAdded, () => {
     const layerItem = layersView.addLayer({
         name: '' + Date.now(),
@@ -2688,13 +2871,12 @@ layersView.addLayer({
     id: factory.newLayerId()
 });
 const toolsView = new ToolsView_1.ToolsView;
+workspace.addChild(toolsView).addSubWin(toolsView);
 toolsView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: 5 })));
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType);
 const colorView = new ColorView_1.default;
+workspace.addChild(colorView).addSubWin(colorView);
 colorView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '400px' })));
-mergedSubwin.addSubWin(layersView);
-mergedSubwin.addSubWin(toolsView);
-mergedSubwin.addSubWin(colorView);
 colorView.inner.addEventListener(ColorView_1.default.EventTypes.LineColorChange, (e) => {
     const rgba = e.detail;
     dist_1.FactoryMgr.listTools().forEach(toolType => {
@@ -2718,11 +2900,10 @@ colorView.inner.addEventListener(ColorView_1.default.EventTypes.FillColorChange,
     });
 });
 const toyView = new Subwin_1.Subwin();
+workspace.addChild(toyView).addSubWin(toyView);
 toyView.header.title = 'others';
-mainView.addChild(toyView);
-mainView.addChild(mergedSubwin2);
-mainView.addChild(mergedSubwin);
-window.addEventListener('resize', () => mainView.clampAllSubwin());
+workspace.addChild(toyView);
+window.addEventListener('resize', () => workspace.clampAllSubwin());
 toyView.content = new View_1.View('div');
 toyView.content.styles.apply('', {
     display: 'flex',
@@ -2795,6 +2976,7 @@ toyView.content.addChild(new Button_1.Button({
 let _recorder;
 let _player;
 const jsonView = new Subwin_1.Subwin();
+workspace.addChild(jsonView).addSubWin(jsonView);
 jsonView.header.title = 'json';
 jsonView.content = new View_1.View('div');
 jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
@@ -2806,52 +2988,47 @@ jsonView.content.addChild(new Button_1.Button({ content: '反JSON化' }).addEven
     board.fromJsonStr(json_textarea.inner.value);
 }));
 jsonView.content.addChild(json_textarea);
-mergedSubwin.addSubWin(jsonView);
-mainView.addSubWin(jsonView);
-{
-    const startRecord = () => {
-        _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
-        _recorder = new dist_1.Recorder();
-        _recorder.start(board);
-    };
-    const endRecord = () => {
-        if (!_recorder_textarea || !_recorder)
-            return;
-        _recorder_textarea.inner.value = _recorder.toJsonStr();
-        _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
-        _recorder = undefined;
-    };
-    const replay = (str) => {
-        _player === null || _player === void 0 ? void 0 : _player.stop();
-        _player = new dist_1.Player();
-        _player.start(board, JSON.parse(str));
-    };
-    const recorderView = new Subwin_1.Subwin();
-    recorderView.header.title = 'recorder';
-    recorderView.content = new View_1.View('div');
-    recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
-    const _recorder_textarea = new View_1.View('textarea');
-    recorderView.content.addChild(new Button_1.Button({ content: '开始录制' }).addEventListener('click', startRecord));
-    recorderView.content.addChild(new Button_1.Button({ content: '停止录制' }).addEventListener('click', endRecord));
-    recorderView.content.addChild(new Button_1.Button({ content: '回放' }).addEventListener('click', () => {
-        endRecord();
-        replay(_recorder_textarea.inner.value);
-    }));
-    recorderView.content.addChild(new Button_1.Button({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
-        endRecord();
-        replay(demo_helloworld_1.default);
-    }));
-    recorderView.content.addChild(new Button_1.Button({ content: 'replay: rect & oval' }).addEventListener('click', () => {
-        endRecord();
-        replay(demo_rect_n_oval_1.default);
-    }));
-    recorderView.content.addChild(_recorder_textarea);
-    mergedSubwin.addSubWin(recorderView);
-    mainView.addSubWin(recorderView);
-}
+const startRecord = () => {
+    _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
+    _recorder = new dist_1.Recorder();
+    _recorder.start(board);
+};
+const endRecord = () => {
+    if (!_recorder_textarea || !_recorder)
+        return;
+    _recorder_textarea.inner.value = _recorder.toJsonStr();
+    _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
+    _recorder = undefined;
+};
+const replay = (str) => {
+    _player === null || _player === void 0 ? void 0 : _player.stop();
+    _player = new dist_1.Player();
+    _player.start(board, JSON.parse(str));
+};
+const recorderView = new Subwin_1.Subwin();
+workspace.addChild(recorderView).addSubWin(recorderView);
+recorderView.header.title = 'recorder';
+recorderView.content = new View_1.View('div');
+recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
+const _recorder_textarea = new View_1.View('textarea');
+recorderView.content.addChild(new Button_1.Button({ content: '开始录制' }).addEventListener('click', startRecord));
+recorderView.content.addChild(new Button_1.Button({ content: '停止录制' }).addEventListener('click', endRecord));
+recorderView.content.addChild(new Button_1.Button({ content: '回放' }).addEventListener('click', () => {
+    endRecord();
+    replay(_recorder_textarea.inner.value);
+}));
+recorderView.content.addChild(new Button_1.Button({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
+    endRecord();
+    replay(demo_helloworld_1.default);
+}));
+recorderView.content.addChild(new Button_1.Button({ content: 'replay: rect & oval' }).addEventListener('click', () => {
+    endRecord();
+    replay(demo_rect_n_oval_1.default);
+}));
+recorderView.content.addChild(_recorder_textarea);
 const rootView = new View_1.View('div');
-rootView.styles.applyCls('root');
-mainView.addChild(rootView);
+rootView.styles.apply('', { pointerEvents: 'all' }).applyCls('root');
+workspace.dockView.setContent(rootView);
 const blackboard = new View_1.View('div');
 blackboard.styles.applyCls('blackboard');
 rootView.addChild(blackboard);
@@ -2878,10 +3055,9 @@ const layers = layersView.layers().map((layer, idx) => {
     return { info: layer.state, onscreen: canvas.inner };
 });
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
-mainView.addSubWin(toolsView, layersView, colorView, mergedSubwin, mergedSubwin2, toyView);
 window.board = board;
 
-},{"../../dist":43,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":11,"./G/CompoundView/Menu":13,"./G/CompoundView/MergedSubwin":14,"./G/CompoundView/Subwin":15,"./G/CompoundView/SubwinWorkspace":18,"./LayersView":26,"./ToolsView":27,"./demo_helloworld":30,"./demo_rect_n_oval":31}],33:[function(require,module,exports){
+},{"../../dist":43,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":11,"./G/CompoundView/Menu":13,"./G/CompoundView/MergedSubwin":14,"./G/CompoundView/Subwin":15,"./G/CompoundView/WorkspaceView":18,"./LayersView":26,"./ToolsView":27,"./demo_helloworld":30,"./demo_rect_n_oval":31}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
