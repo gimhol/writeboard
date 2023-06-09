@@ -58,14 +58,13 @@ export class Subwin extends View<'div'> {
     this.addChild(this._header, this._footer);
     this.addChild();
 
-
     this._dragger = new ViewDragger({
       view: this,
       handles: [
         this.header.titleView,
         this.header.iconView
       ]
-    }); 
+    });
 
     new ResizeObserver(() => {
       const { width, height } = getComputedStyle(this.inner);

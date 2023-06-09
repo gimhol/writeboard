@@ -16,6 +16,8 @@ export interface ButtonInits {
 export enum ButtonStyleNames {
   Normal = 'normal',
   Hover = 'hover',
+  Disabled = 'disabled',
+  Checked = 'checked',
   Small = 'small',
   Middle = 'middle',
   Large = 'large',
@@ -78,6 +80,53 @@ export class Button extends View<'button'> {
     this._inner.disabled = v;
     this.updateStyle();
   }
+
+  constructor() {
+    super('button');
+    this.hoverOb;
+    this.styles.register(ButtonStyleNames.Small, {
+      height: 18,
+      lineHeight: 18,
+      minWidth: 18,
+      borderRadius: 5,
+      fontSize: 12,
+    }).register(ButtonStyleNames.Middle, {
+      height: 24,
+      lineHeight: 24,
+      minWidth: 24,
+      borderRadius: 5,
+      fontSize: 14,
+    }).register(ButtonStyleNames.Large, {
+      height: 32,
+      lineHeight: 32,
+      minWidth: 32,
+      borderRadius: 5,
+      fontSize: 24,
+    }).register(ButtonStyleNames.Normal, {
+      userSelect: 'none',
+      cursor: 'pointer',
+      textAlign: 'center',
+      transition: 'all 200ms',
+      padding: 0,
+      background: 'transparent',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }).register(ButtonStyleNames.Checked, {
+      background: '#00000022'
+    }).register(ButtonStyleNames.Hover, {
+      background: '#00000044'
+    }).add(ButtonStyleNames.Normal).refresh();
+    
+    this.inner.addEventListener('click', () => {
+      if (this._checkable) {
+        this._checked = !this._checked;
+      }
+      this.updateStyle()
+      this.updateContent();
+      this.updateTitle();
+    })
+  }
   init(inits?: ButtonInits): this {
     this._size = inits?.size ?? this._size;
     this._checkable = inits?.checkable === true;
@@ -101,66 +150,16 @@ export class Button extends View<'button'> {
     this.updateSize();
     return this;
   }
-  constructor() {
-    super('button');
-    this.hoverOb;
-    this.styles.register(ButtonStyleNames.Hover, {
-      background: '#00000022'
-    }).register(ButtonStyleNames.Small, {
-      height: 18,
-      lineHeight: 18,
-      borderRadius: 5,
-      fontSize: 12,
-    }).register(ButtonStyleNames.Middle, {
-      height: 24,
-      lineHeight: 24,
-      borderRadius: 5,
-      fontSize: 14,
-    }).register(ButtonStyleNames.Large, {
-      height: 32,
-      lineHeight: 32,
-      borderRadius: 5,
-      fontSize: 24,
-    }).register(ButtonStyleNames.Normal, {
-      userSelect: 'none',
-      cursor: 'pointer',
-      textAlign: 'center',
-      transition: 'all 200ms',
-      padding: 0,
-      background: 'transparent',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }).add(ButtonStyleNames.Normal).refresh();
-    this.editStyle(true, true, true, { background: '#333333' })
-    this.editStyle(true, true, false, { background: '#333333' })
-    this.editStyle(true, false, true, {})
-    this.editStyle(true, false, false, {})
-    this.editStyle(false, true, true, { background: '#444444' })
-    this.editStyle(false, true, false, { background: '#444444' })
-    this.editStyle(false, false, true, {})
-    this.editStyle(false, false, false, {})
-    this.addEventListener('click', () => {
-      if (this._checkable) { this._checked = !this._checked; }
-      this.updateStyle()
-      this.updateContent();
-      this.updateTitle();
-    })
-  }
   override onHover(hover: boolean): void {
     this.updateStyle();
   }
-  private _prevStyleNames = ''
   updateStyle() {
     const styles = this.styles;
-    this.hover ? styles.add(ButtonStyleNames.Hover) : styles.remove(ButtonStyleNames.Hover)
-    const styleName = `${this.hover}_${this.checked}_${this.disabled}`
-    styles.remove(this._prevStyleNames).add(styleName).refresh();
-    this._prevStyleNames = styleName;
-  }
-  editStyle(hover: boolean, checked: boolean, disabled: boolean, style: ReValue<Style>) {
-    this.styles.register(`${hover}_${checked}_${disabled}`, style);
-    return this;
+    styles[this.checked ? 'add' : 'remove'](ButtonStyleNames.Checked)
+    styles[this.hover ? 'add' : 'remove'](ButtonStyleNames.Hover)
+    styles[this.disabled ? 'add' : 'remove'](ButtonStyleNames.Disabled)
+
+    styles.refresh();
   }
   updateContent() {
     const content = this.contents.get(

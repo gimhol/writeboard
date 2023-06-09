@@ -92,7 +92,7 @@ export class ViewDragger {
     this._handles = v;
     if (!this._disabled) {
       this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
-      this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart));
+      this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
     }
   }
   get view() { return this._view; }
@@ -114,7 +114,7 @@ export class ViewDragger {
     document.addEventListener('touchmove', this._ontouchmove);
     document.addEventListener('touchend', this._ontouchend);
     document.addEventListener('touchcancel', this._ontouchend);
-    this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart));
+    this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
   }
 
   private stopListen() {

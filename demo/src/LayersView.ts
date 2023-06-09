@@ -44,18 +44,15 @@ export class LayersView extends Subwin {
       overflowY: 'auto',
       overflowX: 'hidden'
     })
-    this.styles.apply("", {
-      minWidth: '225px',
-      width: 225,
-    })
+    this.styles.apply("", { minWidth: '225px' })
 
-    const btnAddLayer = new IconButton().init({ content: '📃', title: '新建图层', size: SizeType.Small }).addEventListener('click', (e) => {
+    const btnAddLayer = new Button().init({ content: '📃', title: '新建图层', size: SizeType.Small }).addEventListener('click', (e) => {
       const event = new CustomEvent<string>(LayersViewEventType.LayerAdded, { detail: '' + Date.now() });
       this.inner.dispatchEvent(event);
     })
     this.footer.addChild(btnAddLayer);
 
-    const btnAddFolder = new IconButton().init({ content: '📂', title: '新建图层组', size: SizeType.Small })
+    const btnAddFolder = new Button().init({ content: '📂', title: '新建图层组', size: SizeType.Small })
     this.footer.addChild(btnAddFolder);
   }
   layers() { return this._layers }
@@ -120,7 +117,7 @@ export class LayerItemView extends View<'div'> {
       })
 
 
-    const btn0 = new IconButton().init({
+    const btn0 = new Button().init({
       checkable: true,
       checked: this._state.locked,
       contents: ['🔓', '🔒']
@@ -189,9 +186,7 @@ export class LayerItemView extends View<'div'> {
 
     new FocusOb(inputName.inner, (v) => inputName.disabled = !v)
 
-    const btn3 = new Button().init({
-      content: '🖊️'
-    })
+    const btn3 = new Button().init({ content: '🖊️' })
     btn3.addEventListener('click', () => {
       inputName.disabled = false;
       inputName.focus();

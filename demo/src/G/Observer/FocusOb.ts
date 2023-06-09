@@ -1,7 +1,7 @@
 import { IObserver } from "./Base";
 export class FocusOb implements IObserver {
   private _focused = false;
-  private _disabled = false;
+  private _disabled = true;
   private _ele: HTMLElement;
   private _focus: (e: FocusEvent) => void;
   private _blur: (e: FocusEvent) => void;
@@ -22,6 +22,7 @@ export class FocusOb implements IObserver {
     this._ele = ele;
     this._focus = (e: FocusEvent) => { this._focused = true; cb(this._focused, e); }
     this._blur = (e: FocusEvent) => { this._focused = false; cb(this._focused, e); }
+    this.disabled = false;
   }
   destory() { this.disabled = true; }
 }

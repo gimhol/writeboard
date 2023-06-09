@@ -95,13 +95,13 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
 });
 
 const mergedSubwin2 = new MergedSubwin();
-workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2)
+workspace.addChild(mergedSubwin2);
 
 const mergedSubwin = new MergedSubwin();
-workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2)
+workspace.addChild(mergedSubwin2);
 
 const layersView = new LayersView();
-workspace.addChild(layersView).addSubWin(layersView)
+workspace.addChild(layersView);
 
 layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
   const layerItem = layersView.addLayer({
@@ -127,12 +127,12 @@ layersView.addLayer({
 });
 
 const toolsView = new ToolsView;
-workspace.addChild(toolsView).addSubWin(toolsView)
+workspace.addChild(toolsView)
 toolsView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: 5 }))
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType!)
 
 const colorView = new ColorView;
-workspace.addChild(colorView).addSubWin(colorView)
+workspace.addChild(colorView)
 colorView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
 colorView.inner.addEventListener(ColorView.EventTypes.LineColorChange, (e) => {
   const rgba = (e as CustomEvent).detail as RGBA;
@@ -154,7 +154,7 @@ colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
 })
 
 const toyView = new Subwin();
-workspace.addChild(toyView).addSubWin(toyView)
+workspace.addChild(toyView)
 toyView.header.title = 'others';
 workspace.addChild(toyView);
 
@@ -243,7 +243,7 @@ let _recorder: Recorder | undefined
 let _player: Player | undefined
 
 const jsonView = new Subwin();
-workspace.addChild(jsonView).addSubWin(jsonView)
+workspace.addChild(jsonView)
 jsonView.header.title = 'json';
 jsonView.content = new View('div');
 jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })
@@ -276,7 +276,7 @@ const replay = (str: string) => {
 }
 
 const recorderView = new Subwin();
-workspace.addChild(recorderView).addSubWin(recorderView)
+workspace.addChild(recorderView)
 recorderView.header.title = 'recorder';
 recorderView.content = new View('div');
 recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' })

@@ -7,10 +7,12 @@ export class Styles<T extends string = string>{
   private _pool = new Map<T, Style>();
   private _applieds = new Set<T>();
   get view() { return this._view; }
+  get pool(): Map<T, Style> { return this._pool; }
+  get applieds(): Set<T> { return this._applieds; }
+
   constructor(view: View) {
     this._view = view;
   }
-  pool(): Map<T, Style> { return this._pool; }
   read(name: T): Style {
     const ret = this._pool.get(name);
     if (!ret) { console.warn(`[styles] read(), style '${name}' not found!`); }
@@ -58,13 +60,13 @@ export class Styles<T extends string = string>{
     this.remove(...names).refresh();
     return this;
   }
-  get applieds(): Set<T> { return this._applieds; }
   refresh() {
     this.view.inner.removeAttribute('style');
+    const final: Style = {}
     this._applieds.forEach(name => {
-      const style = this.makeUp(this.read(name));
-      Object.assign(this.view.inner.style, style)
+      Object.assign(final, this.makeUp(this.read(name)))
     });
+    Object.assign(this.view.inner.style, final)
   }
 
   apply(name: T, style: ReValue<Style>): Styles<T> {

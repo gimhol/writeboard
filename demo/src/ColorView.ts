@@ -48,7 +48,6 @@ class ColorKindButton extends Button {
     })
     content.addChild(this._colorBrick)
     this.content = content;
-    this.editStyle(false, true, false, this.styles.read(ButtonStyleNames.Hover) || {})
     return this;
   }
 }

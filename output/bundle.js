@@ -41,7 +41,6 @@ class ColorKindButton extends Button_1.Button {
         });
         content.addChild(this._colorBrick);
         this.content = content;
-        this.editStyle(false, true, false, this.styles.read(Button_1.ButtonStyleNames.Hover) || {});
         return this;
     }
 }
@@ -192,6 +191,8 @@ var ButtonStyleNames;
 (function (ButtonStyleNames) {
     ButtonStyleNames["Normal"] = "normal";
     ButtonStyleNames["Hover"] = "hover";
+    ButtonStyleNames["Disabled"] = "disabled";
+    ButtonStyleNames["Checked"] = "checked";
     ButtonStyleNames["Small"] = "small";
     ButtonStyleNames["Middle"] = "middle";
     ButtonStyleNames["Large"] = "large";
@@ -251,6 +252,59 @@ class Button extends View_1.View {
         this._inner.disabled = v;
         this.updateStyle();
     }
+    constructor() {
+        super('button');
+        this._size = SizeType_1.SizeType.Middle;
+        this._checked = false;
+        this._checkable = false;
+        this.aaa = {
+            [SizeType_1.SizeType.Small]: ButtonStyleNames.Small,
+            [SizeType_1.SizeType.Middle]: ButtonStyleNames.Middle,
+            [SizeType_1.SizeType.Large]: ButtonStyleNames.Large
+        };
+        this.hoverOb;
+        this.styles.register(ButtonStyleNames.Small, {
+            height: 18,
+            lineHeight: 18,
+            minWidth: 18,
+            borderRadius: 5,
+            fontSize: 12,
+        }).register(ButtonStyleNames.Middle, {
+            height: 24,
+            lineHeight: 24,
+            minWidth: 24,
+            borderRadius: 5,
+            fontSize: 14,
+        }).register(ButtonStyleNames.Large, {
+            height: 32,
+            lineHeight: 32,
+            minWidth: 32,
+            borderRadius: 5,
+            fontSize: 24,
+        }).register(ButtonStyleNames.Normal, {
+            userSelect: 'none',
+            cursor: 'pointer',
+            textAlign: 'center',
+            transition: 'all 200ms',
+            padding: 0,
+            background: 'transparent',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        }).register(ButtonStyleNames.Checked, {
+            background: '#00000022'
+        }).register(ButtonStyleNames.Hover, {
+            background: '#00000044'
+        }).add(ButtonStyleNames.Normal).refresh();
+        this.inner.addEventListener('click', () => {
+            if (this._checkable) {
+                this._checked = !this._checked;
+            }
+            this.updateStyle();
+            this.updateContent();
+            this.updateTitle();
+        });
+    }
     init(inits) {
         var _a;
         this._size = (_a = inits === null || inits === void 0 ? void 0 : inits.size) !== null && _a !== void 0 ? _a : this._size;
@@ -277,76 +331,15 @@ class Button extends View_1.View {
         this.updateSize();
         return this;
     }
-    constructor() {
-        super('button');
-        this._size = SizeType_1.SizeType.Middle;
-        this._checked = false;
-        this._checkable = false;
-        this._prevStyleNames = '';
-        this.aaa = {
-            [SizeType_1.SizeType.Small]: ButtonStyleNames.Small,
-            [SizeType_1.SizeType.Middle]: ButtonStyleNames.Middle,
-            [SizeType_1.SizeType.Large]: ButtonStyleNames.Large
-        };
-        this.hoverOb;
-        this.styles.register(ButtonStyleNames.Hover, {
-            background: '#00000022'
-        }).register(ButtonStyleNames.Small, {
-            height: 18,
-            lineHeight: 18,
-            borderRadius: 5,
-            fontSize: 12,
-        }).register(ButtonStyleNames.Middle, {
-            height: 24,
-            lineHeight: 24,
-            borderRadius: 5,
-            fontSize: 14,
-        }).register(ButtonStyleNames.Large, {
-            height: 32,
-            lineHeight: 32,
-            borderRadius: 5,
-            fontSize: 24,
-        }).register(ButtonStyleNames.Normal, {
-            userSelect: 'none',
-            cursor: 'pointer',
-            textAlign: 'center',
-            transition: 'all 200ms',
-            padding: 0,
-            background: 'transparent',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-        }).add(ButtonStyleNames.Normal).refresh();
-        this.editStyle(true, true, true, { background: '#333333' });
-        this.editStyle(true, true, false, { background: '#333333' });
-        this.editStyle(true, false, true, {});
-        this.editStyle(true, false, false, {});
-        this.editStyle(false, true, true, { background: '#444444' });
-        this.editStyle(false, true, false, { background: '#444444' });
-        this.editStyle(false, false, true, {});
-        this.editStyle(false, false, false, {});
-        this.addEventListener('click', () => {
-            if (this._checkable) {
-                this._checked = !this._checked;
-            }
-            this.updateStyle();
-            this.updateContent();
-            this.updateTitle();
-        });
-    }
     onHover(hover) {
         this.updateStyle();
     }
     updateStyle() {
         const styles = this.styles;
-        this.hover ? styles.add(ButtonStyleNames.Hover) : styles.remove(ButtonStyleNames.Hover);
-        const styleName = `${this.hover}_${this.checked}_${this.disabled}`;
-        styles.remove(this._prevStyleNames).add(styleName).refresh();
-        this._prevStyleNames = styleName;
-    }
-    editStyle(hover, checked, disabled, style) {
-        this.styles.register(`${hover}_${checked}_${disabled}`, style);
-        return this;
+        styles[this.checked ? 'add' : 'remove'](ButtonStyleNames.Checked);
+        styles[this.hover ? 'add' : 'remove'](ButtonStyleNames.Hover);
+        styles[this.disabled ? 'add' : 'remove'](ButtonStyleNames.Disabled);
+        styles.refresh();
     }
     updateContent() {
         const content = this.contents.get(this._checked ? ButtonState.Checked : ButtonState.Normal);
@@ -512,12 +505,13 @@ const StyleType_1 = require("./StyleType");
 const utils_1 = require("../utils");
 class Styles {
     get view() { return this._view; }
+    get pool() { return this._pool; }
+    get applieds() { return this._applieds; }
     constructor(view) {
         this._pool = new Map();
         this._applieds = new Set();
         this._view = view;
     }
-    pool() { return this._pool; }
     read(name) {
         const ret = this._pool.get(name);
         if (!ret) {
@@ -565,13 +559,13 @@ class Styles {
         this.remove(...names).refresh();
         return this;
     }
-    get applieds() { return this._applieds; }
     refresh() {
         this.view.inner.removeAttribute('style');
+        const final = {};
         this._applieds.forEach(name => {
-            const style = this.makeUp(this.read(name));
-            Object.assign(this.view.inner.style, style);
+            Object.assign(final, this.makeUp(this.read(name)));
         });
+        Object.assign(this.view.inner.style, final);
     }
     apply(name, style) {
         this.register(name, style).add(name).refresh();
@@ -1335,7 +1329,6 @@ class IndicatorImage extends Image_1.Image {
             .add('normal', '')
             .refresh();
         this.draggable = false;
-        this.hoverOb;
     }
     onHover(hover) {
         this.styles[hover ? 'add' : 'remove']('hover').refresh();
@@ -1344,15 +1337,16 @@ class IndicatorImage extends Image_1.Image {
         this.styles.remove('hover').refresh();
     }
     fakeIn() {
+        this.hoverOb.disabled = false;
         this.styles.apply('appear', {
             opacity: 0.3,
             pointerEvents: 'all'
         });
     }
     fakeOut() {
-        this.hoverOb.hover = false;
         this.onHover(false);
         this.styles.remove('appear').refresh();
+        this.hoverOb.disabled = true;
     }
 }
 exports.IndicatorImage = IndicatorImage;
@@ -1453,79 +1447,35 @@ class WorkspaceView extends View_1.View {
         });
     }
     get dockView() { return this._dockView; }
-    dockToTop(subwin) {
-        console.log(`[Workspace] dockToTop()`);
-        if ('v' === this._dockView.direction) {
-            this._dockView.insertChild(0, subwin);
-        }
-        else {
-            this._dockView = new DockView('v').insertChild(0, this._dockView, subwin);
-            this.addChild(this._dockView);
-        }
-    }
-    dockToBottom(subwin) {
-        console.log(`[Workspace] dockToBottom()`);
-        if ('v' === this._dockView.direction) {
-            this._dockView.addChild(subwin);
-        }
-        else {
-            this._dockView.removeSelf();
-            this._dockView = new DockView('v').addChild(this._dockView, subwin);
-            this.addChild(this._dockView);
-        }
-    }
-    dockToLeft(subwin) {
-        console.log(`[Workspace] dockToLeft()`);
-        if ('h' === this._dockView.direction) {
-            this._dockView.insertChild(0, subwin);
-        }
-        else {
-            this._dockView.removeSelf();
-            this._dockView = new DockView('h').insertChild(0, this._dockView, subwin);
-            this.addChild(this._dockView);
-        }
-    }
-    dockToRight(subwin) {
-        console.log(`[Workspace] dockToRight()`);
-        if ('h' === this._dockView.direction) {
-            this._dockView.addChild(subwin);
-        }
-        else {
-            this._dockView = new DockView('h').addChild(this._dockView, subwin);
-            this.addChild(this._dockView);
-        }
-    }
-    freeSubwin(subwin) {
-        subwin.styles.forgo('dock_in_workspace');
-    }
     constructor(arg0, inits) {
         var _a;
         super(arg0);
         this._zIndex = 0;
-        this._wins = [];
         this._pointerdowns = new Map();
         this._draggingSubwin = null;
-        this._handleClick = (target) => {
-            this._wins.splice(this._wins.indexOf(target), 1);
-            this._wins.push(target);
+        this._undockedWins = [];
+        this._handleClick = (subwin) => {
+            const idx = this._undockedWins.findIndex(a => a === subwin);
+            this._undockedWins.splice(idx, 1);
+            this._undockedWins.push(subwin);
             this._updateUndockedWinsStyle();
         };
-        this._dockLeft = new IndicatorImage({
+        this._dockLeftIndicator = new IndicatorImage({
             src: './ic_dock_to_left.svg', style: {
                 position: 'absolute', left: 16, top: '50%'
             }
         });
-        this._dockTop = new IndicatorImage({
+        this._dockTopIndicator = new IndicatorImage({
             src: './ic_dock_to_top.svg', style: {
                 position: 'absolute', left: '50%', top: 16
             }
         });
-        this._dockRight = new IndicatorImage({
+        this._dockRightIndicator = new IndicatorImage({
             src: './ic_dock_to_right.svg', style: {
                 position: 'absolute', right: 16, top: '50%'
             }
         });
-        this._dockBottom = new IndicatorImage({
+        this._dockBottomIndicator = new IndicatorImage({
             src: './ic_dock_to_bottom.svg', style: {
                 position: 'absolute', left: '50%', bottom: 16
             }
@@ -1537,10 +1487,10 @@ class WorkspaceView extends View_1.View {
             if (!this._draggingSubwin) {
                 return;
             }
-            this._dockLeft.fakeIn();
-            this._dockRight.fakeIn();
-            this._dockTop.fakeIn();
-            this._dockBottom.fakeIn();
+            this._dockLeftIndicator.fakeIn();
+            this._dockRightIndicator.fakeIn();
+            this._dockTopIndicator.fakeIn();
+            this._dockBottomIndicator.fakeIn();
             this.addEventListener('pointermove', this._onPointerMove, true);
         };
         this._onViewDragging = (e) => {
@@ -1555,16 +1505,16 @@ class WorkspaceView extends View_1.View {
                 return;
             }
             this.removeEventListener('pointermove', this._onPointerMove, true);
-            if (this._dockBottom.hover) {
+            if (this._dockBottomIndicator.hover) {
                 this.dockToBottom(subwin);
             }
-            else if (this._dockTop.hover) {
+            else if (this._dockTopIndicator.hover) {
                 this.dockToTop(subwin);
             }
-            else if (this._dockLeft.hover) {
+            else if (this._dockLeftIndicator.hover) {
                 this.dockToLeft(subwin);
             }
-            else if (this._dockRight.hover) {
+            else if (this._dockRightIndicator.hover) {
                 this.dockToRight(subwin);
             }
             else {
@@ -1574,31 +1524,69 @@ class WorkspaceView extends View_1.View {
                 }
                 this.clampSubwin(subwin, rect);
             }
-            this._dockLeft.fakeOut();
-            this._dockRight.fakeOut();
-            this._dockTop.fakeOut();
-            this._dockBottom.fakeOut();
+            this._dockLeftIndicator.fakeOut();
+            this._dockRightIndicator.fakeOut();
+            this._dockTopIndicator.fakeOut();
+            this._dockBottomIndicator.fakeOut();
             this._draggingSubwin = null;
         };
         this.styles.applyCls('workspaceView');
         this._rect = inits.rect;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
-        if (inits === null || inits === void 0 ? void 0 : inits.wins) {
-            this.addSubWin(...inits.wins);
-            this._updateUndockedWinsStyle();
-        }
         this.addChild(this._dockView);
-        this.addChild(this._dockLeft);
-        this.addChild(this._dockRight);
-        this.addChild(this._dockTop);
-        this.addChild(this._dockBottom);
+        this.addChild(this._dockLeftIndicator);
+        this.addChild(this._dockRightIndicator);
+        this.addChild(this._dockTopIndicator);
+        this.addChild(this._dockBottomIndicator);
+        (inits === null || inits === void 0 ? void 0 : inits.wins) && this.addChild(...inits.wins);
+    }
+    dockToTop(subwin) {
+        if ('v' === this._dockView.direction) {
+            this._dockView.insertChild(0, subwin);
+        }
+        else {
+            this._dockView = new DockView('v').insertChild(0, this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    dockToBottom(subwin) {
+        if ('v' === this._dockView.direction) {
+            this._dockView.addChild(subwin);
+        }
+        else {
+            this._dockView.removeSelf();
+            this._dockView = new DockView('v').addChild(this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    dockToLeft(subwin) {
+        if ('h' === this._dockView.direction) {
+            this._dockView.insertChild(0, subwin);
+        }
+        else {
+            this._dockView.removeSelf();
+            this._dockView = new DockView('h').insertChild(0, this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    dockToRight(subwin) {
+        if ('h' === this._dockView.direction) {
+            this._dockView.addChild(subwin);
+        }
+        else {
+            this._dockView = new DockView('h').addChild(this._dockView, subwin);
+            this.addChild(this._dockView);
+        }
+    }
+    freeSubwin(subwin) {
+        subwin.styles.forgo('dock_in_workspace');
     }
     clampAllSubwin() {
         const rect = (0, utils_1.getValue)(this._rect);
         if (!rect) {
             return;
         }
-        this._wins.forEach(v => v.parent === this && this.clampSubwin(v, rect));
+        this.children.forEach(v => (v instanceof Subwin_1.Subwin) && this.clampSubwin(v, rect));
     }
     clampSubwin(subwin, rect) {
         let { offsetLeft: x, offsetTop: y, offsetWidth: w, offsetHeight: h, } = subwin.inner;
@@ -1623,36 +1611,53 @@ class WorkspaceView extends View_1.View {
         if (listen) {
             const ondown = () => this._handleClick(subwin);
             this._pointerdowns.set(subwin, ondown);
-            subwin.inner.addEventListener('pointerdown', ondown);
-            subwin.inner.addEventListener('touchstart', ondown);
-            subwin.inner.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
-            subwin.inner.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
-            subwin.inner.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
+            subwin.addEventListener('pointerdown', ondown);
+            subwin.addEventListener('touchstart', ondown, { passive: true });
+            subwin.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
+            subwin.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
+            subwin.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
         }
         else {
             const listener = this._pointerdowns.get(subwin);
             if (listener) {
-                subwin.inner.removeEventListener('pointerdown', listener);
-                subwin.inner.removeEventListener('touchstart', listener);
-                subwin.inner.removeEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
-                subwin.inner.removeEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
-                subwin.inner.removeEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
+                subwin.removeEventListener('pointerdown', listener);
+                subwin.removeEventListener('touchstart', listener);
+                subwin.removeEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
+                subwin.removeEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
+                subwin.removeEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
             }
         }
     }
-    addSubWin(...subwins) {
-        this._wins.forEach(v => this.subwinListening(v, false));
-        this._wins = Array.from(new Set(this._wins.concat(subwins)));
-        this._wins.forEach(v => this.subwinListening(v, true));
+    addChild(...children) {
+        super.addChild(...children);
+        children.forEach(v => (v instanceof Subwin_1.Subwin) && this.subwinListening(v, true));
         this._updateUndockedWinsStyle();
+        return this;
     }
-    removeSubwin(...subwins) {
-        subwins.forEach(v => this.subwinListening(v, false));
-        this._wins.filter(v => subwins.indexOf(v) < 0);
+    insertChild(anchorOrIdx, ...children) {
+        super.insertChild(anchorOrIdx, ...children);
+        children.forEach(v => {
+            if (v instanceof Subwin_1.Subwin) {
+                this.subwinListening(v, true);
+                this._undockedWins.push(v);
+            }
+        });
         this._updateUndockedWinsStyle();
+        return this;
+    }
+    removeChild(...children) {
+        children.forEach(v => {
+            if (v instanceof Subwin_1.Subwin) {
+                this.subwinListening(v, false);
+                const idx = this._undockedWins.findIndex(b => b === v);
+                idx >= 0 && this._undockedWins.splice(idx, 1);
+            }
+        });
+        this._updateUndockedWinsStyle();
+        return this;
     }
     get undockedWins() {
-        return this.children.filter(v => v instanceof Subwin_1.Subwin);
+        return this._undockedWins;
     }
 }
 exports.WorkspaceView = WorkspaceView;
@@ -1730,7 +1735,7 @@ class ViewDragger {
         this._handles = v;
         if (!this._disabled) {
             this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
-            this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart));
+            this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
         }
     }
     get view() { return this._view; }
@@ -1752,7 +1757,7 @@ class ViewDragger {
         document.addEventListener('touchmove', this._ontouchmove);
         document.addEventListener('touchend', this._ontouchend);
         document.addEventListener('touchcancel', this._ontouchend);
-        this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart));
+        this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
     }
     stopListen() {
         document.removeEventListener('pointermove', this._pointermove);
@@ -1985,10 +1990,11 @@ class FocusOb {
     }
     constructor(ele, cb) {
         this._focused = false;
-        this._disabled = false;
+        this._disabled = true;
         this._ele = ele;
         this._focus = (e) => { this._focused = true; cb(this._focused, e); };
         this._blur = (e) => { this._focused = false; cb(this._focused, e); };
+        this.disabled = false;
     }
     destory() { this.disabled = true; }
 }
@@ -2000,7 +2006,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HoverOb = void 0;
 class HoverOb {
     get hover() { return this._hover; }
-    set hover(v) { this._hover = v; }
     get disabled() { return this._disabled; }
     set disabled(v) {
         if (this._disabled === v) {
@@ -2008,18 +2013,22 @@ class HoverOb {
         }
         this._disabled = v;
         if (v) {
-            this._ele.removeEventListener('mouseenter', this._mouseenter);
-            this._ele.removeEventListener('mouseleave', this._mouseleave);
+            this._eles.forEach(ele => {
+                ele.removeEventListener('mouseenter', this._mouseenter);
+                ele.removeEventListener('mouseleave', this._mouseleave);
+            });
         }
         else {
-            this._ele.addEventListener('mouseenter', this._mouseenter);
-            this._ele.addEventListener('mouseleave', this._mouseleave);
+            this._eles.forEach(ele => {
+                ele.addEventListener('mouseenter', this._mouseenter);
+                ele.addEventListener('mouseleave', this._mouseleave);
+            });
         }
     }
     constructor(ele, cb) {
-        this._disabled = false;
+        this._disabled = true;
         this._hover = false;
-        this._ele = ele;
+        this._eles = Array.isArray(ele) ? ele : [ele];
         this._mouseenter = (e) => { this._hover = true; cb(this._hover, e); };
         this._mouseleave = (e) => { this._hover = false; cb(this._hover, e); };
         this.disabled = false;
@@ -2056,7 +2065,6 @@ exports.findParent = findParent;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LayerItemView = exports.LayersView = exports.LayersViewEventType = void 0;
-const IconButton_1 = require("./G/CompoundView/IconButton");
 const SizeType_1 = require("./G/BaseView/SizeType");
 const TextInput_1 = require("./G/BaseView/TextInput");
 const View_1 = require("./G/BaseView/View");
@@ -2085,16 +2093,13 @@ class LayersView extends Subwin_1.Subwin {
             overflowY: 'auto',
             overflowX: 'hidden'
         });
-        this.styles.apply("", {
-            minWidth: '225px',
-            width: 225,
-        });
-        const btnAddLayer = new IconButton_1.IconButton().init({ content: '📃', title: '新建图层', size: SizeType_1.SizeType.Small }).addEventListener('click', (e) => {
+        this.styles.apply("", { minWidth: '225px' });
+        const btnAddLayer = new Button_1.Button().init({ content: '📃', title: '新建图层', size: SizeType_1.SizeType.Small }).addEventListener('click', (e) => {
             const event = new CustomEvent(LayersViewEventType.LayerAdded, { detail: '' + Date.now() });
             this.inner.dispatchEvent(event);
         });
         this.footer.addChild(btnAddLayer);
-        const btnAddFolder = new IconButton_1.IconButton().init({ content: '📂', title: '新建图层组', size: SizeType_1.SizeType.Small });
+        const btnAddFolder = new Button_1.Button().init({ content: '📂', title: '新建图层组', size: SizeType_1.SizeType.Small });
         this.footer.addChild(btnAddFolder);
     }
     layers() { return this._layers; }
@@ -2152,7 +2157,7 @@ class LayerItemView extends View_1.View {
             borderBottom: '1px solid #00000022',
             transition: 'all 200ms',
         });
-        const btn0 = new IconButton_1.IconButton().init({
+        const btn0 = new Button_1.Button().init({
             checkable: true,
             checked: this._state.locked,
             contents: ['🔓', '🔒']
@@ -2216,9 +2221,7 @@ class LayerItemView extends View_1.View {
         inputName.disabled = true;
         this.addChild(inputName);
         new FocusOb_1.FocusOb(inputName.inner, (v) => inputName.disabled = !v);
-        const btn3 = new Button_1.Button().init({
-            content: '🖊️'
-        });
+        const btn3 = new Button_1.Button().init({ content: '🖊️' });
         btn3.addEventListener('click', () => {
             inputName.disabled = false;
             inputName.focus();
@@ -2228,7 +2231,7 @@ class LayerItemView extends View_1.View {
 }
 exports.LayerItemView = LayerItemView;
 
-},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/IconButton":11,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":22}],26:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":22}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
@@ -2942,11 +2945,11 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
     }
 });
 const mergedSubwin2 = new MergedSubwin_1.MergedSubwin();
-workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2);
+workspace.addChild(mergedSubwin2);
 const mergedSubwin = new MergedSubwin_1.MergedSubwin();
-workspace.addChild(mergedSubwin2).addSubWin(mergedSubwin2);
+workspace.addChild(mergedSubwin2);
 const layersView = new LayersView_1.LayersView();
-workspace.addChild(layersView).addSubWin(layersView);
+workspace.addChild(layersView);
 layersView.addEventListener(LayersView_1.LayersView.EventType.LayerAdded, () => {
     const layerItem = layersView.addLayer({
         name: '' + Date.now(),
@@ -2972,11 +2975,11 @@ layersView.addLayer({
     id: factory.newLayerId()
 });
 const toolsView = new ToolsView_1.ToolsView;
-workspace.addChild(toolsView).addSubWin(toolsView);
+workspace.addChild(toolsView);
 toolsView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: 5 })));
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType);
 const colorView = new ColorView_1.default;
-workspace.addChild(colorView).addSubWin(colorView);
+workspace.addChild(colorView);
 colorView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '400px' })));
 colorView.inner.addEventListener(ColorView_1.default.EventTypes.LineColorChange, (e) => {
     const rgba = e.detail;
@@ -3001,7 +3004,7 @@ colorView.inner.addEventListener(ColorView_1.default.EventTypes.FillColorChange,
     });
 });
 const toyView = new Subwin_1.Subwin();
-workspace.addChild(toyView).addSubWin(toyView);
+workspace.addChild(toyView);
 toyView.header.title = 'others';
 workspace.addChild(toyView);
 window.addEventListener('resize', () => workspace.clampAllSubwin());
@@ -3077,7 +3080,7 @@ toyView.content.addChild(new Button_1.Button().init({
 let _recorder;
 let _player;
 const jsonView = new Subwin_1.Subwin();
-workspace.addChild(jsonView).addSubWin(jsonView);
+workspace.addChild(jsonView);
 jsonView.header.title = 'json';
 jsonView.content = new View_1.View('div');
 jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
@@ -3107,7 +3110,7 @@ const replay = (str) => {
     _player.start(board, JSON.parse(str));
 };
 const recorderView = new Subwin_1.Subwin();
-workspace.addChild(recorderView).addSubWin(recorderView);
+workspace.addChild(recorderView);
 recorderView.header.title = 'recorder';
 recorderView.content = new View_1.View('div');
 recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });

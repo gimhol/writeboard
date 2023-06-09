@@ -33,7 +33,6 @@ export class IndicatorImage extends Image {
       .add('normal', '')
       .refresh();
     this.draggable = false;
-    this.hoverOb;
   }
   override onHover(hover: boolean): void {
     this.styles[hover ? 'add' : 'remove']('hover').refresh()
@@ -42,15 +41,16 @@ export class IndicatorImage extends Image {
     this.styles.remove('hover').refresh()
   }
   fakeIn() {
+    this.hoverOb.disabled = false;
     this.styles.apply('appear', {
       opacity: 0.3,
       pointerEvents: 'all'
     });
   }
   fakeOut() {
-    this.hoverOb.hover = false;
     this.onHover(false);
     this.styles.remove('appear').refresh();
+    this.hoverOb.disabled = true;
   }
 }
 
@@ -147,9 +147,9 @@ export class DockView extends View<'div'> {
 export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> extends View<T> {
   private _rect?: GetValue<Rect>;
   private _zIndex: number = 0;
-  private _wins: Subwin[] = [];
   private _pointerdowns = new Map<Subwin, () => void>();
   private _draggingSubwin: Subwin | null = null;
+  private _undockedWins: Subwin[] = [];
   private _updateUndockedWinsStyle() {
     this.undockedWins.forEach((win, idx, arr) => {
       win.styles.apply(
@@ -161,36 +161,50 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       idx < arr.length - 1 ? win.lower() : win.raise();
     });
   }
-  private _handleClick = (target: Subwin) => {
-    this._wins.splice(this._wins.indexOf(target), 1);
-    this._wins.push(target);
-    this._updateUndockedWinsStyle();
-  }
+  private _handleClick = (subwin: Subwin) => {
+    const idx = this._undockedWins.findIndex(a => a === subwin);
+    this._undockedWins.splice(idx, 1);
+    this._undockedWins.push(subwin);
+    this._updateUndockedWinsStyle()
+  };
 
-  private _dockLeft = new IndicatorImage({
+  private _dockLeftIndicator = new IndicatorImage({
     src: './ic_dock_to_left.svg', style: {
       position: 'absolute', left: 16, top: '50%'
     }
   })
-  private _dockTop = new IndicatorImage({
+  private _dockTopIndicator = new IndicatorImage({
     src: './ic_dock_to_top.svg', style: {
       position: 'absolute', left: '50%', top: 16
     }
   })
-  private _dockRight = new IndicatorImage({
+  private _dockRightIndicator = new IndicatorImage({
     src: './ic_dock_to_right.svg', style: {
       position: 'absolute', right: 16, top: '50%'
     }
   })
-  private _dockBottom = new IndicatorImage({
+  private _dockBottomIndicator = new IndicatorImage({
     src: './ic_dock_to_bottom.svg', style: {
       position: 'absolute', left: '50%', bottom: 16
     }
   })
   private _dockView = new DockView();
   get dockView() { return this._dockView }
+  constructor(element: HTMLElementTagNameMap[T], inits: WorkspaceInits);
+  constructor(tagName: T, inits: WorkspaceInits);
+  constructor(arg0: any, inits: WorkspaceInits) {
+    super(arg0);
+    this.styles.applyCls('workspaceView')
+    this._rect = inits.rect;
+    this._zIndex = inits?.zIndex ?? this._zIndex;
+    this.addChild(this._dockView);
+    this.addChild(this._dockLeftIndicator);
+    this.addChild(this._dockRightIndicator);
+    this.addChild(this._dockTopIndicator);
+    this.addChild(this._dockBottomIndicator);
+    inits?.wins && this.addChild(...inits.wins);
+  }
   dockToTop(subwin: Subwin): void {
-    console.log(`[Workspace] dockToTop()`)
     if ('v' === this._dockView.direction) {
       this._dockView.insertChild(0, subwin);
     } else {
@@ -199,7 +213,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     }
   }
   dockToBottom(subwin: Subwin): void {
-    console.log(`[Workspace] dockToBottom()`)
     if ('v' === this._dockView.direction) {
       this._dockView.addChild(subwin);
     } else {
@@ -209,7 +222,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     }
   }
   dockToLeft(subwin: Subwin): void {
-    console.log(`[Workspace] dockToLeft()`)
     if ('h' === this._dockView.direction) {
       this._dockView.insertChild(0, subwin);
     } else {
@@ -219,7 +231,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     }
   }
   dockToRight(subwin: Subwin): void {
-    console.log(`[Workspace] dockToRight()`)
     if ('h' === this._dockView.direction) {
       this._dockView.addChild(subwin);
     } else {
@@ -230,28 +241,11 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   freeSubwin(subwin: Subwin): void {
     subwin.styles.forgo('dock_in_workspace')
   }
-  constructor(element: HTMLElementTagNameMap[T], inits: WorkspaceInits);
-  constructor(tagName: T, inits: WorkspaceInits);
-  constructor(arg0: any, inits: WorkspaceInits) {
-    super(arg0);
-    this.styles.applyCls('workspaceView')
-    this._rect = inits.rect;
-    this._zIndex = inits?.zIndex ?? this._zIndex;
-    if (inits?.wins) {
-      this.addSubWin(...inits.wins);
-      this._updateUndockedWinsStyle();
-    }
-    this.addChild(this._dockView);
-    this.addChild(this._dockLeft);
-    this.addChild(this._dockRight);
-    this.addChild(this._dockTop);
-    this.addChild(this._dockBottom);
 
-  }
   clampAllSubwin() {
     const rect = getValue(this._rect);
     if (!rect) { return; }
-    this._wins.forEach(v => v.parent === this && this.clampSubwin(v, rect));
+    this.children.forEach(v => (v instanceof Subwin) && this.clampSubwin(v, rect))
   }
   clampSubwin(subwin: Subwin, rect: Rect) {
     let {
@@ -273,10 +267,10 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   private _onViewDragStart = (e: Event) => {
     this._draggingSubwin = View.try(e.target, Subwin);
     if (!this._draggingSubwin) { return; }
-    this._dockLeft.fakeIn();
-    this._dockRight.fakeIn();
-    this._dockTop.fakeIn();
-    this._dockBottom.fakeIn();
+    this._dockLeftIndicator.fakeIn();
+    this._dockRightIndicator.fakeIn();
+    this._dockTopIndicator.fakeIn();
+    this._dockBottomIndicator.fakeIn();
     this.addEventListener('pointermove', this._onPointerMove, true)
   }
   private _onViewDragging = (e: Event) => {
@@ -288,13 +282,13 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (!subwin) { return; }
     this.removeEventListener('pointermove', this._onPointerMove, true)
 
-    if (this._dockBottom.hover) {
+    if (this._dockBottomIndicator.hover) {
       this.dockToBottom(subwin);
-    } else if (this._dockTop.hover) {
+    } else if (this._dockTopIndicator.hover) {
       this.dockToTop(subwin);
-    } else if (this._dockLeft.hover) {
+    } else if (this._dockLeftIndicator.hover) {
       this.dockToLeft(subwin);
-    } else if (this._dockRight.hover) {
+    } else if (this._dockRightIndicator.hover) {
       this.dockToRight(subwin);
     } else {
       const rect = getValue(this._rect);
@@ -302,10 +296,10 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this.clampSubwin(subwin, rect);
     }
 
-    this._dockLeft.fakeOut();
-    this._dockRight.fakeOut();
-    this._dockTop.fakeOut();
-    this._dockBottom.fakeOut();
+    this._dockLeftIndicator.fakeOut();
+    this._dockRightIndicator.fakeOut();
+    this._dockTopIndicator.fakeOut();
+    this._dockBottomIndicator.fakeOut();
 
     this._draggingSubwin = null;
   }
@@ -314,34 +308,51 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (listen) {
       const ondown = () => this._handleClick(subwin);
       this._pointerdowns.set(subwin, ondown);
-      subwin.inner.addEventListener('pointerdown', ondown);
-      subwin.inner.addEventListener('touchstart', ondown);
-      subwin.inner.addEventListener(EventType.ViewDragStart, this._onViewDragStart)
-      subwin.inner.addEventListener(EventType.ViewDragging, this._onViewDragging)
-      subwin.inner.addEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
+      subwin.addEventListener('pointerdown', ondown);
+      subwin.addEventListener('touchstart', ondown, { passive: true });
+      subwin.addEventListener(EventType.ViewDragStart, this._onViewDragStart)
+      subwin.addEventListener(EventType.ViewDragging, this._onViewDragging)
+      subwin.addEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
     } else {
       const listener = this._pointerdowns.get(subwin);
       if (listener) {
-        subwin.inner.removeEventListener('pointerdown', listener);
-        subwin.inner.removeEventListener('touchstart', listener);
-        subwin.inner.removeEventListener(EventType.ViewDragStart, this._onViewDragStart)
-        subwin.inner.removeEventListener(EventType.ViewDragging, this._onViewDragging)
-        subwin.inner.removeEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
+        subwin.removeEventListener('pointerdown', listener);
+        subwin.removeEventListener('touchstart', listener);
+        subwin.removeEventListener(EventType.ViewDragStart, this._onViewDragStart)
+        subwin.removeEventListener(EventType.ViewDragging, this._onViewDragging)
+        subwin.removeEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
       }
     }
   }
-  addSubWin(...subwins: Subwin[]): void {
-    this._wins.forEach(v => this.subwinListening(v, false));
-    this._wins = Array.from(new Set(this._wins.concat(subwins)));
-    this._wins.forEach(v => this.subwinListening(v, true));
+  override addChild(...children: View[]): this {
+    super.addChild(...children);
+    children.forEach(v => (v instanceof Subwin) && this.subwinListening(v, true));
     this._updateUndockedWinsStyle();
+    return this;
   }
-  removeSubwin(...subwins: Subwin[]): void {
-    subwins.forEach(v => this.subwinListening(v, false));
-    this._wins.filter(v => subwins.indexOf(v) < 0);
+  override insertChild(anchorOrIdx: number | View, ...children: View[]): this {
+    super.insertChild(anchorOrIdx, ...children);
+    children.forEach(v => {
+      if (v instanceof Subwin) {
+        this.subwinListening(v, true);
+        this._undockedWins.push(v)
+      }
+    });
     this._updateUndockedWinsStyle();
+    return this;
+  }
+  override removeChild(...children: View[]): this {
+    children.forEach(v => {
+      if (v instanceof Subwin) {
+        this.subwinListening(v, false)
+        const idx = this._undockedWins.findIndex(b => b === v)
+        idx >= 0 && this._undockedWins.splice(idx, 1);
+      }
+    });
+    this._updateUndockedWinsStyle();
+    return this;
   }
   get undockedWins(): Subwin[] {
-    return <Subwin[]>this.children.filter(v => v instanceof Subwin)
+    return this._undockedWins;
   }
 }
