@@ -1630,7 +1630,12 @@ class WorkspaceView extends View_1.View {
     }
     addChild(...children) {
         super.addChild(...children);
-        children.forEach(v => (v instanceof Subwin_1.Subwin) && this.subwinListening(v, true));
+        children.forEach(v => {
+            if (v instanceof Subwin_1.Subwin) {
+                this.subwinListening(v, true);
+                this._undockedWins.push(v);
+            }
+        });
         this._updateUndockedWinsStyle();
         return this;
     }
@@ -2005,7 +2010,14 @@ exports.FocusOb = FocusOb;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HoverOb = void 0;
 class HoverOb {
-    get hover() { return this._hover; }
+    get hover() {
+        if (getComputedStyle(this._ele).pointerEvents === 'none') {
+            return false;
+        }
+        else {
+            return this._hover;
+        }
+    }
     get disabled() { return this._disabled; }
     set disabled(v) {
         if (this._disabled === v) {
@@ -2013,22 +2025,18 @@ class HoverOb {
         }
         this._disabled = v;
         if (v) {
-            this._eles.forEach(ele => {
-                ele.removeEventListener('mouseenter', this._mouseenter);
-                ele.removeEventListener('mouseleave', this._mouseleave);
-            });
+            this._ele.removeEventListener('mouseenter', this._mouseenter);
+            this._ele.removeEventListener('mouseleave', this._mouseleave);
         }
         else {
-            this._eles.forEach(ele => {
-                ele.addEventListener('mouseenter', this._mouseenter);
-                ele.addEventListener('mouseleave', this._mouseleave);
-            });
+            this._ele.addEventListener('mouseenter', this._mouseenter);
+            this._ele.addEventListener('mouseleave', this._mouseleave);
         }
     }
     constructor(ele, cb) {
         this._disabled = true;
         this._hover = false;
-        this._eles = Array.isArray(ele) ? ele : [ele];
+        this._ele = ele;
         this._mouseenter = (e) => { this._hover = true; cb(this._hover, e); };
         this._mouseleave = (e) => { this._hover = false; cb(this._hover, e); };
         this.disabled = false;

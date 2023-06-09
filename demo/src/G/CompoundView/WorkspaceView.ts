@@ -326,7 +326,12 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   }
   override addChild(...children: View[]): this {
     super.addChild(...children);
-    children.forEach(v => (v instanceof Subwin) && this.subwinListening(v, true));
+    children.forEach(v => {
+      if (v instanceof Subwin) {
+        this.subwinListening(v, true);
+        this._undockedWins.push(v)
+      }
+    });
     this._updateUndockedWinsStyle();
     return this;
   }
