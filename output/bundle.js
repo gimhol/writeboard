@@ -1602,10 +1602,7 @@ class WorkspaceView extends View_1.View {
         if (x < rect.x) {
             x = rect.x;
         }
-        subwin.styles.apply('drag_by_dragger', {
-            left: '' + x + 'px',
-            top: '' + y + 'px',
-        });
+        subwin.styles.apply('view_dragger_pos', { left: x, top: y });
     }
     subwinListening(subwin, listen) {
         if (listen) {
@@ -1903,6 +1900,7 @@ class ViewDragger {
             ignores: (_c = inits === null || inits === void 0 ? void 0 : inits.ignores) === null || _c === void 0 ? void 0 : _c.map(v => v.inner),
             handlePos: (x, y) => {
                 var _a;
+                console.log(this.view, x, y);
                 (_a = this.view) === null || _a === void 0 ? void 0 : _a.styles.apply('view_dragger_pos', { left: x, top: y });
             },
         });

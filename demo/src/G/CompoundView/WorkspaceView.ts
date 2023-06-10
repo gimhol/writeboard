@@ -258,10 +258,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (y + h > rect.y + rect.h) { y = rect.y + rect.h - h }
     if (y < rect.y) { y = rect.y; }
     if (x < rect.x) { x = rect.x; }
-    subwin.styles.apply('drag_by_dragger', {
-      left: '' + x + 'px',
-      top: '' + y + 'px',
-    });
+    subwin.styles.apply('view_dragger_pos', { left: x, top: y });
   }
   private _onPointerMove = (e: PointerEvent) => { }
   private _onViewDragStart = (e: Event) => {

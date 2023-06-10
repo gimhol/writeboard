@@ -80,26 +80,25 @@ export class Button extends View<'button'> {
     this._inner.disabled = v;
     this.updateStyle();
   }
-
   constructor() {
     super('button');
     this.hoverOb;
     this.styles.register(ButtonStyleNames.Small, {
-      height: 18,
-      lineHeight: 18,
       minWidth: 18,
+      minHeight: 18,
+      lineHeight: 18,
       borderRadius: 5,
       fontSize: 12,
     }).register(ButtonStyleNames.Middle, {
-      height: 24,
-      lineHeight: 24,
       minWidth: 24,
+      minHeight: 24,
+      lineHeight: 24,
       borderRadius: 5,
       fontSize: 14,
     }).register(ButtonStyleNames.Large, {
-      height: 32,
-      lineHeight: 32,
       minWidth: 32,
+      minHeight: 32,
+      lineHeight: 32,
       borderRadius: 5,
       fontSize: 24,
     }).register(ButtonStyleNames.Normal, {
