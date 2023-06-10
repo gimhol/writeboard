@@ -85,19 +85,19 @@ export class Button extends View<'button'> {
     this.hoverOb;
     this.styles.register(ButtonStyleNames.Small, {
       minWidth: 18,
-      minHeight: 18,
+      height: 18,
       lineHeight: 18,
       borderRadius: 5,
       fontSize: 12,
     }).register(ButtonStyleNames.Middle, {
       minWidth: 24,
-      minHeight: 24,
+      height: 24,
       lineHeight: 24,
       borderRadius: 5,
       fontSize: 14,
     }).register(ButtonStyleNames.Large, {
       minWidth: 32,
-      minHeight: 32,
+      height: 32,
       lineHeight: 32,
       borderRadius: 5,
       fontSize: 24,

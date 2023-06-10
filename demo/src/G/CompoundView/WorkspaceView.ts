@@ -170,22 +170,22 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
 
   private _dockLeftIndicator = new IndicatorImage({
     src: './ic_dock_to_left.svg', style: {
-      position: 'absolute', left: 16, top: '50%'
+      position: 'absolute', left: 16, top: 'calc(50% - 24px)'
     }
   })
   private _dockTopIndicator = new IndicatorImage({
     src: './ic_dock_to_top.svg', style: {
-      position: 'absolute', left: '50%', top: 16
+      position: 'absolute', left: 'calc(50% - 24px)', top: 16
     }
   })
   private _dockRightIndicator = new IndicatorImage({
     src: './ic_dock_to_right.svg', style: {
-      position: 'absolute', right: 16, top: '50%'
+      position: 'absolute', right: 16, top: 'calc(50% - 24px)'
     }
   })
   private _dockBottomIndicator = new IndicatorImage({
     src: './ic_dock_to_bottom.svg', style: {
-      position: 'absolute', left: '50%', bottom: 16
+      position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
     }
   })
   private _dockView = new DockView();

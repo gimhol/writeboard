@@ -17,14 +17,6 @@ export class IconButton extends Button {
   }
   constructor() {
     super();
-    this.styles
-      .register(ButtonStyleNames.Small, v => ({
-        ...v, width: v.height
-      })).register(ButtonStyleNames.Middle, v => ({
-        ...v, width: v.height
-      })).register(ButtonStyleNames.Large, v => ({
-        ...v, width: v.height
-      }));
   }
   override init(inits?: IconButtonInits | undefined): this {
     const superInits: ButtonInits = {

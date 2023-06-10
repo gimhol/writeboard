@@ -265,19 +265,19 @@ class Button extends View_1.View {
         this.hoverOb;
         this.styles.register(ButtonStyleNames.Small, {
             minWidth: 18,
-            minHeight: 18,
+            height: 18,
             lineHeight: 18,
             borderRadius: 5,
             fontSize: 12,
         }).register(ButtonStyleNames.Middle, {
             minWidth: 24,
-            minHeight: 24,
+            height: 24,
             lineHeight: 24,
             borderRadius: 5,
             fontSize: 14,
         }).register(ButtonStyleNames.Large, {
             minWidth: 32,
-            minHeight: 32,
+            height: 32,
             lineHeight: 32,
             borderRadius: 5,
             fontSize: 24,
@@ -777,8 +777,6 @@ class IconButton extends Button_1.Button {
     }
     constructor() {
         super();
-        this.styles
-            .register(Button_1.ButtonStyleNames.Small, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.ButtonStyleNames.Middle, v => (Object.assign(Object.assign({}, v), { width: v.height }))).register(Button_1.ButtonStyleNames.Large, v => (Object.assign(Object.assign({}, v), { width: v.height })));
     }
     init(inits) {
         const superInits = Object.assign(Object.assign({}, inits), { content: new Image_1.Image({
@@ -1462,22 +1460,22 @@ class WorkspaceView extends View_1.View {
         };
         this._dockLeftIndicator = new IndicatorImage({
             src: './ic_dock_to_left.svg', style: {
-                position: 'absolute', left: 16, top: '50%'
+                position: 'absolute', left: 16, top: 'calc(50% - 24px)'
             }
         });
         this._dockTopIndicator = new IndicatorImage({
             src: './ic_dock_to_top.svg', style: {
-                position: 'absolute', left: '50%', top: 16
+                position: 'absolute', left: 'calc(50% - 24px)', top: 16
             }
         });
         this._dockRightIndicator = new IndicatorImage({
             src: './ic_dock_to_right.svg', style: {
-                position: 'absolute', right: 16, top: '50%'
+                position: 'absolute', right: 16, top: 'calc(50% - 24px)'
             }
         });
         this._dockBottomIndicator = new IndicatorImage({
             src: './ic_dock_to_bottom.svg', style: {
-                position: 'absolute', left: '50%', bottom: 16
+                position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
             }
         });
         this._dockView = new DockView();
