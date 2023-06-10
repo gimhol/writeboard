@@ -1,7 +1,7 @@
 import { ILayerInfoInit } from "../../dist";
 import { IconButton } from "./G/CompoundView/IconButton";
 import { SizeType } from "./G/BaseView/SizeType";
-import { TextInput } from "./G/BaseView/TextInput";
+import { InputStyleNames, TextInput } from "./G/BaseView/TextInput";
 import { View, ViewEventMap } from "./G/BaseView/View";
 import { Subwin } from "./G/CompoundView/Subwin";
 import { FocusOb } from "./G/Observer/FocusOb";
@@ -154,32 +154,25 @@ export class LayerItemView extends View<'div'> {
     this.addChild(btn2);
 
     const inputName = new TextInput();
-    inputName
-      .editStyle(true, true, true, {})
-      .editStyle(false, true, true, {})
-      .editStyle(true, false, true, {})
-      .editStyle(false, false, true, {})
-      .editStyle(false, false, false, {})
-      .editStyle(true, false, false, {
-        background: '#00000022'
-      })
-      .editStyle(true, true, false, {
-        color: 'white',
-      })
-      .editStyle(false, true, false, {
-        color: 'white',
-      })
-      .styles.apply("", {
-        outline: 'none',
-        border: 'none',
-        minWidth: 100,
-        flex: 1,
-        height: 24,
-        borderRadius: 5,
-        padding: '0px 5px',
-        background: 'none',
-        color: '#FFFFFF88'
-      });
+    inputName.styles.register(InputStyleNames.Hover, v => ({
+      ...v,
+      background: '#00000022',
+    })).register(InputStyleNames.Focused, v => ({
+      ...v,
+      color: 'white',
+    })).register(InputStyleNames.Normal, v => ({
+      ...v,
+      outline: 'none',
+      border: 'none',
+      minWidth: 100,
+      flex: 1,
+      height: 24,
+      borderRadius: 5,
+      padding: '0px 5px',
+      background: 'none',
+      color: '#FFFFFF88'
+    })).refresh();
+
     inputName.value = inits.name;
     inputName.disabled = true;
     this.addChild(inputName);

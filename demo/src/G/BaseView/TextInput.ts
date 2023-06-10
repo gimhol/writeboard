@@ -1,10 +1,12 @@
-import { Style } from "./StyleType";
 import { View } from "./View";
-import { ReValue } from "../utils";
-
+export enum InputStyleNames {
+  Normal = 'normal',
+  Focused = 'focused',
+  Hover = 'hover',
+  Disabled = 'disabled',
+};
 export class TextInput extends View<'input'>{
   protected _onChange?: (self: TextInput) => void;
-  private _prevStyleNames?: string;
   onChange(v: (self: TextInput) => void) { this._onChange = v; }
 
   get disabled() { return this.inner.disabled; }
@@ -17,17 +19,29 @@ export class TextInput extends View<'input'>{
     super('input');
     this.focusOb;
     this.hoverOb;
+    this.styles
+      .register(InputStyleNames.Focused)
+      .register(InputStyleNames.Hover)
+      .register(InputStyleNames.Disabled)
+      .apply(InputStyleNames.Normal, { transition: 'all 200ms' });
     this.inner.type = 'text';
     this.inner.addEventListener('input', () => this._onChange?.(this));
+    this.inner.addEventListener('keydown', e => e.key === 'Enter' && this.blur());
+    const ob = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
+          this.updateStyle();
+        }
+      })
+    }) 
+    ob.observe(this.inner, { attributes: true })
   }
   updateStyle() {
-    const styleName = `${this.hover}_${this.focused}_${this.disabled}`
-    this.styles.remove(this._prevStyleNames!).add(styleName).refresh();
-    this._prevStyleNames = styleName;
-  }
-  editStyle(hover: boolean, focused: boolean, disabled: boolean, style: ReValue<Style>) {
-    this.styles.register(`${hover}_${focused}_${disabled}`, style);
-    return this;
+    const styles = this.styles;
+    styles[(this.focused && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Focused)
+    styles[(this.hover && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Hover)
+    styles[this.disabled ? 'add' : 'remove'](InputStyleNames.Disabled)
+    styles.refresh();
   }
   override onHover(hover: boolean): void {
     this.updateStyle();

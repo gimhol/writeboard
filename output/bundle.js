@@ -520,22 +520,26 @@ class Styles {
         return ret !== null && ret !== void 0 ? ret : {};
     }
     register(name, style) {
-        var _a;
-        this._pool.set(name, (0, utils_1.reValue)(style, (_a = this._pool.get(name)) !== null && _a !== void 0 ? _a : {}));
+        let processed = {};
+        if (style) {
+            const existed = this._pool.get(name);
+            processed = (0, utils_1.reValue)(style, existed !== null && existed !== void 0 ? existed : {});
+        }
+        this._pool.set(name, processed);
         return this;
     }
     edit(name, style) {
         const old = this._pool.get(name);
-        if (!old) {
+        if (old === undefined) {
             console.warn(`[styles] edit(), style '${name}' not found!`);
             return this;
         }
-        this._pool.set(name, style(old));
+        this._pool.set(name, style(old !== null && old !== void 0 ? old : {}));
         return this;
     }
     merge(name, style) {
         const old = this._pool.get(name);
-        if (!old) {
+        if (old === undefined) {
             console.warn(`[styles] merge(), style '${name}' not found!`);
             return this;
         }
@@ -598,8 +602,16 @@ exports.Styles = Styles;
 },{"../utils":25,"./StyleType":7}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TextInput = void 0;
+exports.TextInput = exports.InputStyleNames = void 0;
 const View_1 = require("./View");
+var InputStyleNames;
+(function (InputStyleNames) {
+    InputStyleNames["Normal"] = "normal";
+    InputStyleNames["Focused"] = "focused";
+    InputStyleNames["Hover"] = "hover";
+    InputStyleNames["Disabled"] = "disabled";
+})(InputStyleNames = exports.InputStyleNames || (exports.InputStyleNames = {}));
+;
 class TextInput extends View_1.View {
     onChange(v) { this._onChange = v; }
     get disabled() { return this.inner.disabled; }
@@ -612,17 +624,29 @@ class TextInput extends View_1.View {
         super('input');
         this.focusOb;
         this.hoverOb;
+        this.styles
+            .register(InputStyleNames.Focused)
+            .register(InputStyleNames.Hover)
+            .register(InputStyleNames.Disabled)
+            .apply(InputStyleNames.Normal, { transition: 'all 200ms' });
         this.inner.type = 'text';
         this.inner.addEventListener('input', () => { var _a; return (_a = this._onChange) === null || _a === void 0 ? void 0 : _a.call(this, this); });
+        this.inner.addEventListener('keydown', e => e.key === 'Enter' && this.blur());
+        const ob = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
+                    this.updateStyle();
+                }
+            });
+        });
+        ob.observe(this.inner, { attributes: true });
     }
     updateStyle() {
-        const styleName = `${this.hover}_${this.focused}_${this.disabled}`;
-        this.styles.remove(this._prevStyleNames).add(styleName).refresh();
-        this._prevStyleNames = styleName;
-    }
-    editStyle(hover, focused, disabled, style) {
-        this.styles.register(`${hover}_${focused}_${disabled}`, style);
-        return this;
+        const styles = this.styles;
+        styles[(this.focused && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Focused);
+        styles[(this.hover && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Hover);
+        styles[this.disabled ? 'add' : 'remove'](InputStyleNames.Disabled);
+        styles.refresh();
     }
     onHover(hover) {
         this.updateStyle();
@@ -2235,32 +2259,7 @@ class LayerItemView extends View_1.View {
         });
         this.addChild(btn2);
         const inputName = new TextInput_1.TextInput();
-        inputName
-            .editStyle(true, true, true, {})
-            .editStyle(false, true, true, {})
-            .editStyle(true, false, true, {})
-            .editStyle(false, false, true, {})
-            .editStyle(false, false, false, {})
-            .editStyle(true, false, false, {
-            background: '#00000022'
-        })
-            .editStyle(true, true, false, {
-            color: 'white',
-        })
-            .editStyle(false, true, false, {
-            color: 'white',
-        })
-            .styles.apply("", {
-            outline: 'none',
-            border: 'none',
-            minWidth: 100,
-            flex: 1,
-            height: 24,
-            borderRadius: 5,
-            padding: '0px 5px',
-            background: 'none',
-            color: '#FFFFFF88'
-        });
+        inputName.styles.register(TextInput_1.InputStyleNames.Hover, v => (Object.assign(Object.assign({}, v), { background: '#00000022' }))).register(TextInput_1.InputStyleNames.Focused, v => (Object.assign(Object.assign({}, v), { color: 'white' }))).register(TextInput_1.InputStyleNames.Normal, v => (Object.assign(Object.assign({}, v), { outline: 'none', border: 'none', minWidth: 100, flex: 1, height: 24, borderRadius: 5, padding: '0px 5px', background: 'none', color: '#FFFFFF88' }))).refresh();
         inputName.value = inits.name;
         inputName.disabled = true;
         this.addChild(inputName);

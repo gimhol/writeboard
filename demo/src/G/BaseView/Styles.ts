@@ -4,10 +4,10 @@ import { View } from "./View";
 
 export class Styles<T extends string = string>{
   private _view: View<keyof HTMLElementTagNameMap>;
-  private _pool = new Map<T, Style>();
+  private _pool = new Map<T, Style | null>();
   private _applieds = new Set<T>();
   get view() { return this._view; }
-  get pool(): Map<T, Style> { return this._pool; }
+  get pool(): Map<T, Style | null> { return this._pool; }
   get applieds(): Set<T> { return this._applieds; }
 
   constructor(view: View) {
@@ -19,23 +19,28 @@ export class Styles<T extends string = string>{
     return ret ?? {};
   }
 
-  register(name: T, style: ReValue<Style>): Styles<T> {
-    this._pool.set(name, reValue(style, this._pool.get(name) ?? {}));
+  register(name: T, style?: ReValue<Style>): Styles<T> {
+    let processed: Style = {}
+    if (style) {
+      const existed = this._pool.get(name);
+      processed = reValue(style, existed ?? {})
+    }
+    this._pool.set(name, processed);
     return this;
   }
 
   edit(name: T, style: (s: Style) => Style): Styles<T> {
     const old = this._pool.get(name);
-    if (!old) {
+    if (old === undefined) {
       console.warn(`[styles] edit(), style '${name}' not found!`);
       return this;
     }
-    this._pool.set(name, style(old));
+    this._pool.set(name, style(old ?? {}));
     return this;
   }
   merge(name: T, style: Style): Styles<T> {
     const old = this._pool.get(name);
-    if (!old) {
+    if (old === undefined) {
       console.warn(`[styles] merge(), style '${name}' not found!`);
       return this;
     }

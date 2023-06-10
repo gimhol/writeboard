@@ -157,7 +157,6 @@ export class Button extends View<'button'> {
     styles[this.checked ? 'add' : 'remove'](ButtonStyleNames.Checked)
     styles[this.hover ? 'add' : 'remove'](ButtonStyleNames.Hover)
     styles[this.disabled ? 'add' : 'remove'](ButtonStyleNames.Disabled)
-
     styles.refresh();
   }
   updateContent() {
