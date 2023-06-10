@@ -19,16 +19,15 @@ export class IconButton extends Button {
     super();
   }
   override init(inits?: IconButtonInits | undefined): this {
-    const superInits: ButtonInits = {
-      ...inits,
-      content: new Image({
-        style: {
-          width: '100%',
-          height: '100%',
-          objectFit: CssObjectFit.Contain,
-        }
-      })
-    }
+    const content = new Image({
+      style: {
+        width: '100%',
+        height: '100%',
+        objectFit: CssObjectFit.Contain,
+      }
+    })
+    content.draggable = false;
+    const superInits: ButtonInits = { ...inits, content }
     if (inits?.srcs) {
       this.srcs.set(ButtonState.Normal, inits.srcs[0])
       this.srcs.set(ButtonState.Checked, inits.srcs[1])

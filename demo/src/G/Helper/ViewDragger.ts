@@ -19,10 +19,7 @@ export class ViewDragger {
       responser: inits?.view?.inner,
       handles: inits?.handles?.map(v => v.inner),
       ignores: inits?.ignores?.map(v => v.inner),
-      handlePos: (x, y) => {
-        console.log(this.view, x, y)
-        this.view?.styles.apply('view_dragger_pos', { left: x, top: y })
-      },
+      handlePos: (x, y) => this.view?.styles.apply('view_dragger_pos', { left: x, top: y }),
     })
   }
   destory() {

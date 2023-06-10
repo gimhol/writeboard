@@ -301,7 +301,6 @@ recorderView.content.addChild(_recorder_textarea);
 
 const rootView = new View('div');
 rootView.styles.apply('', { pointerEvents: 'all' }).applyCls('root');
-
 workspace.dockView.setContent(rootView);
 
 const blackboard = new View('div');
@@ -323,6 +322,7 @@ function addLayerCanvas() {
   canvas.inner.addEventListener('contextmenu', (e) => {
     menu.move(e.x, e.y).show();
   })
+  canvas.draggable = false;
   blackboard.addChild(canvas);
   return canvas;
 }

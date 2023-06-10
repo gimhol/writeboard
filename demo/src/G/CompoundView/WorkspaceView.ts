@@ -2,6 +2,7 @@ import { Image } from "../BaseView/Image";
 import { Style } from "../BaseView/StyleType";
 import { View } from "../BaseView/View";
 import { EventType } from "../Events/EventType";
+import { HoverOb } from "../Observer/HoverOb";
 import { GetValue, Rect, getValue } from "../utils";
 import { Subwin } from "./Subwin";
 
@@ -102,18 +103,69 @@ export class DockView extends View<'div'> {
       alignItems: 'stretch'
     })
   }
-  setContent(view: View) {
-    super.addChild(view);
+  setContent(view: View) { super.addChild(view); }
+  createResizer() {
+    const aaa = new View('div');
+    const w = this.direction === 'h' ? 1 : undefined
+    const h = this.direction === 'v' ? 1 : undefined
+    aaa.styles.apply('', {
+      width: w,
+      maxWidth: w,
+      minWidth: w,
+      height: h,
+      maxHeight: h,
+      minHeight: h,
+      overflow: 'visible',
+      zIndex: 1,
+      position: 'relative',
+      backgroundColor: 'black',
+    });
+    const bbb = new View('div');
+    bbb.styles.register('hover', {
+      backgroundColor: '#00000088',
+    }).apply('', {
+      left: this.direction === 'h' ? -3 : 0,
+      right: this.direction === 'h' ? -3 : 0,
+      top: this.direction === 'v' ? -3 : 0,
+      bottom: this.direction === 'v' ? -3 : 0,
+      position: 'absolute',
+      transition: 'background-color 200ms',
+      cursor: this.direction === 'h' ? 'col-resize' : 'row-resize',
+      pointerEvents: 'all'
+    });
+    new HoverOb(bbb.inner, (hover) => bbb.styles[hover ? 'add' : 'remove']('hover').refresh())
+    aaa.addChild(bbb);
+    return aaa
   }
-
   override addChild(...children: View[]): this {
     children.forEach(v => v.removeSelf());
+    const beginAnchor = this.children[this.children.length - 1];
+    for (let i = 1; i < children.length; i += 2) {
+      children.splice(i, 0, this.createResizer());
+    }
+    if (beginAnchor) {
+      children.splice(0, 0, this.createResizer());
+    }
     super.addChild(...children);
     this.updateChildrenStyles(children);
     return this;
   }
   override insertChild(anchor: number | View, ...children: View[]): this {
     children.forEach(v => v.removeSelf());
+    const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
+    const beginAnchor = this.children[idx - 1];
+    const endAnchor = this.children[idx];
+
+    for (let i = 1; i < children.length; i += 2) {
+      children.splice(i, 0, this.createResizer());
+    }
+    if (beginAnchor) {
+      children.splice(0, 0, this.createResizer());
+    }
+    if (endAnchor) {
+      children.push(this.createResizer());
+    }
+
     super.insertChild(anchor, ...children);
     this.updateChildrenStyles(children);
     return this;
@@ -137,7 +189,8 @@ export class DockView extends View<'div'> {
           top: 'unset',
           boxShadow: 'unset',
           borderRadius: 0,
-          zIndex: 'unset'
+          zIndex: 'unset',
+          border: 'none'
         })
       }
     });
@@ -208,7 +261,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if ('v' === this._dockView.direction) {
       this._dockView.insertChild(0, subwin);
     } else {
-      this._dockView = new DockView('v').insertChild(0, this._dockView, subwin);
+      this._dockView = new DockView('v').insertChild(0, subwin, this._dockView);
       this.addChild(this._dockView)
     }
   }
@@ -226,7 +279,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this._dockView.insertChild(0, subwin);
     } else {
       this._dockView.removeSelf();
-      this._dockView = new DockView('h').insertChild(0, this._dockView, subwin);
+      this._dockView = new DockView('h').insertChild(0, subwin, this._dockView);
       this.addChild(this._dockView)
     }
   }

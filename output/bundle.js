@@ -442,7 +442,7 @@ var SizeType;
 },{}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.autoPxKeys = exports.CssFlexDirection = exports.CssPosition = exports.CssObjectFit = void 0;
+exports.autoPxKeys = exports.CssDisplay = exports.CssCursor = exports.CssFlexDirection = exports.CssPosition = exports.CssObjectFit = void 0;
 var CssObjectFit;
 (function (CssObjectFit) {
     CssObjectFit["Fill"] = "fill";
@@ -466,6 +466,66 @@ var CssFlexDirection;
     CssFlexDirection["column"] = "column";
     CssFlexDirection["columnReverse"] = "column-reverse";
 })(CssFlexDirection = exports.CssFlexDirection || (exports.CssFlexDirection = {}));
+var CssCursor;
+(function (CssCursor) {
+    CssCursor["Auto"] = "auto";
+    CssCursor["Default"] = "default";
+    CssCursor["None"] = "none";
+    CssCursor["ContextMenu"] = "context-menu";
+    CssCursor["Help"] = "help";
+    CssCursor["Pointer"] = "pointer";
+    CssCursor["Progress"] = "progress";
+    CssCursor["Wait"] = "wait";
+    CssCursor["Cell"] = "cell";
+    CssCursor["Crosshair"] = "crosshair";
+    CssCursor["Text"] = "text";
+    CssCursor["VerticalText"] = "vertical-text";
+    CssCursor["Alias"] = "alias";
+    CssCursor["Copy"] = "copy";
+    CssCursor["Move"] = "move";
+    CssCursor["NoDrop"] = "no-drop";
+    CssCursor["NotAllowed"] = "not-allowed";
+    CssCursor["Grab"] = "grab";
+    CssCursor["Grabbing"] = "grabbing";
+    CssCursor["AllScroll"] = "all-scroll";
+    CssCursor["ResizeCol"] = "col-resize";
+    CssCursor["ResizeRow"] = "row-resize";
+    CssCursor["ResizeN"] = "n-resize";
+    CssCursor["ResizeE"] = "e-resize";
+    CssCursor["ResizeS"] = "s-resize";
+    CssCursor["ResizeW"] = "w-resize";
+    CssCursor["ResizeNE"] = "ne-resize";
+    CssCursor["ResizeNW"] = "nw-resize";
+    CssCursor["ResizeSE"] = "se-resize";
+    CssCursor["ResizeSW"] = "sw-resize";
+    CssCursor["ResizeEW"] = "ew-resize";
+    CssCursor["ResizeNS"] = "ns-resize";
+    CssCursor["ResizeNESW"] = "nesw-resize";
+    CssCursor["ResizeNWSE"] = "nwse-resize";
+    CssCursor["ZoomIn"] = "zoom-in";
+    CssCursor["ZoomOut"] = "zoom-out";
+})(CssCursor = exports.CssCursor || (exports.CssCursor = {}));
+var CssDisplay;
+(function (CssDisplay) {
+    CssDisplay["Block"] = "block";
+    CssDisplay["Inline"] = "inline";
+    CssDisplay["InlineBlock"] = "inline-block";
+    CssDisplay["Flex"] = "flex";
+    CssDisplay["InlineFlex"] = "inline-flex";
+    CssDisplay["Grid"] = "grid";
+    CssDisplay["InlineGrid"] = "inline-grid";
+    CssDisplay["FlowRoot"] = "flow-root";
+    CssDisplay["None"] = "none";
+    CssDisplay["Contents"] = "contents";
+    CssDisplay["Table"] = "table";
+    CssDisplay["TableRow"] = "table-row";
+    CssDisplay["ListItem"] = "list-item";
+    CssDisplay["Inherit"] = "inherit";
+    CssDisplay["Initial"] = "initial";
+    CssDisplay["Revert"] = "revert";
+    CssDisplay["RevertLayer"] = "revert-layer";
+    CssDisplay["Unset"] = "unset";
+})(CssDisplay = exports.CssDisplay || (exports.CssDisplay = {}));
 ;
 exports.autoPxKeys = new Set([
     'width',
@@ -740,7 +800,11 @@ class View {
     }
     insertChild(anchorOrIdx, ...children) {
         if (anchorOrIdx === 0 && !this._inner.children.length) {
-            this.addChild(...children.reverse());
+            children.forEach(child => {
+                this._inner.append(child.inner);
+                child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+                child.onAdded();
+            });
             return this;
         }
         const ele = (typeof anchorOrIdx === 'number') ?
@@ -803,13 +867,15 @@ class IconButton extends Button_1.Button {
         super();
     }
     init(inits) {
-        const superInits = Object.assign(Object.assign({}, inits), { content: new Image_1.Image({
-                style: {
-                    width: '100%',
-                    height: '100%',
-                    objectFit: StyleType_1.CssObjectFit.Contain,
-                }
-            }) });
+        const content = new Image_1.Image({
+            style: {
+                width: '100%',
+                height: '100%',
+                objectFit: StyleType_1.CssObjectFit.Contain,
+            }
+        });
+        content.draggable = false;
+        const superInits = Object.assign(Object.assign({}, inits), { content });
         if (inits === null || inits === void 0 ? void 0 : inits.srcs) {
             this.srcs.set(Button_1.ButtonState.Normal, inits.srcs[0]);
             this.srcs.set(Button_1.ButtonState.Checked, inits.srcs[1]);
@@ -1327,6 +1393,7 @@ exports.WorkspaceView = exports.DockView = exports.IndicatorImage = void 0;
 const Image_1 = require("../BaseView/Image");
 const View_1 = require("../BaseView/View");
 const EventType_1 = require("../Events/EventType");
+const HoverOb_1 = require("../Observer/HoverOb");
 const utils_1 = require("../utils");
 const Subwin_1 = require("./Subwin");
 class IndicatorImage extends Image_1.Image {
@@ -1415,17 +1482,67 @@ class DockView extends View_1.View {
             alignItems: 'stretch'
         });
     }
-    setContent(view) {
-        super.addChild(view);
+    setContent(view) { super.addChild(view); }
+    createResizer() {
+        const aaa = new View_1.View('div');
+        const w = this.direction === 'h' ? 1 : undefined;
+        const h = this.direction === 'v' ? 1 : undefined;
+        aaa.styles.apply('', {
+            width: w,
+            maxWidth: w,
+            minWidth: w,
+            height: h,
+            maxHeight: h,
+            minHeight: h,
+            overflow: 'visible',
+            zIndex: 1,
+            position: 'relative',
+            backgroundColor: 'black',
+        });
+        const bbb = new View_1.View('div');
+        bbb.styles.register('hover', {
+            backgroundColor: '#00000088',
+        }).apply('', {
+            left: this.direction === 'h' ? -3 : 0,
+            right: this.direction === 'h' ? -3 : 0,
+            top: this.direction === 'v' ? -3 : 0,
+            bottom: this.direction === 'v' ? -3 : 0,
+            position: 'absolute',
+            transition: 'background-color 200ms',
+            cursor: this.direction === 'h' ? 'col-resize' : 'row-resize',
+            pointerEvents: 'all'
+        });
+        new HoverOb_1.HoverOb(bbb.inner, (hover) => bbb.styles[hover ? 'add' : 'remove']('hover').refresh());
+        aaa.addChild(bbb);
+        return aaa;
     }
     addChild(...children) {
         children.forEach(v => v.removeSelf());
+        const beginAnchor = this.children[this.children.length - 1];
+        for (let i = 1; i < children.length; i += 2) {
+            children.splice(i, 0, this.createResizer());
+        }
+        if (beginAnchor) {
+            children.splice(0, 0, this.createResizer());
+        }
         super.addChild(...children);
         this.updateChildrenStyles(children);
         return this;
     }
     insertChild(anchor, ...children) {
         children.forEach(v => v.removeSelf());
+        const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
+        const beginAnchor = this.children[idx - 1];
+        const endAnchor = this.children[idx];
+        for (let i = 1; i < children.length; i += 2) {
+            children.splice(i, 0, this.createResizer());
+        }
+        if (beginAnchor) {
+            children.splice(0, 0, this.createResizer());
+        }
+        if (endAnchor) {
+            children.push(this.createResizer());
+        }
         super.insertChild(anchor, ...children);
         this.updateChildrenStyles(children);
         return this;
@@ -1450,7 +1567,8 @@ class DockView extends View_1.View {
                     top: 'unset',
                     boxShadow: 'unset',
                     borderRadius: 0,
-                    zIndex: 'unset'
+                    zIndex: 'unset',
+                    border: 'none'
                 });
             }
         });
@@ -1567,7 +1685,7 @@ class WorkspaceView extends View_1.View {
             this._dockView.insertChild(0, subwin);
         }
         else {
-            this._dockView = new DockView('v').insertChild(0, this._dockView, subwin);
+            this._dockView = new DockView('v').insertChild(0, subwin, this._dockView);
             this.addChild(this._dockView);
         }
     }
@@ -1587,7 +1705,7 @@ class WorkspaceView extends View_1.View {
         }
         else {
             this._dockView.removeSelf();
-            this._dockView = new DockView('h').insertChild(0, this._dockView, subwin);
+            this._dockView = new DockView('h').insertChild(0, subwin, this._dockView);
             this.addChild(this._dockView);
         }
     }
@@ -1686,7 +1804,7 @@ class WorkspaceView extends View_1.View {
 }
 exports.WorkspaceView = WorkspaceView;
 
-},{"../BaseView/Image":4,"../BaseView/View":10,"../Events/EventType":18,"../utils":25,"./Subwin":14}],18:[function(require,module,exports){
+},{"../BaseView/Image":4,"../BaseView/View":10,"../Events/EventType":18,"../Observer/HoverOb":24,"../utils":25,"./Subwin":14}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventType = void 0;
@@ -1920,11 +2038,7 @@ class ViewDragger {
             responser: (_a = inits === null || inits === void 0 ? void 0 : inits.view) === null || _a === void 0 ? void 0 : _a.inner,
             handles: (_b = inits === null || inits === void 0 ? void 0 : inits.handles) === null || _b === void 0 ? void 0 : _b.map(v => v.inner),
             ignores: (_c = inits === null || inits === void 0 ? void 0 : inits.ignores) === null || _c === void 0 ? void 0 : _c.map(v => v.inner),
-            handlePos: (x, y) => {
-                var _a;
-                console.log(this.view, x, y);
-                (_a = this.view) === null || _a === void 0 ? void 0 : _a.styles.apply('view_dragger_pos', { left: x, top: y });
-            },
+            handlePos: (x, y) => { var _a; return (_a = this.view) === null || _a === void 0 ? void 0 : _a.styles.apply('view_dragger_pos', { left: x, top: y }); },
         });
     }
     destory() {
@@ -3194,6 +3308,7 @@ function addLayerCanvas() {
     canvas.inner.addEventListener('contextmenu', (e) => {
         menu.move(e.x, e.y).show();
     });
+    canvas.draggable = false;
     blackboard.addChild(canvas);
     return canvas;
 }

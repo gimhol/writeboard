@@ -87,7 +87,11 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
 
   insertChild(anchorOrIdx: View | number, ...children: View[]): this {
     if (anchorOrIdx === 0 && !this._inner.children.length) {
-      this.addChild(...children.reverse());
+      children.forEach(child => {
+        this._inner.append(child.inner);
+        child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+        child.onAdded();
+      });
       return this;
     }
     const ele = (typeof anchorOrIdx === 'number') ?
