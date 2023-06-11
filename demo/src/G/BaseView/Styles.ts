@@ -19,6 +19,13 @@ export class Styles<T extends string = string>{
     return ret ?? {};
   }
 
+  registers(styles: Record<T, ReValue<Style>>): Styles<T> {
+    for (const name in styles) {
+      this.register(name, styles[name])
+    }
+    return this;
+  }
+
   register(name: T, style?: ReValue<Style>): Styles<T> {
     let processed: Style = {}
     if (style) {
@@ -73,9 +80,12 @@ export class Styles<T extends string = string>{
     });
     Object.assign(this.view.inner.style, final)
   }
-
-  apply(name: T, style: ReValue<Style>): Styles<T> {
-    this.register(name, style).add(name).refresh();
+  apply(name: T, style?: ReValue<Style>): Styles<T> {
+    if (style) {
+      this.register(name, style).add(name).refresh();
+    } else {
+      this.add(name).refresh();
+    }
     return this;
   }
   resetCls(...names: string[]): Styles<T> {

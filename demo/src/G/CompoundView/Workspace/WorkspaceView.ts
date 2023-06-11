@@ -1,200 +1,14 @@
-import { Image } from "../BaseView/Image";
-import { Style } from "../BaseView/StyleType";
-import { View } from "../BaseView/View";
-import { EventType } from "../Events/EventType";
-import { HoverOb } from "../Observer/HoverOb";
-import { GetValue, Rect, getValue } from "../utils";
-import { Subwin } from "./Subwin";
+import { View } from "../../BaseView/View";
+import { EventType } from "../../Events/EventType";
+import { GetValue, Rect, getValue } from "../../utils";
+import { Subwin } from "../Subwin";
+import { Direction, DockView } from "./DockView";
+import { IndicatorImage } from "./IndicatorImage";
 
 export interface WorkspaceInits {
   rect?: GetValue<Rect>;
   wins?: Subwin[];
   zIndex?: number;
-}
-
-export class IndicatorImage extends Image {
-  constructor(inits: { src: string, style?: Style }) {
-    super({ src: inits.src });
-    this.styles
-      .register('', { ...inits.style })
-      .register('hover', {
-        opacity: 0.8,
-      })
-      .register('normal', {
-        width: 48,
-        height: 48,
-        zIndex: '10000',
-        userSelect: 'none',
-        background: '#000000FF',
-        borderRadius: 5,
-        opacity: 0.0,
-        transition: 'all 200ms',
-        pointerEvents: 'none'
-      }).register('appear', {
-        opacity: 0.3,
-        pointerEvents: 'all'
-      })
-      .add('normal', '')
-      .refresh();
-    this.draggable = false;
-  }
-  override onHover(hover: boolean): void {
-    this.styles[hover ? 'add' : 'remove']('hover').refresh()
-  }
-  override onRemoved(): void {
-    this.styles.remove('hover').refresh()
-  }
-  fakeIn() {
-    this.styles.add('appear').refresh();
-    this.hoverOb.disabled = false;
-  }
-  fakeOut() {
-    this.styles.remove('appear').refresh();
-    this.hoverOb.disabled = true;
-    this.onHover(false);
-  }
-}
-
-class IndicatorView extends View<'div'> {
-  private _left = new IndicatorImage({ src: './ic_dock_to_left.svg' })
-  private _top = new IndicatorImage({ src: './ic_dock_to_top.svg' })
-  private _right = new IndicatorImage({ src: './ic_dock_to_right.svg' })
-  private _bottom = new IndicatorImage({ src: './ic_dock_to_bottom.svg' })
-  private _center = new IndicatorImage({ src: '' });
-  constructor() {
-    super('div');
-    this.styles.apply('normal', {
-      display: 'grid',
-      gridTemplateColumns: '33% 33% 33%',
-      position: 'absolute',
-      left: '50%',
-      top: '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: '10000'
-    })
-    this.addChild(
-      new View('div'), this._top, new View('div'),
-      this._left, this._center, this._right,
-      new View('div'), this._bottom, new View('div'),
-    )
-  }
-}
-export class DockView extends View<'div'> {
-  private _direction: 'h' | 'v' | '' = '';
-  get direction() { return this._direction; }
-  constructor()
-  constructor(direction: 'h' | 'v');
-  constructor(direction: 'h' | 'v' | '' = '') {
-    super('div');
-    this._direction = direction;
-    if (direction === 'h') {
-      this.styles.apply('', { display: "flex", flexDirection: 'row' })
-    } else if (direction === 'v') {
-      this.styles.apply('', { display: "flex", flexDirection: 'column' })
-    }
-    this.styles.applyCls('DockView')
-    this.styles.apply('normal', {
-      pointerEvents: 'none',
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      left: 0,
-      top: 0,
-      alignItems: 'stretch'
-    })
-  }
-  setContent(view: View) { super.addChild(view); }
-  createResizer() {
-    const aaa = new View('div');
-    const w = this.direction === 'h' ? 1 : undefined
-    const h = this.direction === 'v' ? 1 : undefined
-    aaa.styles.apply('', {
-      width: w,
-      maxWidth: w,
-      minWidth: w,
-      height: h,
-      maxHeight: h,
-      minHeight: h,
-      overflow: 'visible',
-      zIndex: 1,
-      position: 'relative',
-      backgroundColor: 'black',
-    });
-    const bbb = new View('div');
-    bbb.styles.register('hover', {
-      backgroundColor: '#00000088',
-    }).apply('', {
-      left: this.direction === 'h' ? -3 : 0,
-      right: this.direction === 'h' ? -3 : 0,
-      top: this.direction === 'v' ? -3 : 0,
-      bottom: this.direction === 'v' ? -3 : 0,
-      position: 'absolute',
-      transition: 'background-color 200ms',
-      cursor: this.direction === 'h' ? 'col-resize' : 'row-resize',
-      pointerEvents: 'all'
-    });
-    new HoverOb(bbb.inner, (hover) => bbb.styles[hover ? 'add' : 'remove']('hover').refresh())
-    aaa.addChild(bbb);
-    return aaa
-  }
-  override addChild(...children: View[]): this {
-    children.forEach(v => v.removeSelf());
-    const beginAnchor = this.children[this.children.length - 1];
-    for (let i = 1; i < children.length; i += 2) {
-      children.splice(i, 0, this.createResizer());
-    }
-    if (beginAnchor) {
-      children.splice(0, 0, this.createResizer());
-    }
-    super.addChild(...children);
-    this.updateChildrenStyles(children);
-    return this;
-  }
-  override insertChild(anchor: number | View, ...children: View[]): this {
-    children.forEach(v => v.removeSelf());
-    const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
-    const beginAnchor = this.children[idx - 1];
-    const endAnchor = this.children[idx];
-
-    for (let i = 1; i < children.length; i += 2) {
-      children.splice(i, 0, this.createResizer());
-    }
-    if (beginAnchor) {
-      children.splice(0, 0, this.createResizer());
-    }
-    if (endAnchor) {
-      children.push(this.createResizer());
-    }
-
-    super.insertChild(anchor, ...children);
-    this.updateChildrenStyles(children);
-    return this;
-  }
-  private updateChildrenStyles(children: View[]) {
-    children.forEach(v => {
-      if (v instanceof DockView) {
-        v.styles.apply('docked', {
-          position: 'relative',
-          flex: 1
-        })
-      } else if (v instanceof Subwin) {
-        v.dragger.disabled = true;
-        v.styles.apply('docked', {
-          pointerEvents: 'all',
-          position: 'relative',
-          resize: 'none',
-          width: 'unset',
-          height: 'unset',
-          left: 'unset',
-          top: 'unset',
-          boxShadow: 'unset',
-          borderRadius: 0,
-          zIndex: 'unset',
-          border: 'none'
-        })
-      }
-    });
-  }
 }
 
 export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> extends View<T> {
@@ -258,36 +72,36 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     inits?.wins && this.addChild(...inits.wins);
   }
   dockToTop(subwin: Subwin): void {
-    if ('v' === this._dockView.direction) {
+    if (Direction.V === this._dockView.direction) {
       this._dockView.insertChild(0, subwin);
     } else {
-      this._dockView = new DockView('v').insertChild(0, subwin, this._dockView);
+      this._dockView = new DockView(Direction.V).insertChild(0, subwin, this._dockView);
       this.addChild(this._dockView)
     }
   }
   dockToBottom(subwin: Subwin): void {
-    if ('v' === this._dockView.direction) {
+    if (Direction.V === this._dockView.direction) {
       this._dockView.addChild(subwin);
     } else {
       this._dockView.removeSelf();
-      this._dockView = new DockView('v').addChild(this._dockView, subwin);
+      this._dockView = new DockView(Direction.V).addChild(this._dockView, subwin);
       this.addChild(this._dockView)
     }
   }
   dockToLeft(subwin: Subwin): void {
-    if ('h' === this._dockView.direction) {
+    if (Direction.H === this._dockView.direction) {
       this._dockView.insertChild(0, subwin);
     } else {
       this._dockView.removeSelf();
-      this._dockView = new DockView('h').insertChild(0, subwin, this._dockView);
+      this._dockView = new DockView(Direction.H).insertChild(0, subwin, this._dockView);
       this.addChild(this._dockView)
     }
   }
   dockToRight(subwin: Subwin): void {
-    if ('h' === this._dockView.direction) {
+    if (Direction.H === this._dockView.direction) {
       this._dockView.addChild(subwin);
     } else {
-      this._dockView = new DockView('h').addChild(this._dockView, subwin);
+      this._dockView = new DockView(Direction.H).addChild(this._dockView, subwin);
       this.addChild(this._dockView)
     }
   }

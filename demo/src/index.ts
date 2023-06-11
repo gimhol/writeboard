@@ -15,7 +15,7 @@ import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { MergedSubwin } from "./G/CompoundView/MergedSubwin";
 import { Subwin } from "./G/CompoundView/Subwin";
-import { WorkspaceView } from "./G/CompoundView/WorkspaceView";
+import { WorkspaceView } from "./G/CompoundView/Workspace/WorkspaceView";
 import { LayersView } from "./LayersView";
 import { ToolsView } from "./ToolsView";
 import { RGBA } from "./colorPalette/Color";

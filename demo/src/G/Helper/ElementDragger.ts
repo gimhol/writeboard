@@ -3,7 +3,9 @@ export interface IElementDraggerInits {
   handles?: HTMLElement[];
   responser?: HTMLElement;
   ignores?: HTMLElement[];
-  handlePos?: (x: number, y: number) => void
+  handleDown?: () => void;
+  handleMove?: (x: number, y: number, oldX: number, oldY: number) => void
+  handleUp?: () => void;
 }
 export class ElementDragger {
   private _handles: HTMLElement[] = [];
@@ -13,11 +15,15 @@ export class ElementDragger {
   private _offsetY = 0;
   private _down = false;
   private _disabled = false;
-  private _handlePos = (x: number, y: number) => {
+  private _handlePos = (x: number, y: number, oldX: number, oldY: number) => {
     if (!this._responser) { return; }
     this._responser.style.left = `${x}px`;
     this._responser.style.top = `${y}px`;
   };
+  private _oldX: number = 0;
+  private _oldY: number = 0;
+  private _handleDown: (() => void) | undefined;
+  private _handleUp: (() => void) | undefined;
   private isIgnore(target: HTMLElement) {
     return this._ignores.indexOf(target) >= 0;
   }
@@ -44,15 +50,25 @@ export class ElementDragger {
       this._down = false;
       return;
     }
+    this._oldX = left;
+    this._oldY = top;
+    this._handleDown?.()
     this.responser?.dispatchEvent(new Event(EventType.ViewDragStart))
   }
   private _onmove = (pageX: number, pageY: number) => {
     if (!this._responser || !this._down) { return; }
-    this._handlePos(pageX - this._offsetX, pageY - this._offsetY);
+    this._handlePos(
+      pageX - this._offsetX,
+      pageY - this._offsetY,
+      this._oldX,
+      this._oldY,
+    );
     this.responser?.dispatchEvent(new Event(EventType.ViewDragging))
   }
   private _onup = () => {
     if (!this._down) return;
+
+    this._handleUp?.()
     this.responser?.dispatchEvent(new Event(EventType.ViewDragEnd))
     this._down = false;
   }
@@ -132,7 +148,9 @@ export class ElementDragger {
     inits?.responser && (this.responser = inits.responser);
     inits?.handles && (this._handles = inits.handles);
     inits?.ignores && (this._ignores = inits.ignores);
-    inits?.handlePos && (this._handlePos = inits.handlePos);
+    inits?.handleMove && (this._handlePos = inits.handleMove);
+    this._handleDown = inits?.handleDown;
+    this._handleUp = inits?.handleUp;
     this.startListen();
   }
   destory() {
