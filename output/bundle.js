@@ -1877,6 +1877,7 @@ class WorkspaceView extends View_1.View {
             return this;
         }
         const dockView = subwin.parent;
+        // todo:
         subwin.removeSelf();
         this.addChild(subwin);
         return this;
