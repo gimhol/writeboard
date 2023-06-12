@@ -5,8 +5,8 @@ export interface ImageInit {
   style?: Style;
 }
 export class Image extends View<'img'>{
-  get src() { return this._inner.src; }
-  set src(v) { this._inner.src = v; }
+  get src() { return this.inner.src; }
+  set src(v) { this.inner.src = v; }
 
   constructor(inits?: ImageInit) {
     super('img');

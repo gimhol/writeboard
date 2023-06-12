@@ -13,7 +13,7 @@ export class HoverOb implements IObserver {
   get disabled() { return this._disabled }
   set disabled(v) { this.setDisabled(v); }
   constructor(target?: HTMLElement) {
-    this._target = target;
+    this.target = target;
   }
   setTarget(target?: HTMLElement): this {
     if (this._target) {
@@ -45,9 +45,12 @@ export class HoverOb implements IObserver {
     return this;
   }
   destory() {
+    this._target?.removeEventListener('mouseenter', this._mouseenter);
+    this._target?.removeEventListener('mouseleave', this._mouseleave);
     this.disabled = true;
     delete this._target;
     delete this._callback;
+
   }
 
   private _target?: HTMLElement;

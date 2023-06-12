@@ -171,10 +171,10 @@ export default class ColorView extends Subwin {
       this._btnColors[this._editing].color = v;
       switch (this._editing) {
         case ColorKind.Line:
-          this._inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.LineColorChange, { detail: v }))
+          this.inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.LineColorChange, { detail: v }))
           break;
         case ColorKind.Fill:
-          this._inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.FillColorChange, { detail: v }))
+          this.inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.FillColorChange, { detail: v }))
           break;
       }
     };

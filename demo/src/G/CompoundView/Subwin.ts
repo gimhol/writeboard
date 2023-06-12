@@ -92,9 +92,11 @@ export class Subwin extends View<'div'> {
       handles: [
         this.header.titleView,
         this.header.iconView
-      ]
+      ],
+      handleMove: (x: number, y: number) => {
+        this.styles.apply('view_dragger_pos', { left: x, top: y })
+      },
     });
-
     this._resizeOb = new ResizeObserver(() => {
       const { width, height } = getComputedStyle(this.inner);
       this.styles.edit(StyleNames.Root, v => ({ ...v, width, height }))

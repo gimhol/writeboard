@@ -1,11 +1,16 @@
 import { EventType } from "../Events/EventType";
+export interface OnMoveCallback {
+  (x: number, y: number, oldX: number, oldY: number): void
+}
+export interface OnDownCallback { (): void; }
+export interface OnUpCallback { (): void; }
 export interface IElementDraggerInits {
   handles?: HTMLElement[];
   responser?: HTMLElement;
   ignores?: HTMLElement[];
-  handleDown?: () => void;
-  handleMove?: (x: number, y: number, oldX: number, oldY: number) => void
-  handleUp?: () => void;
+  handleDown?: OnDownCallback;
+  handleMove?: OnMoveCallback;
+  handleUp?: OnUpCallback;
 }
 export class ElementDragger {
   private _handles: HTMLElement[] = [];
@@ -15,15 +20,15 @@ export class ElementDragger {
   private _offsetY = 0;
   private _down = false;
   private _disabled = false;
-  private _handlePos = (x: number, y: number, oldX: number, oldY: number) => {
+  private _handleMove: OnMoveCallback = (x, y, oldX, oldY) => {
     if (!this._responser) { return; }
     this._responser.style.left = `${x}px`;
     this._responser.style.top = `${y}px`;
   };
   private _oldX: number = 0;
   private _oldY: number = 0;
-  private _handleDown: (() => void) | undefined;
-  private _handleUp: (() => void) | undefined;
+  private _handleDown: OnDownCallback | undefined;
+  private _handleUp: OnUpCallback | undefined;
   private isIgnore(target: HTMLElement) {
     return this._ignores.indexOf(target) >= 0;
   }
@@ -57,7 +62,7 @@ export class ElementDragger {
   }
   private _onmove = (pageX: number, pageY: number) => {
     if (!this._responser || !this._down) { return; }
-    this._handlePos(
+    this._handleMove(
       pageX - this._offsetX,
       pageY - this._offsetY,
       this._oldX,
@@ -148,7 +153,7 @@ export class ElementDragger {
     inits?.responser && (this.responser = inits.responser);
     inits?.handles && (this._handles = inits.handles);
     inits?.ignores && (this._ignores = inits.ignores);
-    inits?.handleMove && (this._handlePos = inits.handleMove);
+    inits?.handleMove && (this._handleMove = inits.handleMove);
     this._handleDown = inits?.handleDown;
     this._handleUp = inits?.handleUp;
     this.startListen();

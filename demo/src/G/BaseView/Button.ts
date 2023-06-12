@@ -75,9 +75,9 @@ export class Button extends View<'button'> {
     this.updateTitle();
     this.updateContent();
   }
-  get disabled() { return this._inner.disabled }
+  get disabled() { return this.inner.disabled }
   set disabled(v) {
-    this._inner.disabled = v;
+    this.inner.disabled = v;
     this.updateStyle();
   }
   constructor() {

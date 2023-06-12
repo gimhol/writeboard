@@ -3,18 +3,23 @@ import { ReValue, reValue } from "../utils";
 import { View } from "./View";
 
 export class Styles<T extends string = string>{
-  private _view: View<keyof HTMLElementTagNameMap>;
-  private _pool = new Map<T, Style | null>();
-  private _applieds = new Set<T>();
-  get view() { return this._view; }
-  get pool(): Map<T, Style | null> { return this._pool; }
-  get applieds(): Set<T> { return this._applieds; }
-
+  private _view?: View<keyof HTMLElementTagNameMap>;
+  private _pool?: Map<T, Style | null>;
+  private _applieds?: Set<T>;
+  get view() { return this._view!; }
+  get pool(): Map<T, Style | null> {
+    this._pool = this._pool ?? new Map<T, Style | null>();
+    return this._pool;
+  }
+  get applieds(): Set<T> {
+    this._applieds = this._applieds ?? new Set<T>();
+    return this._applieds;
+  }
   constructor(view: View) {
     this._view = view;
   }
   read(name: T): Style {
-    const ret = this._pool.get(name);
+    const ret = this.pool.get(name);
     if (!ret) { console.warn(`[styles] read(), style '${name}' not found!`); }
     return ret ?? {};
   }
@@ -29,43 +34,43 @@ export class Styles<T extends string = string>{
   register(name: T, style?: ReValue<Style>): this {
     let processed: Style = {}
     if (style) {
-      const existed = this._pool.get(name);
+      const existed = this.pool.get(name);
       processed = reValue(style, existed ?? {})
     }
-    this._pool.set(name, processed);
+    this.pool.set(name, processed);
     return this;
   }
 
   edit(name: T, style: (s: Style) => Style): this {
-    const old = this._pool.get(name);
+    const old = this.pool.get(name);
     if (old === undefined) {
       console.warn(`[styles] edit(), style '${name}' not found!`);
       return this;
     }
-    this._pool.set(name, style(old ?? {}));
+    this.pool.set(name, style(old ?? {}));
     return this;
   }
   merge(name: T, style: Style): this {
-    const old = this._pool.get(name);
+    const old = this.pool.get(name);
     if (old === undefined) {
       console.warn(`[styles] merge(), style '${name}' not found!`);
       return this;
     }
-    this._pool.set(name, { ...old, ...style });
+    this.pool.set(name, { ...old, ...style });
     return this;
   }
 
   add(...names: T[]): this {
-    names.forEach(name => this._applieds.add(name));
+    names.forEach(name => this.applieds.add(name));
     return this;
   }
   remove(...names: T[]): this {
-    names.forEach(name => this._applieds.delete(name));
+    names.forEach(name => this.applieds.delete(name));
     return this;
   }
   clear(): this {
-    this._applieds.clear();
-    this.view.inner.removeAttribute('style');
+    this.applieds.clear();
+    this.view?.inner.removeAttribute('style');
     return this;
   }
   forgo(...names: T[]): this {
@@ -73,9 +78,9 @@ export class Styles<T extends string = string>{
     return this;
   }
   refresh() {
-    this.view.inner.removeAttribute('style');
+    this.view?.inner.removeAttribute('style');
     const final: Style = {}
-    this._applieds.forEach(name => {
+    this.applieds.forEach(name => {
       Object.assign(final, this.makeUp(this.read(name)))
     });
     Object.assign(this.view.inner.style, final)
@@ -120,6 +125,11 @@ export class Styles<T extends string = string>{
     this.view.inner.classList.remove(...names)
     return this;
   }
+  destory() {
+    delete this._view;
+    this.pool.clear();
+    this.applieds.clear();
+  }
   private makeUp(style: Style): Style {
     const ret: Style = { ...style }
     autoPxKeys.forEach(key => {
@@ -129,4 +139,5 @@ export class Styles<T extends string = string>{
     })
     return ret;
   }
+
 }

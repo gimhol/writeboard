@@ -150,10 +150,10 @@ class ColorView extends Subwin_1.Subwin {
             this._btnColors[this._editing].color = v;
             switch (this._editing) {
                 case ColorKind.Line:
-                    this._inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.LineColorChange, { detail: v }));
+                    this.inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.LineColorChange, { detail: v }));
                     break;
                 case ColorKind.Fill:
-                    this._inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.FillColorChange, { detail: v }));
+                    this.inner.dispatchEvent(new CustomEvent(ColorViewEventTypes.FillColorChange, { detail: v }));
                     break;
             }
         };
@@ -247,9 +247,9 @@ class Button extends View_1.View {
         this.updateTitle();
         this.updateContent();
     }
-    get disabled() { return this._inner.disabled; }
+    get disabled() { return this.inner.disabled; }
     set disabled(v) {
-        this._inner.disabled = v;
+        this.inner.disabled = v;
         this.updateStyle();
     }
     constructor() {
@@ -381,10 +381,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Canvas = void 0;
 const View_1 = require("./View");
 class Canvas extends View_1.View {
-    set width(v) { this._inner.width = v; }
-    get width() { return this._inner.width; }
-    set height(v) { this._inner.height = v; }
-    get height() { return this._inner.height; }
+    set width(v) { this.inner.width = v; }
+    get width() { return this.inner.width; }
+    set height(v) { this.inner.height = v; }
+    get height() { return this.inner.height; }
     constructor() { super('canvas'); }
 }
 exports.Canvas = Canvas;
@@ -395,8 +395,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Image = void 0;
 const View_1 = require("./View");
 class Image extends View_1.View {
-    get src() { return this._inner.src; }
-    set src(v) { this._inner.src = v; }
+    get src() { return this.inner.src; }
+    set src(v) { this.inner.src = v; }
     constructor(inits) {
         super('img');
         (inits === null || inits === void 0 ? void 0 : inits.src) && (this.src = inits.src);
@@ -565,15 +565,21 @@ const StyleType_1 = require("./StyleType");
 const utils_1 = require("../utils");
 class Styles {
     get view() { return this._view; }
-    get pool() { return this._pool; }
-    get applieds() { return this._applieds; }
+    get pool() {
+        var _a;
+        this._pool = (_a = this._pool) !== null && _a !== void 0 ? _a : new Map();
+        return this._pool;
+    }
+    get applieds() {
+        var _a;
+        this._applieds = (_a = this._applieds) !== null && _a !== void 0 ? _a : new Set();
+        return this._applieds;
+    }
     constructor(view) {
-        this._pool = new Map();
-        this._applieds = new Set();
         this._view = view;
     }
     read(name) {
-        const ret = this._pool.get(name);
+        const ret = this.pool.get(name);
         if (!ret) {
             console.warn(`[styles] read(), style '${name}' not found!`);
         }
@@ -588,41 +594,42 @@ class Styles {
     register(name, style) {
         let processed = {};
         if (style) {
-            const existed = this._pool.get(name);
+            const existed = this.pool.get(name);
             processed = (0, utils_1.reValue)(style, existed !== null && existed !== void 0 ? existed : {});
         }
-        this._pool.set(name, processed);
+        this.pool.set(name, processed);
         return this;
     }
     edit(name, style) {
-        const old = this._pool.get(name);
+        const old = this.pool.get(name);
         if (old === undefined) {
             console.warn(`[styles] edit(), style '${name}' not found!`);
             return this;
         }
-        this._pool.set(name, style(old !== null && old !== void 0 ? old : {}));
+        this.pool.set(name, style(old !== null && old !== void 0 ? old : {}));
         return this;
     }
     merge(name, style) {
-        const old = this._pool.get(name);
+        const old = this.pool.get(name);
         if (old === undefined) {
             console.warn(`[styles] merge(), style '${name}' not found!`);
             return this;
         }
-        this._pool.set(name, Object.assign(Object.assign({}, old), style));
+        this.pool.set(name, Object.assign(Object.assign({}, old), style));
         return this;
     }
     add(...names) {
-        names.forEach(name => this._applieds.add(name));
+        names.forEach(name => this.applieds.add(name));
         return this;
     }
     remove(...names) {
-        names.forEach(name => this._applieds.delete(name));
+        names.forEach(name => this.applieds.delete(name));
         return this;
     }
     clear() {
-        this._applieds.clear();
-        this.view.inner.removeAttribute('style');
+        var _a;
+        this.applieds.clear();
+        (_a = this.view) === null || _a === void 0 ? void 0 : _a.inner.removeAttribute('style');
         return this;
     }
     forgo(...names) {
@@ -630,9 +637,10 @@ class Styles {
         return this;
     }
     refresh() {
-        this.view.inner.removeAttribute('style');
+        var _a;
+        (_a = this.view) === null || _a === void 0 ? void 0 : _a.inner.removeAttribute('style');
         const final = {};
-        this._applieds.forEach(name => {
+        this.applieds.forEach(name => {
             Object.assign(final, this.makeUp(this.read(name)));
         });
         Object.assign(this.view.inner.style, final);
@@ -657,6 +665,11 @@ class Styles {
     removeCls(...names) {
         this.view.inner.classList.remove(...names);
         return this;
+    }
+    destory() {
+        delete this._view;
+        this.pool.clear();
+        this.applieds.clear();
     }
     makeUp(style) {
         const ret = Object.assign({}, style);
@@ -744,13 +757,13 @@ class View {
     get hover() { return this.hoverOb.hover; }
     get hoverOb() {
         var _a;
-        this._hoverOb = (_a = this._hoverOb) !== null && _a !== void 0 ? _a : new HoverOb_1.HoverOb(this._inner).setCallback(v => this.onHover(v));
+        this._hoverOb = (_a = this._hoverOb) !== null && _a !== void 0 ? _a : new HoverOb_1.HoverOb(this.inner).setCallback(v => this.onHover(v));
         return this._hoverOb;
     }
     get focused() { return this.focusOb.focused; }
     get focusOb() {
         var _a;
-        this._focusOb = (_a = this._focusOb) !== null && _a !== void 0 ? _a : new FocusOb_1.FocusOb(this._inner, v => this.onFocus(v));
+        this._focusOb = (_a = this._focusOb) !== null && _a !== void 0 ? _a : new FocusOb_1.FocusOb(this.inner, v => this.onFocus(v));
         return this._focusOb;
     }
     get styles() {
@@ -758,13 +771,13 @@ class View {
         this._styles = (_a = this._styles) !== null && _a !== void 0 ? _a : new Styles_1.Styles(this);
         return this._styles;
     }
+    get inner() { return this._inner; }
     get id() { return this.inner.id; }
     set id(v) { this.inner.id = v; }
-    get inner() { return this._inner; }
-    get parent() { return View.get(this._inner.parentElement); }
-    get children() { return Array.from(this._inner.children).map(v => View.get(v)); }
-    get draggable() { return this._inner.draggable; }
-    set draggable(v) { this._inner.draggable = v; }
+    get parent() { return View.get(this.inner.parentElement); }
+    get children() { return Array.from(this.inner.children).map(v => View.get(v)); }
+    get draggable() { return this.inner.draggable; }
+    set draggable(v) { this.inner.draggable = v; }
     static get(ele) {
         var _a;
         if (!ele) {
@@ -795,7 +808,7 @@ class View {
         else {
             this._inner = arg0;
         }
-        this._inner[View.RAW_KEY_IN_ELEMENT] = this;
+        this.inner[View.RAW_KEY_IN_ELEMENT] = this;
     }
     onHover(hover) { }
     onFocus(focused) { }
@@ -803,30 +816,30 @@ class View {
     onRemoved() { }
     addChild(...children) {
         children.forEach(child => {
-            this._inner.append(child.inner);
+            this.inner.append(child.inner);
             child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
             child.onAdded();
         });
         return this;
     }
     insertChild(anchorOrIdx, ...children) {
-        if (anchorOrIdx === 0 && !this._inner.children.length) {
+        if (anchorOrIdx === 0 && !this.inner.children.length) {
             children.forEach(child => {
-                this._inner.append(child.inner);
+                this.inner.append(child.inner);
                 child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
                 child.onAdded();
             });
             return this;
         }
         const ele = (typeof anchorOrIdx === 'number') ?
-            this._inner.children[anchorOrIdx] :
+            this.inner.children[anchorOrIdx] :
             anchorOrIdx.inner;
         if (!ele) {
             console.error('[View] insertChild failed! anchor element not found, idx = ', anchorOrIdx);
             return this;
         }
         children.forEach(child => {
-            this._inner.insertBefore(child.inner, ele);
+            this.inner.insertBefore(child.inner, ele);
             child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
             child.onAdded();
         });
@@ -834,7 +847,7 @@ class View {
     }
     removeChild(...children) {
         children.forEach(child => {
-            this._inner.removeChild(child.inner);
+            this.inner.removeChild(child.inner);
             child.inner.dispatchEvent(new Event(ViewEventType.OnRemoved));
             child.onRemoved();
         });
@@ -852,6 +865,14 @@ class View {
     removeEventListener(arg0, arg1, arg2) {
         this.inner.removeEventListener(arg0, arg1, arg2);
         return this;
+    }
+    destory() {
+        var _a, _b, _c, _d;
+        (_a = this._focusOb) === null || _a === void 0 ? void 0 : _a.destory();
+        (_b = this._hoverOb) === null || _b === void 0 ? void 0 : _b.destory();
+        (_c = this._styles) === null || _c === void 0 ? void 0 : _c.destory();
+        (_d = this._inner) === null || _d === void 0 ? true : delete _d[View.RAW_KEY_IN_ELEMENT];
+        delete this._inner;
     }
 }
 exports.View = View;
@@ -1310,7 +1331,10 @@ class Subwin extends View_1.View {
             handles: [
                 this.header.titleView,
                 this.header.iconView
-            ]
+            ],
+            handleMove: (x, y) => {
+                this.styles.apply('view_dragger_pos', { left: x, top: y });
+            },
         });
         this._resizeOb = new ResizeObserver(() => {
             const { width, height } = getComputedStyle(this.inner);
@@ -2013,7 +2037,7 @@ class ElementDragger {
         this._offsetY = 0;
         this._down = false;
         this._disabled = false;
-        this._handlePos = (x, y, oldX, oldY) => {
+        this._handleMove = (x, y, oldX, oldY) => {
             if (!this._responser) {
                 return;
             }
@@ -2060,7 +2084,7 @@ class ElementDragger {
             if (!this._responser || !this._down) {
                 return;
             }
-            this._handlePos(pageX - this._offsetX, pageY - this._offsetY, this._oldX, this._oldY);
+            this._handleMove(pageX - this._offsetX, pageY - this._offsetY, this._oldX, this._oldY);
             (_a = this.responser) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new Event(EventType_1.EventType.ViewDragging));
         };
         this._onup = () => {
@@ -2110,7 +2134,7 @@ class ElementDragger {
         (inits === null || inits === void 0 ? void 0 : inits.responser) && (this.responser = inits.responser);
         (inits === null || inits === void 0 ? void 0 : inits.handles) && (this._handles = inits.handles);
         (inits === null || inits === void 0 ? void 0 : inits.ignores) && (this._ignores = inits.ignores);
-        (inits === null || inits === void 0 ? void 0 : inits.handleMove) && (this._handlePos = inits.handleMove);
+        (inits === null || inits === void 0 ? void 0 : inits.handleMove) && (this._handleMove = inits.handleMove);
         this._handleDown = inits === null || inits === void 0 ? void 0 : inits.handleDown;
         this._handleUp = inits === null || inits === void 0 ? void 0 : inits.handleUp;
         this.startListen();
@@ -2136,12 +2160,14 @@ class ViewDragger {
     get disabled() { return this._dragger.disabled; }
     set disabled(v) { this._dragger.disabled = v; }
     constructor(inits) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         this._dragger = new ElementDragger_1.ElementDragger({
             responser: (_a = inits === null || inits === void 0 ? void 0 : inits.view) === null || _a === void 0 ? void 0 : _a.inner,
             handles: (_b = inits === null || inits === void 0 ? void 0 : inits.handles) === null || _b === void 0 ? void 0 : _b.map(v => v.inner),
             ignores: (_c = inits === null || inits === void 0 ? void 0 : inits.ignores) === null || _c === void 0 ? void 0 : _c.map(v => v.inner),
-            handleMove: (x, y) => { var _a; return (_a = this.view) === null || _a === void 0 ? void 0 : _a.styles.apply('view_dragger_pos', { left: x, top: y }); },
+            handleDown: inits === null || inits === void 0 ? void 0 : inits.handleDown,
+            handleMove: (_d = inits === null || inits === void 0 ? void 0 : inits.handleMove) !== null && _d !== void 0 ? _d : ((x, y) => { var _a; return (_a = this.view) === null || _a === void 0 ? void 0 : _a.styles.apply('view_dragger_pos', { left: x, top: y }); }),
+            handleUp: inits === null || inits === void 0 ? void 0 : inits.handleUp,
         });
     }
     destory() {
@@ -2314,7 +2340,7 @@ class HoverOb {
             this._hover = false;
             (_a = this._callback) === null || _a === void 0 ? void 0 : _a.call(this, this._hover, e);
         };
-        this._target = target;
+        this.target = target;
     }
     setTarget(target) {
         if (this._target) {
@@ -2350,6 +2376,9 @@ class HoverOb {
         return this;
     }
     destory() {
+        var _a, _b;
+        (_a = this._target) === null || _a === void 0 ? void 0 : _a.removeEventListener('mouseenter', this._mouseenter);
+        (_b = this._target) === null || _b === void 0 ? void 0 : _b.removeEventListener('mouseleave', this._mouseleave);
         this.disabled = true;
         delete this._target;
         delete this._callback;

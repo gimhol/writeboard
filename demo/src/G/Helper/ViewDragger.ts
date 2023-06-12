@@ -1,9 +1,12 @@
 import { View } from "../BaseView/View";
-import { ElementDragger } from "./ElementDragger";
+import { ElementDragger, OnDownCallback, OnMoveCallback, OnUpCallback } from "./ElementDragger";
 export interface IViewDraggerInits {
   handles?: View[];
   view?: View;
   ignores?: View[];
+  handleDown?: OnDownCallback;
+  handleMove?: OnMoveCallback;
+  handleUp?: OnUpCallback;
 }
 export class ViewDragger {
   private _dragger: ElementDragger;
@@ -19,7 +22,9 @@ export class ViewDragger {
       responser: inits?.view?.inner,
       handles: inits?.handles?.map(v => v.inner),
       ignores: inits?.ignores?.map(v => v.inner),
-      handleMove: (x, y) => this.view?.styles.apply('view_dragger_pos', { left: x, top: y }),
+      handleDown: inits?.handleDown,
+      handleMove: inits?.handleMove ?? ((x: number, y: number) => this.view?.styles.apply('view_dragger_pos', { left: x, top: y })),
+      handleUp: inits?.handleUp,
     })
   }
   destory() {
