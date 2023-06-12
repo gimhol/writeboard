@@ -83,7 +83,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (Direction.V === this._dockView.direction) {
       this._dockView.addChild(subwin);
     } else {
-      this._dockView.removeSelf();
       this._dockView = new DockView(Direction.V).addChild(this._dockView, subwin);
       this.addChild(this._dockView)
     }
@@ -92,7 +91,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (Direction.H === this._dockView.direction) {
       this._dockView.insertChild(0, subwin);
     } else {
-      this._dockView.removeSelf();
       this._dockView = new DockView(Direction.H).insertChild(0, subwin, this._dockView);
       this.addChild(this._dockView)
     }
@@ -105,8 +103,14 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this.addChild(this._dockView)
     }
   }
-  freeSubwin(subwin: Subwin): void {
-    subwin.styles.forgo('dock_in_workspace')
+  freeSubwin(subwin: Subwin): this {
+    if (!(subwin.parent instanceof DockView)) {
+      console.error('subwin is not docked!')
+      return this;
+    }
+    subwin.removeSelf();
+    this.addChild(subwin);
+    return this;
   }
 
   clampAllSubwin() {
@@ -164,7 +168,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._dockRightIndicator.fakeOut();
     this._dockTopIndicator.fakeOut();
     this._dockBottomIndicator.fakeOut();
-
     this._draggingSubwin = null;
   }
 

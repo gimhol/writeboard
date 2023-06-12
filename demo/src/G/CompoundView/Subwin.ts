@@ -8,6 +8,7 @@ export enum StyleNames {
   Raised = 'subwin_raised',
   ChildRaised = 'subwin_child_raised',
   ChildLowered = 'subwin_child_lowered',
+  Docked = 'subwin_docked'
 }
 export class Subwin extends View<'div'> {
   static StyleNames = StyleNames;
@@ -15,7 +16,8 @@ export class Subwin extends View<'div'> {
   private _header = new SubwinHeader();
   private _footer = new SubwinFooter();
   private _content?: View | null;
-  protected _dragger: ViewDragger;
+  private _dragger: ViewDragger;
+  private _resizeOb: ResizeObserver;
   get dragger() { return this._dragger; }
   get workspace() { return this._workspace; }
   set workspace(v) { this._workspace = v; }
@@ -23,26 +25,49 @@ export class Subwin extends View<'div'> {
   get footer() { return this._footer; };
   get content() { return this._content; }
   set content(v) {
-    if (this._content) { this.removeChild(this._content); }
+    if (this._content) {
+      this._content.styles
+        .remove(StyleNames.ChildRaised)
+        .remove(StyleNames.ChildLowered)
+        .forgo(StyleNames.ChildRaised, StyleNames.ChildLowered)
+      this.removeChild(this._content);
+    }
     this._content = v;
-    if (v) { this.insertChild(this._footer, v); }
+    if (v) {
+      v.styles
+        .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
+        .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
+      this.insertChild(this._footer, v);
+    }
   }
   raise() {
     this.styles.add(StyleNames.Raised).refresh();
-    this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
-    this.content?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
-    this.footer?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' });
+    this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
+    this.content?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
+    this.footer?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
   }
   lower() {
     this.styles.remove(StyleNames.Raised).refresh();
-    this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-    this.content?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-    this.footer?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+    this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
+    this.content?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
+    this.footer?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
   }
   constructor() {
     super('div');
     this.styles.register(StyleNames.Raised, {
       boxShadow: '5px 5px 10px 10px #00000022',
+    }).register(StyleNames.Docked, {
+      pointerEvents: 'all',
+      position: 'relative',
+      resize: 'none',
+      width: 'unset',
+      height: 'unset',
+      left: 'unset',
+      top: 'unset',
+      boxShadow: 'unset',
+      borderRadius: 0,
+      zIndex: 'unset',
+      border: 'none'
     }).apply(StyleNames.Root, {
       position: 'fixed',
       background: '#555555',
@@ -55,9 +80,13 @@ export class Subwin extends View<'div'> {
       flexDirection: 'column',
       transition: 'box-shadow 200ms'
     })
+    this._header.styles
+      .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
+      .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
+    this._footer.styles
+      .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
+      .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
     this.addChild(this._header, this._footer);
-    this.addChild();
-
     this._dragger = new ViewDragger({
       view: this,
       handles: [
@@ -66,10 +95,24 @@ export class Subwin extends View<'div'> {
       ]
     });
 
-    new ResizeObserver(() => {
+    this._resizeOb = new ResizeObserver(() => {
       const { width, height } = getComputedStyle(this.inner);
       this.styles.edit(StyleNames.Root, v => ({ ...v, width, height }))
-    }).observe(this.inner);
+    })
+    this._resizeOb.observe(this.inner);
+  }
+  onDocked(): void {
+    this._resizeOb.unobserve(this.inner);
+    this.styles.apply(StyleNames.Docked);
+    this.dragger.disabled = true;
+  }
+  onUndocked(): void {
+    this._resizeOb.observe(this.inner);
+    this.styles.forgo(StyleNames.Docked);
+    this.dragger.disabled = false;
+  }
+  resizeDocked(width: number | undefined, height: number | undefined) {
+    this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))
   }
 }
 

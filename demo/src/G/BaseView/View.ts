@@ -18,7 +18,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   protected _focusOb?: FocusOb;
   get hover() { return this.hoverOb.hover }
   get hoverOb(): HoverOb {
-    this._hoverOb = this._hoverOb ?? new HoverOb(this._inner, v => this.onHover(v))
+    this._hoverOb = this._hoverOb ?? new HoverOb(this._inner).setCallback(v => this.onHover(v))
     return this._hoverOb
   }
   get focused() { return this.focusOb.focused }

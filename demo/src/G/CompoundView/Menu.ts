@@ -221,7 +221,7 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
       view.addEventListener('click', this._onitemclick);
       view.submenu?.addEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick);
 
-      new HoverOb(view.inner, (hover) => {
+      new HoverOb(view.inner).setCallback((hover) => {
         if (!hover) { return; }
         this._items.forEach(other => {
           if (other === view) { return; }

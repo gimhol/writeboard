@@ -3,11 +3,12 @@ import { View } from "../../BaseView/View";
 import { ElementDragger } from "../../Helper/ElementDragger";
 import { HoverOb } from "../../Observer/HoverOb";
 import { Subwin } from "../Subwin";
-export enum DockViewStyleName {
-  Normal = 'normal'
+export enum StyleNames {
+  Normal = 'normal',
+  Docked = 'docked'
 }
-export const DockViewStyles: Record<DockViewStyleName, Style> = {
-  [DockViewStyleName.Normal]: {
+export const DockViewStyles: Partial<Record<StyleNames, Style>> = {
+  [StyleNames.Normal]: {
     pointerEvents: 'none',
     position: 'absolute',
     width: '100%',
@@ -15,6 +16,10 @@ export const DockViewStyles: Record<DockViewStyleName, Style> = {
     left: 0,
     top: 0,
     alignItems: 'stretch'
+  },
+  [StyleNames.Docked]: {
+    position: 'relative',
+    flex: 1
   }
 }
 export enum Direction {
@@ -37,7 +42,7 @@ export class DockView extends View<'div'> {
     this.styles.applyCls('DockView');
     this.styles
       .registers(DockViewStyles)
-      .apply(DockViewStyleName.Normal);
+      .apply(StyleNames.Normal);
   }
   setContent(view: View) { super.addChild(view); }
   createResizer() {
@@ -71,42 +76,34 @@ export class DockView extends View<'div'> {
       transition: 'background-color 200ms',
       pointerEvents: 'all'
     });
-    new HoverOb(handle.inner, (hover) => handle.styles[hover ? 'add' : 'remove']('hover').refresh());
-    let left: View | undefined;
-    let right: View | undefined;
-    let lw: number | undefined;
-    let rw: number | undefined;
-    let lh: number | undefined;
-    let rh: number | undefined;
+    new HoverOb(handle.inner).setCallback((hover) => handle.styles[hover ? 'add' : 'remove']('hover').refresh());
+    let prevView: View | undefined;
+    let nextView: View | undefined;
+    let prevViewRect: DOMRect | undefined;
+    let nextViewRect: DOMRect | undefined;
     new ElementDragger({
       handles: [handle.inner],
       responser: ret.inner,
       handleDown: () => {
         const chilren = ret.parent?.children!
         const idx = chilren.indexOf(ret)!;
-        left = chilren[idx - 1];
-        right = chilren[idx + 1];
-        const lrect = left?.inner.getBoundingClientRect()
-        lw = lrect?.width;
-        lh = lrect?.height;
-        const rrect = right?.inner.getBoundingClientRect()
-        rw = rrect?.width;
-        rh = rrect?.height;
+        prevView = chilren[idx - 1];
+        nextView = chilren[idx + 1];
+        prevViewRect = prevView?.inner.getBoundingClientRect()
+        nextViewRect = nextView?.inner.getBoundingClientRect()
       },
       handleMove: (x, y, oldX, oldY) => {
-        if (!(left instanceof DockView) || left._direction !== Direction.None) {
-          left?.styles.apply('docked', v => ({
-            ...v,
-            width: this._direction === Direction.H ? (-3 + lw! - oldX + x) : undefined,
-            height: this._direction === Direction.V ? (-3 + lh! - oldY + y) : undefined
-          }))
+        if ((prevView instanceof Subwin) || prevView instanceof DockView && prevView._direction !== Direction.None) {
+          prevView.resizeDocked(
+            this._direction === Direction.H ? (-3 + prevViewRect!.width - oldX + x) : undefined,
+            this._direction === Direction.V ? (-3 + prevViewRect!.height - oldY + y) : undefined
+          )
         }
-        if (!(right instanceof DockView) || right._direction !== Direction.None) {
-          right?.styles.apply('docked', v => ({
-            ...v,
-            width: this._direction === Direction.H ? (3 + rw! + oldX - x) : undefined,
-            height: this._direction === Direction.V ? (3 + rh! + oldY - y) : undefined
-          }))
+        if (nextView instanceof Subwin || nextView instanceof DockView && nextView._direction !== Direction.None) {
+          nextView.resizeDocked(
+            this._direction === Direction.H ? (3 + nextViewRect!.width + oldX - x) : undefined,
+            this._direction === Direction.V ? (3 + nextViewRect!.height + oldY - y) : undefined
+          )
         }
       },
     })
@@ -146,29 +143,30 @@ export class DockView extends View<'div'> {
     this.updateChildrenStyles(children);
     return this;
   }
+  override removeChild(...children: View<keyof HTMLElementTagNameMap>[]): this {
+    super.removeChild(...children);
+    children.forEach(child => {
+      if (child instanceof DockView || child instanceof Subwin) {
+        child.onUndocked();
+      }
+    })
+    return this;
+  }
   private updateChildrenStyles(children: View[]) {
     children.forEach(v => {
-      if (v instanceof DockView) {
-        v.styles.apply('docked', {
-          position: 'relative',
-          flex: 1
-        });
-      } else if (v instanceof Subwin) {
-        v.dragger.disabled = true;
-        v.styles.apply('docked', {
-          pointerEvents: 'all',
-          position: 'relative',
-          resize: 'none',
-          width: 'unset',
-          height: 'unset',
-          left: 'unset',
-          top: 'unset',
-          boxShadow: 'unset',
-          borderRadius: 0,
-          zIndex: 'unset',
-          border: 'none'
-        });
+      if (v instanceof DockView || v instanceof Subwin) {
+        v.onDocked();
       }
     });
+  }
+
+  onDocked(): void {
+    this.styles.apply(StyleNames.Docked);
+  }
+  onUndocked(): void {
+    this.styles.forgo(StyleNames.Docked);
+  }
+  resizeDocked(width: number | undefined, height: number | undefined) {
+    this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))
   }
 }

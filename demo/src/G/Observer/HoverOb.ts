@@ -1,35 +1,65 @@
 import { IObserver } from "./Base";
 export class HoverOb implements IObserver {
-  private _ele: HTMLElement;
-  private _disabled = true;
-  private _hover = false;
-  private _mouseenter: (e: MouseEvent) => void;
-  private _mouseleave: (e: MouseEvent) => void;
+  get target() { return this._target; }
+  set target(v) { v && this.setTarget(v); }
   get hover() {
-    if (getComputedStyle(this._ele).pointerEvents === 'none') {
+    if (!this._target) { return; }
+    if (getComputedStyle(this._target).pointerEvents === 'none') {
       return false;
     } else {
       return this._hover;
     }
   }
   get disabled() { return this._disabled }
-  set disabled(v) {
-    if (this._disabled === v) { return; }
-    this._disabled = v;
-    if (v) {
-      this._hover = false;
-      this._ele.removeEventListener('mouseenter', this._mouseenter);
-      this._ele.removeEventListener('mouseleave', this._mouseleave);
-    } else {
-      this._ele.addEventListener('mouseenter', this._mouseenter);
-      this._ele.addEventListener('mouseleave', this._mouseleave);
+  set disabled(v) { this.setDisabled(v); }
+  constructor(target?: HTMLElement) {
+    this._target = target;
+  }
+  setTarget(target?: HTMLElement): this {
+    if (this._target) {
+      this._target.removeEventListener('mouseenter', this._mouseenter);
+      this._target.removeEventListener('mouseleave', this._mouseleave);
     }
+    this._target = target;
+    if (!this._disabled && this._target) {
+      this._target.addEventListener('mouseenter', this._mouseenter);
+      this._target.addEventListener('mouseleave', this._mouseleave);
+    }
+    return this;
   }
-  constructor(ele: HTMLElement, cb: (hover: boolean, e: MouseEvent) => void) {
-    this._ele = ele;
-    this._mouseenter = (e: MouseEvent) => { this._hover = true; cb(this._hover, e); }
-    this._mouseleave = (e: MouseEvent) => { this._hover = false; cb(this._hover, e); }
-    this.disabled = false;
+  setDisabled(disabled: boolean): this {
+    if (this._disabled === disabled) { return this; }
+    this._disabled = disabled;
+    if (disabled) {
+      this._hover = false;
+      this._target?.removeEventListener('mouseenter', this._mouseenter);
+      this._target?.removeEventListener('mouseleave', this._mouseleave);
+    } else {
+      this._target?.addEventListener('mouseenter', this._mouseenter);
+      this._target?.addEventListener('mouseleave', this._mouseleave);
+    }
+    return this;
   }
-  destory() { this.disabled = true; }
+  setCallback(callback: (hover: boolean, e: MouseEvent) => void): this {
+    this._callback = callback;
+    return this;
+  }
+  destory() {
+    this.disabled = true;
+    delete this._target;
+    delete this._callback;
+  }
+
+  private _target?: HTMLElement;
+  private _disabled = false;
+  private _hover = false;
+  private _mouseenter = (e: MouseEvent) => {
+    this._hover = true;
+    this._callback?.(this._hover, e);
+  }
+  private _mouseleave = (e: MouseEvent) => {
+    this._hover = false;
+    this._callback?.(this._hover, e);
+  }
+  private _callback?: (hover: boolean, e: MouseEvent) => void;
 }

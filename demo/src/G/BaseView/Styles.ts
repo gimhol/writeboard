@@ -19,14 +19,14 @@ export class Styles<T extends string = string>{
     return ret ?? {};
   }
 
-  registers(styles: Record<T, ReValue<Style>>): Styles<T> {
+  registers(styles: Record<T, ReValue<Style>>): this {
     for (const name in styles) {
       this.register(name, styles[name])
     }
     return this;
   }
 
-  register(name: T, style?: ReValue<Style>): Styles<T> {
+  register(name: T, style?: ReValue<Style>): this {
     let processed: Style = {}
     if (style) {
       const existed = this._pool.get(name);
@@ -36,7 +36,7 @@ export class Styles<T extends string = string>{
     return this;
   }
 
-  edit(name: T, style: (s: Style) => Style): Styles<T> {
+  edit(name: T, style: (s: Style) => Style): this {
     const old = this._pool.get(name);
     if (old === undefined) {
       console.warn(`[styles] edit(), style '${name}' not found!`);
@@ -45,7 +45,7 @@ export class Styles<T extends string = string>{
     this._pool.set(name, style(old ?? {}));
     return this;
   }
-  merge(name: T, style: Style): Styles<T> {
+  merge(name: T, style: Style): this {
     const old = this._pool.get(name);
     if (old === undefined) {
       console.warn(`[styles] merge(), style '${name}' not found!`);
@@ -55,20 +55,20 @@ export class Styles<T extends string = string>{
     return this;
   }
 
-  add(...names: T[]): Styles<T> {
+  add(...names: T[]): this {
     names.forEach(name => this._applieds.add(name));
     return this;
   }
-  remove(...names: T[]): Styles<T> {
+  remove(...names: T[]): this {
     names.forEach(name => this._applieds.delete(name));
     return this;
   }
-  clear(): Styles<T> {
+  clear(): this {
     this._applieds.clear();
     this.view.inner.removeAttribute('style');
     return this;
   }
-  forgo(...names: T[]): Styles<T> {
+  forgo(...names: T[]): this {
     this.remove(...names).refresh();
     return this;
   }
@@ -80,7 +80,26 @@ export class Styles<T extends string = string>{
     });
     Object.assign(this.view.inner.style, final)
   }
-  apply(name: T, style?: ReValue<Style>): Styles<T> {
+
+  /**
+   * 应用一个已存在的样式
+   *
+   * @param {T} name 样式名
+   * @return {this} 返回this
+   * @memberof Styles
+   */
+  apply(name: T): this;
+
+  /**
+   * 合并一个样式并应用，
+   *
+   * @param {T} name 样式名
+   * @param {ReValue<Style>} style 样式或者样式处理函数
+   * @return {this} 返回this
+   * @memberof Styles
+   */
+  apply(name: T, style: ReValue<Style>): this;
+  apply(name: T, style?: ReValue<Style>): this {
     if (style) {
       this.register(name, style).add(name).refresh();
     } else {
@@ -88,15 +107,16 @@ export class Styles<T extends string = string>{
     }
     return this;
   }
-  resetCls(...names: string[]): Styles<T> {
+
+  resetCls(...names: string[]): this {
     this.view.inner.className = '';
     return this.applyCls(...names);
   }
-  applyCls(...names: string[]): Styles<T> {
+  applyCls(...names: string[]): this {
     this.view.inner.classList.add(...names)
     return this;
   }
-  removeCls(...names: string[]): Styles<T> {
+  removeCls(...names: string[]): this {
     this.view.inner.classList.remove(...names)
     return this;
   }
