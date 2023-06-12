@@ -103,11 +103,13 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this.addChild(this._dockView)
     }
   }
-  freeSubwin(subwin: Subwin): this {
+  undockSubwin(subwin: Subwin): this {
     if (!(subwin.parent instanceof DockView)) {
       console.error('subwin is not docked!')
       return this;
     }
+    const dockView = subwin.parent;
+    // todo:
     subwin.removeSelf();
     this.addChild(subwin);
     return this;
@@ -131,7 +133,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (x < rect.x) { x = rect.x; }
     subwin.styles.apply('view_dragger_pos', { left: x, top: y });
   }
-  private _onPointerMove = (e: PointerEvent) => { }
   private _onViewDragStart = (e: Event) => {
     this._draggingSubwin = View.try(e.target, Subwin);
     if (!this._draggingSubwin) { return; }
@@ -139,7 +140,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._dockRightIndicator.fakeIn();
     this._dockTopIndicator.fakeIn();
     this._dockBottomIndicator.fakeIn();
-    this.addEventListener('pointermove', this._onPointerMove, true)
   }
   private _onViewDragging = (e: Event) => {
     const subwin = View.try(e.target, Subwin);
@@ -148,8 +148,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   private _onViewDragEnd = (e: Event) => {
     const subwin = View.try(e.target, Subwin);
     if (!subwin) { return; }
-    this.removeEventListener('pointermove', this._onPointerMove, true)
-
     if (this._dockBottomIndicator.hover) {
       this.dockToBottom(subwin);
     } else if (this._dockTopIndicator.hover) {
@@ -163,7 +161,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       if (!rect) { return; }
       this.clampSubwin(subwin, rect);
     }
-
     this._dockLeftIndicator.fakeOut();
     this._dockRightIndicator.fakeOut();
     this._dockTopIndicator.fakeOut();
@@ -177,17 +174,11 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this._pointerdowns.set(subwin, ondown);
       subwin.addEventListener('pointerdown', ondown);
       subwin.addEventListener('touchstart', ondown, { passive: true });
-      subwin.addEventListener(EventType.ViewDragStart, this._onViewDragStart)
-      subwin.addEventListener(EventType.ViewDragging, this._onViewDragging)
-      subwin.addEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
     } else {
       const listener = this._pointerdowns.get(subwin);
       if (listener) {
         subwin.removeEventListener('pointerdown', listener);
         subwin.removeEventListener('touchstart', listener);
-        subwin.removeEventListener(EventType.ViewDragStart, this._onViewDragStart)
-        subwin.removeEventListener(EventType.ViewDragging, this._onViewDragging)
-        subwin.removeEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
       }
     }
   }
@@ -195,6 +186,10 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     super.addChild(...children);
     children.forEach(v => {
       if (v instanceof Subwin) {
+        v.workspace = this;
+        v.addEventListener(EventType.ViewDragStart, this._onViewDragStart)
+        v.addEventListener(EventType.ViewDragging, this._onViewDragging)
+        v.addEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
         this.subwinListening(v, true);
         this._undockedWins.push(v)
       }
@@ -206,6 +201,10 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     super.insertChild(anchorOrIdx, ...children);
     children.forEach(v => {
       if (v instanceof Subwin) {
+        v.workspace = this;
+        v.addEventListener(EventType.ViewDragStart, this._onViewDragStart)
+        v.addEventListener(EventType.ViewDragging, this._onViewDragging)
+        v.addEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
         this.subwinListening(v, true);
         this._undockedWins.push(v)
       }

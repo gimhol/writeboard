@@ -3,6 +3,7 @@ import { SubwinHeader } from "./SubwinHeader";
 import type { WorkspaceView } from "./Workspace/WorkspaceView";
 import { View } from "../BaseView/View";
 import { ViewDragger } from "../Helper/ViewDragger";
+import { DockView } from "./Workspace/DockView";
 export enum StyleNames {
   Root = 'subwin',
   Raised = 'subwin_raised',
@@ -88,14 +89,12 @@ export class Subwin extends View<'div'> {
       .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
     this.addChild(this._header, this._footer);
     this._dragger = new ViewDragger({
-      view: this,
+      responser: this,
       handles: [
         this.header.titleView,
         this.header.iconView
       ],
-      handleMove: (x: number, y: number) => {
-        this.styles.apply('view_dragger_pos', { left: x, top: y })
-      },
+      handleMove: this._dragWhenUndocked,
     });
     this._resizeOb = new ResizeObserver(() => {
       const { width, height } = getComputedStyle(this.inner);
@@ -103,15 +102,23 @@ export class Subwin extends View<'div'> {
     })
     this._resizeOb.observe(this.inner);
   }
+  private _dragWhenDocked = (x: number, y: number, prevX: number, prevY: number) => {
+    if (Math.abs(x - prevX) + Math.abs(y - prevY) > 20) {
+      this.workspace?.undockSubwin(this);
+    }
+  }
+  private _dragWhenUndocked = (x: number, y: number) => {
+    this.styles.apply('view_dragger_pos', { left: x, top: y })
+  }
   onDocked(): void {
     this._resizeOb.unobserve(this.inner);
     this.styles.apply(StyleNames.Docked);
-    this.dragger.disabled = true;
+    this.dragger.handleMove = this._dragWhenDocked;
   }
   onUndocked(): void {
     this._resizeOb.observe(this.inner);
     this.styles.forgo(StyleNames.Docked);
-    this.dragger.disabled = false;
+    this.dragger.handleMove = this._dragWhenUndocked;
   }
   resizeDocked(width: number | undefined, height: number | undefined) {
     this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))

@@ -2,7 +2,7 @@ import { View } from "../BaseView/View";
 import { ElementDragger, OnDownCallback, OnMoveCallback, OnUpCallback } from "./ElementDragger";
 export interface IViewDraggerInits {
   handles?: View[];
-  view?: View;
+  responser?: View;
   ignores?: View[];
   handleDown?: OnDownCallback;
   handleMove?: OnMoveCallback;
@@ -17,9 +17,12 @@ export class ViewDragger {
   get ignores() { return this._dragger.ignores.map(v => View.get(v)); }
   get disabled() { return this._dragger.disabled; }
   set disabled(v) { this._dragger.disabled = v }
+  set handleMove(v: OnMoveCallback | undefined) { this._dragger.handleMove = v }
+  set handleDown(v: OnDownCallback | undefined) { this._dragger.handleDown = v }
+  set handleUp(v: OnUpCallback | undefined) { this._dragger.handleUp = v }
   constructor(inits?: IViewDraggerInits) {
     this._dragger = new ElementDragger({
-      responser: inits?.view?.inner,
+      responser: inits?.responser?.inner,
       handles: inits?.handles?.map(v => v.inner),
       ignores: inits?.ignores?.map(v => v.inner),
       handleDown: inits?.handleDown,

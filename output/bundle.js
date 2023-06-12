@@ -1293,6 +1293,15 @@ class Subwin extends View_1.View {
         super('div');
         this._header = new SubwinHeader_1.SubwinHeader();
         this._footer = new SubwinFooter_1.SubwinFooter();
+        this._dragWhenDocked = (x, y, prevX, prevY) => {
+            var _a;
+            if (Math.abs(x - prevX) + Math.abs(y - prevY) > 20) {
+                (_a = this.workspace) === null || _a === void 0 ? void 0 : _a.undockSubwin(this);
+            }
+        };
+        this._dragWhenUndocked = (x, y) => {
+            this.styles.apply('view_dragger_pos', { left: x, top: y });
+        };
         this.styles.register(StyleNames.Raised, {
             boxShadow: '5px 5px 10px 10px #00000022',
         }).register(StyleNames.Docked, {
@@ -1327,14 +1336,12 @@ class Subwin extends View_1.View {
             .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
         this.addChild(this._header, this._footer);
         this._dragger = new ViewDragger_1.ViewDragger({
-            view: this,
+            responser: this,
             handles: [
                 this.header.titleView,
                 this.header.iconView
             ],
-            handleMove: (x, y) => {
-                this.styles.apply('view_dragger_pos', { left: x, top: y });
-            },
+            handleMove: this._dragWhenUndocked,
         });
         this._resizeOb = new ResizeObserver(() => {
             const { width, height } = getComputedStyle(this.inner);
@@ -1345,12 +1352,12 @@ class Subwin extends View_1.View {
     onDocked() {
         this._resizeOb.unobserve(this.inner);
         this.styles.apply(StyleNames.Docked);
-        this.dragger.disabled = true;
+        this.dragger.handleMove = this._dragWhenDocked;
     }
     onUndocked() {
         this._resizeOb.observe(this.inner);
         this.styles.forgo(StyleNames.Docked);
-        this.dragger.disabled = false;
+        this.dragger.handleMove = this._dragWhenUndocked;
     }
     resizeDocked(width, height) {
         this.styles.apply(StyleNames.Docked, v => (Object.assign(Object.assign({}, v), { width, height })));
@@ -1463,9 +1470,9 @@ SubwinHeader.StyleNames = StyleNames;
 },{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":25,"./IconButton":11}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DockView = exports.Direction = exports.DockViewStyles = exports.StyleNames = void 0;
+exports.DockView = exports.Resizer = exports.Direction = exports.DockViewStyles = exports.StyleNames = void 0;
 const View_1 = require("../../BaseView/View");
-const ElementDragger_1 = require("../../Helper/ElementDragger");
+const ViewDragger_1 = require("../../Helper/ViewDragger");
 const HoverOb_1 = require("../../Observer/HoverOb");
 const Subwin_1 = require("../Subwin");
 var StyleNames;
@@ -1494,11 +1501,77 @@ var Direction;
     Direction["H"] = "h";
     Direction["V"] = "v";
 })(Direction = exports.Direction || (exports.Direction = {}));
+class Resizer extends View_1.View {
+    constructor(direction) {
+        super('div');
+        const w = direction === Direction.H ? 1 : undefined;
+        const h = direction === Direction.V ? 1 : undefined;
+        const hOffset = direction === Direction.H ? -3 : 0;
+        const vOffset = direction === Direction.V ? -3 : 0;
+        this.styles.apply('', {
+            width: w,
+            maxWidth: w,
+            minWidth: w,
+            height: h,
+            maxHeight: h,
+            minHeight: h,
+            overflow: 'visible',
+            zIndex: 1,
+            position: 'relative',
+            backgroundColor: 'black',
+        });
+        const handle = new View_1.View('div');
+        handle.styles.register('hover', {
+            backgroundColor: '#00000088',
+        }).apply('', {
+            left: hOffset,
+            right: hOffset,
+            top: vOffset,
+            bottom: vOffset,
+            cursor: direction === Direction.H ? 'col-resize' : 'row-resize',
+            position: 'absolute',
+            transition: 'background-color 200ms',
+            pointerEvents: 'all'
+        });
+        new HoverOb_1.HoverOb(handle.inner).setCallback(hover => handle.styles[hover ? 'add' : 'remove']('hover').refresh());
+        this.addChild(handle);
+        const handleDown = () => {
+            var _a;
+            const chilren = (_a = this.parent) === null || _a === void 0 ? void 0 : _a.children;
+            const idx = chilren.indexOf(this);
+            prevView = chilren[idx - 1];
+            nextView = chilren[idx + 1];
+            prevViewRect = prevView === null || prevView === void 0 ? void 0 : prevView.inner.getBoundingClientRect();
+            nextViewRect = nextView === null || nextView === void 0 ? void 0 : nextView.inner.getBoundingClientRect();
+        };
+        const handleMove = (x, y, oldX, oldY) => {
+            if ((prevView instanceof Subwin_1.Subwin) || prevView instanceof DockView && prevView.direction !== Direction.None) {
+                prevView.resizeDocked(direction === Direction.H ? (-3 + prevViewRect.width - oldX + x) : undefined, direction === Direction.V ? (-3 + prevViewRect.height - oldY + y) : undefined);
+            }
+            if (nextView instanceof Subwin_1.Subwin || nextView instanceof DockView && nextView.direction !== Direction.None) {
+                nextView.resizeDocked(direction === Direction.H ? (3 + nextViewRect.width + oldX - x) : undefined, direction === Direction.V ? (3 + nextViewRect.height + oldY - y) : undefined);
+            }
+        };
+        let prevView;
+        let nextView;
+        let prevViewRect;
+        let nextViewRect;
+        new ViewDragger_1.ViewDragger({
+            handles: [handle],
+            responser: this,
+            handleDown,
+            handleMove,
+        });
+    }
+}
+exports.Resizer = Resizer;
 class DockView extends View_1.View {
     get direction() { return this._direction; }
     constructor(direction = Direction.None) {
         super('div');
         this._direction = Direction.None;
+        this.prevResizers = new Map();
+        this.nextResizers = new Map();
         this._direction = direction;
         if (direction === Direction.H) {
             this.styles.apply('', { display: "flex", flexDirection: 'row' });
@@ -1512,104 +1585,74 @@ class DockView extends View_1.View {
             .apply(StyleNames.Normal);
     }
     setContent(view) { super.addChild(view); }
-    createResizer() {
-        const ret = new View_1.View('div');
-        const w = this.direction === Direction.H ? 1 : undefined;
-        const h = this.direction === Direction.V ? 1 : undefined;
-        ret.styles.apply('', {
-            width: w,
-            maxWidth: w,
-            minWidth: w,
-            height: h,
-            maxHeight: h,
-            minHeight: h,
-            overflow: 'visible',
-            zIndex: 1,
-            position: 'relative',
-            backgroundColor: 'black',
-        });
-        const hOffset = this.direction === Direction.H ? -3 : 0;
-        const vOffset = this.direction === Direction.V ? -3 : 0;
-        const handle = new View_1.View('div');
-        handle.styles.register('hover', {
-            backgroundColor: '#00000088',
-        }).apply('', {
-            left: hOffset,
-            right: hOffset,
-            top: vOffset,
-            bottom: vOffset,
-            cursor: this.direction === Direction.H ? 'col-resize' : 'row-resize',
-            position: 'absolute',
-            transition: 'background-color 200ms',
-            pointerEvents: 'all'
-        });
-        new HoverOb_1.HoverOb(handle.inner).setCallback((hover) => handle.styles[hover ? 'add' : 'remove']('hover').refresh());
-        let prevView;
-        let nextView;
-        let prevViewRect;
-        let nextViewRect;
-        new ElementDragger_1.ElementDragger({
-            handles: [handle.inner],
-            responser: ret.inner,
-            handleDown: () => {
-                var _a;
-                const chilren = (_a = ret.parent) === null || _a === void 0 ? void 0 : _a.children;
-                const idx = chilren.indexOf(ret);
-                prevView = chilren[idx - 1];
-                nextView = chilren[idx + 1];
-                prevViewRect = prevView === null || prevView === void 0 ? void 0 : prevView.inner.getBoundingClientRect();
-                nextViewRect = nextView === null || nextView === void 0 ? void 0 : nextView.inner.getBoundingClientRect();
-            },
-            handleMove: (x, y, oldX, oldY) => {
-                if ((prevView instanceof Subwin_1.Subwin) || prevView instanceof DockView && prevView._direction !== Direction.None) {
-                    prevView.resizeDocked(this._direction === Direction.H ? (-3 + prevViewRect.width - oldX + x) : undefined, this._direction === Direction.V ? (-3 + prevViewRect.height - oldY + y) : undefined);
-                }
-                if (nextView instanceof Subwin_1.Subwin || nextView instanceof DockView && nextView._direction !== Direction.None) {
-                    nextView.resizeDocked(this._direction === Direction.H ? (3 + nextViewRect.width + oldX - x) : undefined, this._direction === Direction.V ? (3 + nextViewRect.height + oldY - y) : undefined);
-                }
-            },
-        });
-        ret.addChild(handle);
-        return ret;
-    }
     addChild(...children) {
+        if (!children.length) {
+            return this;
+        }
         children.forEach(v => v.removeSelf());
         const beginAnchor = this.children[this.children.length - 1];
         for (let i = 1; i < children.length; i += 2) {
-            children.splice(i, 0, this.createResizer());
+            const resizer = new Resizer(this.direction);
+            this.nextResizers.set(children[i - 1], resizer);
+            this.prevResizers.set(children[i], resizer);
+            children.splice(i, 0, resizer);
         }
         if (beginAnchor) {
-            children.splice(0, 0, this.createResizer());
+            const resizer = new Resizer(this.direction);
+            this.nextResizers.set(beginAnchor, resizer);
+            this.prevResizers.set(children[0], resizer);
+            children.splice(0, 0, resizer);
         }
         super.addChild(...children);
         this.updateChildrenStyles(children);
         return this;
     }
     insertChild(anchor, ...children) {
+        if (!children.length) {
+            return this;
+        }
         children.forEach(v => v.removeSelf());
         const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
         const beginAnchor = this.children[idx - 1];
         const endAnchor = this.children[idx];
         for (let i = 1; i < children.length; i += 2) {
-            children.splice(i, 0, this.createResizer());
+            const resizer = new Resizer(this.direction);
+            this.nextResizers.set(children[i - 1], resizer);
+            this.prevResizers.set(children[i], resizer);
+            children.splice(i, 0, resizer);
         }
         if (beginAnchor) {
-            children.splice(0, 0, this.createResizer());
+            const resizer = new Resizer(this.direction);
+            this.nextResizers.set(beginAnchor, resizer);
+            this.prevResizers.set(children[0], resizer);
+            children.splice(0, 0, resizer);
         }
         if (endAnchor) {
-            children.push(this.createResizer());
+            const resizer = new Resizer(this.direction);
+            this.nextResizers.set(children[children.length - 1], resizer);
+            this.prevResizers.set(endAnchor, resizer);
+            children.push(resizer);
         }
         super.insertChild(anchor, ...children);
         this.updateChildrenStyles(children);
         return this;
     }
     removeChild(...children) {
+        const allChildren = this.children;
         super.removeChild(...children);
+        const resizers = new Set();
         children.forEach(child => {
+            if (allChildren[0] === child) {
+                const resizer = this.nextResizers.get(child);
+                resizer && resizers.add(resizer);
+            }
+            const resizer = this.prevResizers.get(child);
+            resizer && resizers.add(resizer);
             if (child instanceof DockView || child instanceof Subwin_1.Subwin) {
                 child.onUndocked();
             }
         });
+        super.removeChild(...resizers);
         return this;
     }
     updateChildrenStyles(children) {
@@ -1631,7 +1674,7 @@ class DockView extends View_1.View {
 }
 exports.DockView = DockView;
 
-},{"../../BaseView/View":10,"../../Helper/ElementDragger":22,"../../Observer/HoverOb":26,"../Subwin":14}],18:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Helper/ViewDragger":23,"../../Observer/HoverOb":26,"../Subwin":14}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IndicatorImage = void 0;
@@ -1736,7 +1779,6 @@ class WorkspaceView extends View_1.View {
             }
         });
         this._dockView = new DockView_1.DockView();
-        this._onPointerMove = (e) => { };
         this._onViewDragStart = (e) => {
             this._draggingSubwin = View_1.View.try(e.target, Subwin_1.Subwin);
             if (!this._draggingSubwin) {
@@ -1746,7 +1788,6 @@ class WorkspaceView extends View_1.View {
             this._dockRightIndicator.fakeIn();
             this._dockTopIndicator.fakeIn();
             this._dockBottomIndicator.fakeIn();
-            this.addEventListener('pointermove', this._onPointerMove, true);
         };
         this._onViewDragging = (e) => {
             const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
@@ -1759,7 +1800,6 @@ class WorkspaceView extends View_1.View {
             if (!subwin) {
                 return;
             }
-            this.removeEventListener('pointermove', this._onPointerMove, true);
             if (this._dockBottomIndicator.hover) {
                 this.dockToBottom(subwin);
             }
@@ -1831,11 +1871,12 @@ class WorkspaceView extends View_1.View {
             this.addChild(this._dockView);
         }
     }
-    freeSubwin(subwin) {
+    undockSubwin(subwin) {
         if (!(subwin.parent instanceof DockView_1.DockView)) {
             console.error('subwin is not docked!');
             return this;
         }
+        const dockView = subwin.parent;
         subwin.removeSelf();
         this.addChild(subwin);
         return this;
@@ -1869,18 +1910,12 @@ class WorkspaceView extends View_1.View {
             this._pointerdowns.set(subwin, ondown);
             subwin.addEventListener('pointerdown', ondown);
             subwin.addEventListener('touchstart', ondown, { passive: true });
-            subwin.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
-            subwin.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
-            subwin.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
         }
         else {
             const listener = this._pointerdowns.get(subwin);
             if (listener) {
                 subwin.removeEventListener('pointerdown', listener);
                 subwin.removeEventListener('touchstart', listener);
-                subwin.removeEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
-                subwin.removeEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
-                subwin.removeEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
             }
         }
     }
@@ -1888,6 +1923,10 @@ class WorkspaceView extends View_1.View {
         super.addChild(...children);
         children.forEach(v => {
             if (v instanceof Subwin_1.Subwin) {
+                v.workspace = this;
+                v.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
+                v.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
+                v.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
                 this.subwinListening(v, true);
                 this._undockedWins.push(v);
             }
@@ -1899,6 +1938,10 @@ class WorkspaceView extends View_1.View {
         super.insertChild(anchorOrIdx, ...children);
         children.forEach(v => {
             if (v instanceof Subwin_1.Subwin) {
+                v.workspace = this;
+                v.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
+                v.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
+                v.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
                 this.subwinListening(v, true);
                 this._undockedWins.push(v);
             }
@@ -1998,6 +2041,9 @@ class ElementDragger {
             this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
         }
     }
+    set handleMove(v) { this._handleMove = v; }
+    set handleDown(v) { this._handleDown = v; }
+    set handleUp(v) { this._handleUp = v; }
     get responser() { return this._responser; }
     set responser(v) { this._responser = v; }
     get ignores() { return this._ignores; }
@@ -2037,15 +2083,15 @@ class ElementDragger {
         this._offsetY = 0;
         this._down = false;
         this._disabled = false;
-        this._handleMove = (x, y, oldX, oldY) => {
+        this._oldX = 0;
+        this._oldY = 0;
+        this._handleMove = (x, y) => {
             if (!this._responser) {
                 return;
             }
             this._responser.style.left = `${x}px`;
             this._responser.style.top = `${y}px`;
         };
-        this._oldX = 0;
-        this._oldY = 0;
         this._ondown = (target, pageX, pageY) => {
             var _a, _b;
             if (!this._responser) {
@@ -2080,12 +2126,12 @@ class ElementDragger {
             (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(new Event(EventType_1.EventType.ViewDragStart));
         };
         this._onmove = (pageX, pageY) => {
-            var _a;
+            var _a, _b;
             if (!this._responser || !this._down) {
                 return;
             }
-            this._handleMove(pageX - this._offsetX, pageY - this._offsetY, this._oldX, this._oldY);
-            (_a = this.responser) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new Event(EventType_1.EventType.ViewDragging));
+            (_a = this._handleMove) === null || _a === void 0 ? void 0 : _a.call(this, pageX - this._offsetX, pageY - this._offsetY, this._oldX, this._oldY);
+            (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(new Event(EventType_1.EventType.ViewDragging));
         };
         this._onup = () => {
             var _a, _b;
@@ -2159,10 +2205,13 @@ class ViewDragger {
     get ignores() { return this._dragger.ignores.map(v => View_1.View.get(v)); }
     get disabled() { return this._dragger.disabled; }
     set disabled(v) { this._dragger.disabled = v; }
+    set handleMove(v) { this._dragger.handleMove = v; }
+    set handleDown(v) { this._dragger.handleDown = v; }
+    set handleUp(v) { this._dragger.handleUp = v; }
     constructor(inits) {
         var _a, _b, _c, _d;
         this._dragger = new ElementDragger_1.ElementDragger({
-            responser: (_a = inits === null || inits === void 0 ? void 0 : inits.view) === null || _a === void 0 ? void 0 : _a.inner,
+            responser: (_a = inits === null || inits === void 0 ? void 0 : inits.responser) === null || _a === void 0 ? void 0 : _a.inner,
             handles: (_b = inits === null || inits === void 0 ? void 0 : inits.handles) === null || _b === void 0 ? void 0 : _b.map(v => v.inner),
             ignores: (_c = inits === null || inits === void 0 ? void 0 : inits.ignores) === null || _c === void 0 ? void 0 : _c.map(v => v.inner),
             handleDown: inits === null || inits === void 0 ? void 0 : inits.handleDown,

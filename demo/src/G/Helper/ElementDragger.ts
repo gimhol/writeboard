@@ -20,13 +20,13 @@ export class ElementDragger {
   private _offsetY = 0;
   private _down = false;
   private _disabled = false;
-  private _handleMove: OnMoveCallback = (x, y, oldX, oldY) => {
+  private _oldX: number = 0;
+  private _oldY: number = 0;
+  private _handleMove: OnMoveCallback | undefined = (x, y) => {
     if (!this._responser) { return; }
     this._responser.style.left = `${x}px`;
     this._responser.style.top = `${y}px`;
   };
-  private _oldX: number = 0;
-  private _oldY: number = 0;
   private _handleDown: OnDownCallback | undefined;
   private _handleUp: OnUpCallback | undefined;
   private isIgnore(target: HTMLElement) {
@@ -62,7 +62,7 @@ export class ElementDragger {
   }
   private _onmove = (pageX: number, pageY: number) => {
     if (!this._responser || !this._down) { return; }
-    this._handleMove(
+    this._handleMove?.(
       pageX - this._offsetX,
       pageY - this._offsetY,
       this._oldX,
@@ -116,6 +116,9 @@ export class ElementDragger {
       this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
     }
   }
+  set handleMove(v: OnMoveCallback | undefined) { this._handleMove = v }
+  set handleDown(v: OnDownCallback | undefined) { this._handleDown = v }
+  set handleUp(v: OnUpCallback | undefined) { this._handleUp = v }
   get responser() { return this._responser; }
   set responser(v) { this._responser = v; }
   get ignores() { return this._ignores; }
