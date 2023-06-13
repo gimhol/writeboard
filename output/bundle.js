@@ -818,7 +818,7 @@ class View {
         });
         return this;
     }
-    insertChild(anchorOrIdx, ...children) {
+    insertChildBefore(anchorOrIdx, ...children) {
         if (anchorOrIdx === 0 && !this.inner.children.length) {
             children.forEach(child => {
                 this.inner.append(child.inner);
@@ -847,6 +847,12 @@ class View {
             child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Removed));
             child.onRemoved();
         });
+        return this;
+    }
+    replaceChild(newChild, oldChild) {
+        oldChild.onRemoved();
+        this.inner.replaceChild(newChild.inner, oldChild.inner);
+        newChild.onAdded();
         return this;
     }
     removeSelf() {
@@ -1268,7 +1274,7 @@ class Subwin extends View_1.View {
             v.styles
                 .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
                 .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-            this.insertChild(this._footer, v);
+            this.insertChildBefore(this._footer, v);
         }
     }
     raise() {
@@ -1483,14 +1489,17 @@ exports.DockViewStyles = {
     [StyleNames.Normal]: {
         pointerEvents: 'none',
         position: 'absolute',
-        width: '100%',
-        height: '100%',
         left: 0,
         top: 0,
+        width: '100%',
+        height: '100%',
         alignItems: 'stretch'
     },
     [StyleNames.Docked]: {
         position: 'relative',
+        alignSelf: 'stretch',
+        width: 'unset',
+        height: 'unset',
         flex: 1
     }
 };
@@ -1606,7 +1615,7 @@ class DockView extends View_1.View {
         this.updateChildrenStyles(children);
         return this;
     }
-    insertChild(anchor, ...children) {
+    insertChildBefore(anchor, ...children) {
         if (!children.length) {
             return this;
         }
@@ -1632,7 +1641,7 @@ class DockView extends View_1.View {
             this.prevResizers.set(endAnchor, resizer);
             children.push(resizer);
         }
-        super.insertChild(anchor, ...children);
+        super.insertChildBefore(anchor, ...children);
         this.updateChildrenStyles(children);
         return this;
     }
@@ -1652,6 +1661,26 @@ class DockView extends View_1.View {
             }
         });
         super.removeChild(...resizers);
+        return this;
+    }
+    replaceChild(newChild, oldChild) {
+        if (oldChild instanceof DockView || oldChild instanceof Subwin_1.Subwin) {
+            oldChild.onUndocked();
+        }
+        super.replaceChild(newChild, oldChild);
+        const pr = this.prevResizers.get(oldChild);
+        if (pr) {
+            this.prevResizers.delete(oldChild);
+            this.prevResizers.set(newChild, pr);
+        }
+        const nr = this.nextResizers.get(oldChild);
+        if (nr) {
+            this.nextResizers.delete(oldChild);
+            this.nextResizers.set(newChild, nr);
+        }
+        if (newChild instanceof DockView || newChild instanceof Subwin_1.Subwin) {
+            newChild.onDocked();
+        }
         return this;
     }
     updateChildrenStyles(children) {
@@ -1731,23 +1760,23 @@ const IndicatorImage_1 = require("./IndicatorImage");
 class IndicatorView extends View_1.View {
     constructor() {
         super('div');
-        this._left = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_left.svg' }).styles.apply('override', {
+        this.left = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_left.svg' }).styles.apply('override', {
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
         }).view;
-        this._top = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_top.svg' }).styles.apply('override', {
+        this.top = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_top.svg' }).styles.apply('override', {
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
         }).view;
-        this._right = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_right.svg' }).styles.apply('override', {
+        this.right = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_right.svg' }).styles.apply('override', {
             borderTopLeftRadius: 0,
             borderBottomLeftRadius: 0,
         }).view;
-        this._bottom = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+        this.bottom = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
             borderTopLeftRadius: 0,
             borderTopRightRadius: 0,
         }).view;
-        this._center = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+        this.center = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
             borderRadius: 0,
         }).view;
         this.styles.applyCls('indicator_view');
@@ -1773,7 +1802,7 @@ class IndicatorView extends View_1.View {
             gridTemplateRows: '48px 48px 48px',
             gap: '0px',
         });
-        content.addChild(new View_1.View('div'), this._top, new View_1.View('div'), this._left, this._center, this._right, new View_1.View('div'), this._bottom, new View_1.View('div'));
+        content.addChild(new View_1.View('div'), this.top, new View_1.View('div'), this.left, this.center, this.right, new View_1.View('div'), this.bottom, new View_1.View('div'));
         this.addChild(content);
         new ResizeObserver(e => {
             const { left, top, width, height } = e[0].target.getBoundingClientRect();
@@ -1783,21 +1812,21 @@ class IndicatorView extends View_1.View {
     fakeIn() {
         this.styles.add('appear').refresh();
         this.hoverOb.disabled = false;
-        this._left.fakeIn();
-        this._right.fakeIn();
-        this._top.fakeIn();
-        this._bottom.fakeIn();
-        this._center.fakeIn();
+        this.left.fakeIn();
+        this.right.fakeIn();
+        this.top.fakeIn();
+        this.bottom.fakeIn();
+        this.center.fakeIn();
     }
     fakeOut() {
         this.styles.remove('appear').refresh();
         this.hoverOb.disabled = true;
         this.onHover(false);
-        this._left.fakeOut();
-        this._right.fakeOut();
-        this._top.fakeOut();
-        this._bottom.fakeOut();
-        this._center.fakeOut();
+        this.left.fakeOut();
+        this.right.fakeOut();
+        this.top.fakeOut();
+        this.bottom.fakeOut();
+        this.center.fakeOut();
     }
 }
 exports.IndicatorView = IndicatorView;
@@ -1919,6 +1948,18 @@ class WorkspaceView extends View_1.View {
             else if (this._dockRightIndicator.hover) {
                 this.dockToRight(subwin);
             }
+            else if (this._dockIndicator.bottom.hover) {
+                this.dockToBottom(subwin, this._draggingIn);
+            }
+            else if (this._dockIndicator.top.hover) {
+                this.dockToTop(subwin, this._draggingIn);
+            }
+            else if (this._dockIndicator.left.hover) {
+                this.dockToLeft(subwin, this._draggingIn);
+            }
+            else if (this._dockIndicator.right.hover) {
+                this.dockToRight(subwin, this._draggingIn);
+            }
             else {
                 const rect = (0, utils_1.getValue)(this._rect);
                 if (!rect) {
@@ -1945,17 +1986,26 @@ class WorkspaceView extends View_1.View {
         this.addChild(this._dockIndicator);
         (inits === null || inits === void 0 ? void 0 : inits.wins) && this.addChild(...inits.wins);
     }
-    dockToTop(subwin) {
+    dockToTop(subwin, view) {
         this._dockedWins.insert(0, subwin);
-        if (DockView_1.Direction.V === this._rootDockView.direction) {
-            this._rootDockView.insertChild(0, subwin);
+        const dockView = (view === this._deepestDockView && view.parent instanceof DockView_1.DockView) ? view.parent : undefined;
+        if ((dockView === null || dockView === void 0 ? void 0 : dockView.direction) === DockView_1.Direction.V) {
+            dockView.insertChildBefore(view, subwin);
+        }
+        else if ((dockView === null || dockView === void 0 ? void 0 : dockView.direction) === DockView_1.Direction.H) {
+            const childDockView = new DockView_1.DockView(DockView_1.Direction.V);
+            dockView.replaceChild(childDockView, view);
+            childDockView.addChild(subwin, view);
+        }
+        else if (DockView_1.Direction.V === this._rootDockView.direction) {
+            this._rootDockView.insertChildBefore(0, subwin);
         }
         else {
-            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.V).insertChild(0, subwin, this._rootDockView);
+            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.V).insertChildBefore(0, subwin, this._rootDockView);
             this.addChild(this._rootDockView);
         }
     }
-    dockToBottom(subwin) {
+    dockToBottom(subwin, view) {
         this._dockedWins.insert(0, subwin);
         if (DockView_1.Direction.V === this._rootDockView.direction) {
             this._rootDockView.addChild(subwin);
@@ -1965,17 +2015,26 @@ class WorkspaceView extends View_1.View {
             this.addChild(this._rootDockView);
         }
     }
-    dockToLeft(subwin) {
+    dockToLeft(subwin, view) {
         this._dockedWins.insert(0, subwin);
-        if (DockView_1.Direction.H === this._rootDockView.direction) {
-            this._rootDockView.insertChild(0, subwin);
+        const dockView = (view === this._deepestDockView && (view === null || view === void 0 ? void 0 : view.parent) instanceof DockView_1.DockView) ? view.parent : undefined;
+        if ((dockView === null || dockView === void 0 ? void 0 : dockView.direction) === DockView_1.Direction.H) {
+            dockView.insertChildBefore(view, subwin);
+        }
+        else if ((dockView === null || dockView === void 0 ? void 0 : dockView.direction) === DockView_1.Direction.V) {
+            const childDockView = new DockView_1.DockView(DockView_1.Direction.H);
+            dockView.replaceChild(childDockView, view);
+            childDockView.addChild(subwin, view);
+        }
+        else if (DockView_1.Direction.H === this._rootDockView.direction) {
+            this._rootDockView.insertChildBefore(0, subwin);
         }
         else {
-            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.H).insertChild(0, subwin, this._rootDockView);
+            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.H).insertChildBefore(0, subwin, this._rootDockView);
             this.addChild(this._rootDockView);
         }
     }
-    dockToRight(subwin) {
+    dockToRight(subwin, view) {
         this._dockedWins.insert(0, subwin);
         if (DockView_1.Direction.H === this._rootDockView.direction) {
             this._rootDockView.addChild(subwin);
@@ -2061,8 +2120,8 @@ class WorkspaceView extends View_1.View {
         this._updateUndockedWinsStyle();
         return this;
     }
-    insertChild(anchorOrIdx, ...children) {
-        super.insertChild(anchorOrIdx, ...children);
+    insertChildBefore(anchorOrIdx, ...children) {
+        super.insertChildBefore(anchorOrIdx, ...children);
         this._handleAddedChildren(children);
         this._updateUndockedWinsStyle();
         return this;

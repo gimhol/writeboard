@@ -38,7 +38,7 @@ export class Subwin extends View<'div'> {
       v.styles
         .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
         .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
-      this.insertChild(this._footer, v);
+      this.insertChildBefore(this._footer, v);
     }
   }
   raise() {

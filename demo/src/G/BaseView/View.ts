@@ -77,8 +77,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     });
     return this;
   }
-
-  insertChild(anchorOrIdx: View | number, ...children: View[]): this {
+  insertChildBefore(anchorOrIdx: View | number, ...children: View[]): this {
     if (anchorOrIdx === 0 && !this.inner.children.length) {
       children.forEach(child => {
         this.inner.append(child.inner);
@@ -101,7 +100,6 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     })
     return this;
   }
-
   removeChild(...children: View[]): this {
     children.forEach(child => {
       this.inner.removeChild(child.inner);
@@ -110,7 +108,12 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     })
     return this;
   }
-
+  replaceChild(newChild: View, oldChild: View): this {
+    oldChild.onRemoved();
+    this.inner.replaceChild(newChild.inner, oldChild.inner)
+    newChild.onAdded();
+    return this;
+  }
   removeSelf(): this {
     this.parent?.removeChild(this);
     return this;

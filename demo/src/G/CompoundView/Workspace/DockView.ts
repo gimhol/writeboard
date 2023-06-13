@@ -12,14 +12,17 @@ export const DockViewStyles: Partial<Record<StyleNames, Style>> = {
   [StyleNames.Normal]: {
     pointerEvents: 'none',
     position: 'absolute',
-    width: '100%',
-    height: '100%',
     left: 0,
     top: 0,
+    width: '100%',
+    height: '100%',
     alignItems: 'stretch'
   },
   [StyleNames.Docked]: {
     position: 'relative',
+    alignSelf: 'stretch',
+    width: 'unset',
+    height: 'unset',
     flex: 1
   }
 }
@@ -138,7 +141,7 @@ export class DockView extends View<'div'> {
     this.updateChildrenStyles(children);
     return this;
   }
-  override insertChild(anchor: number | View, ...children: View[]): this {
+  override insertChildBefore(anchor: number | View, ...children: View[]): this {
     if (!children.length) { return this; }
     children.forEach(v => v.removeSelf());
     const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
@@ -163,7 +166,7 @@ export class DockView extends View<'div'> {
       children.push(resizer);
     }
 
-    super.insertChild(anchor, ...children);
+    super.insertChildBefore(anchor, ...children);
     this.updateChildrenStyles(children);
     return this;
   }
@@ -185,6 +188,26 @@ export class DockView extends View<'div'> {
     super.removeChild(...resizers);
     return this;
   }
+  override replaceChild(newChild: View, oldChild: View): this {
+    if (oldChild instanceof DockView || oldChild instanceof Subwin) {
+      oldChild.onUndocked();
+    }
+    super.replaceChild(newChild, oldChild);
+    const pr = this.prevResizers.get(oldChild);
+    if (pr) {
+      this.prevResizers.delete(oldChild);
+      this.prevResizers.set(newChild, pr);
+    }
+    const nr = this.nextResizers.get(oldChild);
+    if (nr) {
+      this.nextResizers.delete(oldChild);
+      this.nextResizers.set(newChild, nr);
+    }
+    if (newChild instanceof DockView || newChild instanceof Subwin) {
+      newChild.onDocked();
+    }
+    return this;
+  }
   private updateChildrenStyles(children: View[]) {
     children.forEach(v => {
       if (v instanceof DockView || v instanceof Subwin) {
@@ -192,7 +215,6 @@ export class DockView extends View<'div'> {
       }
     });
   }
-
   onDocked(): void {
     this.styles.apply(StyleNames.Docked);
   }

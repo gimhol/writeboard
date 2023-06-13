@@ -2,23 +2,23 @@ import { View } from "../../BaseView/View";
 import { IndicatorImage } from "./IndicatorImage";
 
 export class IndicatorView extends View<'div'> {
-  private _left = new IndicatorImage({ src: './ic_dock_to_left.svg' }).styles.apply('override', {
+  left = new IndicatorImage({ src: './ic_dock_to_left.svg' }).styles.apply('override', {
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
   }).view;
-  private _top = new IndicatorImage({ src: './ic_dock_to_top.svg' }).styles.apply('override', {
+  top = new IndicatorImage({ src: './ic_dock_to_top.svg' }).styles.apply('override', {
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   }).view;
-  private _right = new IndicatorImage({ src: './ic_dock_to_right.svg' }).styles.apply('override', {
+  right = new IndicatorImage({ src: './ic_dock_to_right.svg' }).styles.apply('override', {
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }).view;
-  private _bottom = new IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+  bottom = new IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
   }).view;
-  private _center = new IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+  center = new IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
     borderRadius: 0,
   }).view;
   constructor() {
@@ -48,9 +48,9 @@ export class IndicatorView extends View<'div'> {
       gap: '0px',
     })
     content.addChild(
-      new View('div'), this._top, new View('div'),
-      this._left, this._center, this._right,
-      new View('div'), this._bottom, new View('div')
+      new View('div'), this.top, new View('div'),
+      this.left, this.center, this.right,
+      new View('div'), this.bottom, new View('div')
     );
     this.addChild(content);
     new ResizeObserver(e => {
@@ -65,21 +65,21 @@ export class IndicatorView extends View<'div'> {
   fakeIn() {
     this.styles.add('appear').refresh();
     this.hoverOb.disabled = false;
-    this._left.fakeIn();
-    this._right.fakeIn();
-    this._top.fakeIn();
-    this._bottom.fakeIn();
-    this._center.fakeIn();
+    this.left.fakeIn();
+    this.right.fakeIn();
+    this.top.fakeIn();
+    this.bottom.fakeIn();
+    this.center.fakeIn();
   }
   fakeOut() {
     this.styles.remove('appear').refresh();
     this.hoverOb.disabled = true;
     this.onHover(false);
 
-    this._left.fakeOut();
-    this._right.fakeOut();
-    this._top.fakeOut();
-    this._bottom.fakeOut();
-    this._center.fakeOut();
+    this.left.fakeOut();
+    this.right.fakeOut();
+    this.top.fakeOut();
+    this.bottom.fakeOut();
+    this.center.fakeOut();
   }
 }

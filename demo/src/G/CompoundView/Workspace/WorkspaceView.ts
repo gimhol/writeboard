@@ -73,16 +73,23 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this.addChild(this._dockIndicator);
     inits?.wins && this.addChild(...inits.wins);
   }
-  dockToTop(subwin: Subwin): void {
+  dockToTop(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
-    if (Direction.V === this._rootDockView.direction) {
-      this._rootDockView.insertChild(0, subwin);
+    const dockView = (view === this._deepestDockView && view.parent instanceof DockView) ? view.parent : undefined;
+    if (dockView?.direction === Direction.V) {
+      dockView.insertChildBefore(view!, subwin)
+    } else if (dockView?.direction === Direction.H) {
+      const childDockView = new DockView(Direction.V);
+      dockView.replaceChild(childDockView, view!)
+      childDockView.addChild(subwin, view!);
+    } else if (Direction.V === this._rootDockView.direction) {
+      this._rootDockView.insertChildBefore(0, subwin);
     } else {
-      this._rootDockView = new DockView(Direction.V).insertChild(0, subwin, this._rootDockView);
+      this._rootDockView = new DockView(Direction.V).insertChildBefore(0, subwin, this._rootDockView);
       this.addChild(this._rootDockView)
     }
   }
-  dockToBottom(subwin: Subwin): void {
+  dockToBottom(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
     if (Direction.V === this._rootDockView.direction) {
       this._rootDockView.addChild(subwin);
@@ -91,16 +98,23 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this.addChild(this._rootDockView);
     }
   }
-  dockToLeft(subwin: Subwin): void {
+  dockToLeft(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
-    if (Direction.H === this._rootDockView.direction) {
-      this._rootDockView.insertChild(0, subwin);
+    const dockView = (view === this._deepestDockView && view?.parent instanceof DockView) ? view.parent : undefined;
+    if (dockView?.direction === Direction.H) {
+      dockView.insertChildBefore(view!, subwin)
+    } else if (dockView?.direction === Direction.V) {
+      const childDockView = new DockView(Direction.H);
+      dockView.replaceChild(childDockView, view!)
+      childDockView.addChild(subwin, view!);
+    } else if (Direction.H === this._rootDockView.direction) {
+      this._rootDockView.insertChildBefore(0, subwin);
     } else {
-      this._rootDockView = new DockView(Direction.H).insertChild(0, subwin, this._rootDockView);
+      this._rootDockView = new DockView(Direction.H).insertChildBefore(0, subwin, this._rootDockView);
       this.addChild(this._rootDockView)
     }
   }
-  dockToRight(subwin: Subwin): void {
+  dockToRight(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
     if (Direction.H === this._rootDockView.direction) {
       this._rootDockView.addChild(subwin);
@@ -196,6 +210,14 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this.dockToLeft(subwin);
     } else if (this._dockRightIndicator.hover) {
       this.dockToRight(subwin);
+    } else if (this._dockIndicator.bottom.hover) {
+      this.dockToBottom(subwin, this._draggingIn);
+    } else if (this._dockIndicator.top.hover) {
+      this.dockToTop(subwin, this._draggingIn);
+    } else if (this._dockIndicator.left.hover) {
+      this.dockToLeft(subwin, this._draggingIn);
+    } else if (this._dockIndicator.right.hover) {
+      this.dockToRight(subwin, this._draggingIn);
     } else {
       const rect = getValue(this._rect);
       if (!rect) { return; }
@@ -246,8 +268,8 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._updateUndockedWinsStyle();
     return this;
   }
-  override insertChild(anchorOrIdx: number | View, ...children: View[]): this {
-    super.insertChild(anchorOrIdx, ...children);
+  override insertChildBefore(anchorOrIdx: number | View, ...children: View[]): this {
+    super.insertChildBefore(anchorOrIdx, ...children);
     this._handleAddedChildren(children);
     this._updateUndockedWinsStyle();
     return this;
