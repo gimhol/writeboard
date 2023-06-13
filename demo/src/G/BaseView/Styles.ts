@@ -2,8 +2,8 @@ import { Style, autoPxKeys } from "./StyleType";
 import { ReValue, reValue } from "../utils";
 import { View } from "./View";
 
-export class Styles<T extends string = string>{
-  private _view?: View<keyof HTMLElementTagNameMap>;
+export class Styles<T extends string = string, V extends View<keyof HTMLElementTagNameMap> = View<keyof HTMLElementTagNameMap>>{
+  private _view?: V;
   private _pool?: Map<T, Style | null>;
   private _applieds?: Set<T>;
   get view() { return this._view!; }
@@ -15,7 +15,7 @@ export class Styles<T extends string = string>{
     this._applieds = this._applieds ?? new Set<T>();
     return this._applieds;
   }
-  constructor(view: View) {
+  constructor(view: V) {
     this._view = view;
   }
   read(name: T): Style {

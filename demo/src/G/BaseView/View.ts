@@ -1,19 +1,12 @@
+import { ViewEventType, ViewEventMap } from "../Events/EventType";
 import { FocusOb } from "../Observer/FocusOb";
 import { HoverOb } from "../Observer/HoverOb";
 import { Styles } from "./Styles";
 
-export enum ViewEventType {
-  OnAdded = 'OnAdded',
-  OnRemoved = 'OnRemoved',
-}
-export interface ViewEventMap {
-  [ViewEventType.OnAdded]: Event;
-  [ViewEventType.OnRemoved]: Event;
-}
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
   static RAW_KEY_IN_ELEMENT = 'g_view' as const;
   protected _inner?: HTMLElementTagNameMap[T] & { [View.RAW_KEY_IN_ELEMENT]?: View };
-  protected _styles?: Styles<string>;
+  protected _styles?: Styles<string, this>;
   protected _hoverOb?: HoverOb;
   protected _focusOb?: FocusOb;
   get hover() { return this.hoverOb.hover }
@@ -26,8 +19,8 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     this._focusOb = this._focusOb ?? new FocusOb(this.inner!, v => this.onFocus(v))
     return this._focusOb
   }
-  get styles(): Styles<string> {
-    this._styles = this._styles ?? new Styles<string>(this)
+  get styles(): Styles<string, this> {
+    this._styles = this._styles ?? new Styles<string, this>(this)
     return this._styles;
   }
   get inner() { return this._inner!; }
@@ -79,7 +72,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   addChild(...children: View[]) {
     children.forEach(child => {
       this.inner.append(child.inner);
-      child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+      child.inner.dispatchEvent(new Event(ViewEventType.Added));
       child.onAdded();
     });
     return this;
@@ -89,7 +82,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     if (anchorOrIdx === 0 && !this.inner.children.length) {
       children.forEach(child => {
         this.inner.append(child.inner);
-        child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+        child.inner.dispatchEvent(new Event(ViewEventType.Added));
         child.onAdded();
       });
       return this;
@@ -103,7 +96,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     }
     children.forEach(child => {
       this.inner.insertBefore(child.inner, ele);
-      child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+      child.inner.dispatchEvent(new Event(ViewEventType.Added));
       child.onAdded();
     })
     return this;
@@ -112,7 +105,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   removeChild(...children: View[]): this {
     children.forEach(child => {
       this.inner.removeChild(child.inner);
-      child.inner.dispatchEvent(new Event(ViewEventType.OnRemoved));
+      child.inner.dispatchEvent(new Event(ViewEventType.Removed));
       child.onRemoved();
     })
     return this;

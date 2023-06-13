@@ -181,7 +181,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
     }
 }
 
-},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":21,"./colorPalette/Color":30,"./colorPalette/ColorPalette":31}],2:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":22,"./colorPalette/Color":32,"./colorPalette/ColorPalette":33}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.ButtonState = exports.ButtonStyleNames = void 0;
@@ -683,7 +683,7 @@ class Styles {
 }
 exports.Styles = Styles;
 
-},{"../utils":27,"./StyleType":7}],9:[function(require,module,exports){
+},{"../utils":29,"./StyleType":7}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextInput = exports.InputStyleNames = void 0;
@@ -744,15 +744,11 @@ exports.TextInput = TextInput;
 },{"./View":10}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.View = exports.ViewEventType = void 0;
+exports.View = void 0;
+const EventType_1 = require("../Events/EventType");
 const FocusOb_1 = require("../Observer/FocusOb");
 const HoverOb_1 = require("../Observer/HoverOb");
 const Styles_1 = require("./Styles");
-var ViewEventType;
-(function (ViewEventType) {
-    ViewEventType["OnAdded"] = "OnAdded";
-    ViewEventType["OnRemoved"] = "OnRemoved";
-})(ViewEventType = exports.ViewEventType || (exports.ViewEventType = {}));
 class View {
     get hover() { return this.hoverOb.hover; }
     get hoverOb() {
@@ -817,7 +813,7 @@ class View {
     addChild(...children) {
         children.forEach(child => {
             this.inner.append(child.inner);
-            child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+            child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Added));
             child.onAdded();
         });
         return this;
@@ -826,7 +822,7 @@ class View {
         if (anchorOrIdx === 0 && !this.inner.children.length) {
             children.forEach(child => {
                 this.inner.append(child.inner);
-                child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+                child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Added));
                 child.onAdded();
             });
             return this;
@@ -840,7 +836,7 @@ class View {
         }
         children.forEach(child => {
             this.inner.insertBefore(child.inner, ele);
-            child.inner.dispatchEvent(new Event(ViewEventType.OnAdded));
+            child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Added));
             child.onAdded();
         });
         return this;
@@ -848,7 +844,7 @@ class View {
     removeChild(...children) {
         children.forEach(child => {
             this.inner.removeChild(child.inner);
-            child.inner.dispatchEvent(new Event(ViewEventType.OnRemoved));
+            child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Removed));
             child.onRemoved();
         });
         return this;
@@ -878,7 +874,7 @@ class View {
 exports.View = View;
 View.RAW_KEY_IN_ELEMENT = 'g_view';
 
-},{"../Observer/FocusOb":25,"../Observer/HoverOb":26,"./Styles":8}],11:[function(require,module,exports){
+},{"../Events/EventType":21,"../Observer/FocusOb":27,"../Observer/HoverOb":28,"./Styles":8}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IconButton = void 0;
@@ -1110,7 +1106,7 @@ exports.Menu = Menu;
 Menu.StyleNames = StyleNames;
 Menu.EventType = MenuEventType;
 
-},{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":26,"../utils":27}],13:[function(require,module,exports){
+},{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":28,"../utils":29}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MergedSubwin = exports.SubwinTab = void 0;
@@ -1234,7 +1230,7 @@ class MergedSubwin extends Subwin_1.Subwin {
 }
 exports.MergedSubwin = MergedSubwin;
 
-},{"../BaseView/View":10,"../Observer/DragInOutOB":24,"./Subwin":14}],14:[function(require,module,exports){
+},{"../BaseView/View":10,"../Observer/DragInOutOB":26,"./Subwin":14}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subwin = exports.StyleNames = void 0;
@@ -1296,7 +1292,10 @@ class Subwin extends View_1.View {
         this._dragWhenDocked = (x, y, prevX, prevY) => {
             var _a;
             if (Math.abs(x - prevX) + Math.abs(y - prevY) > 20) {
+                const w0 = this.inner.offsetWidth;
                 (_a = this.workspace) === null || _a === void 0 ? void 0 : _a.undockSubwin(this);
+                const w1 = this.inner.offsetWidth;
+                this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
             }
         };
         this._dragWhenUndocked = (x, y) => {
@@ -1366,7 +1365,7 @@ class Subwin extends View_1.View {
 exports.Subwin = Subwin;
 Subwin.StyleNames = StyleNames;
 
-},{"../BaseView/View":10,"../Helper/ViewDragger":23,"./SubwinFooter":15,"./SubwinHeader":16}],15:[function(require,module,exports){
+},{"../BaseView/View":10,"../Helper/ViewDragger":25,"./SubwinFooter":15,"./SubwinHeader":16}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinFooter = void 0;
@@ -1467,7 +1466,7 @@ exports.SubwinHeader = SubwinHeader;
 SubwinHeader.ClassNames = Classnames;
 SubwinHeader.StyleNames = StyleNames;
 
-},{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":25,"./IconButton":11}],17:[function(require,module,exports){
+},{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":27,"./IconButton":11}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockView = exports.Resizer = exports.Direction = exports.DockViewStyles = exports.StyleNames = void 0;
@@ -1674,7 +1673,7 @@ class DockView extends View_1.View {
 }
 exports.DockView = DockView;
 
-},{"../../BaseView/View":10,"../../Helper/ViewDragger":23,"../../Observer/HoverOb":26,"../Subwin":14}],18:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Helper/ViewDragger":25,"../../Observer/HoverOb":28,"../Subwin":14}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IndicatorImage = void 0;
@@ -1726,6 +1725,86 @@ exports.IndicatorImage = IndicatorImage;
 },{"../../BaseView/Image":4}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IndicatorView = void 0;
+const View_1 = require("../../BaseView/View");
+const IndicatorImage_1 = require("./IndicatorImage");
+class IndicatorView extends View_1.View {
+    constructor() {
+        super('div');
+        this._left = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_left.svg' }).styles.apply('override', {
+            borderTopRightRadius: 0,
+            borderBottomRightRadius: 0,
+        }).view;
+        this._top = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_top.svg' }).styles.apply('override', {
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+        }).view;
+        this._right = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_right.svg' }).styles.apply('override', {
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0,
+        }).view;
+        this._bottom = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 0,
+        }).view;
+        this._center = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+            borderRadius: 0,
+        }).view;
+        this.styles.applyCls('indicator_view');
+        this.styles.register('normal', {
+            position: 'absolute',
+            opacity: 0,
+            transition: 'opacity 200ms',
+            zIndex: '9999',
+            pointerEvents: 'none',
+            boxSizing: 'border-box',
+            border: '5px solid #0055ff88',
+        }).register('appear', {
+            opacity: 1,
+            pointerEvents: 'all'
+        }).apply('normal');
+        const content = new View_1.View('div');
+        content.styles.apply('', {
+            position: 'fixed',
+            zIndex: '9999',
+            display: 'grid',
+            transform: 'translate(-50%,-50%)',
+            gridTemplateColumns: '48px 48px 48px',
+            gridTemplateRows: '48px 48px 48px',
+            gap: '0px',
+        });
+        content.addChild(new View_1.View('div'), this._top, new View_1.View('div'), this._left, this._center, this._right, new View_1.View('div'), this._bottom, new View_1.View('div'));
+        this.addChild(content);
+        new ResizeObserver(e => {
+            const { left, top, width, height } = e[0].target.getBoundingClientRect();
+            content.styles.apply('', v => (Object.assign(Object.assign({}, v), { left: left + width / 2, top: top + height / 2 })));
+        }).observe(this.inner);
+    }
+    fakeIn() {
+        this.styles.add('appear').refresh();
+        this.hoverOb.disabled = false;
+        this._left.fakeIn();
+        this._right.fakeIn();
+        this._top.fakeIn();
+        this._bottom.fakeIn();
+        this._center.fakeIn();
+    }
+    fakeOut() {
+        this.styles.remove('appear').refresh();
+        this.hoverOb.disabled = true;
+        this.onHover(false);
+        this._left.fakeOut();
+        this._right.fakeOut();
+        this._top.fakeOut();
+        this._bottom.fakeOut();
+        this._center.fakeOut();
+    }
+}
+exports.IndicatorView = IndicatorView;
+
+},{"../../BaseView/View":10,"./IndicatorImage":18}],20:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkspaceView = void 0;
 const View_1 = require("../../BaseView/View");
 const EventType_1 = require("../../Events/EventType");
@@ -1733,31 +1812,29 @@ const utils_1 = require("../../utils");
 const Subwin_1 = require("../Subwin");
 const DockView_1 = require("./DockView");
 const IndicatorImage_1 = require("./IndicatorImage");
+const List_1 = require("../../Helper/List");
+const IndicatorView_1 = require("./IndicatorView");
 class WorkspaceView extends View_1.View {
     _updateUndockedWinsStyle() {
-        this.undockedWins.forEach((win, idx, arr) => {
+        this._undockedWins.forEach((win, idx, arr) => {
             win.styles.apply('free_in_workspace', {
-                zIndex: `${this._zIndex + idx}`,
+                zIndex: `${this._zIndex + arr.length - idx}`,
                 maxWidth: '100%',
                 maxHeight: '100%'
             });
-            idx < arr.length - 1 ? win.lower() : win.raise();
+            idx > 0 ? win.lower() : win.raise();
+            ++idx;
         });
     }
-    get dockView() { return this._dockView; }
+    get dockView() { return this._rootDockView; }
     constructor(arg0, inits) {
         var _a;
         super(arg0);
         this._zIndex = 0;
         this._pointerdowns = new Map();
         this._draggingSubwin = null;
-        this._undockedWins = [];
-        this._handleClick = (subwin) => {
-            const idx = this._undockedWins.findIndex(a => a === subwin);
-            this._undockedWins.splice(idx, 1);
-            this._undockedWins.push(subwin);
-            this._updateUndockedWinsStyle();
-        };
+        this._undockedWins = new List_1.List();
+        this._dockedWins = new List_1.List();
         this._dockLeftIndicator = new IndicatorImage_1.IndicatorImage({
             src: './ic_dock_to_left.svg', style: {
                 position: 'absolute', left: 16, top: 'calc(50% - 24px)'
@@ -1778,8 +1855,10 @@ class WorkspaceView extends View_1.View {
                 position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
             }
         });
-        this._dockView = new DockView_1.DockView();
-        this._onViewDragStart = (e) => {
+        this._dockIndicator = new IndicatorView_1.IndicatorView();
+        this._rootDockView = new DockView_1.DockView();
+        this._deepestDockView = this._rootDockView;
+        this._onSubwinDragStart = (e) => {
             this._draggingSubwin = View_1.View.try(e.target, Subwin_1.Subwin);
             if (!this._draggingSubwin) {
                 return;
@@ -1789,13 +1868,41 @@ class WorkspaceView extends View_1.View {
             this._dockTopIndicator.fakeIn();
             this._dockBottomIndicator.fakeIn();
         };
-        this._onViewDragging = (e) => {
+        this._onSubwinDragging = (e) => {
+            var _a;
             const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
             if (!subwin) {
                 return;
             }
+            const { pageX, pageY, dragger: { offsetX, offsetY } } = e.detail;
+            const mouseX = pageX;
+            const mouseY = pageY;
+            let draggingIn = (_a = this._undockedWins.findR(v => {
+                const { left, right, top, bottom } = v.inner.getBoundingClientRect();
+                return v != subwin && mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom;
+            })) !== null && _a !== void 0 ? _a : this._dockedWins.findR(v => {
+                const { left, right, top, bottom } = v.inner.getBoundingClientRect();
+                return v != subwin && mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom;
+            });
+            if (!draggingIn && this._deepestDockView !== this._rootDockView) {
+                const { left, right, top, bottom } = this._deepestDockView.inner.getBoundingClientRect();
+                if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom) {
+                    draggingIn = this._deepestDockView;
+                }
+            }
+            if (this._draggingIn !== draggingIn) {
+                this._draggingIn = draggingIn;
+                if (draggingIn) {
+                    const { left, top, width, height } = draggingIn.inner.getBoundingClientRect();
+                    this._dockIndicator.styles.apply('normal', v => (Object.assign(Object.assign({}, v), { left, top, width, height })));
+                    this._dockIndicator.fakeIn();
+                }
+                else {
+                    this._dockIndicator.fakeOut();
+                }
+            }
         };
-        this._onViewDragEnd = (e) => {
+        this._onSubwinDragEnd = (e) => {
             const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
             if (!subwin) {
                 return;
@@ -1823,63 +1930,74 @@ class WorkspaceView extends View_1.View {
             this._dockRightIndicator.fakeOut();
             this._dockTopIndicator.fakeOut();
             this._dockBottomIndicator.fakeOut();
+            this._dockIndicator.fakeOut();
             this._draggingSubwin = null;
+            this._draggingIn = undefined;
         };
         this.styles.applyCls('workspaceView');
         this._rect = inits.rect;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
-        this.addChild(this._dockView);
+        this.addChild(this._rootDockView);
         this.addChild(this._dockLeftIndicator);
         this.addChild(this._dockRightIndicator);
         this.addChild(this._dockTopIndicator);
         this.addChild(this._dockBottomIndicator);
+        this.addChild(this._dockIndicator);
         (inits === null || inits === void 0 ? void 0 : inits.wins) && this.addChild(...inits.wins);
     }
     dockToTop(subwin) {
-        if (DockView_1.Direction.V === this._dockView.direction) {
-            this._dockView.insertChild(0, subwin);
+        this._dockedWins.insert(0, subwin);
+        if (DockView_1.Direction.V === this._rootDockView.direction) {
+            this._rootDockView.insertChild(0, subwin);
         }
         else {
-            this._dockView = new DockView_1.DockView(DockView_1.Direction.V).insertChild(0, subwin, this._dockView);
-            this.addChild(this._dockView);
+            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.V).insertChild(0, subwin, this._rootDockView);
+            this.addChild(this._rootDockView);
         }
     }
     dockToBottom(subwin) {
-        if (DockView_1.Direction.V === this._dockView.direction) {
-            this._dockView.addChild(subwin);
+        this._dockedWins.insert(0, subwin);
+        if (DockView_1.Direction.V === this._rootDockView.direction) {
+            this._rootDockView.addChild(subwin);
         }
         else {
-            this._dockView = new DockView_1.DockView(DockView_1.Direction.V).addChild(this._dockView, subwin);
-            this.addChild(this._dockView);
+            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.V).addChild(this._rootDockView, subwin);
+            this.addChild(this._rootDockView);
         }
     }
     dockToLeft(subwin) {
-        if (DockView_1.Direction.H === this._dockView.direction) {
-            this._dockView.insertChild(0, subwin);
+        this._dockedWins.insert(0, subwin);
+        if (DockView_1.Direction.H === this._rootDockView.direction) {
+            this._rootDockView.insertChild(0, subwin);
         }
         else {
-            this._dockView = new DockView_1.DockView(DockView_1.Direction.H).insertChild(0, subwin, this._dockView);
-            this.addChild(this._dockView);
+            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.H).insertChild(0, subwin, this._rootDockView);
+            this.addChild(this._rootDockView);
         }
     }
     dockToRight(subwin) {
-        if (DockView_1.Direction.H === this._dockView.direction) {
-            this._dockView.addChild(subwin);
+        this._dockedWins.insert(0, subwin);
+        if (DockView_1.Direction.H === this._rootDockView.direction) {
+            this._rootDockView.addChild(subwin);
         }
         else {
-            this._dockView = new DockView_1.DockView(DockView_1.Direction.H).addChild(this._dockView, subwin);
-            this.addChild(this._dockView);
+            this._rootDockView = new DockView_1.DockView(DockView_1.Direction.H).addChild(this._rootDockView, subwin);
+            this.addChild(this._rootDockView);
         }
     }
     undockSubwin(subwin) {
+        var _a;
         if (!(subwin.parent instanceof DockView_1.DockView)) {
             console.error('subwin is not docked!');
             return this;
         }
-        const dockView = subwin.parent;
-        // todo:
+        let dockView = subwin.parent;
         subwin.removeSelf();
+        this._dockedWins.delete(subwin);
         this.addChild(subwin);
+        if (dockView.children.length <= 1) {
+            (_a = dockView.parent) === null || _a === void 0 ? void 0 : _a.removeChild(dockView);
+        }
         return this;
     }
     clampAllSubwin() {
@@ -1905,80 +2023,75 @@ class WorkspaceView extends View_1.View {
         }
         subwin.styles.apply('view_dragger_pos', { left: x, top: y });
     }
-    subwinListening(subwin, listen) {
-        if (listen) {
-            const ondown = () => this._handleClick(subwin);
-            this._pointerdowns.set(subwin, ondown);
-            subwin.addEventListener('pointerdown', ondown);
-            subwin.addEventListener('touchstart', ondown, { passive: true });
-        }
-        else {
-            const listener = this._pointerdowns.get(subwin);
-            if (listener) {
-                subwin.removeEventListener('pointerdown', listener);
-                subwin.removeEventListener('touchstart', listener);
+    _handleAddedChildren(children) {
+        children.forEach(v => {
+            if (!(v instanceof Subwin_1.Subwin)) {
+                return;
             }
-        }
+            v.workspace = this;
+            v.addEventListener(EventType_1.EventType.ViewDragStart, this._onSubwinDragStart);
+            v.addEventListener(EventType_1.EventType.ViewDragging, this._onSubwinDragging);
+            v.addEventListener(EventType_1.EventType.ViewDragEnd, this._onSubwinDragEnd);
+            const ondown = () => {
+                this._undockedWins.delete(v).insert(0, v);
+                this._updateUndockedWinsStyle();
+            };
+            this._pointerdowns.set(v, ondown);
+            v.addEventListener('pointerdown', ondown);
+            v.addEventListener('touchstart', ondown, { passive: true });
+            this._undockedWins.insert(0, v);
+        });
+    }
+    _handleRemovedChildren(children) {
+        children.forEach(child => {
+            if (!(child instanceof Subwin_1.Subwin)) {
+                return;
+            }
+            const listener = this._pointerdowns.get(child);
+            if (listener) {
+                child.removeEventListener('pointerdown', listener);
+                child.removeEventListener('touchstart', listener);
+            }
+            this._undockedWins.delete(child);
+        });
     }
     addChild(...children) {
         super.addChild(...children);
-        children.forEach(v => {
-            if (v instanceof Subwin_1.Subwin) {
-                v.workspace = this;
-                v.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
-                v.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
-                v.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
-                this.subwinListening(v, true);
-                this._undockedWins.push(v);
-            }
-        });
+        this._handleAddedChildren(children);
         this._updateUndockedWinsStyle();
         return this;
     }
     insertChild(anchorOrIdx, ...children) {
         super.insertChild(anchorOrIdx, ...children);
-        children.forEach(v => {
-            if (v instanceof Subwin_1.Subwin) {
-                v.workspace = this;
-                v.addEventListener(EventType_1.EventType.ViewDragStart, this._onViewDragStart);
-                v.addEventListener(EventType_1.EventType.ViewDragging, this._onViewDragging);
-                v.addEventListener(EventType_1.EventType.ViewDragEnd, this._onViewDragEnd);
-                this.subwinListening(v, true);
-                this._undockedWins.push(v);
-            }
-        });
+        this._handleAddedChildren(children);
         this._updateUndockedWinsStyle();
         return this;
     }
     removeChild(...children) {
-        children.forEach(v => {
-            if (v instanceof Subwin_1.Subwin) {
-                this.subwinListening(v, false);
-                const idx = this._undockedWins.findIndex(b => b === v);
-                idx >= 0 && this._undockedWins.splice(idx, 1);
-            }
-        });
         this._updateUndockedWinsStyle();
+        this._handleRemovedChildren(children);
         return this;
-    }
-    get undockedWins() {
-        return this._undockedWins;
     }
 }
 exports.WorkspaceView = WorkspaceView;
 
-},{"../../BaseView/View":10,"../../Events/EventType":20,"../../utils":27,"../Subwin":14,"./DockView":17,"./IndicatorImage":18}],20:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Events/EventType":21,"../../Helper/List":24,"../../utils":29,"../Subwin":14,"./DockView":17,"./IndicatorImage":18,"./IndicatorView":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventType = void 0;
+exports.ViewEventType = exports.EventType = void 0;
 var EventType;
 (function (EventType) {
     EventType["ViewDragStart"] = "viewdragstart";
     EventType["ViewDragging"] = "viewdrag";
     EventType["ViewDragEnd"] = "viewdragend";
 })(EventType = exports.EventType || (exports.EventType = {}));
+var ViewEventType;
+(function (ViewEventType) {
+    ViewEventType["Added"] = "viewadded";
+    ViewEventType["Removed"] = "viewremoved";
+})(ViewEventType = exports.ViewEventType || (exports.ViewEventType = {}));
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ButtonGroup = exports.ButtonGroupMode = void 0;
@@ -2023,12 +2136,16 @@ class ButtonGroup {
 }
 exports.ButtonGroup = ButtonGroup;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ElementDragger = void 0;
 const EventType_1 = require("../Events/EventType");
 class ElementDragger {
+    get offsetX() { return this._offsetX; }
+    get offsetY() { return this._offsetY; }
+    set offsetX(v) { this._offsetX = v; }
+    set offsetY(v) { this._offsetY = v; }
     isIgnore(target) {
         return this._ignores.indexOf(target) >= 0;
     }
@@ -2124,7 +2241,10 @@ class ElementDragger {
             this._oldX = left;
             this._oldY = top;
             (_a = this._handleDown) === null || _a === void 0 ? void 0 : _a.call(this);
-            (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(new Event(EventType_1.EventType.ViewDragStart));
+            const event = new CustomEvent(EventType_1.EventType.ViewDragStart, {
+                detail: { pageX, pageY, dragger: this }
+            });
+            (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(event);
         };
         this._onmove = (pageX, pageY) => {
             var _a, _b;
@@ -2132,14 +2252,20 @@ class ElementDragger {
                 return;
             }
             (_a = this._handleMove) === null || _a === void 0 ? void 0 : _a.call(this, pageX - this._offsetX, pageY - this._offsetY, this._oldX, this._oldY);
-            (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(new Event(EventType_1.EventType.ViewDragging));
+            const event = new CustomEvent(EventType_1.EventType.ViewDragging, {
+                detail: { pageX, pageY, dragger: this }
+            });
+            (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(event);
         };
         this._onup = () => {
             var _a, _b;
             if (!this._down)
                 return;
             (_a = this._handleUp) === null || _a === void 0 ? void 0 : _a.call(this);
-            (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(new Event(EventType_1.EventType.ViewDragEnd));
+            const event = new CustomEvent(EventType_1.EventType.ViewDragEnd, {
+                detail: { dragger: this }
+            });
+            (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(event);
             this._down = false;
         };
         this._onpointerdown = (e) => {
@@ -2192,13 +2318,54 @@ class ElementDragger {
 }
 exports.ElementDragger = ElementDragger;
 
-},{"../Events/EventType":20}],23:[function(require,module,exports){
+},{"../Events/EventType":21}],24:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.List = void 0;
+class List extends Array {
+    get size() { return this.length; }
+    remove(element) {
+        return this.delete(element);
+    }
+    delete(element) {
+        const index = this.indexOf(element);
+        index >= 0 && this.splice(index, 1);
+        return this;
+    }
+    add(element) {
+        this.push(element);
+        return this;
+    }
+    insert(index, element) {
+        this.splice(index, 0, element);
+        return this;
+    }
+    findR(predicate, thisArg) {
+        for (let i = this.length - 1; i >= 0; --i) {
+            if (predicate(this[i], i, this)) {
+                return this[i];
+            }
+        }
+        return undefined;
+    }
+    forEach(callbackfn, thisArg) {
+        super.forEach(callbackfn);
+        return this;
+    }
+}
+exports.List = List;
+
+},{}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ViewDragger = void 0;
 const View_1 = require("../BaseView/View");
 const ElementDragger_1 = require("./ElementDragger");
 class ViewDragger {
+    get offsetX() { return this._dragger.offsetX; }
+    get offsetY() { return this._dragger.offsetY; }
+    set offsetX(v) { this._dragger.offsetX = v; }
+    set offsetY(v) { this._dragger.offsetY = v; }
     get handles() { return this._dragger.handles.map(v => View_1.View.get(v)); }
     set handles(v) { this._dragger.handles = v.map(v => v.inner); }
     get view() { return View_1.View.get(this._dragger.responser); }
@@ -2226,7 +2393,7 @@ class ViewDragger {
 }
 exports.ViewDragger = ViewDragger;
 
-},{"../BaseView/View":10,"./ElementDragger":22}],24:[function(require,module,exports){
+},{"../BaseView/View":10,"./ElementDragger":23}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DragInOutOB = void 0;
@@ -2324,7 +2491,7 @@ class DragInOutOB {
 }
 exports.DragInOutOB = DragInOutOB;
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FocusOb = void 0;
@@ -2357,7 +2524,7 @@ class FocusOb {
 }
 exports.FocusOb = FocusOb;
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HoverOb = void 0;
@@ -2436,7 +2603,7 @@ class HoverOb {
 }
 exports.HoverOb = HoverOb;
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findParent = exports.reValue = exports.getValue = void 0;
@@ -2460,16 +2627,16 @@ function findParent(any, check) {
 }
 exports.findParent = findParent;
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LayerItemView = exports.LayersView = exports.LayersViewEventType = void 0;
+const Button_1 = require("./G/BaseView/Button");
 const SizeType_1 = require("./G/BaseView/SizeType");
 const TextInput_1 = require("./G/BaseView/TextInput");
 const View_1 = require("./G/BaseView/View");
 const Subwin_1 = require("./G/CompoundView/Subwin");
 const FocusOb_1 = require("./G/Observer/FocusOb");
-const Button_1 = require("./G/BaseView/Button");
 var LayersViewEventType;
 (function (LayersViewEventType) {
     LayersViewEventType["LayerAdded"] = "LayerAdded";
@@ -2605,7 +2772,7 @@ class LayerItemView extends View_1.View {
 }
 exports.LayerItemView = LayerItemView;
 
-},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":25}],29:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":27}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
@@ -2653,7 +2820,7 @@ class ToolsView extends Subwin_1.Subwin {
 }
 exports.ToolsView = ToolsView;
 
-},{"../../dist":45,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":11,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":21}],30:[function(require,module,exports){
+},{"../../dist":47,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":11,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":22}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.clampI = exports.clampF = void 0;
@@ -2851,7 +3018,7 @@ class HSB {
 }
 exports.HSB = HSB;
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ColorPalette = void 0;
@@ -3220,17 +3387,17 @@ class ColorPalette {
 }
 exports.ColorPalette = ColorPalette;
 
-},{"../../../dist/utils/Rect":92,"../../../dist/utils/Vector":94,"./Color":30}],32:[function(require,module,exports){
+},{"../../../dist/utils/Rect":94,"../../../dist/utils/Vector":96,"./Color":32}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = `{"snapshot":{"x":0,"y":0,"w":4096,"h":4096,"shapes":[]},"events":[{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328524304,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285243041","x":0,"y":0,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524304,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":159,"y":199,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[159,199]},{"t":1,"i":"1_16653285243041","x":0,"y":0,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524343,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":199,"w":2,"h":1,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[158,200,157,200]},{"t":1,"i":"1_16653285243041","x":159,"y":199,"w":0,"h":0,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524395,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":184,"w":13,"h":16,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[157,197,162,191,170,184]},{"t":1,"i":"1_16653285243041","x":157,"y":199,"w":2,"h":1,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524443,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":28,"h":19,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[178,181,185,182]},{"t":1,"i":"1_16653285243041","x":157,"y":184,"w":13,"h":16,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524477,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":58,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[191,191,194,215,194,239]},{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":28,"h":19,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524530,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":117,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[191,262,187,298]},{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":58,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182,191,191,194,215,194,239]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524573,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":118,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[187,299,187,299]},{"t":1,"i":"1_16653285243041","x":157,"y":181,"w":37,"h":117,"z":1665328524305,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[159,199,158,200,157,200,157,197,162,191,170,184,178,181,185,182,191,191,194,215,194,239,191,262,187,298]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328524692,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285246922","x":0,"y":0,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524693,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[239,159]},{"t":1,"i":"1_16653285246922","x":0,"y":0,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524745,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":36,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[239,165,239,175,239,195]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":0,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524795,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":14,"h":97,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[242,221,245,235,253,256]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":0,"h":36,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524845,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[258,266,263,274,264,275]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":14,"h":97,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524896,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[262,273,255,265,246,254]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524946,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":222,"y":159,"w":42,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[235,242,229,239,222,241]},{"t":1,"i":"1_16653285246922","x":239,"y":159,"w":25,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328524996,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[217,244,214,246,214,247]},{"t":1,"i":"1_16653285246922","x":222,"y":159,"w":42,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525044,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[217,250,224,253]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525079,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":57,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[240,256,255,257,271,253]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":50,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525129,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":92,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[286,249,297,243,306,235]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":57,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525179,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[307,226,306,222,300,221]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":92,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525228,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[294,223,286,229]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525262,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[280,239,277,254,279,267]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525312,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[284,273,292,276,302,273]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":116,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525362,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":125,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[313,263,329,235,339,210]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":93,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525412,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":143,"w":144,"h":133,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[350,176,353,162,358,143]},{"t":1,"i":"1_16653285246922","x":214,"y":159,"w":125,"h":117,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525462,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[359,134,357,133,353,139]},{"t":1,"i":"1_16653285246922","x":214,"y":143,"w":144,"h":133,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525513,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[348,153,342,174,335,207]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525563,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[332,235,333,251,337,260]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525613,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[342,263,348,257,355,242]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525663,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":172,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[369,201,378,176,386,156]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":145,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525711,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[392,143,395,138]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":172,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525746,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[395,137,392,145,386,167]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525796,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[382,192,380,215,380,234]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525846,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":182,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[383,246,389,252,396,250]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":181,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525896,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":203,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[405,235,411,219,417,206]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":182,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525947,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[419,200,420,204,416,211]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":203,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328525997,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[415,221,415,230,420,239]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526047,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":226,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[423,242,433,242,440,237]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":206,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526096,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[447,227,451,216,451,207]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":226,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526147,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[448,206,435,212,426,219]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526197,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[420,225,419,227,427,223]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207,448,206,435,212,426,219]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526235,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[434,219,434,219]},{"t":1,"i":"1_16653285246922","x":214,"y":133,"w":237,"h":143,"z":1665328524694,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[239,159,239,165,239,175,239,195,242,221,245,235,253,256,258,266,263,274,264,275,262,273,255,265,246,254,235,242,229,239,222,241,217,244,214,246,214,247,217,250,224,253,240,256,255,257,271,253,286,249,297,243,306,235,307,226,306,222,300,221,294,223,286,229,280,239,277,254,279,267,284,273,292,276,302,273,313,263,329,235,339,210,350,176,353,162,358,143,359,134,357,133,353,139,348,153,342,174,335,207,332,235,333,251,337,260,342,263,348,257,355,242,369,201,378,176,386,156,392,143,395,138,395,137,392,145,386,167,382,192,380,215,380,234,383,246,389,252,396,250,405,235,411,219,417,206,419,200,420,204,416,211,415,221,415,230,420,239,423,242,433,242,440,237,447,227,451,216,451,207,448,206,435,212,426,219,420,225,419,227,427,223]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328526782,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285267823","x":0,"y":0,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526782,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":522,"y":203,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[522,203]},{"t":1,"i":"1_16653285267823","x":0,"y":0,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526847,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":512,"y":203,"w":10,"h":17,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[520,205,516,211,512,220]},{"t":1,"i":"1_16653285267823","x":522,"y":203,"w":0,"h":0,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526896,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":12,"h":33,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[510,227,510,236]},{"t":1,"i":"1_16653285267823","x":512,"y":203,"w":10,"h":17,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526930,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":24,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[517,247,522,250,534,253]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":12,"h":33,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328526980,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[542,248,550,235,553,222]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":24,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527033,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[553,213,551,209,551,208]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527084,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[551,212,551,214]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527132,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":45,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[553,229,554,239,555,243]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":43,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527179,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":54,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[559,246,564,247]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":45,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527215,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":74,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[569,242,577,232,584,217]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":54,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527265,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[586,209,587,204,586,202]},{"t":1,"i":"1_16653285267823","x":510,"y":203,"w":74,"h":50,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527315,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[579,204,574,205,571,207]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527366,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[570,208,575,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527415,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":88,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[581,209,588,209,598,209]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":77,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527463,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":100,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[603,209,610,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":88,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527499,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[611,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":100,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527538,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[610,208,608,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527580,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[606,208,602,213]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527614,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[598,223,597,231,598,239]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527663,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[601,243,606,244]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527696,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":108,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[611,242,618,231]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":101,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527731,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[621,218,621,211,616,208]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":108,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527780,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[613,208,605,213]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527814,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[601,215,601,216,609,212]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527864,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":118,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[620,207,628,204]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":111,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527898,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[644,202,648,202,650,209]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":118,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527948,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[650,217,650,230,650,240]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328527998,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[650,246,650,248,650,243]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528048,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":150,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[650,233,652,219,660,205]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":140,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528098,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":166,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[666,200,673,199,676,202]},{"t":1,"i":"1_16653285267823","x":510,"y":202,"w":150,"h":51,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528148,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":168,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[677,208,678,217,678,225]},{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":166,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205,666,200,673,199,676,202]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528197,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":168,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[677,230,675,225,675,225]},{"t":1,"i":"1_16653285267823","x":510,"y":199,"w":168,"h":54,"z":1665328526785,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[522,203,520,205,516,211,512,220,510,227,510,236,517,247,522,250,534,253,542,248,550,235,553,222,553,213,551,209,551,208,551,212,551,214,553,229,554,239,555,243,559,246,564,247,569,242,577,232,584,217,586,209,587,204,586,202,579,204,574,205,571,207,570,208,575,208,581,209,588,209,598,209,603,209,610,208,611,208,610,208,608,208,606,208,602,213,598,223,597,231,598,239,601,243,606,244,611,242,618,231,621,218,621,211,616,208,613,208,605,213,601,215,601,216,609,212,620,207,628,204,644,202,648,202,650,209,650,217,650,230,650,240,650,246,650,248,650,243,650,233,652,219,660,205,666,200,673,199,676,202,677,208,678,217,678,225]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328528642,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285286424","x":0,"y":0,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528642,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":729,"y":138,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[729,138]},{"t":1,"i":"1_16653285286424","x":0,"y":0,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528681,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":729,"y":137,"w":1,"h":1,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[730,137]},{"t":1,"i":"1_16653285286424","x":729,"y":138,"w":0,"h":0,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528731,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":725,"y":137,"w":5,"h":8,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[729,139,725,145]},{"t":1,"i":"1_16653285286424","x":729,"y":137,"w":1,"h":1,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528766,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":702,"y":137,"w":28,"h":56,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[720,154,713,168,702,193]},{"t":1,"i":"1_16653285286424","x":725,"y":137,"w":5,"h":8,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528815,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":111,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[694,214,687,238,687,248]},{"t":1,"i":"1_16653285286424","x":702,"y":137,"w":28,"h":56,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145,720,154,713,168,702,193]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528867,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":119,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[693,254,699,256]},{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":111,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145,720,154,713,168,702,193,694,214,687,238,687,248]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328528915,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":119,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[714,249,719,245,719,245]},{"t":1,"i":"1_16653285286424","x":687,"y":137,"w":43,"h":119,"z":1665328528646,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[729,138,730,137,729,139,725,145,720,154,713,168,702,193,694,214,687,238,687,248,693,254,699,256]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328529023,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285290235","x":0,"y":0,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529023,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":750,"y":210,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[750,210]},{"t":1,"i":"1_16653285290235","x":0,"y":0,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529065,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":746,"y":210,"w":4,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[747,211,746,211]},{"t":1,"i":"1_16653285290235","x":750,"y":210,"w":0,"h":0,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529099,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":742,"y":210,"w":8,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[744,211,742,211]},{"t":1,"i":"1_16653285290235","x":746,"y":210,"w":4,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529150,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":729,"y":210,"w":21,"h":20,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[740,212,736,217,729,230]},{"t":1,"i":"1_16653285290235","x":742,"y":210,"w":8,"h":1,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529200,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":27,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[724,243,723,248,728,250]},{"t":1,"i":"1_16653285290235","x":729,"y":210,"w":21,"h":20,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529250,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":42,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[735,246,747,236,765,214]},{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":27,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529300,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":151,"w":76,"h":99,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[779,194,793,167,799,151]},{"t":1,"i":"1_16653285290235","x":723,"y":210,"w":42,"h":40,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529349,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":139,"w":78,"h":111,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[801,142,801,139]},{"t":1,"i":"1_16653285290235","x":723,"y":151,"w":76,"h":99,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529383,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[796,138,791,145,783,159]},{"t":1,"i":"1_16653285290235","x":723,"y":139,"w":78,"h":111,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529433,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[773,179,762,209,759,228]},{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529483,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":116,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[760,243,770,253,781,254]},{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":112,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159,773,179,762,209,759,228]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328529532,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":85,"h":116,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[792,248,805,232,808,227,808,227]},{"t":1,"i":"1_16653285290235","x":723,"y":138,"w":78,"h":116,"z":1665328529028,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[750,210,747,211,746,211,744,211,742,211,740,212,736,217,729,230,724,243,723,248,728,250,735,246,747,236,765,214,779,194,793,167,799,151,801,142,801,139,796,138,791,145,783,159,773,179,762,209,759,228,760,243,770,253,781,254]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328531790,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285317906","x":0,"y":0,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531790,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":349,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[401,349]},{"t":1,"i":"1_16653285317906","x":0,"y":0,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531835,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":339,"w":10,"h":10,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[403,347,406,344,411,339]},{"t":1,"i":"1_16653285317906","x":401,"y":349,"w":0,"h":0,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531885,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":331,"w":21,"h":18,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[416,335,422,331]},{"t":1,"i":"1_16653285317906","x":401,"y":339,"w":10,"h":10,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531920,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":51,"h":21,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[433,328,442,328,452,334]},{"t":1,"i":"1_16653285317906","x":401,"y":331,"w":21,"h":18,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339,416,335,422,331]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328531969,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":65,"h":25,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[460,342,466,353]},{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":51,"h":21,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339,416,335,422,331,433,328,442,328,452,334]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532003,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":66,"h":31,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[467,359,466,357,466,357]},{"t":1,"i":"1_16653285317906","x":401,"y":328,"w":65,"h":25,"z":1665328531796,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[401,349,403,347,406,344,411,339,416,335,422,331,433,328,442,328,452,334,460,342,466,353]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328532414,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285324147","x":0,"y":0,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532414,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":354,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[499,354]},{"t":1,"i":"1_16653285324147","x":0,"y":0,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532502,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":348,"w":2,"h":6,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[500,353,500,351,501,348]},{"t":1,"i":"1_16653285324147","x":499,"y":354,"w":0,"h":0,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532552,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":335,"w":20,"h":19,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[504,344,510,339,519,335]},{"t":1,"i":"1_16653285324147","x":499,"y":348,"w":2,"h":6,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354,500,353,500,351,501,348]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532601,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":334,"w":37,"h":20,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[526,334,536,339]},{"t":1,"i":"1_16653285324147","x":499,"y":335,"w":20,"h":19,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354,500,353,500,351,501,348,504,344,510,339,519,335]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328532666,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285324147","x":499,"y":334,"w":53,"h":25,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[549,352,552,359,552,359]},{"t":1,"i":"1_16653285324147","x":499,"y":334,"w":37,"h":20,"z":1665328532421,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[499,354,500,353,500,351,501,348,504,344,510,339,519,335,526,334,536,339]}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328533166,"detail":{"shapeDatas":[{"t":1,"i":"1_16653285331668","x":0,"y":0,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533166,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[428,408]},{"t":1,"i":"1_16653285331668","x":0,"y":0,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533221,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":3,"h":8,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[428,410,429,413,431,416]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":0,"h":0,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533270,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":19,"h":26,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[433,420,439,427,447,434]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":3,"h":8,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533318,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":46,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[457,440,474,446]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":19,"h":26,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416,433,420,439,427,447,434]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533352,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":82,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":2,"coords":[489,446,510,438]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":46,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416,433,420,439,427,447,434,457,440,474,446]}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_PEN","timeStamp":1665328533405,"detail":{"shapeDatas":[[{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":118,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{},"dotsType":2,"coords":[539,418,546,411,546,411]},{"t":1,"i":"1_16653285331668","x":428,"y":408,"w":82,"h":38,"z":1665328533174,"style":{"a":"white","c":"round","f":"round","g":3},"status":{"e":1},"dotsType":1,"coords":[428,408,428,410,429,413,431,416,433,420,439,427,447,434,457,440,474,446,489,446,510,438]}]]}}]}`;
 
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = `{"snapshot":{"x":0,"y":0,"w":4096,"h":4096,"shapes":[]},"events":[{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328594833,"detail":{"from":"TOOL_SELECTOR","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328595289,"detail":{"shapeDatas":[{"t":2,"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0,"z":1665328595290,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595306,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0},{"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595348,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2},{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595365,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8},{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595400,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18},{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595432,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32},{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595466,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39},{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595519,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40},{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595552,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43},{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595583,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45},{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595608,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51},{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595632,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54},{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595650,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60},{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595681,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63},{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595698,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66},{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595715,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68},{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595733,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72},{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595766,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74},{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595784,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80},{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595817,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86},{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595850,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93},{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595884,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99},{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595917,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106},{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595948,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109},{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595965,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111},{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595982,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112},{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596000,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114},{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596034,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116},{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596083,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596388,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328598413,"detail":{"from":"TOOL_RECT","to":"TOOL_OVAL"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328598860,"detail":{"shapeDatas":[{"t":3,"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0,"z":1665328598862,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598876,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0},{"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598920,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7},{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598952,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14},{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598969,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30},{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599001,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38},{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599019,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53},{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599071,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63},{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599104,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71},{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599135,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80},{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599154,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87},{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599185,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89},{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599205,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96},{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599238,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101},{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599268,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104},{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599287,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109},{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599320,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113},{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599439,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114},{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599469,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115},{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599487,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117},{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599504,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121},{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599535,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122},{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599707,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":120},{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328601336,"detail":{"shapeDatas":[{"t":3,"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0,"z":1665328601339,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601353,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0},{"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601374,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3},{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601407,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13},{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601438,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22},{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601454,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32},{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601472,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51},{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601504,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57},{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601522,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68},{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601590,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81},{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601624,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90},{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601654,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92},{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601672,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94},{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601689,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95},{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601707,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97},{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601740,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98},{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601771,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99},{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601892,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101},{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601921,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103},{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601939,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108},{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601972,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114},{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602004,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116},{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602023,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119},{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602054,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120},{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602073,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123},{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602106,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126},{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602138,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128},{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602157,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130},{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602188,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131},{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602206,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602363,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328603214,"detail":{"from":"TOOL_OVAL","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328603748,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0,"z":1665328603752,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603766,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0},{"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603823,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0},{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603840,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15},{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603873,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27},{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603891,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46},{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603924,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51},{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603941,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55},{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603994,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58},{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604021,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62},{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604041,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67},{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604058,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75},{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604091,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79},{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604108,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85},{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604140,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88},{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604159,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94},{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604192,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97},{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604226,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99},{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604258,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100},{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604275,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103},{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604323,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104},{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604371,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105},{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604469,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":197,"w":123,"h":106},{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328605718,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0,"z":1665328605723,"style":{"b":"#ff0000","a":"rgba(85,51,51,1.00)","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605736,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0},{"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605827,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6},{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605858,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15},{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605875,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27},{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605892,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39},{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605908,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48},{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605926,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57},{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605942,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68},{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605975,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72},{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605992,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77},{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606011,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80},{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606044,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87},{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606109,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96},{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606125,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98},{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606142,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99},{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606160,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101},{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606193,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102},{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606211,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105},{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606242,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107},{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606259,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107},{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606276,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108},{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606294,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110},{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606326,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111},{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606374,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112},{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606443,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112},{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606477,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112},{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606510,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112},{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606543,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112},{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606577,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112},{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606593,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111},{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606627,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111},{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606659,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110},{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606794,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":157,"w":127,"h":111},{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110}]]}}]}`;
 
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -3321,7 +3488,7 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
 const mergedSubwin2 = new MergedSubwin_1.MergedSubwin();
 workspace.addChild(mergedSubwin2);
 const mergedSubwin = new MergedSubwin_1.MergedSubwin();
-workspace.addChild(mergedSubwin2);
+workspace.addChild(mergedSubwin);
 const layersView = new LayersView_1.LayersView();
 workspace.addChild(layersView);
 layersView.addEventListener(LayersView_1.LayersView.EventType.LayerAdded, () => {
@@ -3378,7 +3545,6 @@ colorView.inner.addEventListener(ColorView_1.default.EventTypes.FillColorChange,
     });
 });
 const toyView = new Subwin_1.Subwin();
-workspace.addChild(toyView);
 toyView.header.title = 'others';
 workspace.addChild(toyView);
 window.addEventListener('resize', () => workspace.clampAllSubwin());
@@ -3536,7 +3702,7 @@ const layers = layersView.layers().map((layer, idx) => {
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
 window.board = board;
 
-},{"../../dist":45,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":12,"./G/CompoundView/MergedSubwin":13,"./G/CompoundView/Subwin":14,"./G/CompoundView/Workspace/WorkspaceView":19,"./LayersView":28,"./ToolsView":29,"./demo_helloworld":32,"./demo_rect_n_oval":33}],35:[function(require,module,exports){
+},{"../../dist":47,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":12,"./G/CompoundView/MergedSubwin":13,"./G/CompoundView/Subwin":14,"./G/CompoundView/Workspace/WorkspaceView":20,"./LayersView":30,"./ToolsView":31,"./demo_helloworld":34,"./demo_rect_n_oval":35}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -3594,7 +3760,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhiteBoard = void 0;
@@ -3900,7 +4066,7 @@ class WhiteBoard {
 }
 exports.WhiteBoard = WhiteBoard;
 
-},{"../event":40,"../tools":83,"../utils":95,"./Layer":35}],37:[function(require,module,exports){
+},{"../event":42,"../tools":85,"../utils":97,"./Layer":37}],39:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3920,7 +4086,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Layer"), exports);
 __exportStar(require("./WhiteBoard"), exports);
 
-},{"./Layer":35,"./WhiteBoard":36}],38:[function(require,module,exports){
+},{"./Layer":37,"./WhiteBoard":38}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventEnum = void 0;
@@ -3935,7 +4101,7 @@ var EventEnum;
     EventEnum["ToolChanged"] = "TOOL_CHANGED";
 })(EventEnum = exports.EventEnum || (exports.EventEnum = {}));
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhiteBoardEvent = void 0;
@@ -3986,7 +4152,7 @@ var WhiteBoardEvent;
     WhiteBoardEvent.toolChanged = toolChanged;
 })(WhiteBoardEvent = exports.WhiteBoardEvent || (exports.WhiteBoardEvent = {}));
 
-},{"./EventType":38}],40:[function(require,module,exports){
+},{"./EventType":40}],42:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4006,7 +4172,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Events"), exports);
 __exportStar(require("./EventType"), exports);
 
-},{"./EventType":38,"./Events":39}],41:[function(require,module,exports){
+},{"./EventType":40,"./Events":41}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
@@ -4088,7 +4254,7 @@ class Player {
 }
 exports.Player = Player;
 
-},{"../event":40}],42:[function(require,module,exports){
+},{"../event":42}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recorder = void 0;
@@ -4140,11 +4306,11 @@ class Recorder {
 }
 exports.Recorder = Recorder;
 
-},{"../event":40}],43:[function(require,module,exports){
+},{"../event":42}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],44:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4165,7 +4331,7 @@ __exportStar(require("./Player"), exports);
 __exportStar(require("./Recorder"), exports);
 __exportStar(require("./Screenplay"), exports);
 
-},{"./Player":41,"./Recorder":42,"./Screenplay":43}],45:[function(require,module,exports){
+},{"./Player":43,"./Recorder":44,"./Screenplay":45}],47:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4191,7 +4357,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":37,"./features":44,"./mgr":50,"./shape":56,"./tools":83,"./utils":95}],46:[function(require,module,exports){
+},{"./board":39,"./features":46,"./mgr":52,"./shape":58,"./tools":85,"./utils":97}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Factory = void 0;
@@ -4276,7 +4442,7 @@ class Factory {
 exports.Factory = Factory;
 FactoryMgr_1.FactoryMgr.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new Factory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":37,"../shape/base/Data":52,"../shape/base/Shape":53,"../tools/base/InvalidTool":79,"./FactoryEnum":47,"./FactoryMgr":48,"./ShapesMgr":49}],47:[function(require,module,exports){
+},{"../board":39,"../shape/base/Data":54,"../shape/base/Shape":55,"../tools/base/InvalidTool":81,"./FactoryEnum":49,"./FactoryMgr":50,"./ShapesMgr":51}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -4294,7 +4460,7 @@ function getFactoryName(type) {
 }
 exports.getFactoryName = getFactoryName;
 
-},{}],48:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FactoryMgr = void 0;
@@ -4356,7 +4522,7 @@ FactoryMgr.shapeInfos = {};
 FactoryMgr.factorys = {};
 FactoryMgr.factoryInfos = {};
 
-},{"../shape/ShapeEnum":51,"../tools/ToolEnum":78}],49:[function(require,module,exports){
+},{"../shape/ShapeEnum":53,"../tools/ToolEnum":80}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapesMgr = void 0;
@@ -4433,7 +4599,7 @@ class ShapesMgr {
 }
 exports.ShapesMgr = ShapesMgr;
 
-},{"../utils/Array":86,"../utils/Rect":92}],50:[function(require,module,exports){
+},{"../utils/Array":88,"../utils/Rect":94}],52:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4455,7 +4621,7 @@ __exportStar(require("./FactoryEnum"), exports);
 __exportStar(require("./FactoryMgr"), exports);
 __exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":46,"./FactoryEnum":47,"./FactoryMgr":48,"./ShapesMgr":49}],51:[function(require,module,exports){
+},{"./Factory":48,"./FactoryEnum":49,"./FactoryMgr":50,"./ShapesMgr":51}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -4481,7 +4647,7 @@ function getShapeName(type) {
 }
 exports.getShapeName = getShapeName;
 
-},{}],52:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
@@ -4666,7 +4832,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":51}],53:[function(require,module,exports){
+},{"../ShapeEnum":53}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = void 0;
@@ -4806,7 +4972,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":92}],54:[function(require,module,exports){
+},{"../../utils/Rect":94}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -4840,7 +5006,7 @@ class ShapeNeedPath extends Shape_1.Shape {
 }
 exports.ShapeNeedPath = ShapeNeedPath;
 
-},{"./Shape":53}],55:[function(require,module,exports){
+},{"./Shape":55}],57:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4861,7 +5027,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./ShapeNeedPath"), exports);
 
-},{"./Data":52,"./Shape":53,"./ShapeNeedPath":54}],56:[function(require,module,exports){
+},{"./Data":54,"./Shape":55,"./ShapeNeedPath":56}],58:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4886,7 +5052,7 @@ __exportStar(require("./rect"), exports);
 __exportStar(require("./ShapeEnum"), exports);
 __exportStar(require("./text"), exports);
 
-},{"./ShapeEnum":51,"./base":55,"./oval":60,"./pen":64,"./polygon":68,"./rect":72,"./text":77}],57:[function(require,module,exports){
+},{"./ShapeEnum":53,"./base":57,"./oval":62,"./pen":66,"./polygon":70,"./rect":74,"./text":79}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalData = void 0;
@@ -4906,7 +5072,7 @@ class OvalData extends base_1.ShapeData {
 }
 exports.OvalData = OvalData;
 
-},{"../ShapeEnum":51,"../base":55}],58:[function(require,module,exports){
+},{"../ShapeEnum":53,"../base":57}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeOval = void 0;
@@ -4930,7 +5096,7 @@ class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeOval = ShapeOval;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
 
-},{"../../mgr/FactoryMgr":48,"../ShapeEnum":51,"../base/ShapeNeedPath":54,"./Data":57}],59:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../ShapeEnum":53,"../base/ShapeNeedPath":56,"./Data":59}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
@@ -4972,7 +5138,7 @@ class OvalTool extends SimpleTool_1.SimpleTool {
 exports.OvalTool = OvalTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/FactoryMgr":48,"../../tools/ToolEnum":78,"../../tools/base/SimpleTool":80,"../ShapeEnum":51}],60:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../../tools/ToolEnum":80,"../../tools/base/SimpleTool":82,"../ShapeEnum":53}],62:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4993,7 +5159,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":57,"./Shape":58,"./Tool":59}],61:[function(require,module,exports){
+},{"./Data":59,"./Shape":60,"./Tool":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenData = exports.DotsType = void 0;
@@ -5040,7 +5206,7 @@ class PenData extends base_1.ShapeData {
 }
 exports.PenData = PenData;
 
-},{"../ShapeEnum":51,"../base":55}],62:[function(require,module,exports){
+},{"../ShapeEnum":53,"../base":57}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePen = void 0;
@@ -5186,7 +5352,7 @@ class ShapePen extends base_1.Shape {
 exports.ShapePen = ShapePen;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
 
-},{"../../mgr/FactoryMgr":48,"../ShapeEnum":51,"../base":55,"./Data":61}],63:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../ShapeEnum":53,"../base":57,"./Data":63}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
@@ -5263,9 +5429,9 @@ class PenTool {
 exports.PenTool = PenTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event":40,"../../mgr/FactoryMgr":48,"../../tools/ToolEnum":78,"../ShapeEnum":51,"./Data":61}],64:[function(require,module,exports){
-arguments[4][60][0].apply(exports,arguments)
-},{"./Data":61,"./Shape":62,"./Tool":63,"dup":60}],65:[function(require,module,exports){
+},{"../../event":42,"../../mgr/FactoryMgr":50,"../../tools/ToolEnum":80,"../ShapeEnum":53,"./Data":63}],66:[function(require,module,exports){
+arguments[4][62][0].apply(exports,arguments)
+},{"./Data":63,"./Shape":64,"./Tool":65,"dup":62}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonData = void 0;
@@ -5292,7 +5458,7 @@ class PolygonData extends base_1.ShapeData {
 }
 exports.PolygonData = PolygonData;
 
-},{"../ShapeEnum":51,"../base":55}],66:[function(require,module,exports){
+},{"../ShapeEnum":53,"../base":57}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePolygon = void 0;
@@ -5311,7 +5477,7 @@ class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapePolygon = ShapePolygon;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
 
-},{"../../mgr/FactoryMgr":48,"../ShapeEnum":51,"../base/ShapeNeedPath":54,"./Data":65}],67:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../ShapeEnum":53,"../base/ShapeNeedPath":56,"./Data":67}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonTool = void 0;
@@ -5325,9 +5491,9 @@ const desc = {
 };
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
 
-},{"../../mgr/FactoryMgr":48,"../../tools/ToolEnum":78,"../../tools/base/SimpleTool":80,"../ShapeEnum":51}],68:[function(require,module,exports){
-arguments[4][60][0].apply(exports,arguments)
-},{"./Data":65,"./Shape":66,"./Tool":67,"dup":60}],69:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../../tools/ToolEnum":80,"../../tools/base/SimpleTool":82,"../ShapeEnum":53}],70:[function(require,module,exports){
+arguments[4][62][0].apply(exports,arguments)
+},{"./Data":67,"./Shape":68,"./Tool":69,"dup":62}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectData = void 0;
@@ -5347,7 +5513,7 @@ class RectData extends base_1.ShapeData {
 }
 exports.RectData = RectData;
 
-},{"../ShapeEnum":51,"../base":55}],70:[function(require,module,exports){
+},{"../ShapeEnum":53,"../base":57}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRect = void 0;
@@ -5366,7 +5532,7 @@ class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeRect = ShapeRect;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
 
-},{"../../mgr/FactoryMgr":48,"../ShapeEnum":51,"../base/ShapeNeedPath":54,"./Data":69}],71:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../ShapeEnum":53,"../base/ShapeNeedPath":56,"./Data":71}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -5377,9 +5543,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/FactoryMgr":48,"../../tools/ToolEnum":78,"../../tools/base/SimpleTool":80,"../ShapeEnum":51}],72:[function(require,module,exports){
-arguments[4][60][0].apply(exports,arguments)
-},{"./Data":69,"./Shape":70,"./Tool":71,"dup":60}],73:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../../tools/ToolEnum":80,"../../tools/base/SimpleTool":82,"../ShapeEnum":53}],74:[function(require,module,exports){
+arguments[4][62][0].apply(exports,arguments)
+},{"./Data":71,"./Shape":72,"./Tool":73,"dup":62}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextData = void 0;
@@ -5421,7 +5587,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../ShapeEnum":51,"../base":55}],74:[function(require,module,exports){
+},{"../ShapeEnum":53,"../base":57}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -5577,7 +5743,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/FactoryMgr":48,"../../utils/Rect":92,"../ShapeEnum":51,"../base":55,"./Data":73,"./TextSelection":75}],75:[function(require,module,exports){
+},{"../../mgr/FactoryMgr":50,"../../utils/Rect":94,"../ShapeEnum":53,"../base":57,"./Data":75,"./TextSelection":77}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -5594,7 +5760,7 @@ class TextSelection {
 }
 exports.TextSelection = TextSelection;
 
-},{}],76:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
@@ -5722,7 +5888,7 @@ class TextTool {
 exports.TextTool = TextTool;
 FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":40,"../../mgr/FactoryMgr":48,"../../tools/ToolEnum":78,"../ShapeEnum":51}],77:[function(require,module,exports){
+},{"../../event":42,"../../mgr/FactoryMgr":50,"../../tools/ToolEnum":80,"../ShapeEnum":53}],79:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5744,7 +5910,7 @@ __exportStar(require("./Shape"), exports);
 __exportStar(require("./TextSelection"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":73,"./Shape":74,"./TextSelection":75,"./Tool":76}],78:[function(require,module,exports){
+},{"./Data":75,"./Shape":76,"./TextSelection":77,"./Tool":78}],80:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToolName = exports.ToolEnum = void 0;
@@ -5771,7 +5937,7 @@ function getToolName(type) {
 }
 exports.getToolName = getToolName;
 
-},{}],79:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidTool = void 0;
@@ -5809,7 +5975,7 @@ class InvalidTool {
 }
 exports.InvalidTool = InvalidTool;
 
-},{"../ToolEnum":78}],80:[function(require,module,exports){
+},{"../ToolEnum":80}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
@@ -5923,11 +6089,11 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":40,"../../utils/RectHelper":93}],81:[function(require,module,exports){
+},{"../../event":42,"../../utils/RectHelper":95}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],82:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5948,7 +6114,7 @@ __exportStar(require("./InvalidTool"), exports);
 __exportStar(require("./SimpleTool"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./InvalidTool":79,"./SimpleTool":80,"./Tool":81}],83:[function(require,module,exports){
+},{"./InvalidTool":81,"./SimpleTool":82,"./Tool":83}],85:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5969,7 +6135,7 @@ __exportStar(require("./base"), exports);
 __exportStar(require("./selector"), exports);
 __exportStar(require("./ToolEnum"), exports);
 
-},{"./ToolEnum":78,"./base":82,"./selector":85}],84:[function(require,module,exports){
+},{"./ToolEnum":80,"./base":84,"./selector":87}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
@@ -6104,7 +6270,7 @@ FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Selector, () => new Sel
     desc: 'selector'
 });
 
-},{"../../event/Events":39,"../../mgr/FactoryMgr":48,"../../shape/base/Data":52,"../../shape/rect/Shape":70,"../../utils/RectHelper":93,"../ToolEnum":78}],85:[function(require,module,exports){
+},{"../../event/Events":41,"../../mgr/FactoryMgr":50,"../../shape/base/Data":54,"../../shape/rect/Shape":72,"../../utils/RectHelper":95,"../ToolEnum":80}],87:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6123,7 +6289,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./SelectorTool"), exports);
 
-},{"./SelectorTool":84}],86:[function(require,module,exports){
+},{"./SelectorTool":86}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findIndex = void 0;
@@ -6136,7 +6302,7 @@ const findIndex = (arr, func) => {
 };
 exports.findIndex = findIndex;
 
-},{}],87:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
@@ -6158,7 +6324,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],88:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -6315,15 +6481,15 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":87}],89:[function(require,module,exports){
+},{"./BinaryRange":89}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],90:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],91:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -6554,7 +6720,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":92}],92:[function(require,module,exports){
+},{"./Rect":94}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -6625,7 +6791,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],93:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -6730,7 +6896,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":94}],94:[function(require,module,exports){
+},{"./Vector":96}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -6757,7 +6923,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],95:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6788,4 +6954,4 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 
-},{"./Array":86,"./BinaryRange":87,"./BinaryTree":88,"./Dot":89,"./ITree":90,"./QuadTree":91,"./Rect":92,"./Vector":94}]},{},[34]);
+},{"./Array":88,"./BinaryRange":89,"./BinaryTree":90,"./Dot":91,"./ITree":92,"./QuadTree":93,"./Rect":94,"./Vector":96}]},{},[36]);

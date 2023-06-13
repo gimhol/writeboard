@@ -10,6 +10,11 @@ export interface IViewDraggerInits {
 }
 export class ViewDragger {
   private _dragger: ElementDragger;
+
+  get offsetX() { return this._dragger.offsetX; }
+  get offsetY() { return this._dragger.offsetY; }
+  set offsetX(v) { this._dragger.offsetX = v; }
+  set offsetY(v) { this._dragger.offsetY = v; }
   get handles() { return this._dragger.handles.map(v => View.get(v)); }
   set handles(v) { this._dragger.handles = v.map(v => v.inner) }
   get view() { return View.get(this._dragger.responser); }

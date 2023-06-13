@@ -104,7 +104,11 @@ export class Subwin extends View<'div'> {
   }
   private _dragWhenDocked = (x: number, y: number, prevX: number, prevY: number) => {
     if (Math.abs(x - prevX) + Math.abs(y - prevY) > 20) {
+      const w0 = this.inner.offsetWidth;
       this.workspace?.undockSubwin(this);
+      const w1 = this.inner.offsetWidth;
+      this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
+
     }
   }
   private _dragWhenUndocked = (x: number, y: number) => {

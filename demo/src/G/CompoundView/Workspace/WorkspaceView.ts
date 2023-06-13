@@ -1,9 +1,11 @@
 import { View } from "../../BaseView/View";
-import { EventType } from "../../Events/EventType";
+import { EventMap, EventType } from "../../Events/EventType";
 import { GetValue, Rect, getValue } from "../../utils";
 import { Subwin } from "../Subwin";
 import { Direction, DockView } from "./DockView";
 import { IndicatorImage } from "./IndicatorImage";
+import { List } from "../../Helper/List";
+import { IndicatorView } from "./IndicatorView";
 
 export interface WorkspaceInits {
   rect?: GetValue<Rect>;
@@ -16,25 +18,21 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   private _zIndex: number = 0;
   private _pointerdowns = new Map<Subwin, () => void>();
   private _draggingSubwin: Subwin | null = null;
-  private _undockedWins: Subwin[] = [];
+  private _undockedWins = new List<Subwin>();
+  private _dockedWins = new List<Subwin>();
+  private _draggingIn: Subwin | DockView | undefined;
   private _updateUndockedWinsStyle() {
-    this.undockedWins.forEach((win, idx, arr) => {
+    this._undockedWins.forEach((win, idx, arr) => {
       win.styles.apply(
         'free_in_workspace', {
-        zIndex: `${this._zIndex + idx}`,
+        zIndex: `${this._zIndex + arr.length - idx}`,
         maxWidth: '100%',
         maxHeight: '100%'
       });
-      idx < arr.length - 1 ? win.lower() : win.raise();
+      idx > 0 ? win.lower() : win.raise();
+      ++idx;
     });
   }
-  private _handleClick = (subwin: Subwin) => {
-    const idx = this._undockedWins.findIndex(a => a === subwin);
-    this._undockedWins.splice(idx, 1);
-    this._undockedWins.push(subwin);
-    this._updateUndockedWinsStyle()
-  };
-
   private _dockLeftIndicator = new IndicatorImage({
     src: './ic_dock_to_left.svg', style: {
       position: 'absolute', left: 16, top: 'calc(50% - 24px)'
@@ -55,8 +53,11 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
     }
   })
-  private _dockView = new DockView();
-  get dockView() { return this._dockView }
+  private _dockIndicator = new IndicatorView();
+  private _rootDockView = new DockView();
+  private _deepestDockView = this._rootDockView;
+
+  get dockView() { return this._rootDockView }
   constructor(element: HTMLElementTagNameMap[T], inits: WorkspaceInits);
   constructor(tagName: T, inits: WorkspaceInits);
   constructor(arg0: any, inits: WorkspaceInits) {
@@ -64,43 +65,48 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this.styles.applyCls('workspaceView')
     this._rect = inits.rect;
     this._zIndex = inits?.zIndex ?? this._zIndex;
-    this.addChild(this._dockView);
+    this.addChild(this._rootDockView);
     this.addChild(this._dockLeftIndicator);
     this.addChild(this._dockRightIndicator);
     this.addChild(this._dockTopIndicator);
     this.addChild(this._dockBottomIndicator);
+    this.addChild(this._dockIndicator);
     inits?.wins && this.addChild(...inits.wins);
   }
   dockToTop(subwin: Subwin): void {
-    if (Direction.V === this._dockView.direction) {
-      this._dockView.insertChild(0, subwin);
+    this._dockedWins.insert(0, subwin);
+    if (Direction.V === this._rootDockView.direction) {
+      this._rootDockView.insertChild(0, subwin);
     } else {
-      this._dockView = new DockView(Direction.V).insertChild(0, subwin, this._dockView);
-      this.addChild(this._dockView)
+      this._rootDockView = new DockView(Direction.V).insertChild(0, subwin, this._rootDockView);
+      this.addChild(this._rootDockView)
     }
   }
   dockToBottom(subwin: Subwin): void {
-    if (Direction.V === this._dockView.direction) {
-      this._dockView.addChild(subwin);
+    this._dockedWins.insert(0, subwin);
+    if (Direction.V === this._rootDockView.direction) {
+      this._rootDockView.addChild(subwin);
     } else {
-      this._dockView = new DockView(Direction.V).addChild(this._dockView, subwin);
-      this.addChild(this._dockView)
+      this._rootDockView = new DockView(Direction.V).addChild(this._rootDockView, subwin);
+      this.addChild(this._rootDockView);
     }
   }
   dockToLeft(subwin: Subwin): void {
-    if (Direction.H === this._dockView.direction) {
-      this._dockView.insertChild(0, subwin);
+    this._dockedWins.insert(0, subwin);
+    if (Direction.H === this._rootDockView.direction) {
+      this._rootDockView.insertChild(0, subwin);
     } else {
-      this._dockView = new DockView(Direction.H).insertChild(0, subwin, this._dockView);
-      this.addChild(this._dockView)
+      this._rootDockView = new DockView(Direction.H).insertChild(0, subwin, this._rootDockView);
+      this.addChild(this._rootDockView)
     }
   }
   dockToRight(subwin: Subwin): void {
-    if (Direction.H === this._dockView.direction) {
-      this._dockView.addChild(subwin);
+    this._dockedWins.insert(0, subwin);
+    if (Direction.H === this._rootDockView.direction) {
+      this._rootDockView.addChild(subwin);
     } else {
-      this._dockView = new DockView(Direction.H).addChild(this._dockView, subwin);
-      this.addChild(this._dockView)
+      this._rootDockView = new DockView(Direction.H).addChild(this._rootDockView, subwin);
+      this.addChild(this._rootDockView)
     }
   }
   undockSubwin(subwin: Subwin): this {
@@ -108,13 +114,15 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       console.error('subwin is not docked!')
       return this;
     }
-    const dockView = subwin.parent;
-    // todo:
+    let dockView = subwin.parent;
     subwin.removeSelf();
+    this._dockedWins.delete(subwin);
     this.addChild(subwin);
+    if (dockView.children.length <= 1) {
+      dockView.parent?.removeChild(dockView)
+    }
     return this;
   }
-
   clampAllSubwin() {
     const rect = getValue(this._rect);
     if (!rect) { return; }
@@ -133,7 +141,8 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (x < rect.x) { x = rect.x; }
     subwin.styles.apply('view_dragger_pos', { left: x, top: y });
   }
-  private _onViewDragStart = (e: Event) => {
+
+  private _onSubwinDragStart = (e: EventMap[EventType.ViewDragStart]) => {
     this._draggingSubwin = View.try(e.target, Subwin);
     if (!this._draggingSubwin) { return; }
     this._dockLeftIndicator.fakeIn();
@@ -141,11 +150,42 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._dockTopIndicator.fakeIn();
     this._dockBottomIndicator.fakeIn();
   }
-  private _onViewDragging = (e: Event) => {
+
+  private _onSubwinDragging = (e: EventMap[EventType.ViewDragging]) => {
     const subwin = View.try(e.target, Subwin);
     if (!subwin) { return; }
+    const { pageX, pageY, dragger: { offsetX, offsetY } } = e.detail
+    const mouseX = pageX;
+    const mouseY = pageY;
+    let draggingIn: Subwin | DockView | undefined = this._undockedWins.findR(v => {
+      const { left, right, top, bottom } = v.inner.getBoundingClientRect();
+      return v != subwin && mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom;
+    }) ?? this._dockedWins.findR(v => {
+      const { left, right, top, bottom } = v.inner.getBoundingClientRect();
+      return v != subwin && mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom;
+    })
+    if (!draggingIn && this._deepestDockView !== this._rootDockView) {
+      const { left, right, top, bottom } = this._deepestDockView.inner.getBoundingClientRect();
+      if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom) {
+        draggingIn = this._deepestDockView;
+      }
+    }
+
+    if (this._draggingIn !== draggingIn) {
+      this._draggingIn = draggingIn;
+      if (draggingIn) {
+        const { left, top, width, height } = draggingIn.inner.getBoundingClientRect();
+        this._dockIndicator.styles.apply('normal', v => ({
+          ...v, left, top, width, height
+        }))
+        this._dockIndicator.fakeIn();
+      } else {
+        this._dockIndicator.fakeOut();
+      }
+    }
   }
-  private _onViewDragEnd = (e: Event) => {
+
+  private _onSubwinDragEnd = (e: Event) => {
     const subwin = View.try(e.target, Subwin);
     if (!subwin) { return; }
     if (this._dockBottomIndicator.hover) {
@@ -165,65 +205,56 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._dockRightIndicator.fakeOut();
     this._dockTopIndicator.fakeOut();
     this._dockBottomIndicator.fakeOut();
+    this._dockIndicator.fakeOut();
     this._draggingSubwin = null;
+    this._draggingIn = undefined;
   }
 
-  private subwinListening(subwin: Subwin, listen: boolean) {
-    if (listen) {
-      const ondown = () => this._handleClick(subwin);
-      this._pointerdowns.set(subwin, ondown);
-      subwin.addEventListener('pointerdown', ondown);
-      subwin.addEventListener('touchstart', ondown, { passive: true });
-    } else {
-      const listener = this._pointerdowns.get(subwin);
-      if (listener) {
-        subwin.removeEventListener('pointerdown', listener);
-        subwin.removeEventListener('touchstart', listener);
-      }
-    }
+  private _handleAddedChildren(children: View[]) {
+    children.forEach(v => {
+      if (!(v instanceof Subwin)) { return; }
+      v.workspace = this;
+      v.addEventListener(EventType.ViewDragStart, this._onSubwinDragStart)
+      v.addEventListener(EventType.ViewDragging, this._onSubwinDragging)
+      v.addEventListener(EventType.ViewDragEnd, this._onSubwinDragEnd)
+      const ondown = () => {
+        this._undockedWins.delete(v).insert(0, v);
+        this._updateUndockedWinsStyle()
+      };
+      this._pointerdowns.set(v, ondown);
+      v.addEventListener('pointerdown', ondown);
+      v.addEventListener('touchstart', ondown, { passive: true });
+      this._undockedWins.insert(0, v)
+    });
   }
+
+  private _handleRemovedChildren(children: View[]) {
+    children.forEach(child => {
+      if (!(child instanceof Subwin)) { return; }
+      const listener = this._pointerdowns.get(child);
+      if (listener) {
+        child.removeEventListener('pointerdown', listener);
+        child.removeEventListener('touchstart', listener);
+      }
+      this._undockedWins.delete(child)
+    });
+  }
+
   override addChild(...children: View[]): this {
     super.addChild(...children);
-    children.forEach(v => {
-      if (v instanceof Subwin) {
-        v.workspace = this;
-        v.addEventListener(EventType.ViewDragStart, this._onViewDragStart)
-        v.addEventListener(EventType.ViewDragging, this._onViewDragging)
-        v.addEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
-        this.subwinListening(v, true);
-        this._undockedWins.push(v)
-      }
-    });
+    this._handleAddedChildren(children);
     this._updateUndockedWinsStyle();
     return this;
   }
   override insertChild(anchorOrIdx: number | View, ...children: View[]): this {
     super.insertChild(anchorOrIdx, ...children);
-    children.forEach(v => {
-      if (v instanceof Subwin) {
-        v.workspace = this;
-        v.addEventListener(EventType.ViewDragStart, this._onViewDragStart)
-        v.addEventListener(EventType.ViewDragging, this._onViewDragging)
-        v.addEventListener(EventType.ViewDragEnd, this._onViewDragEnd)
-        this.subwinListening(v, true);
-        this._undockedWins.push(v)
-      }
-    });
+    this._handleAddedChildren(children);
     this._updateUndockedWinsStyle();
     return this;
   }
   override removeChild(...children: View[]): this {
-    children.forEach(v => {
-      if (v instanceof Subwin) {
-        this.subwinListening(v, false)
-        const idx = this._undockedWins.findIndex(b => b === v)
-        idx >= 0 && this._undockedWins.splice(idx, 1);
-      }
-    });
     this._updateUndockedWinsStyle();
+    this._handleRemovedChildren(children);
     return this;
-  }
-  get undockedWins(): Subwin[] {
-    return this._undockedWins;
   }
 }

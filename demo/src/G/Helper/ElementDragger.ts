@@ -1,4 +1,4 @@
-import { EventType } from "../Events/EventType";
+import { EventType, ViewEventMap } from "../Events/EventType";
 export interface OnMoveCallback {
   (x: number, y: number, oldX: number, oldY: number): void
 }
@@ -13,6 +13,11 @@ export interface IElementDraggerInits {
   handleUp?: OnUpCallback;
 }
 export class ElementDragger {
+  get offsetX() { return this._offsetX; }
+  get offsetY() { return this._offsetY; }
+  set offsetX(v) { this._offsetX = v; }
+  set offsetY(v) { this._offsetY = v; }
+
   private _handles: HTMLElement[] = [];
   private _ignores: HTMLElement[] = [];
   private _responser: HTMLElement | null = null;
@@ -58,7 +63,11 @@ export class ElementDragger {
     this._oldX = left;
     this._oldY = top;
     this._handleDown?.()
-    this.responser?.dispatchEvent(new Event(EventType.ViewDragStart))
+    const event: ViewEventMap[EventType.ViewDragStart] = new CustomEvent(
+      EventType.ViewDragStart, {
+      detail: { pageX, pageY, dragger: this }
+    });
+    this.responser?.dispatchEvent(event)
   }
   private _onmove = (pageX: number, pageY: number) => {
     if (!this._responser || !this._down) { return; }
@@ -68,13 +77,21 @@ export class ElementDragger {
       this._oldX,
       this._oldY,
     );
-    this.responser?.dispatchEvent(new Event(EventType.ViewDragging))
+    const event: ViewEventMap[EventType.ViewDragging] = new CustomEvent(
+      EventType.ViewDragging, {
+      detail: { pageX, pageY, dragger: this }
+    });
+    this.responser?.dispatchEvent(event)
   }
   private _onup = () => {
     if (!this._down) return;
-
     this._handleUp?.()
-    this.responser?.dispatchEvent(new Event(EventType.ViewDragEnd))
+
+    const event: ViewEventMap[EventType.ViewDragEnd] = new CustomEvent(
+      EventType.ViewDragEnd, {
+      detail: { dragger: this }
+    });
+    this.responser?.dispatchEvent(event)
     this._down = false;
   }
 

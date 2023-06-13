@@ -1,4 +1,3 @@
-import { Button } from "../BaseView/Button";
 import { View } from "../BaseView/View";
 import { DragInOutOB } from "../Observer/DragInOutOB";
 import { Subwin } from "./Subwin";

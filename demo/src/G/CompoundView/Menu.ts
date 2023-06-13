@@ -1,5 +1,6 @@
 import { CssPosition } from "../BaseView/StyleType";
-import { View, ViewEventMap } from "../BaseView/View";
+import { View } from "../BaseView/View";
+import { ViewEventMap } from "../Events/EventType";
 import { HoverOb } from "../Observer/HoverOb";
 import { findParent } from "../utils";
 
@@ -93,7 +94,6 @@ export class MenuItemView<K extends string | number | symbol> extends View<'div'
 export enum MenuEventType {
   ItemClick = 'onItemClick',
 }
-
 export interface MenuEventMap<K extends string | number | symbol> {
   [MenuEventType.ItemClick]: CustomEvent<IMenuItemInfo<K>>;
 }

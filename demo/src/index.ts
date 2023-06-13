@@ -98,7 +98,7 @@ const mergedSubwin2 = new MergedSubwin();
 workspace.addChild(mergedSubwin2);
 
 const mergedSubwin = new MergedSubwin();
-workspace.addChild(mergedSubwin2);
+workspace.addChild(mergedSubwin);
 
 const layersView = new LayersView();
 workspace.addChild(layersView);
@@ -154,7 +154,6 @@ colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
 })
 
 const toyView = new Subwin();
-workspace.addChild(toyView)
 toyView.header.title = 'others';
 workspace.addChild(toyView);
 
