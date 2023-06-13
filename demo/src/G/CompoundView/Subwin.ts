@@ -3,7 +3,6 @@ import { SubwinHeader } from "./SubwinHeader";
 import type { WorkspaceView } from "./Workspace/WorkspaceView";
 import { View } from "../BaseView/View";
 import { ViewDragger } from "../Helper/ViewDragger";
-import { DockView } from "./Workspace/DockView";
 export enum StyleNames {
   Root = 'subwin',
   Raised = 'subwin_raised',
@@ -38,10 +37,11 @@ export class Subwin extends View<'div'> {
       v.styles
         .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
         .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
-      this.insertChildBefore(this._footer, v);
+      this.insertBefore(this._footer, v);
     }
   }
   raise() {
+    console.log('raise',this,)
     this.styles.add(StyleNames.Raised).refresh();
     this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
     this.content?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);

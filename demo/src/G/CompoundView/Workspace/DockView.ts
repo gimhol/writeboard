@@ -1,28 +1,30 @@
 import { Style } from "../../BaseView/StyleType";
 import { View } from "../../BaseView/View";
-import { ElementDragger } from "../../Helper/ElementDragger";
 import { ViewDragger } from "../../Helper/ViewDragger";
 import { HoverOb } from "../../Observer/HoverOb";
 import { Subwin } from "../Subwin";
 export enum StyleNames {
+  AsRoot = "asroot",
   Normal = 'normal',
-  Docked = 'docked'
+  Docked = 'docked',
 }
 export const DockViewStyles: Partial<Record<StyleNames, Style>> = {
-  [StyleNames.Normal]: {
-    pointerEvents: 'none',
+  [StyleNames.AsRoot]: {
     position: 'absolute',
     left: 0,
     top: 0,
     width: '100%',
-    height: '100%',
+    height: '100%'
+  },
+  [StyleNames.Normal]: {
+    pointerEvents: 'none',
     alignItems: 'stretch'
   },
   [StyleNames.Docked]: {
     position: 'relative',
-    alignSelf: 'stretch',
     width: 'unset',
     height: 'unset',
+    alignSelf: 'stretch',
     flex: 1
   }
 }
@@ -123,7 +125,6 @@ export class DockView extends View<'div'> {
 
   override addChild(...children: View[]): this {
     if (!children.length) { return this; }
-    children.forEach(v => v.removeSelf());
     const beginAnchor = this.children[this.children.length - 1];
     for (let i = 1; i < children.length; i += 2) {
       const resizer = new Resizer(this.direction)
@@ -141,9 +142,8 @@ export class DockView extends View<'div'> {
     this.updateChildrenStyles(children);
     return this;
   }
-  override insertChildBefore(anchor: number | View, ...children: View[]): this {
+  override insertBefore(anchor: number | View, ...children: View[]): this {
     if (!children.length) { return this; }
-    children.forEach(v => v.removeSelf());
     const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
     const beginAnchor = this.children[idx - 1];
     const endAnchor = this.children[idx];
@@ -165,14 +165,40 @@ export class DockView extends View<'div'> {
       this.prevResizers.set(endAnchor, resizer)
       children.push(resizer);
     }
-
-    super.insertChildBefore(anchor, ...children);
+    super.insertBefore(anchor, ...children);
+    this.updateChildrenStyles(children);
+    return this;
+  }
+  override insertAfter(anchor: number | View, ...children: View[]): this {
+    if (!children.length) { return this; }
+    const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
+    const beginAnchor = this.children[idx];
+    const endAnchor = this.children[idx + 1];
+    for (let i = 1; i < children.length; i += 2) {
+      const resizer = new Resizer(this.direction)
+      this.nextResizers.set(children[i - 1]!, resizer)
+      this.prevResizers.set(children[i]!, resizer)
+      children.splice(i, 0, resizer);
+    }
+    if (beginAnchor) {
+      const resizer = new Resizer(this.direction);
+      this.nextResizers.set(beginAnchor, resizer)
+      this.prevResizers.set(children[0]!, resizer)
+      children.splice(0, 0, resizer);
+    }
+    if (endAnchor) {
+      const resizer = new Resizer(this.direction);
+      this.nextResizers.set(children[children.length - 1]!, resizer)
+      this.prevResizers.set(endAnchor, resizer)
+      children.push(resizer);
+    }
+    super.insertAfter(anchor, ...children);
     this.updateChildrenStyles(children);
     return this;
   }
   override removeChild(...children: View<keyof HTMLElementTagNameMap>[]): this {
+    if (!children.length) { return this; }
     const allChildren = this.children;
-    super.removeChild(...children);
     const resizers = new Set<Resizer>();
     children.forEach(child => {
       if (allChildren[0] === child) {
@@ -181,18 +207,17 @@ export class DockView extends View<'div'> {
       }
       const resizer = this.prevResizers.get(child);
       resizer && resizers.add(resizer);
+
+    });
+    super.removeChild(...children, ...resizers);
+    children.forEach(child => {
       if (child instanceof DockView || child instanceof Subwin) {
         child.onUndocked();
       }
     })
-    super.removeChild(...resizers);
     return this;
   }
   override replaceChild(newChild: View, oldChild: View): this {
-    if (oldChild instanceof DockView || oldChild instanceof Subwin) {
-      oldChild.onUndocked();
-    }
-    super.replaceChild(newChild, oldChild);
     const pr = this.prevResizers.get(oldChild);
     if (pr) {
       this.prevResizers.delete(oldChild);
@@ -202,6 +227,10 @@ export class DockView extends View<'div'> {
     if (nr) {
       this.nextResizers.delete(oldChild);
       this.nextResizers.set(newChild, nr);
+    }
+    super.replaceChild(newChild, oldChild);
+    if (oldChild instanceof DockView || oldChild instanceof Subwin) {
+      oldChild.onUndocked();
     }
     if (newChild instanceof DockView || newChild instanceof Subwin) {
       newChild.onDocked();
@@ -220,6 +249,10 @@ export class DockView extends View<'div'> {
   }
   onUndocked(): void {
     this.styles.forgo(StyleNames.Docked);
+  }
+  asRoot(v: boolean): this {
+    this.styles[v ? 'apply' : 'forgo'](StyleNames.AsRoot)
+    return this;
   }
   resizeDocked(width: number | undefined, height: number | undefined) {
     this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))

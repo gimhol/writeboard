@@ -5,10 +5,11 @@ export enum EventType {
   ViewDragging = 'viewdrag',
   ViewDragEnd = 'viewdragend',
 }
-export interface EventMap {
+export interface EventMap extends HTMLElementEventMap {
   [EventType.ViewDragStart]: CustomEvent<{ pageX: number, pageY: number, dragger: ElementDragger }>;
   [EventType.ViewDragging]: CustomEvent<{ pageX: number, pageY: number, dragger: ElementDragger }>;
   [EventType.ViewDragEnd]: CustomEvent<{ dragger: ElementDragger }>;
+  [key: string]: Event;
 }
 export enum ViewEventType {
   Added = 'viewadded',

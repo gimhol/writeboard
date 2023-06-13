@@ -153,7 +153,8 @@ colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
   })
 })
 
-const toyView = new Subwin();
+class ToyView extends Subwin { }
+const toyView = new ToyView();
 toyView.header.title = 'others';
 workspace.addChild(toyView);
 
@@ -241,7 +242,9 @@ toyView.content.addChild(new Button().init({
 let _recorder: Recorder | undefined
 let _player: Player | undefined
 
-const jsonView = new Subwin();
+
+class JsonView extends Subwin { }
+const jsonView = new JsonView();
 workspace.addChild(jsonView)
 jsonView.header.title = 'json';
 jsonView.content = new View('div');
@@ -274,7 +277,8 @@ const replay = (str: string) => {
   _player.start(board, JSON.parse(str))
 }
 
-const recorderView = new Subwin();
+class RecorderView extends Subwin { }
+const recorderView = new RecorderView();
 workspace.addChild(recorderView)
 recorderView.header.title = 'recorder';
 recorderView.content = new View('div');

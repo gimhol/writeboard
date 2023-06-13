@@ -54,13 +54,13 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     }
   })
   private _dockIndicator = new IndicatorView();
-  private _rootDockView = new DockView();
+  private _rootDockView = new DockView().asRoot(true);
   private _deepestDockView = this._rootDockView;
 
-  get dockView() { return this._rootDockView }
-  constructor(element: HTMLElementTagNameMap[T], inits: WorkspaceInits);
-  constructor(tagName: T, inits: WorkspaceInits);
-  constructor(arg0: any, inits: WorkspaceInits) {
+  public get dockView() { return this._rootDockView }
+  public constructor(element: HTMLElementTagNameMap[T], inits: WorkspaceInits);
+  public constructor(tagName: T, inits: WorkspaceInits);
+  public constructor(arg0: any, inits: WorkspaceInits) {
     super(arg0);
     this.styles.applyCls('workspaceView')
     this._rect = inits.rect;
@@ -73,54 +73,68 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this.addChild(this._dockIndicator);
     inits?.wins && this.addChild(...inits.wins);
   }
-  dockToTop(subwin: Subwin, view?: View): void {
+  public dockToTop(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
     const dockView = (view === this._deepestDockView && view.parent instanceof DockView) ? view.parent : undefined;
     if (dockView?.direction === Direction.V) {
-      dockView.insertChildBefore(view!, subwin)
+      dockView.insertBefore(view!, subwin)
     } else if (dockView?.direction === Direction.H) {
       const childDockView = new DockView(Direction.V);
       dockView.replaceChild(childDockView, view!)
       childDockView.addChild(subwin, view!);
     } else if (Direction.V === this._rootDockView.direction) {
-      this._rootDockView.insertChildBefore(0, subwin);
+      this._rootDockView.insertBefore(0, subwin);
     } else {
-      this._rootDockView = new DockView(Direction.V).insertChildBefore(0, subwin, this._rootDockView);
-      this.addChild(this._rootDockView)
+      this._rootDockView = new DockView(Direction.V).insertBefore(0, subwin, this._rootDockView.asRoot(false));
+      this.addChild(this._rootDockView.asRoot(true))
     }
   }
-  dockToBottom(subwin: Subwin, view?: View): void {
+  public dockToBottom(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
-    if (Direction.V === this._rootDockView.direction) {
+    const dockView = (view === this._deepestDockView && view.parent instanceof DockView) ? view.parent : undefined;
+    if (dockView?.direction === Direction.V) {
+      dockView.insertAfter(view!, subwin)
+    } else if (dockView?.direction === Direction.H) {
+      const childDockView = new DockView(Direction.V);
+      dockView.replaceChild(childDockView, view!)
+      childDockView.addChild(view!, subwin);
+    } else if (Direction.V === this._rootDockView.direction) {
       this._rootDockView.addChild(subwin);
     } else {
-      this._rootDockView = new DockView(Direction.V).addChild(this._rootDockView, subwin);
-      this.addChild(this._rootDockView);
+      this._rootDockView = new DockView(Direction.V).addChild(this._rootDockView.asRoot(false), subwin);
+      this.addChild(this._rootDockView.asRoot(true));
     }
   }
-  dockToLeft(subwin: Subwin, view?: View): void {
+  public dockToLeft(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
     const dockView = (view === this._deepestDockView && view?.parent instanceof DockView) ? view.parent : undefined;
     if (dockView?.direction === Direction.H) {
-      dockView.insertChildBefore(view!, subwin)
+      dockView.insertBefore(view!, subwin)
     } else if (dockView?.direction === Direction.V) {
       const childDockView = new DockView(Direction.H);
       dockView.replaceChild(childDockView, view!)
       childDockView.addChild(subwin, view!);
     } else if (Direction.H === this._rootDockView.direction) {
-      this._rootDockView.insertChildBefore(0, subwin);
+      this._rootDockView.insertBefore(0, subwin);
     } else {
-      this._rootDockView = new DockView(Direction.H).insertChildBefore(0, subwin, this._rootDockView);
-      this.addChild(this._rootDockView)
+      this._rootDockView = new DockView(Direction.H).insertBefore(0, subwin, this._rootDockView.asRoot(false));
+      this.addChild(this._rootDockView.asRoot(true))
     }
   }
-  dockToRight(subwin: Subwin, view?: View): void {
+  public dockToRight(subwin: Subwin, view?: View): void {
     this._dockedWins.insert(0, subwin);
-    if (Direction.H === this._rootDockView.direction) {
+    const dockView = (view === this._deepestDockView && view?.parent instanceof DockView) ? view.parent : undefined;
+    if (dockView?.direction === Direction.H) {
+      dockView.insertAfter(view!, subwin)
+    } else if (dockView?.direction === Direction.V) {
+      const childDockView = new DockView(Direction.H);
+      dockView.replaceChild(childDockView, view!)
+      childDockView.addChild(view!, subwin);
+    } else if (Direction.H === this._rootDockView.direction) {
       this._rootDockView.addChild(subwin);
     } else {
-      this._rootDockView = new DockView(Direction.H).addChild(this._rootDockView, subwin);
-      this.addChild(this._rootDockView)
+      this._rootDockView = new DockView(Direction.H).addChild(this._rootDockView.asRoot(false), subwin);
+      this.addChild(this._rootDockView.asRoot(true))
     }
   }
   undockSubwin(subwin: Subwin): this {
@@ -130,10 +144,16 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     }
     let dockView = subwin.parent;
     subwin.removeSelf();
-    this._dockedWins.delete(subwin);
     this.addChild(subwin);
     if (dockView.children.length <= 1) {
-      dockView.parent?.removeChild(dockView)
+      console.log(dockView.children)
+      const child = dockView.children[0]!
+
+      dockView.parent?.replaceChild(child, dockView);
+      if (dockView === this._rootDockView) {
+        this._rootDockView = child as DockView;
+        this._rootDockView.asRoot(true);
+      }
     }
     return this;
   }
@@ -231,8 +251,24 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._draggingSubwin = null;
     this._draggingIn = undefined;
   }
+  public override addChild(...children: View[]): this {
+    super.addChild(...children);
+    this._updateUndockedWinsStyle();
+    return this;
+  }
+  public override insertBefore(anchorOrIdx: number | View, ...children: View[]): this {
+    super.insertBefore(anchorOrIdx, ...children);
+    this._updateUndockedWinsStyle();
+    return this;
+  }
+  public override removeChild(...children: View[]): this {
+    super.removeChild(...children)
+    this._updateUndockedWinsStyle();
+    return this;
+  }
 
-  private _handleAddedChildren(children: View[]) {
+  protected override _handleAddedChildren(children: View[]) {
+    console.log('[Workspace]_handleAddedChildren', children)
     children.forEach(v => {
       if (!(v instanceof Subwin)) { return; }
       v.workspace = this;
@@ -247,10 +283,13 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       v.addEventListener('pointerdown', ondown);
       v.addEventListener('touchstart', ondown, { passive: true });
       this._undockedWins.insert(0, v)
+      this._dockedWins.delete(v);
     });
+    super._handleAddedChildren(children)
   }
 
-  private _handleRemovedChildren(children: View[]) {
+  protected override _prehandleRemovedChildren(children: View[]) {
+    console.log('[Workspace]_prehandleRemovedChildren', children)
     children.forEach(child => {
       if (!(child instanceof Subwin)) { return; }
       const listener = this._pointerdowns.get(child);
@@ -260,23 +299,8 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       }
       this._undockedWins.delete(child)
     });
+    return super._prehandleRemovedChildren(children)
   }
-
-  override addChild(...children: View[]): this {
-    super.addChild(...children);
-    this._handleAddedChildren(children);
-    this._updateUndockedWinsStyle();
-    return this;
-  }
-  override insertChildBefore(anchorOrIdx: number | View, ...children: View[]): this {
-    super.insertChildBefore(anchorOrIdx, ...children);
-    this._handleAddedChildren(children);
-    this._updateUndockedWinsStyle();
-    return this;
-  }
-  override removeChild(...children: View[]): this {
-    this._updateUndockedWinsStyle();
-    this._handleRemovedChildren(children);
-    return this;
-  }
+  get previousSibling() { return View.try(this.inner.previousSibling, View) }
+  get nextSibling() { return View.try(this.inner.nextSibling, View) }
 }

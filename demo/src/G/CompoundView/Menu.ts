@@ -146,18 +146,6 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
     listener: (this: HTMLObjectElement, ev: ViewEventMap[T]) => any,
     options?: boolean | AddEventListenerOptions
   ): this;
-  override addEventListener<T extends keyof HTMLElementEventMap>(
-    type: T,
-    listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[T]) => any,
-    options?: boolean | AddEventListenerOptions
-  ): this;
-
-  override addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
-  ): this;
-
   override addEventListener(
     arg0: any, arg1: any, arg2?: any
   ): this {
@@ -172,16 +160,6 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
   override removeEventListener<T extends keyof ViewEventMap>(
     type: T,
     listener: (this: HTMLObjectElement, ev: ViewEventMap[T]) => any,
-    options?: boolean | AddEventListenerOptions
-  ): this;
-  override removeEventListener<T extends keyof HTMLElementEventMap>(
-    type: T,
-    listener: (this: HTMLObjectElement, ev: HTMLElementEventMap[T]) => any,
-    options?: boolean | AddEventListenerOptions
-  ): this;
-  override removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): this;
   override removeEventListener(
