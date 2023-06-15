@@ -9,6 +9,8 @@ import { List } from "../../Helper/List";
 import { IndicatorView } from "./IndicatorView";
 import { IDockable as IDockable } from "./Dockable";
 import { HoverOb } from "../../Observer/HoverOb";
+import DockResultPreview from "../DockResultPreview";
+import { DockPosition } from "../DockPosition";
 
 export interface WorkspaceInits {
   rect?: GetValue<Rect>;
@@ -37,66 +39,33 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     });
   }
   private _dockLeftIndicator = new IndicatorImage({
-    src: './ic_dock_to_left.svg', style: {
+    type: DockPosition.ToLeft, style: {
       position: 'absolute', left: 16, top: 'calc(50% - 24px)'
     }
   })
   private _dockTopIndicator = new IndicatorImage({
-    src: './ic_dock_to_top.svg', style: {
+    type: DockPosition.ToTop, style: {
       position: 'absolute', left: 'calc(50% - 24px)', top: 16
     }
   })
   private _dockRightIndicator = new IndicatorImage({
-    src: './ic_dock_to_right.svg', style: {
+    type: DockPosition.ToRight, style: {
       position: 'absolute', right: 16, top: 'calc(50% - 24px)'
     }
   })
   private _dockBottomIndicator = new IndicatorImage({
-    src: './ic_dock_to_bottom.svg', style: {
+    type: DockPosition.ToBottom, style: {
       position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
     }
   })
 
-  private _hovering: View | null = null;
-  private _dockResultPreview = new View('div').styles.apply('normal', {
-    position: 'absolute',
-    zIndex: 1,
-    background: '#0055ff88',
-    boxSizing: 'border-box',
-    transition: 'all 200ms',
-    opacity: 0,
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0
-  }).view;
-  private _onHover = (hover: boolean, e: MouseEvent) => {
-    const view = View.try(e.target, View);
-    if (hover) {
-      this._hovering = view;
-    } else if (view === this._hovering) {
-      this._hovering = null;
-    } else {
-      return;
-    }
-    switch (this._hovering) {
-      case this._dockLeftIndicator:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
-        break;
-      case this._dockRightIndicator:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
-        break;
-      case this._dockTopIndicator:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
-        break;
-      case this._dockBottomIndicator:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
-        break;
-      default:
-        this._dockResultPreview.styles.apply('hidden', { opacity: 0 })
-        break;
-    }
-  };
+  private _dockResultPreview = new DockResultPreview()
+    .addIndicator(DockPosition.ToLeft, this._dockLeftIndicator)
+    .addIndicator(DockPosition.ToRight, this._dockRightIndicator)
+    .addIndicator(DockPosition.ToTop, this._dockTopIndicator)
+    .addIndicator(DockPosition.ToBottom, this._dockBottomIndicator);
+
+
   private _dockIndicator = new IndicatorView();
   private _rootDockView = new DockView().asRoot(true).setWorkspace(this);
   private _deepestDockView = this._rootDockView.addEventListener(DockableEventType.Docked, e => {
@@ -114,7 +83,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   public constructor(tagName: T, inits: WorkspaceInits);
   public constructor(arg0: any, inits: WorkspaceInits) {
     super(arg0);
-    this.styles.applyCls('workspaceView')
+    this.styles.addCls('workspaceView')
     this._rect = inits.rect;
     this._zIndex = inits?.zIndex ?? this._zIndex;
     this.addChild(this._rootDockView);
@@ -124,10 +93,6 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this.addChild(this._dockTopIndicator);
     this.addChild(this._dockBottomIndicator);
     this.addChild(this._dockIndicator);
-    new HoverOb(this._dockLeftIndicator.inner).setCallback(this._onHover);
-    new HoverOb(this._dockRightIndicator.inner).setCallback(this._onHover);
-    new HoverOb(this._dockTopIndicator.inner).setCallback(this._onHover);
-    new HoverOb(this._dockBottomIndicator.inner).setCallback(this._onHover);
     inits?.wins && this.addChild(...inits.wins);
   }
   public dockToRoot(target: IDockable, direction: DockableDirection, pos: 'start' | 'end') {
@@ -263,13 +228,13 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this.dockToRoot(subwin, DockableDirection.H, 'start');
     } else if (this._dockRightIndicator.hover) {
       this.dockToRoot(subwin, DockableDirection.H, 'end');
-    } else if (this._dockIndicator.bottom.hover) {
+    } else if (this._dockIndicator._bottom.hover) {
       this.dockAround(subwin, this._draggingIn!, DockableDirection.V, 'end')
-    } else if (this._dockIndicator.top.hover) {
+    } else if (this._dockIndicator._top.hover) {
       this.dockAround(subwin, this._draggingIn!, DockableDirection.V, 'start')
-    } else if (this._dockIndicator.left.hover) {
+    } else if (this._dockIndicator._left.hover) {
       this.dockAround(subwin, this._draggingIn!, DockableDirection.H, 'start')
-    } else if (this._dockIndicator.right.hover) {
+    } else if (this._dockIndicator._right.hover) {
       this.dockAround(subwin, this._draggingIn!, DockableDirection.H, 'end')
     } else {
       const rect = getValue(this._rect);

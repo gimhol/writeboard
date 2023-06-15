@@ -46,7 +46,7 @@ export class DockView extends View<'div'> implements IDockable {
     } else if (direction === DockableDirection.V) {
       this.styles.apply('', { display: "flex", flexDirection: 'column' });
     }
-    this.styles.applyCls('DockView');
+    this.styles.addCls('DockView');
     this.styles
       .registers(DockViewStyles)
       .apply(StyleName.Normal);

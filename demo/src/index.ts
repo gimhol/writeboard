@@ -15,6 +15,7 @@ import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { MergedSubwin } from "./G/CompoundView/MergedSubwin";
 import { Subwin } from "./G/CompoundView/Subwin";
+import { DockableDirection } from "./G/CompoundView/Workspace/DockableDirection";
 import { WorkspaceView } from "./G/CompoundView/Workspace/WorkspaceView";
 import { LayersView } from "./LayersView";
 import { ToolsView } from "./ToolsView";
@@ -94,15 +95,8 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
   }
 });
 
-const mergedSubwin2 = new MergedSubwin();
-workspace.addChild(mergedSubwin2);
-
-const mergedSubwin = new MergedSubwin();
-workspace.addChild(mergedSubwin);
-
 const layersView = new LayersView();
 workspace.addChild(layersView);
-
 layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
   const layerItem = layersView.addLayer({
     name: '' + Date.now(),
@@ -303,11 +297,11 @@ recorderView.content.addChild(_recorder_textarea);
 
 
 const rootView = new View('div');
-rootView.styles.apply('', { pointerEvents: 'all' }).applyCls('root');
+rootView.styles.apply('', { pointerEvents: 'all' }).addCls('root');
 workspace.rootDockView.setContent(rootView);
 
 const blackboard = new View('div');
-blackboard.styles.applyCls('blackboard');
+blackboard.styles.addCls('blackboard');
 rootView.addChild(blackboard);
 
 function addLayerCanvas() {
@@ -336,3 +330,7 @@ const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
 })
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
 (window as any).board = board;
+
+
+workspace.dockToRoot(layersView, DockableDirection.H, 'end');
+workspace.dockToRoot(toolsView, DockableDirection.H, 'start');

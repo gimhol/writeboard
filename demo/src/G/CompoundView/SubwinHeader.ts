@@ -24,17 +24,17 @@ export class SubwinHeader extends View<'div'> {
   private _titleView: View<"div">;
   private _iconView: Button;
   private _btnClose: IconButton;
+  
+  get btnClose() { return this._btnClose; }
   get iconView() { return this._iconView; }
-  set iconView(v) { this._iconView = v; }
   get titleView() { return this._titleView; }
-  set titleView(v) { this._titleView = v; }
   get title() { return this._titleView.inner.innerHTML; }
   set title(v) { this._titleView.inner.innerHTML = v; }
   constructor() {
     super('div');
     new FocusOb(this.inner, v => alert(v))
     this.styles
-      .applyCls(Classnames.Root)
+      .addCls(Classnames.Root)
       .apply(StyleNames.Root, {
         userSelect: 'none',
         width: '100%',
@@ -51,7 +51,7 @@ export class SubwinHeader extends View<'div'> {
     this._iconView = new Button()
     this._iconView
       .styles
-      .applyCls(Classnames.IconView)
+      .addCls(Classnames.IconView)
       .apply(StyleNames.IconView, {
         alignSelf: 'center',
         marginLeft: 2,
@@ -61,7 +61,7 @@ export class SubwinHeader extends View<'div'> {
 
     this._titleView = new View('div')
     this._titleView.styles
-      .applyCls(Classnames.TitleView)
+      .addCls(Classnames.TitleView)
       .apply(StyleNames.TitleView, {
         display: 'flex',
         alignItems: 'center',
@@ -71,7 +71,7 @@ export class SubwinHeader extends View<'div'> {
 
     this._btnClose = new IconButton().init({ src: './ic_btn_close.svg' })
     this._btnClose.styles
-      .applyCls(Classnames.BtnClose)
+      .addCls(Classnames.BtnClose)
       .apply(StyleNames.BtnClose, {
         alignSelf: 'center',
         marginRight: 2,

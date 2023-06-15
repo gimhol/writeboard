@@ -7,7 +7,6 @@ import { IDockable } from "./Workspace/Dockable";
 import { DockableEventMap } from "../Events/EventType";
 export enum StyleNames {
   Root = 'subwin',
-  Raised = 'subwin_raised',
   ChildRaised = 'subwin_child_raised',
   ChildLowered = 'subwin_child_lowered',
   Docked = 'subwin_docked'
@@ -43,46 +42,26 @@ export class Subwin extends View<'div'> implements IDockable {
     }
   }
   raise() {
-    console.log('raise', this,)
-    this.styles.add(StyleNames.Raised).refresh();
+    this.styles.addCls('g_subwin_raised');
     this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
     this.content?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
     this.footer?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
   }
   lower() {
-    this.styles.remove(StyleNames.Raised).refresh();
+    this.styles.delCls('g_subwin_raised').refresh();
     this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
     this.content?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
     this.footer?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
   }
   constructor() {
     super('div');
-    this.styles.register(StyleNames.Raised, {
-      boxShadow: '5px 5px 10px 10px #00000022',
-    }).register(StyleNames.Docked, {
-      pointerEvents: 'all',
-      position: 'relative',
-      resize: 'none',
-      width: 'unset',
-      height: 'unset',
+    this.styles.register(StyleNames.Docked, {
       left: 'unset',
       top: 'unset',
-      boxShadow: 'unset',
-      borderRadius: 0,
+      width: 'unset',
+      height: 'unset',
       zIndex: 'unset',
-      border: 'none',
-    }).apply(StyleNames.Root, {
-      position: 'fixed',
-      background: '#555555',
-      overflow: 'hidden',
-      border: '1px solid black',
-      resize: 'both',
-      boxShadow: '2px 2px 5px 5px #00000011',
-      borderRadius: 5,
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'box-shadow 200ms'
-    })
+    }).addCls('g_subwin');
     this._header.styles
       .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
       .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
@@ -103,6 +82,7 @@ export class Subwin extends View<'div'> implements IDockable {
       this.styles.edit(StyleNames.Root, v => ({ ...v, width, height }))
     })
     this._resizeOb.observe(this.inner);
+    this.header.btnClose.addEventListener('click', e => this.styles.apply('hidden', { display: 'none' }))
   }
   dockableView(): View<keyof HTMLElementTagNameMap> {
     return this;
@@ -113,7 +93,6 @@ export class Subwin extends View<'div'> implements IDockable {
       this.workspace()?.undock(this);
       const w1 = this.inner.offsetWidth;
       this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
-
     }
   }
   private _dragWhenUndocked = (x: number, y: number) => {
@@ -121,13 +100,15 @@ export class Subwin extends View<'div'> implements IDockable {
   }
   onDocked(): void {
     this._resizeOb.unobserve(this.inner);
-    this.styles.apply(StyleNames.Docked);
+    this.styles.addCls('g_subwin_docked').apply(StyleNames.Docked);
     this.dragger.handleMove = this._dragWhenDocked;
+    this.header.btnClose.styles.apply('hidden', { display: 'none' });
   }
   onUndocked(): void {
     this._resizeOb.observe(this.inner);
-    this.styles.forgo(StyleNames.Docked);
+    this.styles.delCls('g_subwin_docked').forgo(StyleNames.Docked);
     this.dragger.handleMove = this._dragWhenUndocked;
+    this.header.btnClose.styles.forgo('hidden');
   }
   resizeDocked(width: number | undefined, height: number | undefined) {
     this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))

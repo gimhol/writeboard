@@ -1,111 +1,51 @@
 import { View } from "../../BaseView/View";
-import { HoverOb } from "../../Observer/HoverOb";
+import { DockPosition } from "../DockPosition";
+import DockResultPreview from "../DockResultPreview";
 import { IndicatorImage } from "./IndicatorImage";
 const Tag = '[IndicatorView]'
 export class IndicatorView extends View<'div'> {
-  left = new IndicatorImage({ src: './ic_dock_to_left.svg' }).styles.apply('override', {
+  _left = new IndicatorImage({ type: DockPosition.ToLeft }).styles.apply('override', {
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
   }).view;
-  top = new IndicatorImage({ src: './ic_dock_to_top.svg' }).styles.apply('override', {
+  _top = new IndicatorImage({ type: DockPosition.ToTop }).styles.apply('override', {
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   }).view;
-  right = new IndicatorImage({ src: './ic_dock_to_right.svg' }).styles.apply('override', {
+  _right = new IndicatorImage({ type: DockPosition.ToRight }).styles.apply('override', {
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }).view;
-  bottom = new IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+  _bottom = new IndicatorImage({ type: DockPosition.ToBottom }).styles.apply('override', {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
   }).view;
-  center = new IndicatorImage({ src: './ic_dock_to_center.svg' }).styles.apply('override', {
+  _center = new IndicatorImage({ type: DockPosition.ToCenter }).styles.apply('override', {
     borderRadius: 0,
   }).view;
 
-  _dockResultPreview = new View('div').styles.apply('normal', {
-    position: 'absolute',
-    zIndex: 1,
-    background: '#0055ff88',
-    boxSizing: 'border-box',
-    transition: 'all 200ms',
-    opacity: 0,
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0
-  }).view;
-
+  _dockResultPreview = new DockResultPreview()
+    .addIndicator(DockPosition.ToLeft, this._left)
+    .addIndicator(DockPosition.ToRight, this._right)
+    .addIndicator(DockPosition.ToTop, this._top)
+    .addIndicator(DockPosition.ToBottom, this._bottom)
+    .addIndicator(DockPosition.ToCenter, this._center)
   private _following?: View;
   private _resizeOb: ResizeObserver;
-  private _hovering: View | null = null;
-  private _onHover = (hover: boolean, e: MouseEvent) => {
-    const view = View.try(e.target, View);
-    if (hover) {
-      this._hovering = view;
-    } else if (view === this._hovering) {
-      this._hovering = null;
-    } else {
-      return;
-    }
-    switch (this._hovering) {
-      case this.left:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
-        break;
-      case this.right:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
-        break;
-      case this.top:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
-        break;
-      case this.bottom:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
-        break;
-      case this.center:
-        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1 });
-        break;
-      default:
-        this._dockResultPreview.styles.apply('hidden', { opacity: 0 })
-        break;
-    }
-  };
   constructor() {
     super('div');
-    this.styles.applyCls('indicator_view')
-    this.styles.register('normal', {
-      position: 'absolute',
-      opacity: 0,
-      transition: 'all 200ms',
-      zIndex: '9999',
-      pointerEvents: 'none',
-      boxSizing: 'border-box',
-      border: '5px solid #0055ff88',
-    }).register('appear', {
+    this.styles.addCls('g_indicator_view')
+    this.styles.register('appear', {
       opacity: 1,
       pointerEvents: 'all'
-    }).apply('normal');
+    });
 
-    new HoverOb(this.left.inner).setCallback(this._onHover);
-    new HoverOb(this.right.inner).setCallback(this._onHover);
-    new HoverOb(this.center.inner).setCallback(this._onHover);
-    new HoverOb(this.top.inner).setCallback(this._onHover);
-    new HoverOb(this.bottom.inner).setCallback(this._onHover);
     const content = new View('div');
-    content.styles.apply('', {
-      position: 'absolute',
-      display: 'grid',
-      left: '50%',
-      top: '50%',
-      zIndex: 2,
-      transform: 'translate(-50%,-50%)',
-      gridTemplateColumns: 'auto auto auto',
-      gridTemplateRows: 'auto auto auto',
-      gap: '0px',
-    })
+    content.styles.addCls('content')
     content.addChild(
-      new View('div'), this.top, new View('div'),
-      this.left, this.center, this.right,
-      new View('div'), this.bottom, new View('div')
+      new View('div'), this._top, new View('div'),
+      this._left, this._center, this._right,
+      new View('div'), this._bottom, new View('div')
     );
     this.addChild(this._dockResultPreview)
     this.addChild(content);
@@ -122,35 +62,32 @@ export class IndicatorView extends View<'div'> {
     })
   }
 
-
   fakeIn(v: View) {
     this._following = v;
     this._resizeOb.observe(this._following.inner);
-
     const { left, top, width, height } = v.inner.getBoundingClientRect();
     this.styles.apply('normal', v => ({ ...v, left, top, width, height }))
-
-    this.styles.add('appear').refresh();
+    this.styles.addCls('g_indicator_view_appear');
     this.hoverOb.disabled = false;
-    this.left.fakeIn();
-    this.right.fakeIn();
-    this.top.fakeIn();
-    this.bottom.fakeIn();
-    this.center.fakeIn();
+    this._left.fakeIn();
+    this._right.fakeIn();
+    this._top.fakeIn();
+    this._bottom.fakeIn();
+    this._center.fakeIn();
   }
   fakeOut() {
     if (this._following) {
       this._resizeOb.unobserve(this._following.inner);
       delete this._following;
     }
-    this.styles.remove('appear').refresh();
+    this.styles.delCls('g_indicator_view_appear');
     this.hoverOb.disabled = true;
     this.onHover(false);
 
-    this.left.fakeOut();
-    this.right.fakeOut();
-    this.top.fakeOut();
-    this.bottom.fakeOut();
-    this.center.fakeOut();
+    this._left.fakeOut();
+    this._right.fakeOut();
+    this._top.fakeOut();
+    this._bottom.fakeOut();
+    this._center.fakeOut();
   }
 }

@@ -1,45 +1,35 @@
 import { Image } from "../../BaseView/Image";
 import { Style } from "../../BaseView/StyleType";
+import { DockPosition } from "../DockPosition";
 
-
+export const srcs: Record<DockPosition, string> = {
+  [DockPosition.Hide]: "",
+  [DockPosition.ToLeft]: "./ic_dock_to_left.svg",
+  [DockPosition.ToRight]: "./ic_dock_to_right.svg",
+  [DockPosition.ToTop]: "./ic_dock_to_top.svg",
+  [DockPosition.ToBottom]: "./ic_dock_to_bottom.svg",
+  [DockPosition.ToCenter]: "./ic_dock_to_center.svg"
+}
 export class IndicatorImage extends Image {
-  constructor(inits: { src: string; style?: Style; }) {
-    super({ src: inits.src });
+  constructor(inits: { type: DockPosition; style?: Style; }) {
+    super({ src: srcs[inits.type] });
     this.styles
-      .register('', { ...inits.style })
-      .register('hover', {
-        opacity: 0.8,
-      })
-      .register('normal', {
-        width: 48,
-        height: 48,
-        zIndex: '10000',
-        userSelect: 'none',
-        background: '#000000FF',
-        borderRadius: 5,
-        opacity: 0,
-        transition: 'all 200ms',
-        pointerEvents: 'none'
-      }).register('appear', {
-        opacity: 0.3,
-        pointerEvents: 'all'
-      })
-      .add('normal', '')
-      .refresh();
+      .addCls('g_indicator_image')
+      .apply('', { ...inits.style });
     this.draggable = false;
   }
   override onHover(hover: boolean): void {
-    this.styles[hover ? 'add' : 'remove']('hover').refresh();
+    this.styles[hover ? 'addCls' : 'delCls']('g_indicator_image_hover');
   }
   override onRemoved(): void {
-    this.styles.remove('hover').refresh();
+    this.styles.delCls('g_indicator_image_hover');
   }
   fakeIn() {
-    this.styles.add('appear').refresh();
+    this.styles.addCls('g_indicator_image_appear');
     this.hoverOb.disabled = false;
   }
   fakeOut() {
-    this.styles.remove('appear').refresh();
+    this.styles.delCls('g_indicator_image_appear');
     this.hoverOb.disabled = true;
     this.onHover(false);
   }

@@ -181,7 +181,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
     }
 }
 
-},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":24,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.ButtonState = exports.ButtonStyleNames = void 0;
@@ -189,10 +189,6 @@ const SizeType_1 = require("./SizeType");
 const View_1 = require("./View");
 var ButtonStyleNames;
 (function (ButtonStyleNames) {
-    ButtonStyleNames["Normal"] = "normal";
-    ButtonStyleNames["Hover"] = "hover";
-    ButtonStyleNames["Disabled"] = "disabled";
-    ButtonStyleNames["Checked"] = "checked";
     ButtonStyleNames["Small"] = "small";
     ButtonStyleNames["Middle"] = "middle";
     ButtonStyleNames["Large"] = "large";
@@ -281,21 +277,7 @@ class Button extends View_1.View {
             lineHeight: 32,
             borderRadius: 5,
             fontSize: 24,
-        }).register(ButtonStyleNames.Normal, {
-            userSelect: 'none',
-            cursor: 'pointer',
-            textAlign: 'center',
-            transition: 'all 200ms',
-            padding: 0,
-            background: 'transparent',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-        }).register(ButtonStyleNames.Checked, {
-            background: '#00000022'
-        }).register(ButtonStyleNames.Hover, {
-            background: '#00000044'
-        }).add(ButtonStyleNames.Normal).refresh();
+        }).addCls('g_button').refresh();
         this.inner.addEventListener('click', () => {
             if (this._checkable) {
                 this._checked = !this._checked;
@@ -336,9 +318,9 @@ class Button extends View_1.View {
     }
     updateStyle() {
         const styles = this.styles;
-        styles[this.checked ? 'add' : 'remove'](ButtonStyleNames.Checked);
-        styles[this.hover ? 'add' : 'remove'](ButtonStyleNames.Hover);
-        styles[this.disabled ? 'add' : 'remove'](ButtonStyleNames.Disabled);
+        styles[this.checked ? 'addCls' : 'delCls']('g_button_checked');
+        styles[this.hover ? 'addCls' : 'delCls']('g_button_hover');
+        styles[this.disabled ? 'addCls' : 'delCls']('g_button_disbaled');
         styles.refresh();
     }
     updateContent() {
@@ -654,15 +636,15 @@ class Styles {
         }
         return this;
     }
-    resetCls(...names) {
+    setCls(...names) {
         this.view.inner.className = '';
-        return this.applyCls(...names);
+        return this.addCls(...names);
     }
-    applyCls(...names) {
+    addCls(...names) {
         this.view.inner.classList.add(...names);
         return this;
     }
-    removeCls(...names) {
+    delCls(...names) {
         this.view.inner.classList.remove(...names);
         return this;
     }
@@ -931,7 +913,75 @@ class View {
 exports.View = View;
 View.RAW_KEY_IN_ELEMENT = 'g_view';
 
-},{"../Events/EventType":23,"../Observer/FocusOb":29,"../Observer/HoverOb":30,"./Styles":8}],11:[function(require,module,exports){
+},{"../Events/EventType":24,"../Observer/FocusOb":29,"../Observer/HoverOb":30,"./Styles":8}],11:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DockPosition = void 0;
+var DockPosition;
+(function (DockPosition) {
+    DockPosition["Hide"] = "hide";
+    DockPosition["ToLeft"] = "toLeft";
+    DockPosition["ToRight"] = "toRight";
+    DockPosition["ToTop"] = "toTop";
+    DockPosition["ToBottom"] = "toBottom";
+    DockPosition["ToCenter"] = "toCenter";
+})(DockPosition = exports.DockPosition || (exports.DockPosition = {}));
+
+},{}],12:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const View_1 = require("../BaseView/View");
+const HoverOb_1 = require("../Observer/HoverOb");
+const DockPosition_1 = require("./DockPosition");
+class DockResultPreview extends View_1.View {
+    constructor() {
+        super('div');
+        this._indicatorPositionMap = new Map();
+        this._hovering = null;
+        this._onHover = (hover, e) => {
+            var _a;
+            const view = View_1.View.try(e.target, View_1.View);
+            if (hover) {
+                this._hovering = view;
+            }
+            else if (view === this._hovering) {
+                this._hovering = null;
+            }
+            else {
+                return;
+            }
+            const position = (_a = this._indicatorPositionMap.get(this._hovering)) !== null && _a !== void 0 ? _a : DockPosition_1.DockPosition.Hide;
+            this[position]();
+        };
+        this.styles.addCls('g_dock_result_preview').apply('hidden', { opacity: 0 });
+    }
+    addIndicator(position, view) {
+        this._indicatorPositionMap.set(view, position);
+        new HoverOb_1.HoverOb(view.inner).setCallback(this._onHover);
+        return this;
+    }
+    hide() {
+        this.styles.apply('hidden', { opacity: 0 });
+    }
+    toLeft() {
+        this.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
+    }
+    toRight() {
+        this.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
+    }
+    toTop() {
+        this.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
+    }
+    toBottom() {
+        this.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
+    }
+    toCenter() {
+        this.styles.remove('hidden').apply('show', { opacity: 1 });
+    }
+}
+exports.default = DockResultPreview;
+
+},{"../BaseView/View":10,"../Observer/HoverOb":30,"./DockPosition":11}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IconButton = void 0;
@@ -982,7 +1032,7 @@ class IconButton extends Button_1.Button {
 }
 exports.IconButton = IconButton;
 
-},{"../BaseView/Button":2,"../BaseView/Image":4,"../BaseView/StyleType":7}],12:[function(require,module,exports){
+},{"../BaseView/Button":2,"../BaseView/Image":4,"../BaseView/StyleType":7}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Menu = exports.MenuEventType = exports.MenuItemView = exports.StyleNames = void 0;
@@ -1163,131 +1213,7 @@ exports.Menu = Menu;
 Menu.StyleNames = StyleNames;
 Menu.EventType = MenuEventType;
 
-},{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":30,"../utils":31}],13:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MergedSubwin = exports.SubwinTab = void 0;
-const View_1 = require("../BaseView/View");
-const DragInOutOB_1 = require("../Observer/DragInOutOB");
-const Subwin_1 = require("./Subwin");
-class SubwinTab extends View_1.View {
-    constructor(inits) {
-        super('div');
-        this.styles.applyCls('subwin_tab').apply('_', {
-            backgroundColor: inits.color,
-            marginTop: 5,
-            paddingLeft: 5,
-            paddingRight: 5,
-            borderTopLeftRadius: 5,
-            borderTopRightRadius: 5,
-            alignSelf: 'stretch',
-            display: 'flex',
-            alignItems: 'center',
-            marginRight: 1
-        });
-        this.inner.append(inits.title);
-        this.inner.draggable = true;
-        this.inner.addEventListener('dragstart', (e) => {
-        });
-        // this.inner.addEventListener('dragend', (e) => console.log('[SubwinTab]', e.type, inits.title))
-        // this.inner.addEventListener('drag', (e) => console.log('[SubwinTab]', e.type, e))
-        this.inner.addEventListener('dragover', (e) => {
-            // if (e.target === this.inner) { return; }
-            // console.log('[SubwinTab]', e.type, inits.title)
-        });
-    }
-}
-exports.SubwinTab = SubwinTab;
-class MergedSubwin extends Subwin_1.Subwin {
-    constructor() {
-        var _a;
-        super();
-        this.subwins = [];
-        this.tabs = new Map();
-        this.header.styles;
-        const onDragIn = (e, ele) => {
-            console.log(ele.innerHTML, 'in');
-        };
-        const onDragOut = (e, ele) => {
-            console.log(ele.innerHTML, 'out');
-        };
-        this._dragOutOB = new DragInOutOB_1.DragInOutOB({
-            ele: this.header.titleView.inner,
-            onDragOut,
-            onDragIn,
-        });
-        this.header.iconView.content = '▨';
-        this.content = new View_1.View('div');
-        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.apply('_', {
-            position: 'relative',
-            flex: 1,
-            minWidth: '250px',
-            minHeight: '200px',
-        });
-        this.styles.apply('normal', v => (Object.assign({}, v)));
-        this.removeChild(this.footer);
-        this.header.titleView.styles.apply('_', {
-            display: 'flex',
-            overflow: 'hidden'
-        });
-    }
-    removeSubwin(subwin) {
-        const idx = this.subwins.indexOf(subwin);
-        if (idx < 0) {
-            return;
-        }
-        this.subwins.splice(idx, 1);
-        subwin.styles.forgo('merged');
-        subwin.header.styles.forgo('merged');
-    }
-    addSubWin(subwin) {
-        var _a, _b;
-        if (this.subwins.indexOf(subwin) >= 0) {
-            return;
-        }
-        this.subwins.push(subwin);
-        subwin.styles.apply('merged', {
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            boxShadow: 'none',
-            resize: 'none',
-        });
-        subwin.header.styles.apply('merged', { display: 'none' });
-        (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(subwin);
-        const tab = new SubwinTab({
-            title: subwin.header.title,
-            color: '#555555'
-        });
-        this.header.titleView.addChild(tab);
-        this.tabs.set(subwin, tab);
-        this.activedSubwin = subwin;
-        const handleClick = () => {
-            this.tabs.forEach((v, subwin) => {
-                if (v === tab) {
-                    v.styles.forgo('disactived');
-                    subwin.styles.forgo('disactived');
-                }
-                else {
-                    v.styles.apply('disactived', { opacity: '0.5' });
-                    subwin.styles.apply('disactived', { display: 'none' });
-                }
-            });
-        };
-        this._dragOutOB.addDraggble(tab.inner);
-        (_b = this.dragger.ignores) === null || _b === void 0 ? void 0 : _b.push(tab);
-        tab.addEventListener('click', handleClick);
-        handleClick();
-    }
-}
-exports.MergedSubwin = MergedSubwin;
-
-},{"../BaseView/View":10,"../Observer/DragInOutOB":28,"./Subwin":14}],14:[function(require,module,exports){
+},{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":30,"../utils":31}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subwin = exports.StyleNames = void 0;
@@ -1298,7 +1224,6 @@ const ViewDragger_1 = require("../Helper/ViewDragger");
 var StyleNames;
 (function (StyleNames) {
     StyleNames["Root"] = "subwin";
-    StyleNames["Raised"] = "subwin_raised";
     StyleNames["ChildRaised"] = "subwin_child_raised";
     StyleNames["ChildLowered"] = "subwin_child_lowered";
     StyleNames["Docked"] = "subwin_docked";
@@ -1330,15 +1255,14 @@ class Subwin extends View_1.View {
     }
     raise() {
         var _a, _b;
-        console.log('raise', this);
-        this.styles.add(StyleNames.Raised).refresh();
+        this.styles.addCls('g_subwin_raised');
         this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
         (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
         (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
     }
     lower() {
         var _a, _b;
-        this.styles.remove(StyleNames.Raised).refresh();
+        this.styles.delCls('g_subwin_raised').refresh();
         this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
         (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
         (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
@@ -1359,32 +1283,13 @@ class Subwin extends View_1.View {
         this._dragWhenUndocked = (x, y) => {
             this.styles.apply('view_dragger_pos', { left: x, top: y });
         };
-        this.styles.register(StyleNames.Raised, {
-            boxShadow: '5px 5px 10px 10px #00000022',
-        }).register(StyleNames.Docked, {
-            pointerEvents: 'all',
-            position: 'relative',
-            resize: 'none',
-            width: 'unset',
-            height: 'unset',
+        this.styles.register(StyleNames.Docked, {
             left: 'unset',
             top: 'unset',
-            boxShadow: 'unset',
-            borderRadius: 0,
+            width: 'unset',
+            height: 'unset',
             zIndex: 'unset',
-            border: 'none',
-        }).apply(StyleNames.Root, {
-            position: 'fixed',
-            background: '#555555',
-            overflow: 'hidden',
-            border: '1px solid black',
-            resize: 'both',
-            boxShadow: '2px 2px 5px 5px #00000011',
-            borderRadius: 5,
-            display: 'flex',
-            flexDirection: 'column',
-            transition: 'box-shadow 200ms'
-        });
+        }).addCls('g_subwin');
         this._header.styles
             .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
             .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
@@ -1405,19 +1310,22 @@ class Subwin extends View_1.View {
             this.styles.edit(StyleNames.Root, v => (Object.assign(Object.assign({}, v), { width, height })));
         });
         this._resizeOb.observe(this.inner);
+        this.header.btnClose.addEventListener('click', e => this.styles.apply('hidden', { display: 'none' }));
     }
     dockableView() {
         return this;
     }
     onDocked() {
         this._resizeOb.unobserve(this.inner);
-        this.styles.apply(StyleNames.Docked);
+        this.styles.addCls('g_subwin_docked').apply(StyleNames.Docked);
         this.dragger.handleMove = this._dragWhenDocked;
+        this.header.btnClose.styles.apply('hidden', { display: 'none' });
     }
     onUndocked() {
         this._resizeOb.observe(this.inner);
-        this.styles.forgo(StyleNames.Docked);
+        this.styles.delCls('g_subwin_docked').forgo(StyleNames.Docked);
         this.dragger.handleMove = this._dragWhenUndocked;
+        this.header.btnClose.styles.forgo('hidden');
     }
     resizeDocked(width, height) {
         this.styles.apply(StyleNames.Docked, v => (Object.assign(Object.assign({}, v), { width, height })));
@@ -1432,7 +1340,7 @@ class Subwin extends View_1.View {
 exports.Subwin = Subwin;
 Subwin.StyleNames = StyleNames;
 
-},{"../BaseView/View":10,"../Helper/ViewDragger":27,"./SubwinFooter":15,"./SubwinHeader":16}],15:[function(require,module,exports){
+},{"../BaseView/View":10,"../Helper/ViewDragger":28,"./SubwinFooter":16,"./SubwinHeader":17}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinFooter = void 0;
@@ -1455,7 +1363,7 @@ class SubwinFooter extends View_1.View {
 }
 exports.SubwinFooter = SubwinFooter;
 
-},{"../BaseView/View":10}],16:[function(require,module,exports){
+},{"../BaseView/View":10}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinHeader = exports.StyleNames = exports.Classnames = void 0;
@@ -1478,17 +1386,16 @@ var StyleNames;
     StyleNames["BtnClose"] = "subwinheader_btnclose";
 })(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
 class SubwinHeader extends View_1.View {
+    get btnClose() { return this._btnClose; }
     get iconView() { return this._iconView; }
-    set iconView(v) { this._iconView = v; }
     get titleView() { return this._titleView; }
-    set titleView(v) { this._titleView = v; }
     get title() { return this._titleView.inner.innerHTML; }
     set title(v) { this._titleView.inner.innerHTML = v; }
     constructor() {
         super('div');
         new FocusOb_1.FocusOb(this.inner, v => alert(v));
         this.styles
-            .applyCls(Classnames.Root)
+            .addCls(Classnames.Root)
             .apply(StyleNames.Root, {
             userSelect: 'none',
             width: '100%',
@@ -1504,7 +1411,7 @@ class SubwinHeader extends View_1.View {
         this._iconView = new Button_1.Button();
         this._iconView
             .styles
-            .applyCls(Classnames.IconView)
+            .addCls(Classnames.IconView)
             .apply(StyleNames.IconView, {
             alignSelf: 'center',
             marginLeft: 2,
@@ -1512,7 +1419,7 @@ class SubwinHeader extends View_1.View {
         this.addChild(this._iconView);
         this._titleView = new View_1.View('div');
         this._titleView.styles
-            .applyCls(Classnames.TitleView)
+            .addCls(Classnames.TitleView)
             .apply(StyleNames.TitleView, {
             display: 'flex',
             alignItems: 'center',
@@ -1521,7 +1428,7 @@ class SubwinHeader extends View_1.View {
         this.addChild(this._titleView);
         this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg' });
         this._btnClose.styles
-            .applyCls(Classnames.BtnClose)
+            .addCls(Classnames.BtnClose)
             .apply(StyleNames.BtnClose, {
             alignSelf: 'center',
             marginRight: 2,
@@ -1533,7 +1440,7 @@ exports.SubwinHeader = SubwinHeader;
 SubwinHeader.ClassNames = Classnames;
 SubwinHeader.StyleNames = StyleNames;
 
-},{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":29,"./IconButton":11}],17:[function(require,module,exports){
+},{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":29,"./IconButton":13}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockView = exports.DockViewStyles = exports.StyleName = void 0;
@@ -1583,7 +1490,7 @@ class DockView extends View_1.View {
         else if (direction === DockableDirection_1.DockableDirection.V) {
             this.styles.apply('', { display: "flex", flexDirection: 'column' });
         }
-        this.styles.applyCls('DockView');
+        this.styles.addCls('DockView');
         this.styles
             .registers(exports.DockViewStyles)
             .apply(StyleName.Normal);
@@ -1710,7 +1617,7 @@ class DockView extends View_1.View {
 exports.DockView = DockView;
 DockView.StyleName = StyleName;
 
-},{"../../BaseView/View":10,"../../Events/EventType":23,"./DockableDirection":18,"./DockableResizer":19}],18:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Events/EventType":24,"./DockableDirection":19,"./DockableResizer":20}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableDirection = void 0;
@@ -1721,7 +1628,7 @@ var DockableDirection;
     DockableDirection["V"] = "v";
 })(DockableDirection = exports.DockableDirection || (exports.DockableDirection = {}));
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableResizer = void 0;
@@ -1738,32 +1645,25 @@ class DockableResizer extends View_1.View {
         const h = direction === DockableDirection_1.DockableDirection.V ? 1 : undefined;
         const hOffset = direction === DockableDirection_1.DockableDirection.H ? -3 : 0;
         const vOffset = direction === DockableDirection_1.DockableDirection.V ? -3 : 0;
-        this.styles.apply('', {
+        this.styles
+            .addCls('g_dockable_resizer')
+            .apply('', {
             width: w,
             maxWidth: w,
             minWidth: w,
             height: h,
             maxHeight: h,
             minHeight: h,
-            overflow: 'visible',
-            zIndex: 1,
-            position: 'relative',
-            backgroundColor: 'black',
         });
         const handle = new View_1.View('div');
-        handle.styles.register('hover', {
-            backgroundColor: '#00000088',
-        }).apply('', {
+        handle.styles.addCls('handle').apply('', {
             left: hOffset,
             right: hOffset,
             top: vOffset,
             bottom: vOffset,
             cursor: direction === DockableDirection_1.DockableDirection.H ? 'col-resize' : 'row-resize',
-            position: 'absolute',
-            transition: 'background-color 200ms',
-            pointerEvents: 'all'
         });
-        new HoverOb_1.HoverOb(handle.inner).setCallback(hover => handle.styles[hover ? 'add' : 'remove']('hover').refresh());
+        new HoverOb_1.HoverOb(handle.inner).setCallback(hover => handle.styles[hover ? 'addCls' : 'delCls']('handle_hover'));
         this.addChild(handle);
         const handleDown = () => {
             prevView = this.prevSibling;
@@ -1793,161 +1693,94 @@ class DockableResizer extends View_1.View {
 }
 exports.DockableResizer = DockableResizer;
 
-},{"../../BaseView/View":10,"../../Helper/ViewDragger":27,"../../Observer/HoverOb":30,"../Subwin":14,"./DockView":17,"./DockableDirection":18}],20:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Helper/ViewDragger":28,"../../Observer/HoverOb":30,"../Subwin":15,"./DockView":18,"./DockableDirection":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IndicatorImage = void 0;
+exports.IndicatorImage = exports.srcs = void 0;
 const Image_1 = require("../../BaseView/Image");
+const DockPosition_1 = require("../DockPosition");
+exports.srcs = {
+    [DockPosition_1.DockPosition.Hide]: "",
+    [DockPosition_1.DockPosition.ToLeft]: "./ic_dock_to_left.svg",
+    [DockPosition_1.DockPosition.ToRight]: "./ic_dock_to_right.svg",
+    [DockPosition_1.DockPosition.ToTop]: "./ic_dock_to_top.svg",
+    [DockPosition_1.DockPosition.ToBottom]: "./ic_dock_to_bottom.svg",
+    [DockPosition_1.DockPosition.ToCenter]: "./ic_dock_to_center.svg"
+};
 class IndicatorImage extends Image_1.Image {
     constructor(inits) {
-        super({ src: inits.src });
+        super({ src: exports.srcs[inits.type] });
         this.styles
-            .register('', Object.assign({}, inits.style))
-            .register('hover', {
-            opacity: 0.8,
-        })
-            .register('normal', {
-            width: 48,
-            height: 48,
-            zIndex: '10000',
-            userSelect: 'none',
-            background: '#000000FF',
-            borderRadius: 5,
-            opacity: 0,
-            transition: 'all 200ms',
-            pointerEvents: 'none'
-        }).register('appear', {
-            opacity: 0.3,
-            pointerEvents: 'all'
-        })
-            .add('normal', '')
-            .refresh();
+            .addCls('g_indicator_image')
+            .apply('', Object.assign({}, inits.style));
         this.draggable = false;
     }
     onHover(hover) {
-        this.styles[hover ? 'add' : 'remove']('hover').refresh();
+        this.styles[hover ? 'addCls' : 'delCls']('g_indicator_image_hover');
     }
     onRemoved() {
-        this.styles.remove('hover').refresh();
+        this.styles.delCls('g_indicator_image_hover');
     }
     fakeIn() {
-        this.styles.add('appear').refresh();
+        this.styles.addCls('g_indicator_image_appear');
         this.hoverOb.disabled = false;
     }
     fakeOut() {
-        this.styles.remove('appear').refresh();
+        this.styles.delCls('g_indicator_image_appear');
         this.hoverOb.disabled = true;
         this.onHover(false);
     }
 }
 exports.IndicatorImage = IndicatorImage;
 
-},{"../../BaseView/Image":4}],21:[function(require,module,exports){
+},{"../../BaseView/Image":4,"../DockPosition":11}],22:[function(require,module,exports){
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IndicatorView = void 0;
 const View_1 = require("../../BaseView/View");
-const HoverOb_1 = require("../../Observer/HoverOb");
+const DockPosition_1 = require("../DockPosition");
+const DockResultPreview_1 = __importDefault(require("../DockResultPreview"));
 const IndicatorImage_1 = require("./IndicatorImage");
 const Tag = '[IndicatorView]';
 class IndicatorView extends View_1.View {
     constructor() {
         super('div');
-        this.left = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_left.svg' }).styles.apply('override', {
+        this._left = new IndicatorImage_1.IndicatorImage({ type: DockPosition_1.DockPosition.ToLeft }).styles.apply('override', {
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
         }).view;
-        this.top = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_top.svg' }).styles.apply('override', {
+        this._top = new IndicatorImage_1.IndicatorImage({ type: DockPosition_1.DockPosition.ToTop }).styles.apply('override', {
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
         }).view;
-        this.right = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_right.svg' }).styles.apply('override', {
+        this._right = new IndicatorImage_1.IndicatorImage({ type: DockPosition_1.DockPosition.ToRight }).styles.apply('override', {
             borderTopLeftRadius: 0,
             borderBottomLeftRadius: 0,
         }).view;
-        this.bottom = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+        this._bottom = new IndicatorImage_1.IndicatorImage({ type: DockPosition_1.DockPosition.ToBottom }).styles.apply('override', {
             borderTopLeftRadius: 0,
             borderTopRightRadius: 0,
         }).view;
-        this.center = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_center.svg' }).styles.apply('override', {
+        this._center = new IndicatorImage_1.IndicatorImage({ type: DockPosition_1.DockPosition.ToCenter }).styles.apply('override', {
             borderRadius: 0,
         }).view;
-        this._dockResultPreview = new View_1.View('div').styles.apply('normal', {
-            position: 'absolute',
-            zIndex: 1,
-            background: '#0055ff88',
-            boxSizing: 'border-box',
-            transition: 'all 200ms',
-            opacity: 0,
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0
-        }).view;
-        this._hovering = null;
-        this._onHover = (hover, e) => {
-            const view = View_1.View.try(e.target, View_1.View);
-            if (hover) {
-                this._hovering = view;
-            }
-            else if (view === this._hovering) {
-                this._hovering = null;
-            }
-            else {
-                return;
-            }
-            switch (this._hovering) {
-                case this.left:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
-                    break;
-                case this.right:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
-                    break;
-                case this.top:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
-                    break;
-                case this.bottom:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
-                    break;
-                case this.center:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1 });
-                    break;
-                default:
-                    this._dockResultPreview.styles.apply('hidden', { opacity: 0 });
-                    break;
-            }
-        };
-        this.styles.applyCls('indicator_view');
-        this.styles.register('normal', {
-            position: 'absolute',
-            opacity: 0,
-            transition: 'all 200ms',
-            zIndex: '9999',
-            pointerEvents: 'none',
-            boxSizing: 'border-box',
-            border: '5px solid #0055ff88',
-        }).register('appear', {
+        this._dockResultPreview = new DockResultPreview_1.default()
+            .addIndicator(DockPosition_1.DockPosition.ToLeft, this._left)
+            .addIndicator(DockPosition_1.DockPosition.ToRight, this._right)
+            .addIndicator(DockPosition_1.DockPosition.ToTop, this._top)
+            .addIndicator(DockPosition_1.DockPosition.ToBottom, this._bottom)
+            .addIndicator(DockPosition_1.DockPosition.ToCenter, this._center);
+        this.styles.addCls('g_indicator_view');
+        this.styles.register('appear', {
             opacity: 1,
             pointerEvents: 'all'
-        }).apply('normal');
-        new HoverOb_1.HoverOb(this.left.inner).setCallback(this._onHover);
-        new HoverOb_1.HoverOb(this.right.inner).setCallback(this._onHover);
-        new HoverOb_1.HoverOb(this.center.inner).setCallback(this._onHover);
-        new HoverOb_1.HoverOb(this.top.inner).setCallback(this._onHover);
-        new HoverOb_1.HoverOb(this.bottom.inner).setCallback(this._onHover);
-        const content = new View_1.View('div');
-        content.styles.apply('', {
-            position: 'absolute',
-            display: 'grid',
-            left: '50%',
-            top: '50%',
-            zIndex: 2,
-            transform: 'translate(-50%,-50%)',
-            gridTemplateColumns: 'auto auto auto',
-            gridTemplateRows: 'auto auto auto',
-            gap: '0px',
         });
-        content.addChild(new View_1.View('div'), this.top, new View_1.View('div'), this.left, this.center, this.right, new View_1.View('div'), this.bottom, new View_1.View('div'));
+        const content = new View_1.View('div');
+        content.styles.addCls('content');
+        content.addChild(new View_1.View('div'), this._top, new View_1.View('div'), this._left, this._center, this._right, new View_1.View('div'), this._bottom, new View_1.View('div'));
         this.addChild(this._dockResultPreview);
         this.addChild(content);
         this._resizeOb = new ResizeObserver(entries => {
@@ -1968,33 +1801,36 @@ class IndicatorView extends View_1.View {
         this._resizeOb.observe(this._following.inner);
         const { left, top, width, height } = v.inner.getBoundingClientRect();
         this.styles.apply('normal', v => (Object.assign(Object.assign({}, v), { left, top, width, height })));
-        this.styles.add('appear').refresh();
+        this.styles.addCls('g_indicator_view_appear');
         this.hoverOb.disabled = false;
-        this.left.fakeIn();
-        this.right.fakeIn();
-        this.top.fakeIn();
-        this.bottom.fakeIn();
-        this.center.fakeIn();
+        this._left.fakeIn();
+        this._right.fakeIn();
+        this._top.fakeIn();
+        this._bottom.fakeIn();
+        this._center.fakeIn();
     }
     fakeOut() {
         if (this._following) {
             this._resizeOb.unobserve(this._following.inner);
             delete this._following;
         }
-        this.styles.remove('appear').refresh();
+        this.styles.delCls('g_indicator_view_appear');
         this.hoverOb.disabled = true;
         this.onHover(false);
-        this.left.fakeOut();
-        this.right.fakeOut();
-        this.top.fakeOut();
-        this.bottom.fakeOut();
-        this.center.fakeOut();
+        this._left.fakeOut();
+        this._right.fakeOut();
+        this._top.fakeOut();
+        this._bottom.fakeOut();
+        this._center.fakeOut();
     }
 }
 exports.IndicatorView = IndicatorView;
 
-},{"../../BaseView/View":10,"../../Observer/HoverOb":30,"./IndicatorImage":20}],22:[function(require,module,exports){
+},{"../../BaseView/View":10,"../DockPosition":11,"../DockResultPreview":12,"./IndicatorImage":21}],23:[function(require,module,exports){
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkspaceView = void 0;
 const View_1 = require("../../BaseView/View");
@@ -2006,7 +1842,8 @@ const DockableDirection_1 = require("./DockableDirection");
 const IndicatorImage_1 = require("./IndicatorImage");
 const List_1 = require("../../Helper/List");
 const IndicatorView_1 = require("./IndicatorView");
-const HoverOb_1 = require("../../Observer/HoverOb");
+const DockResultPreview_1 = __importDefault(require("../DockResultPreview"));
+const DockPosition_1 = require("../DockPosition");
 class WorkspaceView extends View_1.View {
     _updateUndockedWinsStyle() {
         this._undockedWins.forEach((win, idx, arr) => {
@@ -2031,67 +1868,30 @@ class WorkspaceView extends View_1.View {
         this._undockedWins = new List_1.List();
         this._dockedWins = new List_1.List();
         this._dockLeftIndicator = new IndicatorImage_1.IndicatorImage({
-            src: './ic_dock_to_left.svg', style: {
+            type: DockPosition_1.DockPosition.ToLeft, style: {
                 position: 'absolute', left: 16, top: 'calc(50% - 24px)'
             }
         });
         this._dockTopIndicator = new IndicatorImage_1.IndicatorImage({
-            src: './ic_dock_to_top.svg', style: {
+            type: DockPosition_1.DockPosition.ToTop, style: {
                 position: 'absolute', left: 'calc(50% - 24px)', top: 16
             }
         });
         this._dockRightIndicator = new IndicatorImage_1.IndicatorImage({
-            src: './ic_dock_to_right.svg', style: {
+            type: DockPosition_1.DockPosition.ToRight, style: {
                 position: 'absolute', right: 16, top: 'calc(50% - 24px)'
             }
         });
         this._dockBottomIndicator = new IndicatorImage_1.IndicatorImage({
-            src: './ic_dock_to_bottom.svg', style: {
+            type: DockPosition_1.DockPosition.ToBottom, style: {
                 position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
             }
         });
-        this._hovering = null;
-        this._dockResultPreview = new View_1.View('div').styles.apply('normal', {
-            position: 'absolute',
-            zIndex: 1,
-            background: '#0055ff88',
-            boxSizing: 'border-box',
-            transition: 'all 200ms',
-            opacity: 0,
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0
-        }).view;
-        this._onHover = (hover, e) => {
-            const view = View_1.View.try(e.target, View_1.View);
-            if (hover) {
-                this._hovering = view;
-            }
-            else if (view === this._hovering) {
-                this._hovering = null;
-            }
-            else {
-                return;
-            }
-            switch (this._hovering) {
-                case this._dockLeftIndicator:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
-                    break;
-                case this._dockRightIndicator:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
-                    break;
-                case this._dockTopIndicator:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
-                    break;
-                case this._dockBottomIndicator:
-                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
-                    break;
-                default:
-                    this._dockResultPreview.styles.apply('hidden', { opacity: 0 });
-                    break;
-            }
-        };
+        this._dockResultPreview = new DockResultPreview_1.default()
+            .addIndicator(DockPosition_1.DockPosition.ToLeft, this._dockLeftIndicator)
+            .addIndicator(DockPosition_1.DockPosition.ToRight, this._dockRightIndicator)
+            .addIndicator(DockPosition_1.DockPosition.ToTop, this._dockTopIndicator)
+            .addIndicator(DockPosition_1.DockPosition.ToBottom, this._dockBottomIndicator);
         this._dockIndicator = new IndicatorView_1.IndicatorView();
         this._rootDockView = new DockView_1.DockView().asRoot(true).setWorkspace(this);
         this._deepestDockView = this._rootDockView.addEventListener(EventType_1.DockableEventType.Docked, e => {
@@ -2162,16 +1962,16 @@ class WorkspaceView extends View_1.View {
             else if (this._dockRightIndicator.hover) {
                 this.dockToRoot(subwin, DockableDirection_1.DockableDirection.H, 'end');
             }
-            else if (this._dockIndicator.bottom.hover) {
+            else if (this._dockIndicator._bottom.hover) {
                 this.dockAround(subwin, this._draggingIn, DockableDirection_1.DockableDirection.V, 'end');
             }
-            else if (this._dockIndicator.top.hover) {
+            else if (this._dockIndicator._top.hover) {
                 this.dockAround(subwin, this._draggingIn, DockableDirection_1.DockableDirection.V, 'start');
             }
-            else if (this._dockIndicator.left.hover) {
+            else if (this._dockIndicator._left.hover) {
                 this.dockAround(subwin, this._draggingIn, DockableDirection_1.DockableDirection.H, 'start');
             }
-            else if (this._dockIndicator.right.hover) {
+            else if (this._dockIndicator._right.hover) {
                 this.dockAround(subwin, this._draggingIn, DockableDirection_1.DockableDirection.H, 'end');
             }
             else {
@@ -2189,7 +1989,7 @@ class WorkspaceView extends View_1.View {
             this._draggingSubwin = null;
             this._draggingIn = undefined;
         };
-        this.styles.applyCls('workspaceView');
+        this.styles.addCls('workspaceView');
         this._rect = inits.rect;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
         this.addChild(this._rootDockView);
@@ -2199,10 +1999,6 @@ class WorkspaceView extends View_1.View {
         this.addChild(this._dockTopIndicator);
         this.addChild(this._dockBottomIndicator);
         this.addChild(this._dockIndicator);
-        new HoverOb_1.HoverOb(this._dockLeftIndicator.inner).setCallback(this._onHover);
-        new HoverOb_1.HoverOb(this._dockRightIndicator.inner).setCallback(this._onHover);
-        new HoverOb_1.HoverOb(this._dockTopIndicator.inner).setCallback(this._onHover);
-        new HoverOb_1.HoverOb(this._dockBottomIndicator.inner).setCallback(this._onHover);
         (inits === null || inits === void 0 ? void 0 : inits.wins) && this.addChild(...inits.wins);
     }
     dockToRoot(target, direction, pos) {
@@ -2350,7 +2146,7 @@ class WorkspaceView extends View_1.View {
 }
 exports.WorkspaceView = WorkspaceView;
 
-},{"../../BaseView/View":10,"../../Events/EventType":23,"../../Helper/List":26,"../../Observer/HoverOb":30,"../../utils":31,"../Subwin":14,"./DockView":17,"./DockableDirection":18,"./IndicatorImage":20,"./IndicatorView":21}],23:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Events/EventType":24,"../../Helper/List":27,"../../utils":31,"../DockPosition":11,"../DockResultPreview":12,"../Subwin":15,"./DockView":18,"./DockableDirection":19,"./IndicatorImage":21,"./IndicatorView":22}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableEventType = exports.ViewEventType = exports.EventType = void 0;
@@ -2371,7 +2167,7 @@ var DockableEventType;
     DockableEventType["Undocked"] = "undocked";
 })(DockableEventType = exports.DockableEventType || (exports.DockableEventType = {}));
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ButtonGroup = exports.ButtonGroupMode = void 0;
@@ -2416,7 +2212,7 @@ class ButtonGroup {
 }
 exports.ButtonGroup = ButtonGroup;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ElementDragger = void 0;
@@ -2598,7 +2394,7 @@ class ElementDragger {
 }
 exports.ElementDragger = ElementDragger;
 
-},{"../Events/EventType":23}],26:[function(require,module,exports){
+},{"../Events/EventType":24}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.List = void 0;
@@ -2635,7 +2431,7 @@ class List extends Array {
 }
 exports.List = List;
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ViewDragger = void 0;
@@ -2673,105 +2469,7 @@ class ViewDragger {
 }
 exports.ViewDragger = ViewDragger;
 
-},{"../BaseView/View":10,"./ElementDragger":25}],28:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DragInOutOB = void 0;
-class DragInOutOB {
-    get draggables() { return this._draggables; }
-    set draggables(v) {
-        this._draggables.forEach(v => {
-            v.removeEventListener('dragstart', this._dragstart);
-            v.removeEventListener('dragend', this._dragend);
-        });
-        this._draggables = v;
-        this._draggables.forEach(v => {
-            v.addEventListener('dragstart', this._dragstart);
-            v.addEventListener('dragend', this._dragend);
-        });
-        if (this._draggables.indexOf(this._dragging) < 0) {
-            delete this._dragging;
-        }
-    }
-    draggableListening(v, listen) {
-        if (listen) {
-            v.addEventListener('dragstart', this._dragstart);
-            v.addEventListener('dragend', this._dragend);
-        }
-        else {
-            v.removeEventListener('dragstart', this._dragstart);
-            v.removeEventListener('dragend', this._dragend);
-        }
-    }
-    eleListening(listen) {
-        if (listen) {
-            this._ele.addEventListener('dragenter', this._dragenter);
-            this._ele.addEventListener('dragleave', this._dragleave);
-        }
-        else {
-            this._ele.removeEventListener('dragenter', this._dragenter);
-            this._ele.removeEventListener('dragleave', this._dragleave);
-        }
-    }
-    addDraggble(v) {
-        const idx = this._draggables.indexOf(v);
-        if (idx >= 0) {
-            return false;
-        }
-        this._draggables.push(v);
-        this.draggableListening(v, true);
-        return true;
-    }
-    removeDraggble(v) {
-        const idx = this._draggables.indexOf(v);
-        if (idx < 0) {
-            return false;
-        }
-        this._draggables.splice(idx, 1);
-        this.draggableListening(v, false);
-        this._dragging === v && delete this._dragging;
-        return true;
-    }
-    get disabled() { return this._disabled; }
-    set disabled(v) {
-        if (this._disabled === v) {
-            return;
-        }
-        if (v) {
-            this.eleListening(false);
-            this._draggables.forEach(v => this.draggableListening(v, false));
-        }
-        else {
-            this.eleListening(true);
-            this._draggables.forEach(v => this.draggableListening(v, true));
-        }
-    }
-    constructor(inits) {
-        this._disabled = true;
-        this._draggables = [];
-        this._dragstart = (e) => {
-            this._dragging = e.target;
-        };
-        this._dragend = (e) => {
-            delete this._dragging;
-        };
-        this._dragenter = (e) => {
-            this._node = e.target;
-        };
-        this._dragleave = (e) => {
-            var _a;
-            if (this._node === e.target && this._dragging) {
-                (_a = this._onDragOut) === null || _a === void 0 ? void 0 : _a.call(this, e, this._dragging);
-            }
-        };
-        this._ele = inits.ele;
-        this._onDragOut = inits.onDragOut;
-        this.disabled = false;
-    }
-}
-exports.DragInOutOB = DragInOutOB;
-
-},{}],29:[function(require,module,exports){
+},{"../BaseView/View":10,"./ElementDragger":26}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FocusOb = void 0;
@@ -3052,7 +2750,7 @@ class LayerItemView extends View_1.View {
 }
 exports.LayerItemView = LayerItemView;
 
-},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/Subwin":14,"./G/Observer/FocusOb":29}],33:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/Subwin":15,"./G/Observer/FocusOb":29}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
@@ -3100,7 +2798,7 @@ class ToolsView extends Subwin_1.Subwin {
 }
 exports.ToolsView = ToolsView;
 
-},{"../../dist":49,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":11,"./G/CompoundView/Subwin":14,"./G/Helper/ButtonGroup":24}],34:[function(require,module,exports){
+},{"../../dist":49,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":13,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":25}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.clampI = exports.clampF = void 0;
@@ -3689,8 +3387,8 @@ const Button_1 = require("./G/BaseView/Button");
 const Canvas_1 = require("./G/BaseView/Canvas");
 const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
-const MergedSubwin_1 = require("./G/CompoundView/MergedSubwin");
 const Subwin_1 = require("./G/CompoundView/Subwin");
+const DockableDirection_1 = require("./G/CompoundView/Workspace/DockableDirection");
 const WorkspaceView_1 = require("./G/CompoundView/Workspace/WorkspaceView");
 const LayersView_1 = require("./LayersView");
 const ToolsView_1 = require("./ToolsView");
@@ -3765,10 +3463,6 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
             break;
     }
 });
-const mergedSubwin2 = new MergedSubwin_1.MergedSubwin();
-workspace.addChild(mergedSubwin2);
-const mergedSubwin = new MergedSubwin_1.MergedSubwin();
-workspace.addChild(mergedSubwin);
 const layersView = new LayersView_1.LayersView();
 workspace.addChild(layersView);
 layersView.addEventListener(LayersView_1.LayersView.EventType.LayerAdded, () => {
@@ -3957,10 +3651,10 @@ recorderView.content.addChild(new Button_1.Button().init({ content: 'replay: rec
 }));
 recorderView.content.addChild(_recorder_textarea);
 const rootView = new View_1.View('div');
-rootView.styles.apply('', { pointerEvents: 'all' }).applyCls('root');
+rootView.styles.apply('', { pointerEvents: 'all' }).addCls('root');
 workspace.rootDockView.setContent(rootView);
 const blackboard = new View_1.View('div');
-blackboard.styles.applyCls('blackboard');
+blackboard.styles.addCls('blackboard');
 rootView.addChild(blackboard);
 function addLayerCanvas() {
     const canvas = new Canvas_1.Canvas();
@@ -3987,8 +3681,10 @@ const layers = layersView.layers().map((layer, idx) => {
 });
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
 window.board = board;
+workspace.dockToRoot(layersView, DockableDirection_1.DockableDirection.H, 'end');
+workspace.dockToRoot(toolsView, DockableDirection_1.DockableDirection.H, 'start');
 
-},{"../../dist":49,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":12,"./G/CompoundView/MergedSubwin":13,"./G/CompoundView/Subwin":14,"./G/CompoundView/Workspace/WorkspaceView":22,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
+},{"../../dist":49,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/Subwin":15,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;

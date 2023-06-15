@@ -8,7 +8,7 @@ export interface SubwinTabInits {
 export class SubwinTab extends View<'div'>{
   constructor(inits: SubwinTabInits) {
     super('div');
-    this.styles.applyCls('subwin_tab').apply('_', {
+    this.styles.addCls('subwin_tab').apply('_', {
       backgroundColor: inits.color,
       marginTop: 5,
       paddingLeft: 5,

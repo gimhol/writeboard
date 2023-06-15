@@ -113,18 +113,19 @@ export class Styles<T extends string = string, V extends View<keyof HTMLElementT
     return this;
   }
 
-  resetCls(...names: string[]): this {
+  setCls(...names: string[]): this {
     this.view.inner.className = '';
-    return this.applyCls(...names);
+    return this.addCls(...names);
   }
-  applyCls(...names: string[]): this {
+  addCls(...names: string[]): this {
     this.view.inner.classList.add(...names)
     return this;
   }
-  removeCls(...names: string[]): this {
+  delCls(...names: string[]): this {
     this.view.inner.classList.remove(...names)
     return this;
   }
+
   destory() {
     delete this._view;
     this.pool.clear();

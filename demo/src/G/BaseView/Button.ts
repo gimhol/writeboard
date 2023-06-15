@@ -14,10 +14,6 @@ export interface ButtonInits {
   checked?: boolean;
 }
 export enum ButtonStyleNames {
-  Normal = 'normal',
-  Hover = 'hover',
-  Disabled = 'disabled',
-  Checked = 'checked',
   Small = 'small',
   Middle = 'middle',
   Large = 'large',
@@ -101,22 +97,8 @@ export class Button extends View<'button'> {
       lineHeight: 32,
       borderRadius: 5,
       fontSize: 24,
-    }).register(ButtonStyleNames.Normal, {
-      userSelect: 'none',
-      cursor: 'pointer',
-      textAlign: 'center',
-      transition: 'all 200ms',
-      padding: 0,
-      background: 'transparent',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }).register(ButtonStyleNames.Checked, {
-      background: '#00000022'
-    }).register(ButtonStyleNames.Hover, {
-      background: '#00000044'
-    }).add(ButtonStyleNames.Normal).refresh();
-    
+    }).addCls('g_button').refresh();
+
     this.inner.addEventListener('click', () => {
       if (this._checkable) {
         this._checked = !this._checked;
@@ -154,9 +136,9 @@ export class Button extends View<'button'> {
   }
   updateStyle() {
     const styles = this.styles;
-    styles[this.checked ? 'add' : 'remove'](ButtonStyleNames.Checked)
-    styles[this.hover ? 'add' : 'remove'](ButtonStyleNames.Hover)
-    styles[this.disabled ? 'add' : 'remove'](ButtonStyleNames.Disabled)
+    styles[this.checked ? 'addCls' : 'delCls']('g_button_checked')
+    styles[this.hover ? 'addCls' : 'delCls']('g_button_hover')
+    styles[this.disabled ? 'addCls' : 'delCls']('g_button_disbaled')
     styles.refresh();
   }
   updateContent() {

@@ -12,32 +12,25 @@ export class DockableResizer extends View<'div'> {
     const h = direction === DockableDirection.V ? 1 : undefined;
     const hOffset = direction === DockableDirection.H ? -3 : 0;
     const vOffset = direction === DockableDirection.V ? -3 : 0;
-    this.styles.apply('', {
-      width: w,
-      maxWidth: w,
-      minWidth: w,
-      height: h,
-      maxHeight: h,
-      minHeight: h,
-      overflow: 'visible',
-      zIndex: 1,
-      position: 'relative',
-      backgroundColor: 'black',
-    });
+    this.styles
+      .addCls('g_dockable_resizer')
+      .apply('', {
+        width: w,
+        maxWidth: w,
+        minWidth: w,
+        height: h,
+        maxHeight: h,
+        minHeight: h,
+      });
     const handle = new View('div');
-    handle.styles.register('hover', {
-      backgroundColor: '#00000088',
-    }).apply('', {
+    handle.styles.addCls('handle').apply('', {
       left: hOffset,
       right: hOffset,
       top: vOffset,
       bottom: vOffset,
       cursor: direction === DockableDirection.H ? 'col-resize' : 'row-resize',
-      position: 'absolute',
-      transition: 'background-color 200ms',
-      pointerEvents: 'all'
     });
-    new HoverOb(handle.inner).setCallback(hover => handle.styles[hover ? 'add' : 'remove']('hover').refresh());
+    new HoverOb(handle.inner).setCallback(hover => handle.styles[hover ? 'addCls' : 'delCls']('handle_hover'));
     this.addChild(handle);
     const handleDown = () => {
       prevView = this.prevSibling!;

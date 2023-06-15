@@ -1,0 +1,122 @@
+.g_indicator_view {
+  position: absolute;
+  opacity: 0;
+  transition: all 200ms;
+  z-index: 9999;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.g_indicator_view_appear {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.g_indicator_view .content {
+  position: absolute;
+  display: grid;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto auto;
+}
+
+.g_indicator_image {
+  width: 48px;
+  height: 48px;
+  z-index: 10000;
+  user-select: none;
+  background: #000000FF;
+  border-radius: 5px;
+  opacity: 0;
+  transition: all 200ms;
+  pointer-events: none;
+}
+
+.g_indicator_image_appear {
+  opacity: 0.3;
+  pointer-events: all;
+}
+
+.g_indicator_image_hover {
+  opacity: 0.8;
+}
+
+.g_button {
+  user-select: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all 200ms;
+  padding: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.g_button_checked {
+  background: #00000022;
+}
+
+.g_button_hover {
+  background: #00000044
+}
+
+.g_dockable_resizer {
+  overflow: visible;
+  z-index: 1;
+  position: relative;
+  background-color: black;
+}
+
+.g_dockable_resizer .handle {
+  position: absolute;
+  transition: background-color 200ms;
+  pointer-events: all;
+}
+
+.g_dockable_resizer .handle_hover {
+  background-color: #00000088;
+}
+
+.g_subwin {
+  position: fixed;
+  background: #555555;
+  overflow: hidden;
+  border: 1px solid black;
+  resize: both;
+  box-shadow: 2px 2px 5px 5px #00000011;
+  border-radius: 5;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 200ms;
+}
+
+.g_subwin_raised {
+  box-shadow: 5px 5px 10px 10px #00000022;
+}
+
+.g_subwin_docked {
+  pointer-events: all;
+  position: relative;
+  resize: none;
+  box-shadow: unset;
+  border-radius: 0px;
+  border: none;
+}
+
+.g_dock_result_preview {
+  position: absolute;
+  z-index: 1;
+  background: #0055ff88;
+  box-sizing: border-box;
+  transition: all 200ms;
+  opacity: 0px;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  pointer-events: none;
+}
