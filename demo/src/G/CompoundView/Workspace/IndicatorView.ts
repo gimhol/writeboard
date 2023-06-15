@@ -19,21 +19,25 @@ export class IndicatorView extends View<'div'> {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
   }).view;
-  center = new IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+  center = new IndicatorImage({ src: './ic_dock_to_center.svg' }).styles.apply('override', {
     borderRadius: 0,
   }).view;
 
-  preview = new View('div').styles.apply('normal', {
+  _dockResultPreview = new View('div').styles.apply('normal', {
     position: 'absolute',
     zIndex: 1,
     background: '#0055ff88',
     boxSizing: 'border-box',
     transition: 'all 200ms',
+    opacity: 0,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
   }).view;
 
   private _following?: View;
   private _resizeOb: ResizeObserver;
-
   private _hovering: View | null = null;
   private _onHover = (hover: boolean, e: MouseEvent) => {
     const view = View.try(e.target, View);
@@ -44,28 +48,26 @@ export class IndicatorView extends View<'div'> {
     } else {
       return;
     }
-
     switch (this._hovering) {
       case this.left:
-        this.preview.styles.apply('show', v => ({ ...v, opacity: 1, top: 0, bottom: 0, left: 0, right: '66%' }));
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
         break;
       case this.right:
-        this.preview.styles.apply('show', v => ({ ...v, opacity: 1, top: 0, bottom: 0, left: '66%', right: 0 }));
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
         break;
       case this.top:
-        this.preview.styles.apply('show', v => ({ ...v, opacity: 1, top: 0, bottom: '66%', left: 0, right: 0 }));
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
         break;
       case this.bottom:
-        this.preview.styles.apply('show', v => ({ ...v, opacity: 1, top: '66%', bottom: 0, left: 0, right: 0 }));
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
         break;
       case this.center:
-        this.preview.styles.apply('show', v => ({ ...v, opacity: 1, top: 0, bottom: 0, left: 0, right: 0 }));
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1 });
         break;
       default:
-        this.preview.styles.apply('show', v => ({ ...v, opacity: 0 }))
+        this._dockResultPreview.styles.apply('hidden', { opacity: 0 })
         break;
     }
-
   };
   constructor() {
     super('div');
@@ -105,7 +107,7 @@ export class IndicatorView extends View<'div'> {
       this.left, this.center, this.right,
       new View('div'), this.bottom, new View('div')
     );
-    this.addChild(this.preview)
+    this.addChild(this._dockResultPreview)
     this.addChild(content);
     this._resizeOb = new ResizeObserver(entries => {
       entries.forEach(e => {
@@ -137,12 +139,10 @@ export class IndicatorView extends View<'div'> {
     this.center.fakeIn();
   }
   fakeOut() {
-
     if (this._following) {
       this._resizeOb.unobserve(this._following.inner);
       delete this._following;
     }
-
     this.styles.remove('appear').refresh();
     this.hoverOb.disabled = true;
     this.onHover(false);

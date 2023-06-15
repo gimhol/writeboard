@@ -8,6 +8,7 @@ import { IndicatorImage } from "./IndicatorImage";
 import { List } from "../../Helper/List";
 import { IndicatorView } from "./IndicatorView";
 import { IDockable as IDockable } from "./Dockable";
+import { HoverOb } from "../../Observer/HoverOb";
 
 export interface WorkspaceInits {
   rect?: GetValue<Rect>;
@@ -55,6 +56,47 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
     }
   })
+
+  private _hovering: View | null = null;
+  private _dockResultPreview = new View('div').styles.apply('normal', {
+    position: 'absolute',
+    zIndex: 1,
+    background: '#0055ff88',
+    boxSizing: 'border-box',
+    transition: 'all 200ms',
+    opacity: 0,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  }).view;
+  private _onHover = (hover: boolean, e: MouseEvent) => {
+    const view = View.try(e.target, View);
+    if (hover) {
+      this._hovering = view;
+    } else if (view === this._hovering) {
+      this._hovering = null;
+    } else {
+      return;
+    }
+    switch (this._hovering) {
+      case this._dockLeftIndicator:
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
+        break;
+      case this._dockRightIndicator:
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
+        break;
+      case this._dockTopIndicator:
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
+        break;
+      case this._dockBottomIndicator:
+        this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
+        break;
+      default:
+        this._dockResultPreview.styles.apply('hidden', { opacity: 0 })
+        break;
+    }
+  };
   private _dockIndicator = new IndicatorView();
   private _rootDockView = new DockView().asRoot(true).setWorkspace(this);
   private _deepestDockView = this._rootDockView.addEventListener(DockableEventType.Docked, e => {
@@ -76,11 +118,16 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this._rect = inits.rect;
     this._zIndex = inits?.zIndex ?? this._zIndex;
     this.addChild(this._rootDockView);
+    this.addChild(this._dockResultPreview)
     this.addChild(this._dockLeftIndicator);
     this.addChild(this._dockRightIndicator);
     this.addChild(this._dockTopIndicator);
     this.addChild(this._dockBottomIndicator);
     this.addChild(this._dockIndicator);
+    new HoverOb(this._dockLeftIndicator.inner).setCallback(this._onHover);
+    new HoverOb(this._dockRightIndicator.inner).setCallback(this._onHover);
+    new HoverOb(this._dockTopIndicator.inner).setCallback(this._onHover);
+    new HoverOb(this._dockBottomIndicator.inner).setCallback(this._onHover);
     inits?.wins && this.addChild(...inits.wins);
   }
   public dockToRoot(target: IDockable, direction: DockableDirection, pos: 'start' | 'end') {

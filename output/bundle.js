@@ -1869,15 +1869,20 @@ class IndicatorView extends View_1.View {
             borderTopLeftRadius: 0,
             borderTopRightRadius: 0,
         }).view;
-        this.center = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_bottom.svg' }).styles.apply('override', {
+        this.center = new IndicatorImage_1.IndicatorImage({ src: './ic_dock_to_center.svg' }).styles.apply('override', {
             borderRadius: 0,
         }).view;
-        this.preview = new View_1.View('div').styles.apply('normal', {
+        this._dockResultPreview = new View_1.View('div').styles.apply('normal', {
             position: 'absolute',
             zIndex: 1,
             background: '#0055ff88',
             boxSizing: 'border-box',
             transition: 'all 200ms',
+            opacity: 0,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0
         }).view;
         this._hovering = null;
         this._onHover = (hover, e) => {
@@ -1893,22 +1898,22 @@ class IndicatorView extends View_1.View {
             }
             switch (this._hovering) {
                 case this.left:
-                    this.preview.styles.apply('show', v => (Object.assign(Object.assign({}, v), { opacity: 1, top: 0, bottom: 0, left: 0, right: '66%' })));
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
                     break;
                 case this.right:
-                    this.preview.styles.apply('show', v => (Object.assign(Object.assign({}, v), { opacity: 1, top: 0, bottom: 0, left: '66%', right: 0 })));
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
                     break;
                 case this.top:
-                    this.preview.styles.apply('show', v => (Object.assign(Object.assign({}, v), { opacity: 1, top: 0, bottom: '66%', left: 0, right: 0 })));
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
                     break;
                 case this.bottom:
-                    this.preview.styles.apply('show', v => (Object.assign(Object.assign({}, v), { opacity: 1, top: '66%', bottom: 0, left: 0, right: 0 })));
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
                     break;
                 case this.center:
-                    this.preview.styles.apply('show', v => (Object.assign(Object.assign({}, v), { opacity: 1, top: 0, bottom: 0, left: 0, right: 0 })));
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1 });
                     break;
                 default:
-                    this.preview.styles.apply('show', v => (Object.assign(Object.assign({}, v), { opacity: 0 })));
+                    this._dockResultPreview.styles.apply('hidden', { opacity: 0 });
                     break;
             }
         };
@@ -1943,7 +1948,7 @@ class IndicatorView extends View_1.View {
             gap: '0px',
         });
         content.addChild(new View_1.View('div'), this.top, new View_1.View('div'), this.left, this.center, this.right, new View_1.View('div'), this.bottom, new View_1.View('div'));
-        this.addChild(this.preview);
+        this.addChild(this._dockResultPreview);
         this.addChild(content);
         this._resizeOb = new ResizeObserver(entries => {
             entries.forEach(e => {
@@ -2001,6 +2006,7 @@ const DockableDirection_1 = require("./DockableDirection");
 const IndicatorImage_1 = require("./IndicatorImage");
 const List_1 = require("../../Helper/List");
 const IndicatorView_1 = require("./IndicatorView");
+const HoverOb_1 = require("../../Observer/HoverOb");
 class WorkspaceView extends View_1.View {
     _updateUndockedWinsStyle() {
         this._undockedWins.forEach((win, idx, arr) => {
@@ -2044,6 +2050,48 @@ class WorkspaceView extends View_1.View {
                 position: 'absolute', left: 'calc(50% - 24px)', bottom: 16
             }
         });
+        this._hovering = null;
+        this._dockResultPreview = new View_1.View('div').styles.apply('normal', {
+            position: 'absolute',
+            zIndex: 1,
+            background: '#0055ff88',
+            boxSizing: 'border-box',
+            transition: 'all 200ms',
+            opacity: 0,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0
+        }).view;
+        this._onHover = (hover, e) => {
+            const view = View_1.View.try(e.target, View_1.View);
+            if (hover) {
+                this._hovering = view;
+            }
+            else if (view === this._hovering) {
+                this._hovering = null;
+            }
+            else {
+                return;
+            }
+            switch (this._hovering) {
+                case this._dockLeftIndicator:
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
+                    break;
+                case this._dockRightIndicator:
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
+                    break;
+                case this._dockTopIndicator:
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
+                    break;
+                case this._dockBottomIndicator:
+                    this._dockResultPreview.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
+                    break;
+                default:
+                    this._dockResultPreview.styles.apply('hidden', { opacity: 0 });
+                    break;
+            }
+        };
         this._dockIndicator = new IndicatorView_1.IndicatorView();
         this._rootDockView = new DockView_1.DockView().asRoot(true).setWorkspace(this);
         this._deepestDockView = this._rootDockView.addEventListener(EventType_1.DockableEventType.Docked, e => {
@@ -2145,11 +2193,16 @@ class WorkspaceView extends View_1.View {
         this._rect = inits.rect;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
         this.addChild(this._rootDockView);
+        this.addChild(this._dockResultPreview);
         this.addChild(this._dockLeftIndicator);
         this.addChild(this._dockRightIndicator);
         this.addChild(this._dockTopIndicator);
         this.addChild(this._dockBottomIndicator);
         this.addChild(this._dockIndicator);
+        new HoverOb_1.HoverOb(this._dockLeftIndicator.inner).setCallback(this._onHover);
+        new HoverOb_1.HoverOb(this._dockRightIndicator.inner).setCallback(this._onHover);
+        new HoverOb_1.HoverOb(this._dockTopIndicator.inner).setCallback(this._onHover);
+        new HoverOb_1.HoverOb(this._dockBottomIndicator.inner).setCallback(this._onHover);
         (inits === null || inits === void 0 ? void 0 : inits.wins) && this.addChild(...inits.wins);
     }
     dockToRoot(target, direction, pos) {
@@ -2297,7 +2350,7 @@ class WorkspaceView extends View_1.View {
 }
 exports.WorkspaceView = WorkspaceView;
 
-},{"../../BaseView/View":10,"../../Events/EventType":23,"../../Helper/List":26,"../../utils":31,"../Subwin":14,"./DockView":17,"./DockableDirection":18,"./IndicatorImage":20,"./IndicatorView":21}],23:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Events/EventType":23,"../../Helper/List":26,"../../Observer/HoverOb":30,"../../utils":31,"../Subwin":14,"./DockView":17,"./DockableDirection":18,"./IndicatorImage":20,"./IndicatorView":21}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableEventType = exports.ViewEventType = exports.EventType = void 0;
