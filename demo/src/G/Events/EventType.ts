@@ -19,3 +19,12 @@ export interface ViewEventMap extends EventMap {
   [ViewEventType.Added]: Event;
   [ViewEventType.Removed]: Event;
 }
+
+export enum DockableEventType {
+  Docked = 'docked',
+  Undocked = 'undocked',
+}
+export interface DockableEventMap extends ViewEventMap {
+  [DockableEventType.Docked]: Event;
+  [DockableEventType.Undocked]: Event;
+}

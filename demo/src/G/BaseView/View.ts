@@ -5,9 +5,9 @@ import { Styles } from "./Styles";
 
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
   public static RAW_KEY_IN_ELEMENT = 'g_view' as const;
-  public static get(ele: null): null;
+  public static get(ele: null | undefined): null;
   public static get(ele: Element): View;
-  public static get(ele: Element | null): View | null;
+  public static get(ele: Element | null | undefined): View | null;
   public static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T>;
   public static get(ele: any): any {
     if (!ele) { return null; }
@@ -48,9 +48,16 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   public get id() { return this.inner!.id; }
   public set id(v) { this.inner!.id = v; }
   public get parent() { return View.get(this.inner!.parentElement) }
+
   public get children() { return Array.from(this.inner!.children).map(v => View.get(v)) }
+  public get lastChild() { return View.get(this.inner.children[this.inner.children.length - 1]) }
+  public get firstChild() { return View.get(this.inner.children[0]) }
   public get draggable() { return this.inner!.draggable; }
   public set draggable(v) { this.inner!.draggable = v; }
+
+  public get nextSibling() { return View.get(this.inner.nextElementSibling) }
+  public get prevSibling() { return View.get(this.inner.previousElementSibling) }
+
 
   public constructor(element: HTMLElementTagNameMap[T]);
   public constructor(tagName: T);
@@ -81,39 +88,35 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   }
   public insertBefore(anchorOrIdx: View | number, ...children: View[]): this {
     if (!children.length) { return this; }
-    if (typeof anchorOrIdx === 'number' && anchorOrIdx > this.inner.children.length - 1) {
-      children = this._prehandleAddedChild(children);
-      this.inner.append(...children.map(v => v.inner));
-      this._handleAddedChildren(children);
-      return this;
-    }
-    const anchor = (typeof anchorOrIdx === 'number') ? this.inner.children[anchorOrIdx] : anchorOrIdx.inner;
-    if (!anchor) {
-      console.error('[View] insertChild failed! anchor element not found, idx = ', anchorOrIdx)
-      return this;
+    let anchor: Node | null = null;
+    if (typeof anchorOrIdx === 'number') {
+      anchor = this.inner.children[anchorOrIdx] ?? null;
+    } else if (anchorOrIdx instanceof View) {
+      anchor = anchorOrIdx.inner;
     }
     children = this._prehandleAddedChild(children);
-    children.forEach(child => this.inner.insertBefore(child.inner, anchor))
+    if (anchor) {
+      children.forEach(child => this.inner.insertBefore(child.inner, anchor))
+    } else {
+      this.inner.append(...children.map(v => v.inner));
+    }
     this._handleAddedChildren(children);
     return this;
   }
   public insertAfter(anchorOrIdx: View | number, ...children: View[]): this {
     if (!children.length) { return this; }
-
-    if (typeof anchorOrIdx === 'number' && anchorOrIdx > this.inner.children.length - 1) {
-      children = this._prehandleAddedChild(children);
-      this.inner.append(...children.map(v => v.inner));
-      this._handleAddedChildren(children);
-      return this;
-    }
-
-    const ele = (typeof anchorOrIdx === 'number') ? this.inner.children[anchorOrIdx + 1] : anchorOrIdx.inner.nextSibling;
-    if (!ele) {
-      console.error('[View] insertAfter failed! anchor element not found, idx = ', anchorOrIdx)
-      return this;
+    let anchor: Node | null = null;
+    if (typeof anchorOrIdx === 'number') {
+      anchor = this.inner.children[anchorOrIdx + 1] ?? null;
+    } else if (anchorOrIdx instanceof View) {
+      anchor = anchorOrIdx.inner.nextSibling;
     }
     children = this._prehandleAddedChild(children);
-    children.forEach(child => this.inner.insertBefore(child.inner, ele))
+    if (anchor) {
+      children.forEach(child => this.inner.insertBefore(child.inner, anchor))
+    } else {
+      this.inner.append(...children.map(v => v.inner));
+    }
     this._handleAddedChildren(children);
     return this;
   }
@@ -134,12 +137,15 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     this.parent?.removeChild(this);
     return this;
   }
+  public dispatchEvent<K extends keyof ViewEventMap>(event: ViewEventMap[K]): boolean;
+  public dispatchEvent(arg0: any): boolean {
+    return this.inner.dispatchEvent(arg0);
+  }
   public addEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions): this;
   public addEventListener(arg0: any, arg1: any, arg2: any): this {
     this.inner.addEventListener(arg0, arg1, arg2);
     return this;
   }
-
   public removeEventListener<K extends keyof ViewEventMap>(type: K, listener: (this: HTMLObjectElement, ev: ViewEventMap[K]) => any, options?: boolean | EventListenerOptions): this;
   public removeEventListener(arg0: any, arg1: any, arg2: any): this {
     this.inner.removeEventListener(arg0, arg1, arg2)

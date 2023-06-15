@@ -3,6 +3,8 @@ import { SubwinHeader } from "./SubwinHeader";
 import type { WorkspaceView } from "./Workspace/WorkspaceView";
 import { View } from "../BaseView/View";
 import { ViewDragger } from "../Helper/ViewDragger";
+import { IDockable } from "./Workspace/Dockable";
+import { DockableEventMap } from "../Events/EventType";
 export enum StyleNames {
   Root = 'subwin',
   Raised = 'subwin_raised',
@@ -10,7 +12,7 @@ export enum StyleNames {
   ChildLowered = 'subwin_child_lowered',
   Docked = 'subwin_docked'
 }
-export class Subwin extends View<'div'> {
+export class Subwin extends View<'div'> implements IDockable {
   static StyleNames = StyleNames;
   private _workspace?: WorkspaceView;
   private _header = new SubwinHeader();
@@ -19,8 +21,8 @@ export class Subwin extends View<'div'> {
   private _dragger: ViewDragger;
   private _resizeOb: ResizeObserver;
   get dragger() { return this._dragger; }
-  get workspace() { return this._workspace; }
-  set workspace(v) { this._workspace = v; }
+  workspace() { return this._workspace; }
+  setWorkspace(v: WorkspaceView) { this._workspace = v; return this; }
   get header() { return this._header; };
   get footer() { return this._footer; };
   get content() { return this._content; }
@@ -41,7 +43,7 @@ export class Subwin extends View<'div'> {
     }
   }
   raise() {
-    console.log('raise',this,)
+    console.log('raise', this,)
     this.styles.add(StyleNames.Raised).refresh();
     this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
     this.content?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
@@ -68,7 +70,7 @@ export class Subwin extends View<'div'> {
       boxShadow: 'unset',
       borderRadius: 0,
       zIndex: 'unset',
-      border: 'none'
+      border: 'none',
     }).apply(StyleNames.Root, {
       position: 'fixed',
       background: '#555555',
@@ -102,10 +104,13 @@ export class Subwin extends View<'div'> {
     })
     this._resizeOb.observe(this.inner);
   }
+  dockableView(): View<keyof HTMLElementTagNameMap> {
+    return this;
+  }
   private _dragWhenDocked = (x: number, y: number, prevX: number, prevY: number) => {
     if (Math.abs(x - prevX) + Math.abs(y - prevY) > 20) {
       const w0 = this.inner.offsetWidth;
-      this.workspace?.undockSubwin(this);
+      this.workspace()?.undock(this);
       const w1 = this.inner.offsetWidth;
       this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
 
@@ -126,6 +131,15 @@ export class Subwin extends View<'div'> {
   }
   resizeDocked(width: number | undefined, height: number | undefined) {
     this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))
+  }
+  public override addEventListener<K extends keyof DockableEventMap>(type: K, listener: (this: HTMLObjectElement, ev: DockableEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): this;
+  public override addEventListener(arg0: any, arg1: any, arg2: any): this {
+    return super.addEventListener(arg0, arg1, arg2);
+  }
+
+  public override removeEventListener<K extends keyof DockableEventMap>(type: K, listener: (this: HTMLObjectElement, ev: DockableEventMap[K]) => any, options?: boolean | EventListenerOptions | undefined): this;
+  public override removeEventListener(arg0: any, arg1: any, arg2: any): this {
+    return super.removeEventListener(arg0, arg1, arg2);
   }
 }
 

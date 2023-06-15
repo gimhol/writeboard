@@ -304,7 +304,7 @@ recorderView.content.addChild(_recorder_textarea);
 
 const rootView = new View('div');
 rootView.styles.apply('', { pointerEvents: 'all' }).applyCls('root');
-workspace.dockView.setContent(rootView);
+workspace.rootDockView.setContent(rootView);
 
 const blackboard = new View('div');
 blackboard.styles.applyCls('blackboard');

@@ -1,260 +1,171 @@
 import { Style } from "../../BaseView/StyleType";
 import { View } from "../../BaseView/View";
-import { ViewDragger } from "../../Helper/ViewDragger";
-import { HoverOb } from "../../Observer/HoverOb";
-import { Subwin } from "../Subwin";
-export enum StyleNames {
+import { DockableEventMap, DockableEventType, ViewEventMap } from "../../Events/EventType";
+import { IDockable } from "./Dockable";
+import { DockableDirection } from "./DockableDirection";
+import { DockableResizer } from "./DockableResizer";
+import { WorkspaceView } from "./WorkspaceView";
+export enum StyleName {
   AsRoot = "asroot",
   Normal = 'normal',
-  Docked = 'docked',
+  MaxDocked = 'MaxDocked',
+  Docked = 'MinDocked ',
 }
-export const DockViewStyles: Partial<Record<StyleNames, Style>> = {
-  [StyleNames.AsRoot]: {
+export const DockViewStyles: Partial<Record<StyleName, Style>> = {
+  [StyleName.AsRoot]: {
     position: 'absolute',
     left: 0,
     top: 0,
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
-  [StyleNames.Normal]: {
+  [StyleName.Normal]: {
     pointerEvents: 'none',
-    alignItems: 'stretch'
+    alignItems: 'stretch',
   },
-  [StyleNames.Docked]: {
+  [StyleName.Docked]: {
     position: 'relative',
     width: 'unset',
     height: 'unset',
     alignSelf: 'stretch',
+  },
+  [StyleName.MaxDocked]: {
     flex: 1
   }
 }
-export enum Direction {
-  None = '',
-  H = 'h',
-  V = 'v',
-}
-
-export class Resizer extends View<'div'> {
-  constructor(direction: Direction) {
-    super('div');
-    const w = direction === Direction.H ? 1 : undefined;
-    const h = direction === Direction.V ? 1 : undefined;
-    const hOffset = direction === Direction.H ? -3 : 0;
-    const vOffset = direction === Direction.V ? -3 : 0;
-    this.styles.apply('', {
-      width: w,
-      maxWidth: w,
-      minWidth: w,
-      height: h,
-      maxHeight: h,
-      minHeight: h,
-      overflow: 'visible',
-      zIndex: 1,
-      position: 'relative',
-      backgroundColor: 'black',
-    });
-    const handle = new View('div');
-    handle.styles.register('hover', {
-      backgroundColor: '#00000088',
-    }).apply('', {
-      left: hOffset,
-      right: hOffset,
-      top: vOffset,
-      bottom: vOffset,
-      cursor: direction === Direction.H ? 'col-resize' : 'row-resize',
-      position: 'absolute',
-      transition: 'background-color 200ms',
-      pointerEvents: 'all'
-    });
-    new HoverOb(handle.inner).setCallback(hover => handle.styles[hover ? 'add' : 'remove']('hover').refresh());
-    this.addChild(handle);
-    const handleDown = () => {
-      const chilren = this.parent?.children!
-      const idx = chilren.indexOf(this)!;
-      prevView = chilren[idx - 1];
-      nextView = chilren[idx + 1];
-      prevViewRect = prevView?.inner.getBoundingClientRect()
-      nextViewRect = nextView?.inner.getBoundingClientRect()
-    }
-    const handleMove = (x: number, y: number, oldX: number, oldY: number) => {
-      if ((prevView instanceof Subwin) || prevView instanceof DockView && prevView.direction !== Direction.None) {
-        prevView.resizeDocked(
-          direction === Direction.H ? (-3 + prevViewRect!.width - oldX + x) : undefined,
-          direction === Direction.V ? (-3 + prevViewRect!.height - oldY + y) : undefined
-        )
-      }
-      if (nextView instanceof Subwin || nextView instanceof DockView && nextView.direction !== Direction.None) {
-        nextView.resizeDocked(
-          direction === Direction.H ? (3 + nextViewRect!.width + oldX - x) : undefined,
-          direction === Direction.V ? (3 + nextViewRect!.height + oldY - y) : undefined
-        )
-      }
-    }
-    let prevView: View | undefined;
-    let nextView: View | undefined;
-    let prevViewRect: DOMRect | undefined;
-    let nextViewRect: DOMRect | undefined;
-    new ViewDragger({
-      handles: [handle],
-      responser: this,
-      handleDown,
-      handleMove,
-    })
-  }
-}
-
-export class DockView extends View<'div'> {
+const Tag = '[DockView]'
+export class DockView extends View<'div'> implements IDockable {
+  static StyleName = StyleName;
   get direction() { return this._direction; }
-  private _direction: Direction = Direction.None;
-  private prevResizers = new Map<View, Resizer>();
-  private nextResizers = new Map<View, Resizer>();
-  constructor(direction: Direction = Direction.None) {
+  private _direction: DockableDirection = DockableDirection.None;
+  constructor(direction: DockableDirection = DockableDirection.None) {
     super('div');
     this._direction = direction;
-    if (direction === Direction.H) {
+    if (direction === DockableDirection.H) {
       this.styles.apply('', { display: "flex", flexDirection: 'row' });
-    } else if (direction === Direction.V) {
+    } else if (direction === DockableDirection.V) {
       this.styles.apply('', { display: "flex", flexDirection: 'column' });
     }
     this.styles.applyCls('DockView');
     this.styles
       .registers(DockViewStyles)
-      .apply(StyleNames.Normal);
+      .apply(StyleName.Normal);
   }
-  setContent(view: View) { super.addChild(view); }
+  private _workspace?: WorkspaceView;
+  public workspace() { return this._workspace; }
+  public setWorkspace(v: WorkspaceView) { this._workspace = v; return this }
+  public setContent(view: View) { super.addChild(view); }
 
-  override addChild(...children: View[]): this {
-    if (!children.length) { return this; }
-    const beginAnchor = this.children[this.children.length - 1];
+  public push(dockables: IDockable[]): this {
+    if (!dockables.length) { return this; }
+    const children = dockables.map(child => child.dockableView());
+    const beginAnchor = this.lastChild;
     for (let i = 1; i < children.length; i += 2) {
-      const resizer = new Resizer(this.direction)
-      this.nextResizers.set(children[i - 1]!, resizer)
-      this.prevResizers.set(children[i]!, resizer)
-      children.splice(i, 0, resizer);
+      children.splice(i, 0, new DockableResizer(this._direction))
     }
     if (beginAnchor) {
-      const resizer = new Resizer(this.direction);
-      this.nextResizers.set(beginAnchor, resizer)
-      this.prevResizers.set(children[0]!, resizer)
-      children.splice(0, 0, resizer);
+      children.unshift(new DockableResizer(this._direction))
     }
     super.addChild(...children);
-    this.updateChildrenStyles(children);
+    dockables.forEach(v => this._dockableDocked(v));
     return this;
   }
-  override insertBefore(anchor: number | View, ...children: View[]): this {
-    if (!children.length) { return this; }
-    const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
-    const beginAnchor = this.children[idx - 1];
-    const endAnchor = this.children[idx];
+  public unshift(dockables: IDockable[]): this {
+    if (!dockables.length) { return this; }
+    const children = dockables.map(child => child.dockableView());
+    const endAnchor = this.firstChild;
     for (let i = 1; i < children.length; i += 2) {
-      const resizer = new Resizer(this.direction)
-      this.nextResizers.set(children[i - 1]!, resizer)
-      this.prevResizers.set(children[i]!, resizer)
-      children.splice(i, 0, resizer);
-    }
-    if (beginAnchor) {
-      const resizer = new Resizer(this.direction);
-      this.nextResizers.set(beginAnchor, resizer)
-      this.prevResizers.set(children[0]!, resizer)
-      children.splice(0, 0, resizer);
+      children.splice(i, 0, new DockableResizer(this._direction))
     }
     if (endAnchor) {
-      const resizer = new Resizer(this.direction);
-      this.nextResizers.set(children[children.length - 1]!, resizer)
-      this.prevResizers.set(endAnchor, resizer)
-      children.push(resizer);
+      children.push(new DockableResizer(this._direction))
     }
-    super.insertBefore(anchor, ...children);
-    this.updateChildrenStyles(children);
+    super.insertBefore(0, ...children);
+    dockables.forEach(v => this._dockableDocked(v));
     return this;
   }
-  override insertAfter(anchor: number | View, ...children: View[]): this {
-    if (!children.length) { return this; }
-    const idx = typeof anchor === 'number' ? anchor : this.children.indexOf(anchor);
-    const beginAnchor = this.children[idx];
-    const endAnchor = this.children[idx + 1];
+  public dockBefore(anchor: IDockable, dockables: IDockable[]): this {
+    if (!dockables.length) { return this; }
+    const children = dockables.map(child => child.dockableView());
+    const endAnchor = anchor.dockableView();
     for (let i = 1; i < children.length; i += 2) {
-      const resizer = new Resizer(this.direction)
-      this.nextResizers.set(children[i - 1]!, resizer)
-      this.prevResizers.set(children[i]!, resizer)
-      children.splice(i, 0, resizer);
-    }
-    if (beginAnchor) {
-      const resizer = new Resizer(this.direction);
-      this.nextResizers.set(beginAnchor, resizer)
-      this.prevResizers.set(children[0]!, resizer)
-      children.splice(0, 0, resizer);
+      children.splice(i, 0, new DockableResizer(this._direction))
     }
     if (endAnchor) {
-      const resizer = new Resizer(this.direction);
-      this.nextResizers.set(children[children.length - 1]!, resizer)
-      this.prevResizers.set(endAnchor, resizer)
-      children.push(resizer);
+      children.push(new DockableResizer(this._direction))
     }
-    super.insertAfter(anchor, ...children);
-    this.updateChildrenStyles(children);
+    super.insertBefore(endAnchor, ...children);
+    dockables.forEach(v => this._dockableDocked(v));
     return this;
   }
-  override removeChild(...children: View<keyof HTMLElementTagNameMap>[]): this {
-    if (!children.length) { return this; }
-    const allChildren = this.children;
-    const resizers = new Set<Resizer>();
-    children.forEach(child => {
-      if (allChildren[0] === child) {
-        const resizer = this.nextResizers.get(child)
-        resizer && resizers.add(resizer);
-      }
-      const resizer = this.prevResizers.get(child);
-      resizer && resizers.add(resizer);
-
-    });
-    super.removeChild(...children, ...resizers);
-    children.forEach(child => {
-      if (child instanceof DockView || child instanceof Subwin) {
-        child.onUndocked();
-      }
-    })
+  public dockAfter(anchor: IDockable, dockables: IDockable[]): this {
+    if (!dockables.length) { return this; }
+    const children = dockables.map(child => child.dockableView());
+    const beginAnchor = anchor.dockableView();
+    for (let i = 1; i < children.length; i += 2) {
+      const resizer = new DockableResizer(this._direction)
+      children.splice(i, 0, resizer)
+    }
+    if (beginAnchor) {
+      children.unshift(new DockableResizer(this._direction))
+    }
+    super.insertAfter(beginAnchor, ...children)
+    dockables.forEach(v => this._dockableDocked(v));
     return this;
   }
-  override replaceChild(newChild: View, oldChild: View): this {
-    const pr = this.prevResizers.get(oldChild);
-    if (pr) {
-      this.prevResizers.delete(oldChild);
-      this.prevResizers.set(newChild, pr);
-    }
-    const nr = this.nextResizers.get(oldChild);
-    if (nr) {
-      this.nextResizers.delete(oldChild);
-      this.nextResizers.set(newChild, nr);
-    }
+  public replace(anchor: IDockable, dockable: IDockable,): this {
+    const newChild = dockable.dockableView();
+    const oldChild = anchor.dockableView();
     super.replaceChild(newChild, oldChild);
-    if (oldChild instanceof DockView || oldChild instanceof Subwin) {
-      oldChild.onUndocked();
-    }
-    if (newChild instanceof DockView || newChild instanceof Subwin) {
-      newChild.onDocked();
-    }
+    this._dockableDocked(dockable);
+    this._dockableUndocked(anchor);
     return this;
   }
-  private updateChildrenStyles(children: View[]) {
-    children.forEach(v => {
-      if (v instanceof DockView || v instanceof Subwin) {
-        v.onDocked();
-      }
-    });
+  public remove(dockable: IDockable): this {
+    const view = dockable.dockableView();
+    const nextResizer = view.nextSibling;
+    const prevResizer = view.prevSibling;
+    const children = [dockable.dockableView()]
+    if (prevResizer) {
+      children.unshift(prevResizer)
+    } else if (nextResizer) {
+      children.push(nextResizer);
+    }
+    this._dockableUndocked(dockable);
+    return super.removeChild(...children);
   }
-  onDocked(): void {
-    this.styles.apply(StyleNames.Docked);
+  public dockableView(): DockView { return this; }
+  public onDocked(): void {
+    this.styles.apply(StyleName.Docked);
   }
-  onUndocked(): void {
-    this.styles.forgo(StyleNames.Docked);
+  public onUndocked(): void {
+    this.styles.forgo(StyleName.MaxDocked, StyleName.Docked);
   }
-  asRoot(v: boolean): this {
-    this.styles[v ? 'apply' : 'forgo'](StyleNames.AsRoot)
+  public asRoot(v: boolean): this {
+    this.styles[v ? 'apply' : 'forgo'](StyleName.AsRoot)
     return this;
   }
-  resizeDocked(width: number | undefined, height: number | undefined) {
-    this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))
+  public resizeDocked(width: number | undefined, height: number | undefined) {
+    this.styles.apply(StyleName.Docked, v => ({ ...v, width, height }))
+  }
+
+  public override addEventListener<K extends keyof DockableEventMap>(type: K, listener: (this: HTMLObjectElement, ev: DockableEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): this;
+  public override addEventListener(arg0: any, arg1: any, arg2: any): this {
+    return super.addEventListener(arg0, arg1, arg2);
+  }
+
+  public override removeEventListener<K extends keyof DockableEventMap>(type: K, listener: (this: HTMLObjectElement, ev: DockableEventMap[K]) => any, options?: boolean | EventListenerOptions | undefined): this;
+  public override removeEventListener(arg0: any, arg1: any, arg2: any): this {
+    return super.removeEventListener(arg0, arg1, arg2);
+  }
+
+  private _dockableDocked(v: IDockable) {
+    v.onDocked();
+    v.dispatchEvent<DockableEventType.Docked>(new Event(DockableEventType.Docked))
+  }
+
+  private _dockableUndocked(v: IDockable) {
+    v.onUndocked();
+    v.dispatchEvent<DockableEventType.Undocked>(new Event(DockableEventType.Undocked))
   }
 }
