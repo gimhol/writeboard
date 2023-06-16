@@ -1,6 +1,4 @@
-import { ReValue } from "../utils";
 import { SizeType } from "./SizeType";
-import { Style } from "./StyleType";
 import { View } from "./View";
 
 export type ButtonContent = string | View;
@@ -13,18 +11,12 @@ export interface ButtonInits {
   checkable?: boolean;
   checked?: boolean;
 }
-export enum ButtonStyleNames {
-  Small = 'small',
-  Middle = 'middle',
-  Large = 'large',
-};
 export enum ButtonState {
   Normal = 0,
   Checked = 1,
 }
 export class Button extends View<'button'> {
   static State = ButtonState;
-  static StyleNames = ButtonStyleNames;
   protected _size: SizeType = SizeType.Middle;
   protected _preSize?: SizeType;
   protected _contents?: Map<ButtonState, ButtonContent>;
@@ -79,25 +71,7 @@ export class Button extends View<'button'> {
   constructor() {
     super('button');
     this.hoverOb;
-    this.styles.register(ButtonStyleNames.Small, {
-      minWidth: 18,
-      height: 18,
-      lineHeight: 18,
-      borderRadius: 5,
-      fontSize: 12,
-    }).register(ButtonStyleNames.Middle, {
-      minWidth: 24,
-      height: 24,
-      lineHeight: 24,
-      borderRadius: 5,
-      fontSize: 14,
-    }).register(ButtonStyleNames.Large, {
-      minWidth: 32,
-      height: 32,
-      lineHeight: 32,
-      borderRadius: 5,
-      fontSize: 24,
-    }).addCls('g_button').refresh();
+    this.styles.addCls('g_button');
 
     this.inner.addEventListener('click', () => {
       if (this._checkable) {
@@ -164,16 +138,15 @@ export class Button extends View<'button'> {
       this.inner.setAttribute('title', title);
     }
   }
-  private aaa: Record<SizeType, ButtonStyleNames> = {
-    [SizeType.Small]: ButtonStyleNames.Small,
-    [SizeType.Middle]: ButtonStyleNames.Middle,
-    [SizeType.Large]: ButtonStyleNames.Large
+  private aaa: Record<SizeType, string> = {
+    [SizeType.Small]: 'g_button_small',
+    [SizeType.Middle]: 'g_button_middle',
+    [SizeType.Large]: 'g_button_large',
   }
   updateSize() {
     this.styles
-      .remove(this.aaa[this._preSize!])
-      .add(this.aaa[this._size])
-      .refresh();
+      .delCls(this.aaa[this._preSize!])
+      .addCls(this.aaa[this._size]);
     this._preSize = this._size;
   }
 }

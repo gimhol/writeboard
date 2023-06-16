@@ -33,14 +33,26 @@ export class TextInput extends View<'input'>{
           this.updateStyle();
         }
       })
-    }) 
+    })
     ob.observe(this.inner, { attributes: true })
   }
   updateStyle() {
     const styles = this.styles;
-    styles[(this.focused && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Focused)
-    styles[(this.hover && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Hover)
-    styles[this.disabled ? 'add' : 'remove'](InputStyleNames.Disabled)
+    if (this.disabled) {
+      styles.add(InputStyleNames.Disabled);
+      styles.del(InputStyleNames.Focused, InputStyleNames.Hover);
+    } else {
+      if (this.focused) {
+        styles.add(InputStyleNames.Focused);
+      } else {
+        styles.del(InputStyleNames.Focused);
+      }
+      if (this.hover) {
+        styles.add(InputStyleNames.Hover);
+      } else {
+        styles.del(InputStyleNames.Hover);
+      }
+    }
     styles.refresh();
   }
   override onHover(hover: boolean): void {

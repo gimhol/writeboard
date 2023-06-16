@@ -1,4 +1,4 @@
-import { Button, ButtonInits, ButtonState, ButtonStyleNames } from "../BaseView/Button";
+import { Button, ButtonInits, ButtonState } from "../BaseView/Button";
 import { Image } from "../BaseView/Image";
 import { CssObjectFit } from "../BaseView/StyleType";
 export interface IconButtonInits extends ButtonInits {
@@ -44,7 +44,7 @@ export class IconButton extends Button {
     const content = this.content;
     if (content instanceof Image) {
       content.src = src!;
-      
+
     }
     super.updateContent();
   }

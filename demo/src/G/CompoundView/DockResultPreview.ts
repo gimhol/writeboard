@@ -30,18 +30,18 @@ export default class DockResultPreview extends View<'div'>{
     this.styles.apply('hidden', { opacity: 0 })
   }
   toLeft() {
-    this.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
+    this.styles.del('hidden').apply('show', { opacity: 1, right: '75%' });
   }
   toRight() {
-    this.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
+    this.styles.del('hidden').apply('show', { opacity: 1, left: '75%' });
   }
   toTop() {
-    this.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
+    this.styles.del('hidden').apply('show', { opacity: 1, bottom: '75%' });
   }
   toBottom() {
-    this.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
+    this.styles.del('hidden').apply('show', { opacity: 1, top: '75%' });
   }
   toCenter() {
-    this.styles.remove('hidden').apply('show', { opacity: 1 });
+    this.styles.del('hidden').apply('show', { opacity: 1 });
   }
 }

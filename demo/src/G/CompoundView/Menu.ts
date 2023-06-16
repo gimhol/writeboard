@@ -61,7 +61,7 @@ export class MenuItemView<K extends string | number | symbol> extends View<'div'
     if (hover) {
       this.styles.add(StyleNames.ItemHover).refresh()
     } else {
-      this.styles.remove(StyleNames.ItemHover).refresh()
+      this.styles.del(StyleNames.ItemHover).refresh()
     }
     if (hover) {
       const { left, top, width, height } = this.inner.getBoundingClientRect();

@@ -64,7 +64,7 @@ export class Styles<T extends string = string, V extends View<keyof HTMLElementT
     names.forEach(name => this.applieds.add(name));
     return this;
   }
-  remove(...names: T[]): this {
+  del(...names: T[]): this {
     names.forEach(name => this.applieds.delete(name));
     return this;
   }
@@ -74,7 +74,7 @@ export class Styles<T extends string = string, V extends View<keyof HTMLElementT
     return this;
   }
   forgo(...names: T[]): this {
-    this.remove(...names).refresh();
+    this.del(...names).refresh();
     return this;
   }
   refresh() {

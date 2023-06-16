@@ -94,7 +94,7 @@ export class LayerItemView extends View<'div'> {
 
   updateStyle() {
     const styleName = `${this.hover}_${this.selected}`;
-    this.styles.remove(this._prevStyleName!).add(styleName).refresh()
+    this.styles.del(this._prevStyleName!).add(styleName).refresh()
     this._prevStyleName = styleName;
   }
   override onHover(hover: boolean): void { this.updateStyle() }

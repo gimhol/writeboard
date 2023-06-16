@@ -176,7 +176,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     if (y + h > rect.y + rect.h) { y = rect.y + rect.h - h }
     if (y < rect.y) { y = rect.y; }
     if (x < rect.x) { x = rect.x; }
-    subwin.styles.apply('view_dragger_pos', { left: x, top: y });
+    subwin.move(x, y);
   }
 
   private _onSubwinDragStart = (e: EventMap[EventType.ViewDragStart]) => {

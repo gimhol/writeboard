@@ -1,4 +1,4 @@
-import { Button, ButtonInits, ButtonStyleNames } from "./G/BaseView/Button";
+import { Button, ButtonInits } from "./G/BaseView/Button";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Canvas } from "./G/BaseView/Canvas";
 import { NumberInput } from "./G/BaseView/NumberInput";

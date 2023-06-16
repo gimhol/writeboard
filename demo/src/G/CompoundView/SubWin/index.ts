@@ -6,8 +6,8 @@ import { ViewDragger } from "../../Helper/ViewDragger";
 import { IDockable } from "../Workspace/Dockable";
 import { DockableEventMap } from "../../Events/EventType";
 export enum StyleNames {
-  Root = 'subwin',
-  Docked = 'subwin_docked'
+  Normal = 'normal',
+  Docked = 'docked'
 }
 export class Subwin extends View<'div'> implements IDockable {
   static StyleNames = StyleNames;
@@ -40,13 +40,7 @@ export class Subwin extends View<'div'> implements IDockable {
   }
   constructor() {
     super('div');
-    this.styles.register(StyleNames.Docked, {
-      left: 'unset',
-      top: 'unset',
-      width: 'unset',
-      height: 'unset',
-      zIndex: 'unset',
-    }).addCls('g_subwin');
+    this.styles.addCls('g_subwin').apply(StyleNames.Normal, {});
     this.addChild(this._header, this._footer);
     this._dragger = new ViewDragger({
       responser: this,
@@ -54,11 +48,11 @@ export class Subwin extends View<'div'> implements IDockable {
         this.header.titleView,
         this.header.iconView
       ],
-      handleMove: this._dragWhenUndocked,
+      handleMove: this.move.bind(this),
     });
     this._resizeOb = new ResizeObserver(() => {
-      const { width, height } = getComputedStyle(this.inner);
-      this.styles.edit(StyleNames.Root, v => ({ ...v, width, height }))
+      const { width, height } = this.inner.getBoundingClientRect()
+      this.resize(width, height);
     })
     this._resizeOb.observe(this.inner);
     this.header.btnClose.addEventListener('click', e => this.styles.apply('hidden', { display: 'none' }))
@@ -74,20 +68,32 @@ export class Subwin extends View<'div'> implements IDockable {
       this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
     }
   }
-  private _dragWhenUndocked = (x: number, y: number) => {
-    this.styles.apply('view_dragger_pos', { left: x, top: y })
+  move(x: number, y: number) {
+    this.styles.edit(StyleNames.Normal, v => ({ ...v, left: x, top: y })).refresh();
+  }
+  resize(width: number, height: number) {
+    this.styles.edit(StyleNames.Normal, v => ({ ...v, width, height })).refresh()
   }
   onDocked(): void {
     this._resizeOb.unobserve(this.inner);
-    this.styles.addCls('g_subwin_docked').delCls('g_subwin_raised', 'g_subwin_lower').apply(StyleNames.Docked);
-    this.dragger.handleMove = this._dragWhenDocked;
-    this.header.btnClose.styles.apply('hidden', { display: 'none' });
+    this.styles
+      .addCls('g_subwin_docked')
+      .delCls('g_subwin_raised', 'g_subwin_lower')
+      .del(StyleNames.Normal)
+      .add(StyleNames.Docked)
+      .refresh();
+    this.dragger.handleMove = this._dragWhenDocked.bind(this);
+    this.header.btnClose.styles.addCls('g_gone');
   }
   onUndocked(): void {
     this._resizeOb.observe(this.inner);
-    this.styles.delCls('g_subwin_docked').forgo(StyleNames.Docked);
-    this.dragger.handleMove = this._dragWhenUndocked;
-    this.header.btnClose.styles.forgo('hidden');
+    this.styles
+      .delCls('g_subwin_docked')
+      .add(StyleNames.Normal)
+      .del(StyleNames.Docked)
+      .refresh();
+    this.dragger.handleMove = this.move.bind(this);
+    this.header.btnClose.styles.delCls('g_gone');
   }
   resizeDocked(width: number | undefined, height: number | undefined) {
     this.styles.apply(StyleNames.Docked, v => ({ ...v, width, height }))

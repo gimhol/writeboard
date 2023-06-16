@@ -184,16 +184,9 @@ class ColorNumInput extends NumberInput_1.NumberInput {
 },{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Button = exports.ButtonState = exports.ButtonStyleNames = void 0;
+exports.Button = exports.ButtonState = void 0;
 const SizeType_1 = require("./SizeType");
 const View_1 = require("./View");
-var ButtonStyleNames;
-(function (ButtonStyleNames) {
-    ButtonStyleNames["Small"] = "small";
-    ButtonStyleNames["Middle"] = "middle";
-    ButtonStyleNames["Large"] = "large";
-})(ButtonStyleNames = exports.ButtonStyleNames || (exports.ButtonStyleNames = {}));
-;
 var ButtonState;
 (function (ButtonState) {
     ButtonState[ButtonState["Normal"] = 0] = "Normal";
@@ -254,30 +247,12 @@ class Button extends View_1.View {
         this._checked = false;
         this._checkable = false;
         this.aaa = {
-            [SizeType_1.SizeType.Small]: ButtonStyleNames.Small,
-            [SizeType_1.SizeType.Middle]: ButtonStyleNames.Middle,
-            [SizeType_1.SizeType.Large]: ButtonStyleNames.Large
+            [SizeType_1.SizeType.Small]: 'g_button_small',
+            [SizeType_1.SizeType.Middle]: 'g_button_middle',
+            [SizeType_1.SizeType.Large]: 'g_button_large',
         };
         this.hoverOb;
-        this.styles.register(ButtonStyleNames.Small, {
-            minWidth: 18,
-            height: 18,
-            lineHeight: 18,
-            borderRadius: 5,
-            fontSize: 12,
-        }).register(ButtonStyleNames.Middle, {
-            minWidth: 24,
-            height: 24,
-            lineHeight: 24,
-            borderRadius: 5,
-            fontSize: 14,
-        }).register(ButtonStyleNames.Large, {
-            minWidth: 32,
-            height: 32,
-            lineHeight: 32,
-            borderRadius: 5,
-            fontSize: 24,
-        }).addCls('g_button').refresh();
+        this.styles.addCls('g_button');
         this.inner.addEventListener('click', () => {
             if (this._checkable) {
                 this._checked = !this._checked;
@@ -347,15 +322,13 @@ class Button extends View_1.View {
     }
     updateSize() {
         this.styles
-            .remove(this.aaa[this._preSize])
-            .add(this.aaa[this._size])
-            .refresh();
+            .delCls(this.aaa[this._preSize])
+            .addCls(this.aaa[this._size]);
         this._preSize = this._size;
     }
 }
 exports.Button = Button;
 Button.State = ButtonState;
-Button.StyleNames = ButtonStyleNames;
 
 },{"./SizeType":6,"./View":10}],3:[function(require,module,exports){
 "use strict";
@@ -604,7 +577,7 @@ class Styles {
         names.forEach(name => this.applieds.add(name));
         return this;
     }
-    remove(...names) {
+    del(...names) {
         names.forEach(name => this.applieds.delete(name));
         return this;
     }
@@ -615,7 +588,7 @@ class Styles {
         return this;
     }
     forgo(...names) {
-        this.remove(...names).refresh();
+        this.del(...names).refresh();
         return this;
     }
     refresh() {
@@ -709,9 +682,24 @@ class TextInput extends View_1.View {
     }
     updateStyle() {
         const styles = this.styles;
-        styles[(this.focused && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Focused);
-        styles[(this.hover && !this.disabled) ? 'add' : 'remove'](InputStyleNames.Hover);
-        styles[this.disabled ? 'add' : 'remove'](InputStyleNames.Disabled);
+        if (this.disabled) {
+            styles.add(InputStyleNames.Disabled);
+            styles.del(InputStyleNames.Focused, InputStyleNames.Hover);
+        }
+        else {
+            if (this.focused) {
+                styles.add(InputStyleNames.Focused);
+            }
+            else {
+                styles.del(InputStyleNames.Focused);
+            }
+            if (this.hover) {
+                styles.add(InputStyleNames.Hover);
+            }
+            else {
+                styles.del(InputStyleNames.Hover);
+            }
+        }
         styles.refresh();
     }
     onHover(hover) {
@@ -964,19 +952,19 @@ class DockResultPreview extends View_1.View {
         this.styles.apply('hidden', { opacity: 0 });
     }
     toLeft() {
-        this.styles.remove('hidden').apply('show', { opacity: 1, right: '75%' });
+        this.styles.del('hidden').apply('show', { opacity: 1, right: '75%' });
     }
     toRight() {
-        this.styles.remove('hidden').apply('show', { opacity: 1, left: '75%' });
+        this.styles.del('hidden').apply('show', { opacity: 1, left: '75%' });
     }
     toTop() {
-        this.styles.remove('hidden').apply('show', { opacity: 1, bottom: '75%' });
+        this.styles.del('hidden').apply('show', { opacity: 1, bottom: '75%' });
     }
     toBottom() {
-        this.styles.remove('hidden').apply('show', { opacity: 1, top: '75%' });
+        this.styles.del('hidden').apply('show', { opacity: 1, top: '75%' });
     }
     toCenter() {
-        this.styles.remove('hidden').apply('show', { opacity: 1 });
+        this.styles.del('hidden').apply('show', { opacity: 1 });
     }
 }
 exports.default = DockResultPreview;
@@ -1079,7 +1067,7 @@ class MenuItemView extends View_1.View {
             this.styles.add(StyleNames.ItemHover).refresh();
         }
         else {
-            this.styles.remove(StyleNames.ItemHover).refresh();
+            this.styles.del(StyleNames.ItemHover).refresh();
         }
         if (hover) {
             const { left, top, width, height } = this.inner.getBoundingClientRect();
@@ -1261,8 +1249,8 @@ const View_1 = require("../../BaseView/View");
 const ViewDragger_1 = require("../../Helper/ViewDragger");
 var StyleNames;
 (function (StyleNames) {
-    StyleNames["Root"] = "subwin";
-    StyleNames["Docked"] = "subwin_docked";
+    StyleNames["Normal"] = "normal";
+    StyleNames["Docked"] = "docked";
 })(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
 class Subwin extends View_1.View {
     get dragger() { return this._dragger; }
@@ -1301,16 +1289,7 @@ class Subwin extends View_1.View {
                 this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
             }
         };
-        this._dragWhenUndocked = (x, y) => {
-            this.styles.apply('view_dragger_pos', { left: x, top: y });
-        };
-        this.styles.register(StyleNames.Docked, {
-            left: 'unset',
-            top: 'unset',
-            width: 'unset',
-            height: 'unset',
-            zIndex: 'unset',
-        }).addCls('g_subwin');
+        this.styles.addCls('g_subwin').apply(StyleNames.Normal, {});
         this.addChild(this._header, this._footer);
         this._dragger = new ViewDragger_1.ViewDragger({
             responser: this,
@@ -1318,11 +1297,11 @@ class Subwin extends View_1.View {
                 this.header.titleView,
                 this.header.iconView
             ],
-            handleMove: this._dragWhenUndocked,
+            handleMove: this.move.bind(this),
         });
         this._resizeOb = new ResizeObserver(() => {
-            const { width, height } = getComputedStyle(this.inner);
-            this.styles.edit(StyleNames.Root, v => (Object.assign(Object.assign({}, v), { width, height })));
+            const { width, height } = this.inner.getBoundingClientRect();
+            this.resize(width, height);
         });
         this._resizeOb.observe(this.inner);
         this.header.btnClose.addEventListener('click', e => this.styles.apply('hidden', { display: 'none' }));
@@ -1330,17 +1309,32 @@ class Subwin extends View_1.View {
     dockableView() {
         return this;
     }
+    move(x, y) {
+        this.styles.edit(StyleNames.Normal, v => (Object.assign(Object.assign({}, v), { left: x, top: y }))).refresh();
+    }
+    resize(width, height) {
+        this.styles.edit(StyleNames.Normal, v => (Object.assign(Object.assign({}, v), { width, height }))).refresh();
+    }
     onDocked() {
         this._resizeOb.unobserve(this.inner);
-        this.styles.addCls('g_subwin_docked').delCls('g_subwin_raised', 'g_subwin_lower').apply(StyleNames.Docked);
-        this.dragger.handleMove = this._dragWhenDocked;
-        this.header.btnClose.styles.apply('hidden', { display: 'none' });
+        this.styles
+            .addCls('g_subwin_docked')
+            .delCls('g_subwin_raised', 'g_subwin_lower')
+            .del(StyleNames.Normal)
+            .add(StyleNames.Docked)
+            .refresh();
+        this.dragger.handleMove = this._dragWhenDocked.bind(this);
+        this.header.btnClose.styles.addCls('g_gone');
     }
     onUndocked() {
         this._resizeOb.observe(this.inner);
-        this.styles.delCls('g_subwin_docked').forgo(StyleNames.Docked);
-        this.dragger.handleMove = this._dragWhenUndocked;
-        this.header.btnClose.styles.forgo('hidden');
+        this.styles
+            .delCls('g_subwin_docked')
+            .add(StyleNames.Normal)
+            .del(StyleNames.Docked)
+            .refresh();
+        this.dragger.handleMove = this.move.bind(this);
+        this.header.btnClose.styles.delCls('g_gone');
     }
     resizeDocked(width, height) {
         this.styles.apply(StyleNames.Docked, v => (Object.assign(Object.assign({}, v), { width, height })));
@@ -2004,7 +1998,7 @@ class WorkspaceView extends View_1.View {
         if (x < rect.x) {
             x = rect.x;
         }
-        subwin.styles.apply('view_dragger_pos', { left: x, top: y });
+        subwin.move(x, y);
     }
     addChild(...children) {
         super.addChild(...children);
@@ -2589,7 +2583,7 @@ class LayerItemView extends View_1.View {
     }
     updateStyle() {
         const styleName = `${this.hover}_${this.selected}`;
-        this.styles.remove(this._prevStyleName).add(styleName).refresh();
+        this.styles.del(this._prevStyleName).add(styleName).refresh();
         this._prevStyleName = styleName;
     }
     onHover(hover) { this.updateStyle(); }
