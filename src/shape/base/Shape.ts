@@ -1,18 +1,18 @@
 import { ShapeData } from "./Data"
-import { WhiteBoard } from "../../board/WhiteBoard"
+import { Board } from "../../board/Board"
 import { IRect, Rect } from "../../utils/Rect"
 import { ShapeType } from "../ShapeEnum"
 
 export class Shape<D extends ShapeData = ShapeData> {
   private _data: D
-  private _board?: WhiteBoard
+  private _board?: Board
   constructor(data: D) {
     this._data = data
   }
   get data(): D { return this._data as D }
   get type(): ShapeType { return this._data.type }
-  get board(): WhiteBoard | undefined { return this._board }
-  set board(v: WhiteBoard | undefined) { this._board = v }
+  get board(): Board | undefined { return this._board }
+  set board(v: Board | undefined) { this._board = v }
   get visible(): boolean {
     return !!this._data.visible
   }

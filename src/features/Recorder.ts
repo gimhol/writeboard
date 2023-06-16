@@ -1,4 +1,4 @@
-import { WhiteBoard } from "../board";
+import { Board } from "../board";
 import { EventEnum } from "../event";
 import { Screenplay } from "./Screenplay";
 
@@ -14,7 +14,7 @@ export class Recorder {
     this.cancellers.forEach(v => v())
     this.cancellers = []
   }
-  start(actor: WhiteBoard) {
+  start(actor: Board) {
     console.log('[Recorder] start()')
     this.cancellers.forEach(v => v())
     this.cancellers = []

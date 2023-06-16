@@ -3394,10 +3394,10 @@ layersView.addEventListener(LayersView_1.LayersView.EventType.LayerActived, e =>
     const { id } = e.detail;
     board.editLayer(id);
 });
-layersView.addLayer({
-    name: '' + Date.now(),
-    id: factory.newLayerId()
-});
+// layersView.addLayer({
+//   name: '' + Date.now(),
+//   id: factory.newLayerId()
+// });
 const toolsView = new ToolsView_1.ToolsView;
 workspace.addChild(toolsView);
 toolsView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: 5 })));
@@ -3596,71 +3596,13 @@ workspace.dockToRoot(toolsView, DockableDirection_1.DockableDirection.H, 'start'
 },{"../../dist":49,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/SubWin":17,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Layer = exports.LayerInfo = void 0;
-class LayerInfo {
-    get id() { return this._id; }
-    get name() { return this._name; }
-    ;
-    constructor(inits) {
-        this._id = inits.id;
-        this._name = inits.name;
-    }
-}
-exports.LayerInfo = LayerInfo;
-class Layer {
-    get name() { return this._info.name; }
-    ;
-    get info() { return this._info; }
-    ;
-    get onscreen() { return this._onscreen; }
-    ;
-    get offscreen() { return this._offscreen; }
-    ;
-    get ctx() { return this._ctx; }
-    ;
-    get octx() { return this._octx; }
-    ;
-    get opacity() { return Number(this._offscreen.style.opacity); }
-    ;
-    set opacity(v) { this._onscreen.style.opacity = '' + v; }
-    ;
-    get id() { return this._info.id; }
-    constructor(inits) {
-        this._info = new LayerInfo(inits.info);
-        this._onscreen = inits.onscreen;
-        this._ctx = this._onscreen.getContext('2d');
-        this._offscreen = document.createElement('canvas');
-        this._offscreen.width = inits.onscreen.width;
-        this._offscreen.height = inits.onscreen.height;
-        this._octx = this._offscreen.getContext('2d');
-    }
-    get width() {
-        return this._onscreen.width;
-    }
-    set width(v) {
-        this._onscreen.width = v;
-        this._offscreen.width = v;
-    }
-    get height() {
-        return this._onscreen.height;
-    }
-    set height(v) {
-        this._onscreen.height = v;
-        this._offscreen.height = v;
-    }
-}
-exports.Layer = Layer;
-
-},{}],40:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.WhiteBoard = void 0;
+exports.Board = void 0;
 const event_1 = require("../event");
 const tools_1 = require("../tools");
 const utils_1 = require("../utils");
 const Layer_1 = require("./Layer");
-const Tag = '[WhiteBoard]';
-class WhiteBoard {
+const Tag = '[Board]';
+class Board {
     get width() {
         return this._width;
     }
@@ -3955,9 +3897,67 @@ class WhiteBoard {
         delete this._dirty;
     }
 }
-exports.WhiteBoard = WhiteBoard;
+exports.Board = Board;
 
-},{"../event":44,"../tools":87,"../utils":99,"./Layer":39}],41:[function(require,module,exports){
+},{"../event":44,"../tools":87,"../utils":99,"./Layer":40}],40:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Layer = exports.LayerInfo = void 0;
+class LayerInfo {
+    get id() { return this._id; }
+    get name() { return this._name; }
+    ;
+    constructor(inits) {
+        this._id = inits.id;
+        this._name = inits.name;
+    }
+}
+exports.LayerInfo = LayerInfo;
+class Layer {
+    get name() { return this._info.name; }
+    ;
+    get info() { return this._info; }
+    ;
+    get onscreen() { return this._onscreen; }
+    ;
+    get offscreen() { return this._offscreen; }
+    ;
+    get ctx() { return this._ctx; }
+    ;
+    get octx() { return this._octx; }
+    ;
+    get opacity() { return Number(this._offscreen.style.opacity); }
+    ;
+    set opacity(v) { this._onscreen.style.opacity = '' + v; }
+    ;
+    get id() { return this._info.id; }
+    constructor(inits) {
+        this._info = new LayerInfo(inits.info);
+        this._onscreen = inits.onscreen;
+        this._ctx = this._onscreen.getContext('2d');
+        this._offscreen = document.createElement('canvas');
+        this._offscreen.width = inits.onscreen.width;
+        this._offscreen.height = inits.onscreen.height;
+        this._octx = this._offscreen.getContext('2d');
+    }
+    get width() {
+        return this._onscreen.width;
+    }
+    set width(v) {
+        this._onscreen.width = v;
+        this._offscreen.width = v;
+    }
+    get height() {
+        return this._onscreen.height;
+    }
+    set height(v) {
+        this._onscreen.height = v;
+        this._offscreen.height = v;
+    }
+}
+exports.Layer = Layer;
+
+},{}],41:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3975,9 +3975,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Layer"), exports);
-__exportStar(require("./WhiteBoard"), exports);
+__exportStar(require("./Board"), exports);
 
-},{"./Layer":39,"./WhiteBoard":40}],42:[function(require,module,exports){
+},{"./Board":39,"./Layer":40}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventEnum = void 0;
@@ -4241,7 +4241,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./tools");
 __exportStar(require("./board"), exports);
-// export * from './event'
 __exportStar(require("./features"), exports);
 __exportStar(require("./mgr"), exports);
 __exportStar(require("./shape"), exports);
@@ -4278,7 +4277,7 @@ class Factory {
         this._shapeTemplates[type] = template;
     }
     newWhiteBoard(options) {
-        return new board_1.WhiteBoard(this, options);
+        return new board_1.Board(this, options);
     }
     newShapesMgr() {
         return new ShapesMgr_1.ShapesMgr();

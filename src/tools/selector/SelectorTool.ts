@@ -7,7 +7,7 @@ import { Shape } from "../../shape/base"
 import { IVector } from "../../utils/Vector"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../base/Tool"
-import { WhiteBoard } from "../../board"
+import { Board } from "../../board"
 import { WhiteBoardEvent } from "../../event/Events"
 export enum SelectorStatus {
   Invalid = 'SELECTOR_STATUS_INVALID',
@@ -25,10 +25,10 @@ export class SelectorTool implements ITool {
     shape: Shape,
     prevData: WhiteBoardEvent.IShapePositionData
   }[] = []
-  get board(): WhiteBoard | undefined {
+  get board(): Board | undefined {
     return this._rect.board
   }
-  set board(v: WhiteBoard | undefined) {
+  set board(v: Board | undefined) {
     this._rect.board = v
   }
   constructor() {

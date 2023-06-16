@@ -5,8 +5,8 @@ import type { ITool } from "../tools/base/Tool";
 import { InvalidTool } from "../tools/base/InvalidTool";
 import { FactoryEnum, FactoryType } from "./FactoryEnum";
 import { FactoryMgr } from "./FactoryMgr";
-import { WhiteBoard } from "../board";
-import { WhiteBoardOptions } from "../board/WhiteBoard";
+import { Board } from "../board";
+import { BoardOptions } from "../board/Board";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { ToolType } from "../tools/ToolEnum";
 
@@ -14,7 +14,7 @@ export interface IFactory {
   get type(): FactoryType;
   shapeTemplate(shapeType: ShapeType): ShapeData;
   setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
-  newWhiteBoard(options: WhiteBoardOptions): WhiteBoard;
+  newWhiteBoard(options: BoardOptions): Board;
   newShapesMgr(): IShapesMgr;
   newTool(toolType: ToolType): ITool;
   newShapeData(shapeType: ShapeType): ShapeData;
@@ -41,8 +41,8 @@ export class Factory implements IFactory {
   setShapeTemplate(type: ShapeType, template: ShapeData): void {
     this._shapeTemplates[type] = template
   }
-  newWhiteBoard(options: WhiteBoardOptions): WhiteBoard {
-    return new WhiteBoard(this, options)
+  newWhiteBoard(options: BoardOptions): Board {
+    return new Board(this, options)
   }
   newShapesMgr(): IShapesMgr {
     return new ShapesMgr();

@@ -1,14 +1,14 @@
-import { WhiteBoard } from "../board";
+import { Board } from "../board";
 import { EventEnum, WhiteBoardEvent } from "../event";
 import { PureCustomEvent, Screenplay } from "./Screenplay";
 export class Player {
   private screenplay: Screenplay | undefined;
   private eventIdx = 0;
-  private actor: WhiteBoard | undefined;
+  private actor: Board | undefined;
   private firstEventTime: number = 0;
   private startTime: number = 0;
   private timer: number = 0
-  start(actor: WhiteBoard, screenplay: Partial<Screenplay>) {
+  start(actor: Board, screenplay: Partial<Screenplay>) {
     this.actor = actor;
     this.screenplay = {
       startTime: screenplay.startTime || 0,

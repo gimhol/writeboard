@@ -23,7 +23,8 @@ import { RGBA } from "./colorPalette/Color";
 import demo_helloworld from "./demo_helloworld";
 import demo_rect_n_oval from "./demo_rect_n_oval";
 
-const factory = FactoryMgr.createFactory(FactoryEnum.Default)
+const factory = FactoryMgr.createFactory(FactoryEnum.Default);
+
 let board: WhiteBoard
 
 const workspace = window.workspace = new WorkspaceView('body', {
@@ -115,10 +116,10 @@ layersView.addEventListener(LayersView.EventType.LayerActived, e => {
   const { id } = e.detail;
   board.editLayer(id);
 })
-layersView.addLayer({
-  name: '' + Date.now(),
-  id: factory.newLayerId()
-});
+// layersView.addLayer({
+//   name: '' + Date.now(),
+//   id: factory.newLayerId()
+// });
 
 const toolsView = new ToolsView;
 workspace.addChild(toolsView)
@@ -329,8 +330,7 @@ const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
   return { info: layer.state, onscreen: canvas.inner }
 })
 board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
+
 (window as any).board = board;
-
-
 workspace.dockToRoot(layersView, DockableDirection.H, 'end');
 workspace.dockToRoot(toolsView, DockableDirection.H, 'start');

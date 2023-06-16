@@ -4,16 +4,16 @@ import { Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Rect } from "../utils"
 import { ILayer, ILayerInits, Layer } from "./Layer"
-const Tag = '[WhiteBoard]'
+const Tag = '[Board]'
 
-export interface WhiteBoardOptions {
+export interface BoardOptions {
   layers: ILayerInits[]
   width?: number
   height?: number
   toolType?: ToolType
 }
 export interface IPointerEventHandler { (ev: PointerEvent): void }
-export class WhiteBoard implements IShapesMgr {
+export class Board implements IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
   private _layers = new Map<string, Layer>();
@@ -89,7 +89,7 @@ export class WhiteBoard implements IShapesMgr {
   layer(id: string = this._editingLayerId): Layer | undefined {
     return this._layers.get(id);
   }
-  constructor(factory: IFactory, options: WhiteBoardOptions) {
+  constructor(factory: IFactory, options: BoardOptions) {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();
 

@@ -1,10 +1,10 @@
 import { ToolType } from "../ToolEnum";
-import { WhiteBoard } from "../../board/WhiteBoard";
+import { Board } from "../../board/Board";
 import { IDot } from "../../utils/Dot";
 export interface ITool {
   get type(): ToolType
-  get board(): WhiteBoard | undefined
-  set board(v: WhiteBoard | undefined)
+  get board(): Board | undefined
+  set board(v: Board | undefined)
   start(): void
   end(): void
   pointerMove(dot: IDot): void;

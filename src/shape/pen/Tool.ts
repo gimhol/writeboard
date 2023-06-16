@@ -1,4 +1,4 @@
-import { WhiteBoard } from "../../board/WhiteBoard"
+import { Board } from "../../board/Board"
 import { ToolEnum } from "../../tools/ToolEnum"
 import { FactoryMgr } from "../../mgr/FactoryMgr"
 import { ShapePen } from "./Shape"
@@ -17,10 +17,10 @@ export class PenTool implements ITool {
   get type(): string { return ToolEnum.Pen }
 
   render(): void { }
-  get board(): WhiteBoard | undefined {
+  get board(): Board | undefined {
     return this._board
   }
-  set board(v: WhiteBoard | undefined) {
+  set board(v: Board | undefined) {
     this._board = v
   }
   addDot(dot: IDot, type?: 'first' | 'last') {
@@ -74,7 +74,7 @@ export class PenTool implements ITool {
   }
   private _prevData: PenData | undefined
   private _curShape: ShapePen | undefined
-  private _board: WhiteBoard | undefined
+  private _board: Board | undefined
 }
 
 FactoryMgr.registerTool(ToolEnum.Pen,

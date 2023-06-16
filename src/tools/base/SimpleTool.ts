@@ -1,4 +1,4 @@
-import { WhiteBoard } from "../../board/WhiteBoard"
+import { Board } from "../../board/Board"
 import { WhiteBoardEvent as Event } from "../../event"
 import { Shape } from "../../shape/base/Shape"
 import type { ShapeType } from "../../shape/ShapeEnum"
@@ -58,10 +58,10 @@ export class SimpleTool implements ITool {
     delete this._curShape
   }
   render(): void { }
-  get board(): WhiteBoard | undefined {
+  get board(): Board | undefined {
     return this._board
   }
-  set board(v: WhiteBoard | undefined) {
+  set board(v: Board | undefined) {
     this._board = v
   }
   pointerMove(dot: IDot): void { }
@@ -115,6 +115,6 @@ export class SimpleTool implements ITool {
   }
   protected _prevData: Event.IShapeGeoData | undefined
   protected _curShape: Shape | undefined
-  protected _board: WhiteBoard | undefined
+  protected _board: Board | undefined
   protected _rect = new RectHelper()
 }

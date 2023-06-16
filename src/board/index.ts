@@ -1,2 +1,2 @@
 export * from "./Layer";
-export * from "./WhiteBoard";
+export * from "./Board";

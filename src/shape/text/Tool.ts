@@ -1,7 +1,7 @@
 import { FactoryMgr } from "../../mgr/FactoryMgr"
 import { ShapeEnum } from "../ShapeEnum"
 import { ToolEnum } from "../../tools/ToolEnum"
-import { WhiteBoard } from "../../board"
+import { Board } from "../../board"
 import { ShapeText } from "./Shape"
 import { ITool } from "../../tools/base/Tool"
 import { IDot } from "../../utils/Dot"
@@ -9,7 +9,7 @@ import { WhiteBoardEvent } from "../../event"
 const Tag = '[TextTool]'
 
 export class TextTool implements ITool {
-  private _board: WhiteBoard | undefined
+  private _board: Board | undefined
   private _curShape: ShapeText | undefined
   private _editor = document.createElement('textarea')
   private setCurShape = (shape?: ShapeText) => {
@@ -89,10 +89,10 @@ export class TextTool implements ITool {
   get type() { return ToolEnum.Text }
 
   render(): void { }
-  get board(): WhiteBoard | undefined {
+  get board(): Board | undefined {
     return this._board
   }
-  set board(v: WhiteBoard | undefined) {
+  set board(v: Board | undefined) {
     this._board = v;
     this._board?.onscreen()?.parentElement?.appendChild(this._editor)
   }
