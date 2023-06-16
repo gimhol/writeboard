@@ -2,7 +2,7 @@ import { ToolEnum, ToolType } from "../../dist";
 import { SizeType } from "./G/BaseView/SizeType";
 import { View } from "./G/BaseView/View";
 import { IconButton, IconButtonInits } from "./G/CompoundView/IconButton";
-import { Subwin } from "./G/CompoundView/Subwin";
+import { Subwin } from "./G/CompoundView/SubWin";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 export interface ToolButtonInits extends IconButtonInits {
   src: string;

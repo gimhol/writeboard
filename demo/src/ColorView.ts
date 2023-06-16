@@ -3,7 +3,7 @@ import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Canvas } from "./G/BaseView/Canvas";
 import { NumberInput } from "./G/BaseView/NumberInput";
 import { View } from "./G/BaseView/View";
-import { Subwin } from "./G/CompoundView/Subwin";
+import { Subwin } from "./G/CompoundView/SubWin";
 import { RGBA } from "./colorPalette/Color";
 import { ColorPalette } from "./colorPalette/ColorPalette";
 enum ColorKind {

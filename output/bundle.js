@@ -7,7 +7,7 @@ const ButtonGroup_1 = require("./G/Helper/ButtonGroup");
 const Canvas_1 = require("./G/BaseView/Canvas");
 const NumberInput_1 = require("./G/BaseView/NumberInput");
 const View_1 = require("./G/BaseView/View");
-const Subwin_1 = require("./G/CompoundView/Subwin");
+const SubWin_1 = require("./G/CompoundView/SubWin");
 const Color_1 = require("./colorPalette/Color");
 const ColorPalette_1 = require("./colorPalette/ColorPalette");
 var ColorKind;
@@ -49,7 +49,7 @@ var ColorViewEventTypes;
     ColorViewEventTypes["LineColorChange"] = "linecolorchange";
     ColorViewEventTypes["FillColorChange"] = "fillcolorchange";
 })(ColorViewEventTypes = exports.ColorViewEventTypes || (exports.ColorViewEventTypes = {}));
-class ColorView extends Subwin_1.Subwin {
+class ColorView extends SubWin_1.Subwin {
     setEditingColor(v) {
         if (!v) {
             return;
@@ -181,7 +181,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
     }
 }
 
-},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.ButtonState = exports.ButtonStyleNames = void 0;
@@ -1216,16 +1216,52 @@ Menu.EventType = MenuEventType;
 },{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":30,"../utils":31}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SubwinFooter = void 0;
+const View_1 = require("../../BaseView/View");
+class SubwinFooter extends View_1.View {
+    constructor() {
+        super('div');
+        this.styles.addCls('g_subwin_footer');
+    }
+}
+exports.SubwinFooter = SubwinFooter;
+
+},{"../../BaseView/View":10}],16:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SubwinHeader = void 0;
+const View_1 = require("../../BaseView/View");
+const IconButton_1 = require("../IconButton");
+class SubwinHeader extends View_1.View {
+    get btnClose() { return this._btnClose; }
+    get iconView() { return this._iconView; }
+    get titleView() { return this._titleView; }
+    get title() { return this._titleView.inner.innerHTML; }
+    set title(v) { this._titleView.inner.innerHTML = v; }
+    constructor() {
+        super('div');
+        this.styles.addCls('g_subwin_header');
+        this._iconView = new IconButton_1.IconButton().init().styles.addCls('g_subwin_icon').view;
+        this.addChild(this._iconView);
+        this._titleView = new View_1.View('div').styles.addCls('g_subwin_title').view;
+        this.addChild(this._titleView);
+        this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg' }).styles.addCls('g_subwin_btn_close').view;
+        this.addChild(this._btnClose);
+    }
+}
+exports.SubwinHeader = SubwinHeader;
+
+},{"../../BaseView/View":10,"../IconButton":13}],17:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subwin = exports.StyleNames = void 0;
-const SubwinFooter_1 = require("./SubwinFooter");
-const SubwinHeader_1 = require("./SubwinHeader");
-const View_1 = require("../BaseView/View");
-const ViewDragger_1 = require("../Helper/ViewDragger");
+const Footer_1 = require("./Footer");
+const Header_1 = require("./Header");
+const View_1 = require("../../BaseView/View");
+const ViewDragger_1 = require("../../Helper/ViewDragger");
 var StyleNames;
 (function (StyleNames) {
     StyleNames["Root"] = "subwin";
-    StyleNames["ChildRaised"] = "subwin_child_raised";
-    StyleNames["ChildLowered"] = "subwin_child_lowered";
     StyleNames["Docked"] = "subwin_docked";
 })(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
 class Subwin extends View_1.View {
@@ -1239,38 +1275,23 @@ class Subwin extends View_1.View {
     get content() { return this._content; }
     set content(v) {
         if (this._content) {
-            this._content.styles
-                .remove(StyleNames.ChildRaised)
-                .remove(StyleNames.ChildLowered)
-                .forgo(StyleNames.ChildRaised, StyleNames.ChildLowered);
             this.removeChild(this._content);
         }
         this._content = v;
         if (v) {
-            v.styles
-                .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
-                .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
             this.insertBefore(this._footer, v);
         }
     }
     raise() {
-        var _a, _b;
-        this.styles.addCls('g_subwin_raised');
-        this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
-        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
-        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
+        this.styles.delCls('g_subwin_lower').addCls('g_subwin_raised');
     }
     lower() {
-        var _a, _b;
-        this.styles.delCls('g_subwin_raised').refresh();
-        this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
-        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
-        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
+        this.styles.delCls('g_subwin_raised').addCls('g_subwin_lower');
     }
     constructor() {
         super('div');
-        this._header = new SubwinHeader_1.SubwinHeader();
-        this._footer = new SubwinFooter_1.SubwinFooter();
+        this._header = new Header_1.SubwinHeader();
+        this._footer = new Footer_1.SubwinFooter();
         this._dragWhenDocked = (x, y, prevX, prevY) => {
             var _a;
             if (Math.abs(x - prevX) + Math.abs(y - prevY) > 20) {
@@ -1290,12 +1311,6 @@ class Subwin extends View_1.View {
             height: 'unset',
             zIndex: 'unset',
         }).addCls('g_subwin');
-        this._header.styles
-            .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
-            .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
-        this._footer.styles
-            .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
-            .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
         this.addChild(this._header, this._footer);
         this._dragger = new ViewDragger_1.ViewDragger({
             responser: this,
@@ -1317,7 +1332,7 @@ class Subwin extends View_1.View {
     }
     onDocked() {
         this._resizeOb.unobserve(this.inner);
-        this.styles.addCls('g_subwin_docked').apply(StyleNames.Docked);
+        this.styles.addCls('g_subwin_docked').delCls('g_subwin_raised', 'g_subwin_lower').apply(StyleNames.Docked);
         this.dragger.handleMove = this._dragWhenDocked;
         this.header.btnClose.styles.apply('hidden', { display: 'none' });
     }
@@ -1340,107 +1355,7 @@ class Subwin extends View_1.View {
 exports.Subwin = Subwin;
 Subwin.StyleNames = StyleNames;
 
-},{"../BaseView/View":10,"../Helper/ViewDragger":28,"./SubwinFooter":16,"./SubwinHeader":17}],16:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SubwinFooter = void 0;
-const View_1 = require("../BaseView/View");
-class SubwinFooter extends View_1.View {
-    constructor() {
-        super('div');
-        this.styles.apply('normal', {
-            userSelect: 'none',
-            width: '100%',
-            color: '#FFFFFF88',
-            padding: 3,
-            background: '#333333',
-            borderBottom: '#333333',
-            display: 'flex',
-            boxSizing: 'border-box',
-            alignItems: 'center',
-        });
-    }
-}
-exports.SubwinFooter = SubwinFooter;
-
-},{"../BaseView/View":10}],17:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SubwinHeader = exports.StyleNames = exports.Classnames = void 0;
-const IconButton_1 = require("./IconButton");
-const View_1 = require("../BaseView/View");
-const FocusOb_1 = require("../Observer/FocusOb");
-const Button_1 = require("../BaseView/Button");
-var Classnames;
-(function (Classnames) {
-    Classnames["Root"] = "subwin_header";
-    Classnames["IconView"] = "subwinheader_iconview";
-    Classnames["TitleView"] = "subwinheader_titleview";
-    Classnames["BtnClose"] = "subwinheader_btnclose";
-})(Classnames = exports.Classnames || (exports.Classnames = {}));
-var StyleNames;
-(function (StyleNames) {
-    StyleNames["Root"] = "subwin_header";
-    StyleNames["IconView"] = "subwinheader_iconview";
-    StyleNames["TitleView"] = "subwinheader_titleview";
-    StyleNames["BtnClose"] = "subwinheader_btnclose";
-})(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
-class SubwinHeader extends View_1.View {
-    get btnClose() { return this._btnClose; }
-    get iconView() { return this._iconView; }
-    get titleView() { return this._titleView; }
-    get title() { return this._titleView.inner.innerHTML; }
-    set title(v) { this._titleView.inner.innerHTML = v; }
-    constructor() {
-        super('div');
-        new FocusOb_1.FocusOb(this.inner, v => alert(v));
-        this.styles
-            .addCls(Classnames.Root)
-            .apply(StyleNames.Root, {
-            userSelect: 'none',
-            width: '100%',
-            color: '#FFFFFF88',
-            background: '#222222',
-            borderBottom: '#222222',
-            fontSize: 12,
-            display: 'flex',
-            boxSizing: 'border-box',
-            alignItems: 'stretch',
-            height: 28,
-        });
-        this._iconView = new Button_1.Button();
-        this._iconView
-            .styles
-            .addCls(Classnames.IconView)
-            .apply(StyleNames.IconView, {
-            alignSelf: 'center',
-            marginLeft: 2,
-        });
-        this.addChild(this._iconView);
-        this._titleView = new View_1.View('div');
-        this._titleView.styles
-            .addCls(Classnames.TitleView)
-            .apply(StyleNames.TitleView, {
-            display: 'flex',
-            alignItems: 'center',
-            flex: 1,
-        });
-        this.addChild(this._titleView);
-        this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg' });
-        this._btnClose.styles
-            .addCls(Classnames.BtnClose)
-            .apply(StyleNames.BtnClose, {
-            alignSelf: 'center',
-            marginRight: 2,
-        });
-        this.addChild(this._btnClose);
-    }
-}
-exports.SubwinHeader = SubwinHeader;
-SubwinHeader.ClassNames = Classnames;
-SubwinHeader.StyleNames = StyleNames;
-
-},{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":29,"./IconButton":13}],18:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Helper/ViewDragger":28,"./Footer":15,"./Header":16}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockView = exports.DockViewStyles = exports.StyleName = void 0;
@@ -1635,7 +1550,7 @@ exports.DockableResizer = void 0;
 const View_1 = require("../../BaseView/View");
 const ViewDragger_1 = require("../../Helper/ViewDragger");
 const HoverOb_1 = require("../../Observer/HoverOb");
-const Subwin_1 = require("../Subwin");
+const SubWin_1 = require("../SubWin");
 const DockView_1 = require("./DockView");
 const DockableDirection_1 = require("./DockableDirection");
 class DockableResizer extends View_1.View {
@@ -1672,10 +1587,10 @@ class DockableResizer extends View_1.View {
             nextViewRect = nextView === null || nextView === void 0 ? void 0 : nextView.inner.getBoundingClientRect();
         };
         const handleMove = (x, y, oldX, oldY) => {
-            if ((prevView instanceof Subwin_1.Subwin) || prevView instanceof DockView_1.DockView && prevView.direction !== DockableDirection_1.DockableDirection.None) {
+            if ((prevView instanceof SubWin_1.Subwin) || prevView instanceof DockView_1.DockView && prevView.direction !== DockableDirection_1.DockableDirection.None) {
                 prevView.resizeDocked(direction === DockableDirection_1.DockableDirection.H ? (-3 + prevViewRect.width - oldX + x) : undefined, direction === DockableDirection_1.DockableDirection.V ? (-3 + prevViewRect.height - oldY + y) : undefined);
             }
-            if (nextView instanceof Subwin_1.Subwin || nextView instanceof DockView_1.DockView && nextView.direction !== DockableDirection_1.DockableDirection.None) {
+            if (nextView instanceof SubWin_1.Subwin || nextView instanceof DockView_1.DockView && nextView.direction !== DockableDirection_1.DockableDirection.None) {
                 nextView.resizeDocked(direction === DockableDirection_1.DockableDirection.H ? (3 + nextViewRect.width + oldX - x) : undefined, direction === DockableDirection_1.DockableDirection.V ? (3 + nextViewRect.height + oldY - y) : undefined);
             }
         };
@@ -1693,7 +1608,7 @@ class DockableResizer extends View_1.View {
 }
 exports.DockableResizer = DockableResizer;
 
-},{"../../BaseView/View":10,"../../Helper/ViewDragger":28,"../../Observer/HoverOb":30,"../Subwin":15,"./DockView":18,"./DockableDirection":19}],21:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Helper/ViewDragger":28,"../../Observer/HoverOb":30,"../SubWin":17,"./DockView":18,"./DockableDirection":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IndicatorImage = exports.srcs = void 0;
@@ -1836,7 +1751,7 @@ exports.WorkspaceView = void 0;
 const View_1 = require("../../BaseView/View");
 const EventType_1 = require("../../Events/EventType");
 const utils_1 = require("../../utils");
-const Subwin_1 = require("../Subwin");
+const SubWin_1 = require("../SubWin");
 const DockView_1 = require("./DockView");
 const DockableDirection_1 = require("./DockableDirection");
 const IndicatorImage_1 = require("./IndicatorImage");
@@ -1904,7 +1819,7 @@ class WorkspaceView extends View_1.View {
             }
         });
         this._onSubwinDragStart = (e) => {
-            this._draggingSubwin = View_1.View.try(e.target, Subwin_1.Subwin);
+            this._draggingSubwin = View_1.View.try(e.target, SubWin_1.Subwin);
             if (!this._draggingSubwin) {
                 return;
             }
@@ -1915,7 +1830,7 @@ class WorkspaceView extends View_1.View {
         };
         this._onSubwinDragging = (e) => {
             var _a;
-            const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
+            const subwin = View_1.View.try(e.target, SubWin_1.Subwin);
             if (!subwin) {
                 return;
             }
@@ -1946,7 +1861,7 @@ class WorkspaceView extends View_1.View {
             }
         };
         this._onSubwinDragEnd = (e) => {
-            const subwin = View_1.View.try(e.target, Subwin_1.Subwin);
+            const subwin = View_1.View.try(e.target, SubWin_1.Subwin);
             if (!subwin) {
                 return;
             }
@@ -2012,7 +1927,7 @@ class WorkspaceView extends View_1.View {
             this._rootDockView[way](pos === 'start' ? [target, temp] : [temp, target]);
             this.addChild(this._rootDockView);
         }
-        (target instanceof Subwin_1.Subwin) && this._dockedWins.insert(0, target);
+        (target instanceof SubWin_1.Subwin) && this._dockedWins.insert(0, target);
     }
     dockAround(target, anchor, direction, pos) {
         // if (anchor !== this._deepestDockView) {
@@ -2042,12 +1957,12 @@ class WorkspaceView extends View_1.View {
                 dockView.push([anchor, target]);
             }
         }
-        (target instanceof Subwin_1.Subwin) && this._dockedWins.insert(0, target);
+        (target instanceof SubWin_1.Subwin) && this._dockedWins.insert(0, target);
     }
     undock(target) {
         var _a;
         const view = target.dockableView();
-        if (!(view instanceof Subwin_1.Subwin)) {
+        if (!(view instanceof SubWin_1.Subwin)) {
             console.warn('[Workspace] only support undock SubWin, but got:', view);
             return this;
         }
@@ -2073,7 +1988,7 @@ class WorkspaceView extends View_1.View {
         if (!rect) {
             return;
         }
-        this.children.forEach(v => (v instanceof Subwin_1.Subwin) && this.clampSubwin(v, rect));
+        this.children.forEach(v => (v instanceof SubWin_1.Subwin) && this.clampSubwin(v, rect));
     }
     clampSubwin(subwin, rect) {
         let { offsetLeft: x, offsetTop: y, offsetWidth: w, offsetHeight: h, } = subwin.inner;
@@ -2109,7 +2024,7 @@ class WorkspaceView extends View_1.View {
     _handleAddedChildren(children) {
         console.log('[Workspace]_handleAddedChildren', children);
         children.forEach(v => {
-            if (!(v instanceof Subwin_1.Subwin)) {
+            if (!(v instanceof SubWin_1.Subwin)) {
                 return;
             }
             v.setWorkspace(this);
@@ -2131,7 +2046,7 @@ class WorkspaceView extends View_1.View {
     _prehandleRemovedChildren(children) {
         console.log('[Workspace]_prehandleRemovedChildren', children);
         children.forEach(child => {
-            if (!(child instanceof Subwin_1.Subwin)) {
+            if (!(child instanceof SubWin_1.Subwin)) {
                 return;
             }
             const listener = this._pointerdowns.get(child);
@@ -2146,7 +2061,7 @@ class WorkspaceView extends View_1.View {
 }
 exports.WorkspaceView = WorkspaceView;
 
-},{"../../BaseView/View":10,"../../Events/EventType":24,"../../Helper/List":27,"../../utils":31,"../DockPosition":11,"../DockResultPreview":12,"../Subwin":15,"./DockView":18,"./DockableDirection":19,"./IndicatorImage":21,"./IndicatorView":22}],24:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Events/EventType":24,"../../Helper/List":27,"../../utils":31,"../DockPosition":11,"../DockResultPreview":12,"../SubWin":17,"./DockView":18,"./DockableDirection":19,"./IndicatorImage":21,"./IndicatorView":22}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableEventType = exports.ViewEventType = exports.EventType = void 0;
@@ -2613,7 +2528,7 @@ const Button_1 = require("./G/BaseView/Button");
 const SizeType_1 = require("./G/BaseView/SizeType");
 const TextInput_1 = require("./G/BaseView/TextInput");
 const View_1 = require("./G/BaseView/View");
-const Subwin_1 = require("./G/CompoundView/Subwin");
+const SubWin_1 = require("./G/CompoundView/SubWin");
 const FocusOb_1 = require("./G/Observer/FocusOb");
 var LayersViewEventType;
 (function (LayersViewEventType) {
@@ -2623,7 +2538,7 @@ var LayersViewEventType;
     LayersViewEventType["LayerVisibleChanged"] = "LayerVisibleChanged";
     LayersViewEventType["LayerActived"] = "LayerActived";
 })(LayersViewEventType = exports.LayersViewEventType || (exports.LayersViewEventType = {}));
-class LayersView extends Subwin_1.Subwin {
+class LayersView extends SubWin_1.Subwin {
     addEventListener(arg0, arg1, arg2) {
         return super.addEventListener(arg0, arg1, arg2);
     }
@@ -2750,7 +2665,7 @@ class LayerItemView extends View_1.View {
 }
 exports.LayerItemView = LayerItemView;
 
-},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/Subwin":15,"./G/Observer/FocusOb":29}],33:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Observer/FocusOb":29}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
@@ -2758,7 +2673,7 @@ const dist_1 = require("../../dist");
 const SizeType_1 = require("./G/BaseView/SizeType");
 const View_1 = require("./G/BaseView/View");
 const IconButton_1 = require("./G/CompoundView/IconButton");
-const Subwin_1 = require("./G/CompoundView/Subwin");
+const SubWin_1 = require("./G/CompoundView/SubWin");
 const ButtonGroup_1 = require("./G/Helper/ButtonGroup");
 class ToolButton extends IconButton_1.IconButton {
     get toolType() { return this._toolType; }
@@ -2771,7 +2686,7 @@ class ToolButton extends IconButton_1.IconButton {
     }
 }
 exports.ToolButton = ToolButton;
-class ToolsView extends Subwin_1.Subwin {
+class ToolsView extends SubWin_1.Subwin {
     set onToolClick(v) {
         this._toolButtonGroup.onClick = v;
     }
@@ -2798,7 +2713,7 @@ class ToolsView extends Subwin_1.Subwin {
 }
 exports.ToolsView = ToolsView;
 
-},{"../../dist":49,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":13,"./G/CompoundView/Subwin":15,"./G/Helper/ButtonGroup":25}],34:[function(require,module,exports){
+},{"../../dist":49,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":13,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.clampI = exports.clampF = void 0;
@@ -3387,7 +3302,7 @@ const Button_1 = require("./G/BaseView/Button");
 const Canvas_1 = require("./G/BaseView/Canvas");
 const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
-const Subwin_1 = require("./G/CompoundView/Subwin");
+const SubWin_1 = require("./G/CompoundView/SubWin");
 const DockableDirection_1 = require("./G/CompoundView/Workspace/DockableDirection");
 const WorkspaceView_1 = require("./G/CompoundView/Workspace/WorkspaceView");
 const LayersView_1 = require("./LayersView");
@@ -3518,7 +3433,7 @@ colorView.inner.addEventListener(ColorView_1.default.EventTypes.FillColorChange,
         template.fillStyle = '' + rgba.toHex();
     });
 });
-class ToyView extends Subwin_1.Subwin {
+class ToyView extends SubWin_1.Subwin {
 }
 const toyView = new ToyView();
 toyView.header.title = 'others';
@@ -3595,7 +3510,7 @@ toyView.content.addChild(new Button_1.Button().init({
 }));
 let _recorder;
 let _player;
-class JsonView extends Subwin_1.Subwin {
+class JsonView extends SubWin_1.Subwin {
 }
 const jsonView = new JsonView();
 workspace.addChild(jsonView);
@@ -3627,7 +3542,7 @@ const replay = (str) => {
     _player = new dist_1.Player();
     _player.start(board, JSON.parse(str));
 };
-class RecorderView extends Subwin_1.Subwin {
+class RecorderView extends SubWin_1.Subwin {
 }
 const recorderView = new RecorderView();
 workspace.addChild(recorderView);
@@ -3684,7 +3599,7 @@ window.board = board;
 workspace.dockToRoot(layersView, DockableDirection_1.DockableDirection.H, 'end');
 workspace.dockToRoot(toolsView, DockableDirection_1.DockableDirection.H, 'start');
 
-},{"../../dist":49,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/Subwin":15,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
+},{"../../dist":49,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/SubWin":17,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;

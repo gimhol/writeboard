@@ -14,7 +14,7 @@ import { Canvas } from "./G/BaseView/Canvas";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { MergedSubwin } from "./G/CompoundView/MergedSubwin";
-import { Subwin } from "./G/CompoundView/Subwin";
+import { Subwin } from "./G/CompoundView/SubWin";
 import { DockableDirection } from "./G/CompoundView/Workspace/DockableDirection";
 import { WorkspaceView } from "./G/CompoundView/Workspace/WorkspaceView";
 import { LayersView } from "./LayersView";

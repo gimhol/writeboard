@@ -1,6 +1,6 @@
 import { View } from "../BaseView/View";
 import { DragInOutOB } from "../Observer/DragInOutOB";
-import { Subwin } from "./Subwin";
+import { Subwin } from "./SubWin";
 export interface SubwinTabInits {
   title: string;
   color: string;

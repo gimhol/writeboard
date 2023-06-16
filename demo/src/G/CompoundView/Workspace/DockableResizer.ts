@@ -1,7 +1,7 @@
 import { View } from "../../BaseView/View";
 import { ViewDragger } from "../../Helper/ViewDragger";
 import { HoverOb } from "../../Observer/HoverOb";
-import { Subwin } from "../Subwin";
+import { Subwin } from "../SubWin";
 import { DockView } from "./DockView";
 import { DockableDirection } from "./DockableDirection";
 

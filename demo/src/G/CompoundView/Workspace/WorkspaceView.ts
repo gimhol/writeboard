@@ -1,7 +1,7 @@
 import { View } from "../../BaseView/View";
 import { DockableEventType, EventMap, EventType } from "../../Events/EventType";
 import { GetValue, Rect, getValue } from "../../utils";
-import { Subwin } from "../Subwin";
+import { Subwin } from "../SubWin";
 import { DockView } from "./DockView";
 import { DockableDirection } from "./DockableDirection";
 import { IndicatorImage } from "./IndicatorImage";

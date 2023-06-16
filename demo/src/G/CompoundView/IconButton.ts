@@ -44,6 +44,7 @@ export class IconButton extends Button {
     const content = this.content;
     if (content instanceof Image) {
       content.src = src!;
+      
     }
     super.updateContent();
   }

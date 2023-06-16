@@ -3,7 +3,7 @@ import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
 import { InputStyleNames, TextInput } from "./G/BaseView/TextInput";
 import { View } from "./G/BaseView/View";
-import { Subwin } from "./G/CompoundView/Subwin";
+import { Subwin } from "./G/CompoundView/SubWin";
 import { ViewEventMap } from "./G/Events/EventType";
 import { FocusOb } from "./G/Observer/FocusOb";
 

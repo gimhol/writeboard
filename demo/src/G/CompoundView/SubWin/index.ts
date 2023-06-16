@@ -1,14 +1,12 @@
-import { SubwinFooter } from "./SubwinFooter";
-import { SubwinHeader } from "./SubwinHeader";
-import type { WorkspaceView } from "./Workspace/WorkspaceView";
-import { View } from "../BaseView/View";
-import { ViewDragger } from "../Helper/ViewDragger";
-import { IDockable } from "./Workspace/Dockable";
-import { DockableEventMap } from "../Events/EventType";
+import { SubwinFooter } from "./Footer";
+import { SubwinHeader } from "./Header";
+import type { WorkspaceView } from "../Workspace/WorkspaceView";
+import { View } from "../../BaseView/View";
+import { ViewDragger } from "../../Helper/ViewDragger";
+import { IDockable } from "../Workspace/Dockable";
+import { DockableEventMap } from "../../Events/EventType";
 export enum StyleNames {
   Root = 'subwin',
-  ChildRaised = 'subwin_child_raised',
-  ChildLowered = 'subwin_child_lowered',
   Docked = 'subwin_docked'
 }
 export class Subwin extends View<'div'> implements IDockable {
@@ -27,31 +25,18 @@ export class Subwin extends View<'div'> implements IDockable {
   get content() { return this._content; }
   set content(v) {
     if (this._content) {
-      this._content.styles
-        .remove(StyleNames.ChildRaised)
-        .remove(StyleNames.ChildLowered)
-        .forgo(StyleNames.ChildRaised, StyleNames.ChildLowered)
       this.removeChild(this._content);
     }
     this._content = v;
     if (v) {
-      v.styles
-        .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
-        .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
       this.insertBefore(this._footer, v);
     }
   }
   raise() {
-    this.styles.addCls('g_subwin_raised');
-    this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
-    this.content?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
-    this.footer?.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
+    this.styles.delCls('g_subwin_lower').addCls('g_subwin_raised');
   }
   lower() {
-    this.styles.delCls('g_subwin_raised').refresh();
-    this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
-    this.content?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
-    this.footer?.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
+    this.styles.delCls('g_subwin_raised').addCls('g_subwin_lower');
   }
   constructor() {
     super('div');
@@ -62,12 +47,6 @@ export class Subwin extends View<'div'> implements IDockable {
       height: 'unset',
       zIndex: 'unset',
     }).addCls('g_subwin');
-    this._header.styles
-      .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
-      .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
-    this._footer.styles
-      .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
-      .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' })
     this.addChild(this._header, this._footer);
     this._dragger = new ViewDragger({
       responser: this,
@@ -100,7 +79,7 @@ export class Subwin extends View<'div'> implements IDockable {
   }
   onDocked(): void {
     this._resizeOb.unobserve(this.inner);
-    this.styles.addCls('g_subwin_docked').apply(StyleNames.Docked);
+    this.styles.addCls('g_subwin_docked').delCls('g_subwin_raised', 'g_subwin_lower').apply(StyleNames.Docked);
     this.dragger.handleMove = this._dragWhenDocked;
     this.header.btnClose.styles.apply('hidden', { display: 'none' });
   }
@@ -117,7 +96,6 @@ export class Subwin extends View<'div'> implements IDockable {
   public override addEventListener(arg0: any, arg1: any, arg2: any): this {
     return super.addEventListener(arg0, arg1, arg2);
   }
-
   public override removeEventListener<K extends keyof DockableEventMap>(type: K, listener: (this: HTMLObjectElement, ev: DockableEventMap[K]) => any, options?: boolean | EventListenerOptions | undefined): this;
   public override removeEventListener(arg0: any, arg1: any, arg2: any): this {
     return super.removeEventListener(arg0, arg1, arg2);
