@@ -1,7 +1,7 @@
 import { Board } from "../../board/Board"
 import { ToolEnum } from "../../tools/ToolEnum"
 import { FactoryMgr } from "../../mgr/FactoryMgr"
-import { ShapeStraightLine } from "./Shape"
+import { ShapeLines } from "./Shape"
 import { ShapeEnum } from "../ShapeEnum"
 import { LinesData } from "./Data"
 import { IDot } from "../../utils/Dot"
@@ -10,18 +10,24 @@ import { WhiteBoardEvent } from "../../event"
 const Tag = '[LinesTool]'
 export class LinesTool implements ITool {
   private _pressingShift = false;
+  private _pressingControl = false;
   private _keydown = (e: KeyboardEvent) => {
     if (e.key === 'Shift') {
       this._pressingShift = true;
+    } else if (e.key === 'Control') {
+      this._pressingControl = true;
     }
   }
   private _keyup = (e: KeyboardEvent) => {
     if (e.key === 'Shift') {
       this._pressingShift = false;
+    } else if (e.key === 'Control') {
+      this._pressingControl = false;
     }
   }
   private _blur = (e: Event) => {
     this._pressingShift = false;
+    this._pressingControl = false;
   }
   start(): void {
     window.addEventListener('keydown', this._keydown, true);
@@ -48,7 +54,7 @@ export class LinesTool implements ITool {
     const board = this.board
     if (!shape || !board) return
     if (this._prevData)
-      return shape.appendDot(dot, type);
+      return shape.pushDot(dot, type);
 
     const emitEvent = () => {
       const prev = this._prevData
@@ -63,17 +69,48 @@ export class LinesTool implements ITool {
     this._prevData = shape.data.copy()
     const prev = this._prevData
     if (prev.coords.length <= 0) {
-      shape.appendDot(dot, type)
+      shape.pushDot(dot, type)
       emitEvent()
     } else {
-      shape.appendDot(dot, type)
+      shape.pushDot(dot, type)
       setTimeout(emitEvent, 1000 / 30)
     }
   }
   moveDot(dot: IDot) {
+
+
     const shape = this._curShape
     const board = this.board
     if (!shape || !board) return
+
+    if (this._pressingControl && shape.data.coords.length >= 4) {
+      const prevX = shape.data.coords[shape.data.coords.length - 4];
+      const prevY = shape.data.coords[shape.data.coords.length - 3];
+      const angle = Math.atan2(dot.y - prevY, dot.x - prevX) * 180 / Math.PI;
+      const o = Math.sqrt((Math.pow(dot.x - prevX, 2) + Math.pow(dot.y - prevY, 2)) / 2)
+      if (angle > 22.5 && angle <= 67.5) {
+        dot.x = prevX + o;
+        dot.y = prevY + o;
+      } else if (angle > 67.5 && angle <= 112.5) {
+        dot.x = prevX;
+      } else if (angle > 112.5 && angle <= 157.5) {
+        dot.x = prevX - o;
+        dot.y = prevY + o;
+      } else if (angle > 157.5 || angle <= -157.5) {
+        dot.y = prevY;
+      } else if (angle <= -112.5 && angle > -157.5) {
+        dot.x = prevX - o;
+        dot.y = prevY - o;
+      } else if (angle <= -67.5 && angle > -112.5) {
+        dot.x = prevX;
+      } else if (angle <= -22.5 && angle > -67.5) {
+        dot.x = prevX + o;
+        dot.y = prevY - o;
+      } else {
+        dot.y = prevY;
+      }
+    }
+
     if (this._prevData)
       return shape.editDot(dot);
 
@@ -107,13 +144,13 @@ export class LinesTool implements ITool {
     const board = this.board
     if (!board) { return; }
     if (!this._curShape) {
-      this._curShape = board.factory.newShape(ShapeEnum.Lines) as ShapeStraightLine
+      this._curShape = board.factory.newShape(ShapeEnum.Lines) as ShapeLines
       this._curShape.data.layer = board.layer().id;
       this._curShape.data.editing = true
       board.add(this._curShape);
       this.addDot(dot, 'first');
+      this.addDot(dot)
     }
-    this.addDot(dot)
   }
   pointerDraw(dot: IDot): void {
     this.moveDot(dot);
@@ -129,7 +166,7 @@ export class LinesTool implements ITool {
     }
   }
   private _prevData: LinesData | undefined
-  private _curShape: ShapeStraightLine | undefined
+  private _curShape: ShapeLines | undefined
   private _board: Board | undefined
 }
 

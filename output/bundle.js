@@ -4782,8 +4782,9 @@ class Shape {
         this.data.merge(data);
         this.markDirty();
     }
-    markDirty(rect = this.boundingRect()) {
+    markDirty(rect) {
         var _a;
+        rect = rect !== null && rect !== void 0 ? rect : this.boundingRect();
         (_a = this.board) === null || _a === void 0 ? void 0 : _a.markDirty(rect);
     }
     move(x, y) {
@@ -5139,12 +5140,12 @@ exports.LinesData = LinesData;
 },{"../ShapeEnum":55,"../base":59}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShapeStraightLine = void 0;
+exports.ShapeLines = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
 const FactoryMgr_1 = require("../../mgr/FactoryMgr");
 const base_1 = require("../base");
 const Data_1 = require("./Data");
-class ShapeStraightLine extends base_1.Shape {
+class ShapeLines extends base_1.Shape {
     constructor(v) {
         super(v);
         this._srcGeo = null;
@@ -5174,7 +5175,7 @@ class ShapeStraightLine extends base_1.Shape {
         this.markDirty();
     }
     /**
-     * 根据新加入的点，计算原始矩形
+     * 计算原始矩形
      * @param dot
      */
     updateSrcGeo() {
@@ -5206,7 +5207,7 @@ class ShapeStraightLine extends base_1.Shape {
             this._path2D.lineTo(x, y);
         }
     }
-    appendDot(dot, type) {
+    pushDot(dot, type) {
         this.data.coords.push(dot.x, dot.y);
         const geo = this.updateSrcGeo();
         this.updatePath(dot.x, dot.y, type);
@@ -5227,8 +5228,9 @@ class ShapeStraightLine extends base_1.Shape {
         this.markDirty();
     }
     render(ctx) {
-        if (!this.visible)
+        if (!this.visible) {
             return;
+        }
         const d = this.data;
         if (d.lineWidth && d.strokeStyle && this._srcGeo) {
             ctx.save();
@@ -5246,8 +5248,8 @@ class ShapeStraightLine extends base_1.Shape {
         super.render(ctx);
     }
 }
-exports.ShapeStraightLine = ShapeStraightLine;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeStraightLine(d));
+exports.ShapeLines = ShapeLines;
+FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeLines(d));
 
 },{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base":59,"./Data":69}],71:[function(require,module,exports){
 "use strict";
@@ -5261,18 +5263,26 @@ const Tag = '[LinesTool]';
 class LinesTool {
     constructor() {
         this._pressingShift = false;
+        this._pressingControl = false;
         this._keydown = (e) => {
             if (e.key === 'Shift') {
                 this._pressingShift = true;
+            }
+            else if (e.key === 'Control') {
+                this._pressingControl = true;
             }
         };
         this._keyup = (e) => {
             if (e.key === 'Shift') {
                 this._pressingShift = false;
             }
+            else if (e.key === 'Control') {
+                this._pressingControl = false;
+            }
         };
         this._blur = (e) => {
             this._pressingShift = false;
+            this._pressingControl = false;
         };
     }
     start() {
@@ -5299,7 +5309,7 @@ class LinesTool {
         if (!shape || !board)
             return;
         if (this._prevData)
-            return shape.appendDot(dot, type);
+            return shape.pushDot(dot, type);
         const emitEvent = () => {
             const prev = this._prevData;
             if (!prev)
@@ -5312,11 +5322,11 @@ class LinesTool {
         this._prevData = shape.data.copy();
         const prev = this._prevData;
         if (prev.coords.length <= 0) {
-            shape.appendDot(dot, type);
+            shape.pushDot(dot, type);
             emitEvent();
         }
         else {
-            shape.appendDot(dot, type);
+            shape.pushDot(dot, type);
             setTimeout(emitEvent, 1000 / 30);
         }
     }
@@ -5325,6 +5335,40 @@ class LinesTool {
         const board = this.board;
         if (!shape || !board)
             return;
+        if (this._pressingControl && shape.data.coords.length >= 4) {
+            const prevX = shape.data.coords[shape.data.coords.length - 4];
+            const prevY = shape.data.coords[shape.data.coords.length - 3];
+            const angle = Math.atan2(dot.y - prevY, dot.x - prevX) * 180 / Math.PI;
+            const o = Math.sqrt((Math.pow(dot.x - prevX, 2) + Math.pow(dot.y - prevY, 2)) / 2);
+            if (angle > 22.5 && angle <= 67.5) {
+                dot.x = prevX + o;
+                dot.y = prevY + o;
+            }
+            else if (angle > 67.5 && angle <= 112.5) {
+                dot.x = prevX;
+            }
+            else if (angle > 112.5 && angle <= 157.5) {
+                dot.x = prevX - o;
+                dot.y = prevY + o;
+            }
+            else if (angle > 157.5 || angle <= -157.5) {
+                dot.y = prevY;
+            }
+            else if (angle <= -112.5 && angle > -157.5) {
+                dot.x = prevX - o;
+                dot.y = prevY - o;
+            }
+            else if (angle <= -67.5 && angle > -112.5) {
+                dot.x = prevX;
+            }
+            else if (angle <= -22.5 && angle > -67.5) {
+                dot.x = prevX + o;
+                dot.y = prevY - o;
+            }
+            else {
+                dot.y = prevY;
+            }
+        }
         if (this._prevData)
             return shape.editDot(dot);
         const emitEvent = () => {
@@ -5363,8 +5407,8 @@ class LinesTool {
             this._curShape.data.editing = true;
             board.add(this._curShape);
             this.addDot(dot, 'first');
+            this.addDot(dot);
         }
-        this.addDot(dot);
     }
     pointerDraw(dot) {
         this.moveDot(dot);

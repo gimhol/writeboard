@@ -5,9 +5,10 @@ import { LinesData } from "./Data"
 import { IRect } from "../../utils/Rect"
 import { IDot } from "../../utils/Dot"
 
-export class ShapeStraightLine extends Shape<LinesData> {
+export class ShapeLines extends Shape<LinesData> {
   private _srcGeo: IRect | null = null
   private _path2D = new Path2D();
+  
   constructor(v: LinesData) {
     super(v);
     let x, y: number
@@ -18,6 +19,7 @@ export class ShapeStraightLine extends Shape<LinesData> {
     }
     this.updateSrcGeo()
   }
+
   override merge(data: Partial<LinesData>) {
     this.markDirty()
     const startIdx = this.data.coords.length
@@ -36,7 +38,7 @@ export class ShapeStraightLine extends Shape<LinesData> {
   }
 
   /**
-   * 根据新加入的点，计算原始矩形
+   * 计算原始矩形
    * @param dot 
    */
   private updateSrcGeo(): IRect {
@@ -69,15 +71,15 @@ export class ShapeStraightLine extends Shape<LinesData> {
     }
   }
 
-  appendDot(dot: IDot, type?: 'first') {
+  pushDot(dot: IDot, type?: 'first'): void {
     this.data.coords.push(dot.x, dot.y)
     const geo = this.updateSrcGeo()
     this.updatePath(dot.x, dot.y, type)
     this.geo(geo.x, geo.y, geo.w, geo.h)
     this.markDirty()
   }
-  
-  editDot(dot: IDot) {
+
+  editDot(dot: IDot): void {
     this.data.coords[this.data.coords.length - 2] = dot.x;
     this.data.coords[this.data.coords.length - 1] = dot.y;
     this._path2D = new Path2D();
@@ -92,8 +94,7 @@ export class ShapeStraightLine extends Shape<LinesData> {
   }
 
   render(ctx: CanvasRenderingContext2D): void {
-    if (!this.visible)
-      return;
+    if (!this.visible) { return; }
     const d = this.data;
 
     if (d.lineWidth && d.strokeStyle && this._srcGeo) {
@@ -116,4 +117,4 @@ export class ShapeStraightLine extends Shape<LinesData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Lines, () => new LinesData, d => new ShapeStraightLine(d))
+FactoryMgr.registerShape(ShapeEnum.Lines, () => new LinesData, d => new ShapeLines(d))

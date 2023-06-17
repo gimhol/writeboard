@@ -4,8 +4,8 @@ import { IRect, Rect } from "../../utils/Rect"
 import { ShapeType } from "../ShapeEnum"
 
 export class Shape<D extends ShapeData = ShapeData> {
-  private _data: D
-  private _board?: Board
+  private _data: D;
+  private _board?: Board;
   constructor(data: D) {
     this._data = data
   }
@@ -34,15 +34,16 @@ export class Shape<D extends ShapeData = ShapeData> {
     this._data.selected = v
     this.markDirty()
   }
-  merge(data: Partial<ShapeData>) {
+  merge(data: Partial<ShapeData>): void {
     this.markDirty()
     this.data.merge(data)
     this.markDirty()
   }
-  markDirty(rect: IRect = this.boundingRect()) {
+  markDirty(rect?: IRect): void {
+    rect = rect ?? this.boundingRect();
     this.board?.markDirty(rect)
   }
-  move(x: number, y: number) {
+  move(x: number, y: number): void {
     if (x === this._data.x && y === this._data.y)
       return
     this.markDirty()
@@ -51,7 +52,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
-  resize(w: number, h: number) {
+  resize(w: number, h: number): void {
     if (w === this._data.w && h === this._data.h)
       return
     this.markDirty()
@@ -59,7 +60,8 @@ export class Shape<D extends ShapeData = ShapeData> {
     this._data.h = h
     this.markDirty()
   }
-  getGeo() {
+
+  getGeo(): Rect {
     return new Rect(
       this._data.x,
       this._data.y,
@@ -67,6 +69,7 @@ export class Shape<D extends ShapeData = ShapeData> {
       this._data.h
     )
   }
+
   geo(x: number, y: number, w: number, h: number): void {
     if (x === this._data.x &&
       y === this._data.y &&
@@ -81,21 +84,21 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
-  moveBy(x: number, y: number) {
+  moveBy(x: number, y: number): void {
     this.markDirty()
     this._data.x += x
     this._data.y += y
     this.markDirty()
   }
 
-  resizeBy(w: number, h: number) {
+  resizeBy(w: number, h: number): void {
     this.markDirty()
     this._data.w += w
     this._data.h += h
     this.markDirty()
   }
 
-  geoBy(x: number, y: number, w: number, h: number) {
+  geoBy(x: number, y: number, w: number, h: number): void {
     this.markDirty()
     this._data.x += x
     this._data.y += y
@@ -104,7 +107,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible) return
     if (this.selected) {
       // 虚线其实相当损耗性能
