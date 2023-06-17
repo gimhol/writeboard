@@ -5,5 +5,5 @@ export class Canvas extends View<'canvas'> {
   get width() { return this.inner.width; }
   set height(v) { this.inner.height = v; }
   get height() { return this.inner.height; }
-  constructor() { super('canvas'); }
+  constructor(ele?: HTMLCanvasElement) { ele ? super(ele) : super('canvas'); }
 }

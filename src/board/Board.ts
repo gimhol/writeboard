@@ -3,16 +3,17 @@ import { IFactory, IShapesMgr } from "../mgr"
 import { Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Rect } from "../utils"
-import { ILayer, ILayerInits, Layer } from "./Layer"
-const Tag = '[Board]'
+import { ILayerInits, Layer } from "./Layer"
 
 export interface BoardOptions {
-  layers: ILayerInits[]
+  layers?: ILayerInits[]
   width?: number
   height?: number
   toolType?: ToolType
 }
 export interface IPointerEventHandler { (ev: PointerEvent): void }
+
+const Tag = '[Board]'
 export class Board implements IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
@@ -42,20 +43,24 @@ export class Board implements IShapesMgr {
     this._height = v;
     this._layers.forEach(l => l.height = v);
   }
-  addLayer(init: ILayerInits): boolean {
-    if (this._layers.has(init.info.id)) {
-      console.error(`[WhiteBoard] addLayer(): layerId already existed! id = ${init.info.id}`)
+  addLayer(layer: ILayerInits | Layer): boolean {
+    if (this._layers.has(layer.info.id)) {
+      console.error(`[WhiteBoard] addLayer(): layerId already existed! id = ${layer.info.id}`)
       return false;
     }
-    const layer = new Layer(init);
-    layer.width = this.width;
-    layer.height = this.height;
-    layer.onscreen.style.pointerEvents = 'none'
-    this._layers.set(init.info.id, layer)
-    layer.onscreen.addEventListener('pointerdown', this.pointerdown)
-    layer.onscreen.addEventListener('pointermove', this.pointermove)
-    layer.onscreen.addEventListener('pointerup', this.pointerup)
-    layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
+    if (layer instanceof Layer) {
+      layer.width = this.width;
+      layer.height = this.height;
+      layer.onscreen.style.pointerEvents = 'none';
+      layer.onscreen.addEventListener('pointerdown', this.pointerdown)
+      layer.onscreen.addEventListener('pointermove', this.pointermove)
+      layer.onscreen.addEventListener('pointerup', this.pointerup)
+      layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
+      this._layers.set(layer.info.id, layer)
+    } else {
+      layer = this.factory.newLayer(layer);
+      this.addLayer(layer);
+    }
     return true;
   }
   removeLayer(layerId: string): boolean {
@@ -97,10 +102,23 @@ export class Board implements IShapesMgr {
     options.height && (this._height = options.height)
     options.toolType && (this._toolType = options.toolType)
 
-    options.layers.forEach(v => this.addLayer(v))
-    this.editLayer(options.layers[0].info.id);
+    const layers: ILayerInits[] = options.layers ?? []
+    if (!layers.length) {
+      layers.push({
+        info: {
+          id: factory.newLayerId(),
+          name: factory.newLayerName(),
+        },
+        onscreen: document.createElement('canvas')
+      })
+    }
+    layers.forEach(v => this.addLayer(v))
 
-    this._dirty = { x: 0, y: 0, w: this.onscreen().width, h: this.onscreen().height }
+
+
+    this.editLayer(layers[0].info.id);
+
+    this._dirty = { x: 0, y: 0, w: this.width, h: this.height }
     this.render()
   }
 

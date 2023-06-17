@@ -5,7 +5,7 @@ import type { ITool } from "../tools/base/Tool";
 import { InvalidTool } from "../tools/base/InvalidTool";
 import { FactoryEnum, FactoryType } from "./FactoryEnum";
 import { FactoryMgr } from "./FactoryMgr";
-import { Board } from "../board";
+import { Board, ILayerInits, Layer } from "../board";
 import { BoardOptions } from "../board/Board";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { ToolType } from "../tools/ToolEnum";
@@ -22,7 +22,9 @@ export interface IFactory {
   newZ(data: ShapeData): number;
   newShape(shapeType: ShapeType): Shape;
   newShape(shapeData: IShapeData): Shape;
-  newLayerId(): string
+  newLayerId(): string;
+  newLayerName(): string;
+  newLayer(inits: ILayerInits): Layer;
 }
 
 const Tag = '[Factory]';
@@ -94,6 +96,12 @@ export class Factory implements IFactory {
   }
   newLayerId(): string {
     return `layer_${Date.now()}_${++this._time}`
+  }
+  newLayerName(): string {
+    return `layer_${Date.now()}_${++this._time}`
+  }
+  newLayer(inits: ILayerInits): Layer {
+    return new Layer(inits);
   }
 }
 

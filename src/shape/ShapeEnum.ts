@@ -5,6 +5,9 @@ export enum ShapeEnum {
   Oval = 3,
   Text = 4,
   Polygon = 5,
+  Tick = 6,
+  Cross = 7,
+  HalfTick = 8,
 }
 export type ShapeType = ShapeEnum | string
 export function getShapeName(type: ShapeType): string {
@@ -15,6 +18,9 @@ export function getShapeName(type: ShapeType): string {
     case ShapeEnum.Oval: return 'ShapeEnum.Oval'
     case ShapeEnum.Text: return 'ShapeEnum.Text'
     case ShapeEnum.Polygon: return 'ShapeEnum.Polygon'
+    case ShapeEnum.Tick: return 'ShapeEnum.Tick'
+    case ShapeEnum.Cross: return 'ShapeEnum.Cross'
+    case ShapeEnum.HalfTick: return 'ShapeEnum.HalfTick'
     default: return type
   }
 }

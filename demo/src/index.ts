@@ -1,33 +1,29 @@
 import {
-  FactoryEnum, FactoryMgr,
-  ILayerInits,
-  Player, Recorder,
+  Board, FactoryEnum, FactoryMgr, Player, Recorder,
   Shape,
   ShapeData,
   ShapeEnum, ShapePen,
-  ToolEnum,
-  WhiteBoard
+  ToolEnum
 } from "../../dist";
+import { RGBA } from "./colorPalette/Color";
 import ColorView from "./ColorView";
+import demo_helloworld from "./demo_helloworld";
+import demo_rect_n_oval from "./demo_rect_n_oval";
 import { Button } from "./G/BaseView/Button";
 import { Canvas } from "./G/BaseView/Canvas";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
-import { MergedSubwin } from "./G/CompoundView/MergedSubwin";
 import { Subwin } from "./G/CompoundView/SubWin";
 import { DockableDirection } from "./G/CompoundView/Workspace/DockableDirection";
 import { WorkspaceView } from "./G/CompoundView/Workspace/WorkspaceView";
 import { LayersView } from "./LayersView";
 import { ToolsView } from "./ToolsView";
-import { RGBA } from "./colorPalette/Color";
-import demo_helloworld from "./demo_helloworld";
-import demo_rect_n_oval from "./demo_rect_n_oval";
 
 const factory = FactoryMgr.createFactory(FactoryEnum.Default);
 
-let board: WhiteBoard
+let board: Board
 
-const workspace = window.workspace = new WorkspaceView('body', {
+const workspace = new WorkspaceView('body', {
   rect() {
     return {
       x: 0, y: 0,
@@ -42,22 +38,7 @@ const menu = new Menu(workspace, {
   items: [{
     key: 'tool_view',
     label: '工具',
-    items: [{
-      key: <string>ToolEnum.Selector,
-      label: <string>ToolEnum.Selector,
-    }, {
-      key: <string>ToolEnum.Pen,
-      label: <string>ToolEnum.Pen,
-    }, {
-      key: <string>ToolEnum.Rect,
-      label: <string>ToolEnum.Rect,
-    }, {
-      key: <string>ToolEnum.Oval,
-      label: <string>ToolEnum.Oval,
-    }, {
-      key: <string>ToolEnum.Text,
-      label: <string>ToolEnum.Text,
-    }]
+    items: FactoryMgr.listTools().map(v => ({ key: v, label: v }))
   }, {
     key: 'menu_item_1',
     label: 'menu_item_1'
@@ -91,6 +72,9 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
     case ToolEnum.Polygon:
     case ToolEnum.Text:
     case ToolEnum.Selector:
+    case ToolEnum.Tick:
+    case ToolEnum.Cross:
+    case ToolEnum.HalfTick:
       board.setToolType(e.detail.key);
       break;
   }
@@ -99,12 +83,15 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
 const layersView = new LayersView();
 workspace.addChild(layersView);
 layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
-  const layerItem = layersView.addLayer({
-    name: '' + Date.now(),
-    id: factory.newLayerId()
-  });
-  const canvas = addLayerCanvas();
-  board.addLayer({ info: layerItem.state, onscreen: canvas.inner });
+  const layer = factory.newLayer({
+    info: {
+      name: factory.newLayerName(),
+      id: factory.newLayerId()
+    },
+    onscreen: addLayerCanvas().inner
+  })
+  layersView.addLayer(layer);
+  board.addLayer(layer);
 })
 layersView.addEventListener(LayersView.EventType.LayerVisibleChanged, e => {
   const { id, visible } = e.detail;
@@ -116,10 +103,6 @@ layersView.addEventListener(LayersView.EventType.LayerActived, e => {
   const { id } = e.detail;
   board.editLayer(id);
 })
-// layersView.addLayer({
-//   name: '' + Date.now(),
-//   id: factory.newLayerId()
-// });
 
 const toolsView = new ToolsView;
 workspace.addChild(toolsView)
@@ -305,8 +288,8 @@ const blackboard = new View('div');
 blackboard.styles.addCls('blackboard');
 rootView.addChild(blackboard);
 
-function addLayerCanvas() {
-  const canvas = new Canvas();
+function addLayerCanvas(ele?: HTMLCanvasElement) {
+  const canvas = new Canvas(ele);
   canvas.styles.apply('', {
     position: 'absolute',
     touchAction: 'none',
@@ -325,12 +308,13 @@ function addLayerCanvas() {
   return canvas;
 }
 
-const layers = layersView.layers().map<ILayerInits>((layer, idx) => {
-  const canvas = addLayerCanvas();
-  return { info: layer.state, onscreen: canvas.inner }
-})
-board = factory.newWhiteBoard({ layers, width: 1024, height: 1024 });
+board = factory.newWhiteBoard({ width: 1024, height: 1024 });
+const layer = board.layer();
+addLayerCanvas(layer.onscreen)
+layersView.addLayer(layer);
 
-(window as any).board = board;
+Object.assign(window, {
+  board, factory, workspace, FactoryMgr
+});
 workspace.dockToRoot(layersView, DockableDirection.H, 'end');
 workspace.dockToRoot(toolsView, DockableDirection.H, 'start');
