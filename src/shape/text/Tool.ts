@@ -12,23 +12,27 @@ export class TextTool implements ITool {
   private _board: Board | undefined
   private _curShape: ShapeText | undefined
   private _editor = document.createElement('textarea')
-  private setCurShape = (shape?: ShapeText) => {
-    const preShape = this._curShape
-    if (preShape === shape) return
-    preShape && (preShape.editing = false)
-    this._curShape = shape
-    shape && (shape.editing = true)
+  private set curShape(shape: ShapeText | undefined) {
+    const preShape = this._curShape;
+    if (preShape === shape) return;
+
+    this._curShape = shape;
     if (shape) {
+      shape.editing = true
       this._updateEditorStyle(shape)
       this._editor.style.display = 'block'
       this._editor.value = shape.text
     } else {
-      this._editor.style.display = 'gone'
+      this._editor.style.display = 'none'
     }
-    if (preShape && !preShape.text) {
-      const board = this.board
-      if (!board) return
-      board.remove(preShape)
+
+    if (preShape) {
+      preShape.editing = false;
+      if (!preShape.text) {
+        const board = this.board;
+        if (!board) return;
+        board.remove(preShape)
+      }
     }
   }
   private _updateEditorStyle = (shape: ShapeText) => {
@@ -84,7 +88,7 @@ export class TextTool implements ITool {
   end(): void {
     this._editor.removeEventListener('input', this._updateShapeText)
     document.removeEventListener('selectionchange', this._updateShapeText)
-    this.setCurShape()
+    this.curShape = undefined;
   }
   get type() { return ToolEnum.Text }
 
@@ -112,7 +116,8 @@ export class TextTool implements ITool {
     }
 
     if (!shapeText && this._curShape) {
-      return this.setCurShape()
+      this.curShape = undefined;
+      return
     } else if (!shapeText) {
       const newShapeText = board.factory.newShape(ShapeEnum.Text) as ShapeText
       newShapeText.data.layer = board.layer().id;
@@ -120,7 +125,7 @@ export class TextTool implements ITool {
       board.add(newShapeText)
       shapeText = newShapeText
     }
-    this.setCurShape(shapeText)
+    this.curShape = shapeText
     setTimeout(() => this._editor.focus(), 10)
   }
   pointerDraw(dot: IDot): void { }
