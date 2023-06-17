@@ -75,6 +75,7 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
     case ToolEnum.Tick:
     case ToolEnum.Cross:
     case ToolEnum.HalfTick:
+    case ToolEnum.Lines:
       board.setToolType(e.detail.key);
       break;
   }

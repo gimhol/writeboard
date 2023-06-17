@@ -8,4 +8,5 @@ export * from "./text";
 export * from "./tick";
 export * from "./cross";
 export * from "./halftick";
+export * from "./lines";
 
