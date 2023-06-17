@@ -5283,7 +5283,7 @@ class LinesTool {
     end() {
         window.removeEventListener('keydown', this._keydown, true);
         window.removeEventListener('keyup', this._keyup, true);
-        window.addEventListener('blur', this._blur, true);
+        window.removeEventListener('blur', this._blur, true);
     }
     get type() { return ToolEnum_1.ToolEnum.Lines; }
     render() { }
