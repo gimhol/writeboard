@@ -4,7 +4,6 @@ export function getValue<T = any>(v: ValueOrSetter<T>, prev: T) {
   return typeof v !== 'function' ? v : (v as Setter<T>)(prev)
 }
 
-export * from "./Array"
 export * from "./BinaryRange"
 export * from "./BinaryTree"
 export * from "./Dot"

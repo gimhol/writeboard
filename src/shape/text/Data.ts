@@ -5,7 +5,7 @@ export class TextData extends ShapeData {
   constructor() {
     super()
     this.type = ShapeEnum.Text
-    this.fillStyle = 'white'
+    this.fillStyle = '#ff0000'
     this.strokeStyle = ''
     this.lineWidth = 0
   }

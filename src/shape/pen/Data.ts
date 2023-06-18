@@ -12,7 +12,7 @@ export class PenData extends ShapeData {
   constructor() {
     super()
     this.type = ShapeEnum.Pen
-    this.strokeStyle = 'white'
+    this.strokeStyle = '#ff0000'
     this.lineCap = 'round'
     this.lineJoin = 'round'
     this.lineWidth = 3

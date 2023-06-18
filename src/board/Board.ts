@@ -52,10 +52,10 @@ export class Board implements IShapesMgr {
       layer.width = this.width;
       layer.height = this.height;
       layer.onscreen.style.pointerEvents = 'none';
-      layer.onscreen.addEventListener('pointerdown', this.pointerdown)
-      layer.onscreen.addEventListener('pointermove', this.pointermove)
-      layer.onscreen.addEventListener('pointerup', this.pointerup)
-      layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
+      layer.onscreen.addEventListener('pointerdown', this.pointerdown);
+      layer.onscreen.addEventListener('pointermove', this.pointermove);
+      layer.onscreen.addEventListener('pointerup', this.pointerup);
+      layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() });
       this._layers.set(layer.info.id, layer)
     } else {
       layer = this.factory.newLayer(layer);
@@ -69,10 +69,10 @@ export class Board implements IShapesMgr {
       return false;
     }
     const layer = this._layers.get(layerId)!;
-    layer.onscreen.removeEventListener('pointerdown', this.pointerdown)
-    layer.onscreen.removeEventListener('pointermove', this.pointermove)
-    layer.onscreen.removeEventListener('pointerup', this.pointerup)
-    layer.onscreen.removeEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() })
+    layer.onscreen.removeEventListener('pointerdown', this.pointerdown);
+    layer.onscreen.removeEventListener('pointermove', this.pointermove);
+    layer.onscreen.removeEventListener('pointerup', this.pointerup);
+    layer.onscreen.removeEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() });
     return true;
   }
 
@@ -113,13 +113,12 @@ export class Board implements IShapesMgr {
       })
     }
     layers.forEach(v => this.addLayer(v))
-
-
-
     this.editLayer(layers[0].info.id);
+    this._dirty = { x: 0, y: 0, w: this.width, h: this.height };
+    this.render();
 
-    this._dirty = { x: 0, y: 0, w: this.width, h: this.height }
-    this.render()
+    window.addEventListener('pointermove', this.pointermove);
+    window.addEventListener('pointerup', this.pointerup);
   }
 
   finds(ids: string[]): Shape[] {
@@ -133,6 +132,7 @@ export class Board implements IShapesMgr {
       x: 0, y: 0,
       w: this.width,
       h: this.height,
+      layers: Array.from(this._layers.values()).map(v => v.info),
       shapes: this.shapes().map(v => v.data)
     }
   }
@@ -278,12 +278,13 @@ export class Board implements IShapesMgr {
   getDot(ev: MouseEvent | PointerEvent): IDot {
     const layer = this.layer();
     const ele = layer.onscreen;
-    const sw = ele.width / ele.offsetWidth
-    const sh = ele.height / ele.offsetHeight
+    const { width: w, height: h, left, top } = ele.getBoundingClientRect()
+    const sw = ele.width / w
+    const sh = ele.height / h
     const { pressure = 0.5 } = ev as any
     return {
-      x: Math.floor(sw * ev.offsetX),
-      y: Math.floor(sh * ev.offsetY),
+      x: Math.floor(sw * (ev.clientX - left)),
+      y: Math.floor(sh * (ev.clientY - top)),
       p: pressure
     }
   }
@@ -310,17 +311,21 @@ export class Board implements IShapesMgr {
     }
     this._mousedown = true;
     this.tool?.pointerDown(this.getDot(e))
+    e.stopPropagation();
   }
 
   pointermove: IPointerEventHandler = (e) => {
-    if (this._mousedown)
-      this.tool?.pointerDraw(this.getDot(e))
-    else
+    if (this._mousedown) {
+      this.tool?.pointerDraw(this.getDot(e));
+    } else {
       this.tool?.pointerMove(this.getDot(e))
+    }
+    e.stopPropagation();
   }
   pointerup: IPointerEventHandler = (e) => {
     this._mousedown = false
     this.tool?.pointerUp(this.getDot(e))
+    e.stopPropagation();
   }
 
   private _dirty: IRect | undefined
@@ -340,8 +345,8 @@ export class Board implements IShapesMgr {
     })
 
     this._shapesMgr.shapes().forEach(v => {
-      const br = v.boundingRect()
-      const layer = this._layers.get(v.data.layer)
+      const br = v.boundingRect();
+      const layer = this._layers.get(v.data.layer);
       if (Rect.hit(br, dirty) && layer) v.render(layer.octx)
     })
 

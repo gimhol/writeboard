@@ -5,8 +5,8 @@ export class OvalData extends ShapeData {
   constructor() {
     super()
     this.type = ShapeEnum.Oval
-    this.fillStyle = '#0000ff'
-    this.strokeStyle = '#000000'
+    // this.fillStyle = '#00000000'
+    this.strokeStyle = '#ff0000'
     this.lineWidth = 2
   }
   copy(): OvalData {

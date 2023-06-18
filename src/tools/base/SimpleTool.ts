@@ -16,45 +16,44 @@ export class SimpleTool implements ITool {
   constructor(type: ToolType, shapeType: ShapeType) {
     this._type = type
     this._shapeType = shapeType
-    window.addEventListener('keydown', e => this.keydown(e));
-    window.addEventListener('keyup', e => this.keyup(e))
   }
-  protected _keys: { [key in FnKeys]?: boolean } = {}
-  protected keydown(e: KeyboardEvent) {
+  protected _keys = new Map<FnKeys, boolean>()
+
+  protected keydown = (e: KeyboardEvent) => {
     switch (e.key) {
       case 'Control':
       case 'Alt':
       case 'Shift':
-        if (!this._keys[e.key]) {
-          this._keys[e.key] = true;
-          this.applyRect();
-        }
+        this._keys.set(e.key, true);
+        this.applyRect();
         return;
     }
   }
-  protected keyup(e: KeyboardEvent) {
+  protected keyup = (e: KeyboardEvent) => {
     switch (e.key) {
       case 'Control':
       case 'Alt':
       case 'Shift':
-        if (this._keys[e.key]) {
-          this._keys[e.key] = false;
-          this.applyRect();
-        }
+        this._keys.set(e.key, false);
+        this.applyRect();
         return;
     }
   }
   holdingKey(...keys: FnKeys[]): boolean {
     for (let i = 0; i < keys.length; ++i) {
-      if (!keys[i]) {
+      if (!this._keys.get(keys[i])) {
         return false;
       }
     }
     return true;
   }
   start(): void {
+    window.addEventListener('keydown', this.keydown);
+    window.addEventListener('keyup', this.keyup)
   }
   end(): void {
+    window.removeEventListener('keydown', this.keydown);
+    window.removeEventListener('keyup', this.keyup)
     delete this._curShape
   }
   render(): void { }
