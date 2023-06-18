@@ -2694,11 +2694,12 @@ class ToolsView extends SubWin_1.Subwin {
             overflowX: 'hidden'
         });
         const toolsBtns = [
-            new ToolButton().init({ src: './ic_selector.svg', toolType: dist_1.ToolEnum.Selector }),
-            new ToolButton().init({ src: './ic_pen.svg', toolType: dist_1.ToolEnum.Pen }),
-            new ToolButton().init({ src: './ic_rect.svg', toolType: dist_1.ToolEnum.Rect }),
-            new ToolButton().init({ src: './ic_oval.svg', toolType: dist_1.ToolEnum.Oval }),
-            new ToolButton().init({ src: './ic_text.svg', toolType: dist_1.ToolEnum.Text })
+            new ToolButton().init({ src: './ic_tool_selector.svg', toolType: dist_1.ToolEnum.Selector }),
+            new ToolButton().init({ src: './ic_tool_pen.svg', toolType: dist_1.ToolEnum.Pen }),
+            new ToolButton().init({ src: './ic_tool_rect.svg', toolType: dist_1.ToolEnum.Rect }),
+            new ToolButton().init({ src: './ic_tool_oval.svg', toolType: dist_1.ToolEnum.Oval }),
+            new ToolButton().init({ src: './ic_tool_text.svg', toolType: dist_1.ToolEnum.Text }),
+            new ToolButton().init({ src: './ic_tool_tick.svg', toolType: dist_1.ToolEnum.Tick })
         ];
         toolsBtns.forEach(btn => { var _a; return (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(btn); });
         this._toolButtonGroup = new ButtonGroup_1.ButtonGroup({ buttons: toolsBtns });
@@ -5499,6 +5500,7 @@ class OvalTool extends SimpleTool_1.SimpleTool {
     applyRect() {
         var _a;
         if (this.holdingKey('Shift', 'Alt')) {
+            // 从圆心开始绘制正圆
             const f = this._rect.from();
             const t = this._rect.to();
             const r = Math.sqrt(Math.pow(f.y - t.y, 2) + Math.pow(f.x - t.x, 2));

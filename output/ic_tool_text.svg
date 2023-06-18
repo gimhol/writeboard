@@ -8,7 +8,7 @@
    version="1.1"
    id="svg12"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="ic_pen.svg"
+   sodipodi:docname="ic_tool_text.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,8 +25,8 @@
      inkscape:document-units="px"
      showgrid="false"
      inkscape:zoom="1.4770342"
-     inkscape:cx="262.01154"
-     inkscape:cy="246.43979"
+     inkscape:cx="151.31674"
+     inkscape:cy="245.76276"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -38,22 +38,26 @@
      shape-rendering="auto"
      inkscape:lockguides="false" />
   <defs
-     id="defs9" />
+     id="defs9">
+    <rect
+       x="92.076404"
+       y="86.660145"
+       width="328.3607"
+       height="297.89425"
+       id="rect833" />
+  </defs>
   <g
      inkscape:label="图层 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <rect
-       style="fill:#ffffff;stroke-width:0.2107"
-       id="rect637"
-       width="20.682402"
-       height="82.729607"
-       x="80.264145"
-       y="-42.854614"
-       transform="matrix(0.70583572,0.70837556,-0.70583572,0.70837556,0,0)" />
-    <path
-       style="fill:#ffffff;stroke-width:0.146668"
-       d="M 26.763149,86.916301 41.428492,101.5 26.5,101.16871 Z"
-       id="path639" />
+    <g
+       aria-label="T"
+       transform="matrix(10.142631,0,0,8.5963734,-907.39464,-737.57585)"
+       id="text831"
+       style="white-space:pre;shape-inside:url(#rect833);display:inline;fill:#ffffff">
+      <path
+         d="m 99.470703,89.914761 h -3.117187 v 7.693359 h -1.160157 v -7.693359 h -3.117187 v -1.03125 h 7.394531 z"
+         id="path2996" />
+    </g>
   </g>
 </svg>

@@ -7,8 +7,8 @@
    viewBox="0 0 128 128"
    version="1.1"
    id="svg12"
-   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="ic_text.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="ic_tool_tick.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,39 +25,35 @@
      inkscape:document-units="px"
      showgrid="false"
      inkscape:zoom="1.4770342"
-     inkscape:cx="151.31674"
-     inkscape:cy="245.76276"
+     inkscape:cx="192.95423"
+     inkscape:cy="246.43979"
      inkscape:window-width="1920"
-     inkscape:window-height="1009"
-     inkscape:window-x="-8"
-     inkscape:window-y="514"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      showborder="true"
      borderlayer="true"
      shape-rendering="auto"
-     inkscape:lockguides="false" />
+     inkscape:lockguides="false"
+     showguides="true">
+    <sodipodi:guide
+       position="24.711682,132.40071"
+       orientation="0,-1"
+       id="guide4823"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
   <defs
-     id="defs9">
-    <rect
-       x="92.076404"
-       y="86.660145"
-       width="328.3607"
-       height="297.89425"
-       id="rect833" />
-  </defs>
+     id="defs9" />
   <g
      inkscape:label="图层 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <g
-       aria-label="T"
-       transform="matrix(10.142631,0,0,8.5963734,-907.39464,-737.57585)"
-       id="text831"
-       style="white-space:pre;shape-inside:url(#rect833);display:inline;fill:#ffffff">
-      <path
-         d="m 99.470703,89.914761 h -3.117187 v 7.693359 h -1.160157 v -7.693359 h -3.117187 v -1.03125 h 7.394531 z"
-         id="path2996" />
-    </g>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.169706;stroke-opacity:1"
+       d="M 26.5,60.000016 32.500023,53.999994 53.500016,74.999987 95.500005,33 101.5,38.999998 53.500062,86.999938 Z"
+       id="path4821"
+       sodipodi:nodetypes="ccccccc" />
   </g>
 </svg>
