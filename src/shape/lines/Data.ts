@@ -6,11 +6,10 @@ export class LinesData extends ShapeData {
   constructor() {
     super()
     this.type = ShapeEnum.Lines;
-    this.strokeStyle = 'white';
+    this.strokeStyle = '#ff0000';
     this.lineCap = 'round';
     this.lineJoin = 'round';
-    this.lineDash = [5, 5]
-    this.lineWidth = 3;
+    this.lineWidth = 2;
   }
   override copyFrom(other: Partial<LinesData>) {
     super.copyFrom(other)

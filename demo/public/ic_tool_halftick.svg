@@ -7,8 +7,8 @@
    viewBox="0 0 128 128"
    version="1.1"
    id="svg12"
-   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="ic_tool_rect.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="ic_tool_halftick.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,12 +25,12 @@
      inkscape:document-units="px"
      showgrid="false"
      inkscape:zoom="1.4770342"
-     inkscape:cx="261.67301"
-     inkscape:cy="245.76275"
+     inkscape:cx="142.1768"
+     inkscape:cy="245.76276"
      inkscape:window-width="1920"
-     inkscape:window-height="1009"
-     inkscape:window-x="-8"
-     inkscape:window-y="514"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      showborder="true"
@@ -43,12 +43,18 @@
      inkscape:label="图层 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.169706;stroke-opacity:1"
+       d="M 26.5,60.000016 32.500023,53.999994 53.500016,74.99999 95.500007,33 101.5,38.999998 53.500062,86.99994 Z"
+       id="path4821"
+       sodipodi:nodetypes="ccccccc" />
     <rect
-       style="fill:#ffffff;stroke-width:0.679284"
-       id="rect708"
-       width="75"
-       height="75"
-       x="26.5"
-       y="26.5" />
+       style="fill:#ffffff;stroke-width:0.25"
+       id="rect267"
+       width="9.1399374"
+       height="36.051975"
+       x="-21.146139"
+       y="-112.75552"
+       transform="rotate(135)" />
   </g>
 </svg>

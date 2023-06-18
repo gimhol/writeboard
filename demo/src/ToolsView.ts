@@ -43,7 +43,10 @@ export class ToolsView extends Subwin {
       new ToolButton().init({ src: './ic_tool_rect.svg', toolType: ToolEnum.Rect }),
       new ToolButton().init({ src: './ic_tool_oval.svg', toolType: ToolEnum.Oval }),
       new ToolButton().init({ src: './ic_tool_text.svg', toolType: ToolEnum.Text }),
-      new ToolButton().init({ src: './ic_tool_tick.svg', toolType: ToolEnum.Tick })
+      new ToolButton().init({ src: './ic_tool_tick.svg', toolType: ToolEnum.Tick }),
+      new ToolButton().init({ src: './ic_tool_halftick.svg', toolType: ToolEnum.HalfTick }),
+      new ToolButton().init({ src: './ic_tool_cross.svg', toolType: ToolEnum.Cross }),
+      new ToolButton().init({ src: './ic_tool_lines.svg', toolType: ToolEnum.Lines })
     ];
     toolsBtns.forEach(btn => this.content?.addChild(btn));
     this._toolButtonGroup = new ButtonGroup({ buttons: toolsBtns });

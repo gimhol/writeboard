@@ -2699,7 +2699,10 @@ class ToolsView extends SubWin_1.Subwin {
             new ToolButton().init({ src: './ic_tool_rect.svg', toolType: dist_1.ToolEnum.Rect }),
             new ToolButton().init({ src: './ic_tool_oval.svg', toolType: dist_1.ToolEnum.Oval }),
             new ToolButton().init({ src: './ic_tool_text.svg', toolType: dist_1.ToolEnum.Text }),
-            new ToolButton().init({ src: './ic_tool_tick.svg', toolType: dist_1.ToolEnum.Tick })
+            new ToolButton().init({ src: './ic_tool_tick.svg', toolType: dist_1.ToolEnum.Tick }),
+            new ToolButton().init({ src: './ic_tool_halftick.svg', toolType: dist_1.ToolEnum.HalfTick }),
+            new ToolButton().init({ src: './ic_tool_cross.svg', toolType: dist_1.ToolEnum.Cross }),
+            new ToolButton().init({ src: './ic_tool_lines.svg', toolType: dist_1.ToolEnum.Lines })
         ];
         toolsBtns.forEach(btn => { var _a; return (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(btn); });
         this._toolButtonGroup = new ButtonGroup_1.ButtonGroup({ buttons: toolsBtns });
@@ -5121,11 +5124,10 @@ class LinesData extends base_1.ShapeData {
         super();
         this.coords = [];
         this.type = ShapeEnum_1.ShapeEnum.Lines;
-        this.strokeStyle = 'white';
+        this.strokeStyle = '#ff0000';
         this.lineCap = 'round';
         this.lineJoin = 'round';
-        this.lineDash = [5, 5];
-        this.lineWidth = 3;
+        this.lineWidth = 2;
     }
     copyFrom(other) {
         super.copyFrom(other);
