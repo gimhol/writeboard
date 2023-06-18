@@ -1,5 +1,4 @@
 import { Shape } from "../shape/base/Shape"
-import { findIndex } from "../utils/Array"
 import { IRect, Rect } from "../utils/Rect"
 const Tag = '[ShapesMgr]'
 export interface IShapesMgr {
@@ -52,7 +51,7 @@ export class ShapesMgr implements IShapesMgr {
   remove(...items: Shape[]): number {
     let ret = 0
     items.forEach(item => {
-      const idx = findIndex(this._items, v => v === item)
+      const idx = this._items.findIndex(v => v === item);
       if (idx < 0)
         return
       this._items = this._items.filter((_, i) => i !== idx)

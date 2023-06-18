@@ -181,7 +181,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
     }
 }
 
-},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/SubWin":15,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.ButtonState = void 0;
@@ -1204,53 +1204,17 @@ Menu.EventType = MenuEventType;
 },{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":30,"../utils":31}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SubwinFooter = void 0;
-const View_1 = require("../../BaseView/View");
-class SubwinFooter extends View_1.View {
-    constructor() {
-        super('div');
-        this.styles.addCls('g_subwin_footer');
-    }
-}
-exports.SubwinFooter = SubwinFooter;
-
-},{"../../BaseView/View":10}],16:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SubwinHeader = void 0;
-const View_1 = require("../../BaseView/View");
-const IconButton_1 = require("../IconButton");
-class SubwinHeader extends View_1.View {
-    get btnClose() { return this._btnClose; }
-    get iconView() { return this._iconView; }
-    get titleView() { return this._titleView; }
-    get title() { return this._titleView.inner.innerHTML; }
-    set title(v) { this._titleView.inner.innerHTML = v; }
-    constructor() {
-        super('div');
-        this.styles.addCls('g_subwin_header');
-        this._iconView = new IconButton_1.IconButton().init().styles.addCls('g_subwin_icon').view;
-        this.addChild(this._iconView);
-        this._titleView = new View_1.View('div').styles.addCls('g_subwin_title').view;
-        this.addChild(this._titleView);
-        this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg' }).styles.addCls('g_subwin_btn_close').view;
-        this.addChild(this._btnClose);
-    }
-}
-exports.SubwinHeader = SubwinHeader;
-
-},{"../../BaseView/View":10,"../IconButton":13}],17:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subwin = exports.StyleNames = void 0;
-const Footer_1 = require("./Footer");
-const Header_1 = require("./Header");
-const View_1 = require("../../BaseView/View");
-const ViewDragger_1 = require("../../Helper/ViewDragger");
+const SubwinFooter_1 = require("./SubwinFooter");
+const SubwinHeader_1 = require("./SubwinHeader");
+const View_1 = require("../BaseView/View");
+const ViewDragger_1 = require("../Helper/ViewDragger");
 var StyleNames;
 (function (StyleNames) {
-    StyleNames["Normal"] = "normal";
-    StyleNames["Docked"] = "docked";
+    StyleNames["Root"] = "subwin";
+    StyleNames["ChildRaised"] = "subwin_child_raised";
+    StyleNames["ChildLowered"] = "subwin_child_lowered";
+    StyleNames["Docked"] = "subwin_docked";
 })(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
 class Subwin extends View_1.View {
     get dragger() { return this._dragger; }
@@ -1263,23 +1227,38 @@ class Subwin extends View_1.View {
     get content() { return this._content; }
     set content(v) {
         if (this._content) {
+            this._content.styles
+                .remove(StyleNames.ChildRaised)
+                .remove(StyleNames.ChildLowered)
+                .forgo(StyleNames.ChildRaised, StyleNames.ChildLowered);
             this.removeChild(this._content);
         }
         this._content = v;
         if (v) {
+            v.styles
+                .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
+                .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
             this.insertBefore(this._footer, v);
         }
     }
     raise() {
-        this.styles.delCls('g_subwin_lower').addCls('g_subwin_raised');
+        var _a, _b;
+        this.styles.addCls('g_subwin_raised');
+        this.header.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
+        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
+        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildLowered).apply(StyleNames.ChildRaised);
     }
     lower() {
-        this.styles.delCls('g_subwin_raised').addCls('g_subwin_lower');
+        var _a, _b;
+        this.styles.delCls('g_subwin_raised').refresh();
+        this.header.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
+        (_a = this.content) === null || _a === void 0 ? void 0 : _a.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
+        (_b = this.footer) === null || _b === void 0 ? void 0 : _b.styles.remove(StyleNames.ChildRaised).apply(StyleNames.ChildLowered);
     }
     constructor() {
         super('div');
-        this._header = new Header_1.SubwinHeader();
-        this._footer = new Footer_1.SubwinFooter();
+        this._header = new SubwinHeader_1.SubwinHeader();
+        this._footer = new SubwinFooter_1.SubwinFooter();
         this._dragWhenDocked = (x, y, prevX, prevY) => {
             var _a;
             if (Math.abs(x - prevX) + Math.abs(y - prevY) > 20) {
@@ -1289,7 +1268,22 @@ class Subwin extends View_1.View {
                 this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
             }
         };
-        this.styles.addCls('g_subwin').apply(StyleNames.Normal, {});
+        this._dragWhenUndocked = (x, y) => {
+            this.styles.apply('view_dragger_pos', { left: x, top: y });
+        };
+        this.styles.register(StyleNames.Docked, {
+            left: 'unset',
+            top: 'unset',
+            width: 'unset',
+            height: 'unset',
+            zIndex: 'unset',
+        }).addCls('g_subwin');
+        this._header.styles
+            .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
+            .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
+        this._footer.styles
+            .register(StyleNames.ChildRaised, { opacity: 1, transition: 'all 200ms' })
+            .register(StyleNames.ChildLowered, { opacity: 0.8, transition: 'all 200ms' });
         this.addChild(this._header, this._footer);
         this._dragger = new ViewDragger_1.ViewDragger({
             responser: this,
@@ -1297,11 +1291,11 @@ class Subwin extends View_1.View {
                 this.header.titleView,
                 this.header.iconView
             ],
-            handleMove: this.move.bind(this),
+            handleMove: this._dragWhenUndocked,
         });
         this._resizeOb = new ResizeObserver(() => {
-            const { width, height } = this.inner.getBoundingClientRect();
-            this.resize(width, height);
+            const { width, height } = getComputedStyle(this.inner);
+            this.styles.edit(StyleNames.Root, v => (Object.assign(Object.assign({}, v), { width, height })));
         });
         this._resizeOb.observe(this.inner);
         this.header.btnClose.addEventListener('click', e => this.styles.apply('hidden', { display: 'none' }));
@@ -1309,32 +1303,17 @@ class Subwin extends View_1.View {
     dockableView() {
         return this;
     }
-    move(x, y) {
-        this.styles.edit(StyleNames.Normal, v => (Object.assign(Object.assign({}, v), { left: x, top: y }))).refresh();
-    }
-    resize(width, height) {
-        this.styles.edit(StyleNames.Normal, v => (Object.assign(Object.assign({}, v), { width, height }))).refresh();
-    }
     onDocked() {
         this._resizeOb.unobserve(this.inner);
-        this.styles
-            .addCls('g_subwin_docked')
-            .delCls('g_subwin_raised', 'g_subwin_lower')
-            .del(StyleNames.Normal)
-            .add(StyleNames.Docked)
-            .refresh();
-        this.dragger.handleMove = this._dragWhenDocked.bind(this);
-        this.header.btnClose.styles.addCls('g_gone');
+        this.styles.addCls('g_subwin_docked').apply(StyleNames.Docked);
+        this.dragger.handleMove = this._dragWhenDocked;
+        this.header.btnClose.styles.apply('hidden', { display: 'none' });
     }
     onUndocked() {
         this._resizeOb.observe(this.inner);
-        this.styles
-            .delCls('g_subwin_docked')
-            .add(StyleNames.Normal)
-            .del(StyleNames.Docked)
-            .refresh();
-        this.dragger.handleMove = this.move.bind(this);
-        this.header.btnClose.styles.delCls('g_gone');
+        this.styles.delCls('g_subwin_docked').forgo(StyleNames.Docked);
+        this.dragger.handleMove = this._dragWhenUndocked;
+        this.header.btnClose.styles.forgo('hidden');
     }
     resizeDocked(width, height) {
         this.styles.apply(StyleNames.Docked, v => (Object.assign(Object.assign({}, v), { width, height })));
@@ -1349,7 +1328,107 @@ class Subwin extends View_1.View {
 exports.Subwin = Subwin;
 Subwin.StyleNames = StyleNames;
 
-},{"../../BaseView/View":10,"../../Helper/ViewDragger":28,"./Footer":15,"./Header":16}],18:[function(require,module,exports){
+},{"../BaseView/View":10,"../Helper/ViewDragger":28,"./SubwinFooter":16,"./SubwinHeader":17}],16:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SubwinFooter = void 0;
+const View_1 = require("../BaseView/View");
+class SubwinFooter extends View_1.View {
+    constructor() {
+        super('div');
+        this.styles.apply('normal', {
+            userSelect: 'none',
+            width: '100%',
+            color: '#FFFFFF88',
+            padding: 3,
+            background: '#333333',
+            borderBottom: '#333333',
+            display: 'flex',
+            boxSizing: 'border-box',
+            alignItems: 'center',
+        });
+    }
+}
+exports.SubwinFooter = SubwinFooter;
+
+},{"../BaseView/View":10}],17:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SubwinHeader = exports.StyleNames = exports.Classnames = void 0;
+const IconButton_1 = require("./IconButton");
+const View_1 = require("../BaseView/View");
+const FocusOb_1 = require("../Observer/FocusOb");
+const Button_1 = require("../BaseView/Button");
+var Classnames;
+(function (Classnames) {
+    Classnames["Root"] = "subwin_header";
+    Classnames["IconView"] = "subwinheader_iconview";
+    Classnames["TitleView"] = "subwinheader_titleview";
+    Classnames["BtnClose"] = "subwinheader_btnclose";
+})(Classnames = exports.Classnames || (exports.Classnames = {}));
+var StyleNames;
+(function (StyleNames) {
+    StyleNames["Root"] = "subwin_header";
+    StyleNames["IconView"] = "subwinheader_iconview";
+    StyleNames["TitleView"] = "subwinheader_titleview";
+    StyleNames["BtnClose"] = "subwinheader_btnclose";
+})(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
+class SubwinHeader extends View_1.View {
+    get btnClose() { return this._btnClose; }
+    get iconView() { return this._iconView; }
+    get titleView() { return this._titleView; }
+    get title() { return this._titleView.inner.innerHTML; }
+    set title(v) { this._titleView.inner.innerHTML = v; }
+    constructor() {
+        super('div');
+        new FocusOb_1.FocusOb(this.inner, v => alert(v));
+        this.styles
+            .addCls(Classnames.Root)
+            .apply(StyleNames.Root, {
+            userSelect: 'none',
+            width: '100%',
+            color: '#FFFFFF88',
+            background: '#222222',
+            borderBottom: '#222222',
+            fontSize: 12,
+            display: 'flex',
+            boxSizing: 'border-box',
+            alignItems: 'stretch',
+            height: 28,
+        });
+        this._iconView = new Button_1.Button();
+        this._iconView
+            .styles
+            .addCls(Classnames.IconView)
+            .apply(StyleNames.IconView, {
+            alignSelf: 'center',
+            marginLeft: 2,
+        });
+        this.addChild(this._iconView);
+        this._titleView = new View_1.View('div');
+        this._titleView.styles
+            .addCls(Classnames.TitleView)
+            .apply(StyleNames.TitleView, {
+            display: 'flex',
+            alignItems: 'center',
+            flex: 1,
+        });
+        this.addChild(this._titleView);
+        this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg' });
+        this._btnClose.styles
+            .addCls(Classnames.BtnClose)
+            .apply(StyleNames.BtnClose, {
+            alignSelf: 'center',
+            marginRight: 2,
+        });
+        this.addChild(this._btnClose);
+    }
+}
+exports.SubwinHeader = SubwinHeader;
+SubwinHeader.ClassNames = Classnames;
+SubwinHeader.StyleNames = StyleNames;
+
+},{"../BaseView/Button":2,"../BaseView/View":10,"../Observer/FocusOb":29,"./IconButton":13}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockView = exports.DockViewStyles = exports.StyleName = void 0;
@@ -1602,7 +1681,7 @@ class DockableResizer extends View_1.View {
 }
 exports.DockableResizer = DockableResizer;
 
-},{"../../BaseView/View":10,"../../Helper/ViewDragger":28,"../../Observer/HoverOb":30,"../SubWin":17,"./DockView":18,"./DockableDirection":19}],21:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Helper/ViewDragger":28,"../../Observer/HoverOb":30,"../SubWin":15,"./DockView":18,"./DockableDirection":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IndicatorImage = exports.srcs = void 0;
@@ -2055,7 +2134,7 @@ class WorkspaceView extends View_1.View {
 }
 exports.WorkspaceView = WorkspaceView;
 
-},{"../../BaseView/View":10,"../../Events/EventType":24,"../../Helper/List":27,"../../utils":31,"../DockPosition":11,"../DockResultPreview":12,"../SubWin":17,"./DockView":18,"./DockableDirection":19,"./IndicatorImage":21,"./IndicatorView":22}],24:[function(require,module,exports){
+},{"../../BaseView/View":10,"../../Events/EventType":24,"../../Helper/List":27,"../../utils":31,"../DockPosition":11,"../DockResultPreview":12,"../SubWin":15,"./DockView":18,"./DockableDirection":19,"./IndicatorImage":21,"./IndicatorView":22}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableEventType = exports.ViewEventType = exports.EventType = void 0;
@@ -2659,7 +2738,7 @@ class LayerItemView extends View_1.View {
 }
 exports.LayerItemView = LayerItemView;
 
-},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Observer/FocusOb":29}],33:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/SubWin":15,"./G/Observer/FocusOb":29}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
@@ -2707,7 +2786,7 @@ class ToolsView extends SubWin_1.Subwin {
 }
 exports.ToolsView = ToolsView;
 
-},{"../../dist":49,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":13,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25}],34:[function(require,module,exports){
+},{"../../dist":49,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":13,"./G/CompoundView/SubWin":15,"./G/Helper/ButtonGroup":25}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.clampI = exports.clampF = void 0;
@@ -3582,7 +3661,7 @@ Object.assign(window, {
 workspace.dockToRoot(layersView, DockableDirection_1.DockableDirection.H, 'end');
 workspace.dockToRoot(toolsView, DockableDirection_1.DockableDirection.H, 'start');
 
-},{"../../dist":49,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/SubWin":17,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
+},{"../../dist":49,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/SubWin":15,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
@@ -4427,7 +4506,6 @@ FactoryMgr.factoryInfos = {};
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapesMgr = void 0;
-const Array_1 = require("../utils/Array");
 const Rect_1 = require("../utils/Rect");
 const Tag = '[ShapesMgr]';
 class ShapesMgr {
@@ -4470,7 +4548,7 @@ class ShapesMgr {
     remove(...items) {
         let ret = 0;
         items.forEach(item => {
-            const idx = (0, Array_1.findIndex)(this._items, v => v === item);
+            const idx = this._items.findIndex(v => v === item);
             if (idx < 0)
                 return;
             this._items = this._items.filter((_, i) => i !== idx);
@@ -4500,7 +4578,7 @@ class ShapesMgr {
 }
 exports.ShapesMgr = ShapesMgr;
 
-},{"../utils/Array":106,"../utils/Rect":112}],54:[function(require,module,exports){
+},{"../utils/Rect":112}],54:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
