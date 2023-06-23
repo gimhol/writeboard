@@ -5951,7 +5951,7 @@ class TextData extends base_1.ShapeData {
     constructor() {
         super();
         this.text = '';
-        this.font = '24px Simsum';
+        this.f_d = ['normal', 'normal', 'normal', 24, 'Simsum'];
         this.t_l = 3;
         this.t_r = 3;
         this.t_t = 3;
@@ -5961,12 +5961,28 @@ class TextData extends base_1.ShapeData {
         this.strokeStyle = '';
         this.lineWidth = 0;
     }
+    get font() {
+        const arr = [...this.f_d];
+        arr[3] = `${arr[3]}px`;
+        return arr.join(' ');
+    }
+    ;
+    get font_style() { return this.f_d[0]; }
+    get font_variant() { return this.f_d[1]; }
+    get font_weight() { return this.f_d[2]; }
+    get font_size() { return this.f_d[3]; }
+    get font_family() { return this.f_d[4]; }
+    set font_style(v) { this.f_d[0] = v; }
+    set font_variant(v) { this.f_d[1] = v; }
+    set font_weight(v) { this.f_d[2] = v; }
+    set font_size(v) { this.f_d[3] = v; }
+    set font_family(v) { this.f_d[4] = v; }
     copyFrom(other) {
         super.copyFrom(other);
         if (typeof other.text === 'string')
             this.text = other.text;
-        if (typeof other.font === 'string')
-            this.font = other.font;
+        if (Array.isArray(other.f_d))
+            this.f_d = [...other.f_d];
         if (typeof other.t_l === 'number')
             this.t_l = other.t_l;
         if (typeof other.t_r === 'number')
