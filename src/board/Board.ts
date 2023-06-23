@@ -1,4 +1,4 @@
-import { WhiteBoardEvent } from "../event"
+import { EventEnum, WhiteBoardEvent } from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
@@ -55,7 +55,8 @@ export class Board implements IShapesMgr {
       layer.onscreen.addEventListener('pointermove', this.pointermove);
       layer.onscreen.addEventListener('pointerup', this.pointerup);
       layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() });
-      this._layers.set(layer.info.id, layer)
+      this._layers.set(layer.info.id, layer);
+      this.dispatchEvent(new CustomEvent(EventEnum.LayerAdded, { detail: layer }));
     } else {
       layer = this.factory.newLayer(layer);
       this.addLayer(layer);
@@ -93,6 +94,16 @@ export class Board implements IShapesMgr {
   layer(id: string = this._editingLayerId): Layer | undefined {
     return this._layers.get(id);
   }
+
+  addLayers(layers: ILayerInits[]): void {
+    if (!layers.length) { return; }
+
+    layers.forEach(v => this.addLayer(v));
+    this.editLayer(layers[0].info.id);
+    this._dirty = { x: 0, y: 0, w: this.width, h: this.height };
+    this.render();
+  }
+
   constructor(factory: IFactory, options: BoardOptions) {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();
@@ -111,10 +122,7 @@ export class Board implements IShapesMgr {
         onscreen: document.createElement('canvas')
       })
     }
-    layers.forEach(v => this.addLayer(v))
-    this.editLayer(layers[0].info.id);
-    this._dirty = { x: 0, y: 0, w: this.width, h: this.height };
-    this.render();
+    this.addLayers(layers);
 
     window.addEventListener('pointermove', this.pointermove);
     window.addEventListener('pointerup', this.pointerup);
@@ -141,11 +149,14 @@ export class Board implements IShapesMgr {
     return JSON.stringify(this.toJson())
   }
   fromJson(jobj: ISnapshot) {
+
     this.removeAll();
-    this._layers.forEach(layer => {
-      layer.onscreen.width = jobj.w
-      layer.onscreen.height = jobj.h
-    })
+    Array.from(this._layers.keys()).forEach((layerId) => this.removeLayer(layerId))
+
+    this.addLayers(jobj.l.map(info => ({
+      info,
+      onscreen: document.createElement('canvas')
+    })));
     const shapes = jobj.s.map((v: IShapeData) => this.factory.newShape(v))
     this.add(...shapes)
   }
@@ -165,14 +176,14 @@ export class Board implements IShapesMgr {
     return this._shapesMgr.hits(rect)
   }
 
-  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLDivElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof WhiteBoardEvent.EventMap>(type: K, listener: (this: HTMLDivElement, ev: WhiteBoardEvent.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
   addEventListener(arg0: any, arg1: any, arg2: any): void {
     return this._eventEmitter.addEventListener(arg0, arg1, arg2);
   }
 
 
-  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLDivElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+  removeEventListener<K extends keyof WhiteBoardEvent.EventMap>(type: K, listener: (this: HTMLDivElement, ev: WhiteBoardEvent.EventMap[K]) => any, options?: boolean | EventListenerOptions): void;
   removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
   removeEventListener(arg0: any, arg1: any, arg2: any): void {
     return this._eventEmitter.removeEventListener(arg0, arg1, arg2);

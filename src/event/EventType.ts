@@ -6,5 +6,6 @@ export enum EventEnum {
   ShapesMoved = 'SHAPES_MOVED',
   ShapesResized = 'SHAPES_RESIZED',
   ToolChanged = 'TOOL_CHANGED',
+  LayerAdded = 'LAYER_ADDED'
 }
 export type EventType = EventEnum | string;

@@ -51,11 +51,14 @@ export class Layer implements ILayer {
   constructor(inits: ILayerInits) {
     this._info = new LayerInfo(inits.info);
     this._onscreen = inits.onscreen;
+    this._onscreen.setAttribute('layer_id', this.id);
+    this._onscreen.setAttribute('layer_name', this.name);
     this._ctx = this._onscreen.getContext('2d')!
     this._offscreen = document.createElement('canvas')
     this._offscreen.width = inits.onscreen.width;
     this._offscreen.height = inits.onscreen.height;
     this._octx = this._offscreen.getContext('2d')!
+
   }
   get width() {
     return this._onscreen.width;

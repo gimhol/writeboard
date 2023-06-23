@@ -12,12 +12,14 @@ export class Player {
     this.actor = actor;
     this.screenplay = {
       startTime: screenplay.startTime || 0,
-      snapshot: screenplay.snapshot || {},
+      snapshot: screenplay.snapshot,
       events: screenplay.events || [],
     };
     this.startTime = Date.now();
     this.firstEventTime = 0;
-    actor.fromJson(screenplay.snapshot);
+    if (screenplay.snapshot) {
+      actor.fromJson(screenplay.snapshot);
+    }
     this.tick();
   }
   stop() {

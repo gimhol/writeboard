@@ -1,3 +1,4 @@
+import type { ISnapshot } from "../board/ISnapshot";
 
 export interface PureCustomEvent<T = any> {
   readonly timeStamp: number;
@@ -6,6 +7,6 @@ export interface PureCustomEvent<T = any> {
 }
 export interface Screenplay {
   readonly startTime: number,
-  readonly snapshot: any;
+  readonly snapshot?: ISnapshot;
   readonly events: PureCustomEvent<any>[];
 }

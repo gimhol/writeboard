@@ -1,7 +1,8 @@
+import { Layer } from "../board";
 import { ShapeType } from "../shape";
-import { IShapeData } from "../shape/base/Data"
-import { ToolType } from "../tools/ToolEnum"
-import { EventEnum, EventType } from "./EventType"
+import { IShapeData } from "../shape/base/Data";
+import { ToolType } from "../tools/ToolEnum";
+import { EventEnum } from "./EventType";
 export namespace WhiteBoardEvent {
   export interface IFullDetail {
     operator?: string;
@@ -56,13 +57,14 @@ export namespace WhiteBoardEvent {
   export function toolChanged(detail: IToolChangedDetail) {
     return new CustomEvent(EventEnum.ToolChanged, { detail });
   }
-  export interface EventMap {
+  export interface EventMap extends HTMLElementEventMap {
     [EventEnum.ShapesAdded]: CustomEvent<IFullDetail>;
     [EventEnum.ShapesRemoved]: CustomEvent<IFullDetail>;
     [EventEnum.ShapesChanged]: CustomEvent<IPartDetail<IShapeData>>;
     [EventEnum.ShapesMoved]: CustomEvent<IPartDetail<IShapePositionData>>;
     [EventEnum.ShapesResized]: CustomEvent<IPartDetail<IShapePositionData>>;
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;
+    [EventEnum.LayerAdded]: CustomEvent<Layer>;
   }
 }
 

@@ -6,7 +6,6 @@ export class Recorder {
   private cancellers: (() => void)[] = []
   private _screenplay: Screenplay = {
     startTime: Date.now(),
-    snapshot: {},
     events: []
   }
   destory(): void {

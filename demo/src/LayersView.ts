@@ -24,6 +24,8 @@ export interface LayersViewEventMap {
 export class LayersView extends Subwin {
   static EventType = LayersViewEventType;
   private _layers: LayerItemView[] = [];
+  btnAddLayer: Button;
+  btnAddFolder: Button;
 
   override addEventListener<K extends keyof LayersViewEventMap>
     (type: K, listener: (this: HTMLObjectElement, ev: LayersViewEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): this;
@@ -46,14 +48,14 @@ export class LayersView extends Subwin {
     })
     this.styles.apply("", { minWidth: '225px' })
 
-    const btnAddLayer = new Button().init({ content: '📃', title: '新建图层', size: SizeType.Small }).addEventListener('click', (e) => {
+    this.btnAddLayer = new Button().init({ content: '📃', title: '新建图层', size: SizeType.Small }).addEventListener('click', (e) => {
       const event = new CustomEvent<string>(LayersViewEventType.LayerAdded, { detail: '' + Date.now() });
       this.inner.dispatchEvent(event);
     })
-    this.footer.addChild(btnAddLayer);
+    this.footer.addChild(this.btnAddLayer);
 
-    const btnAddFolder = new Button().init({ content: '📂', title: '新建图层组', size: SizeType.Small })
-    this.footer.addChild(btnAddFolder);
+    this.btnAddFolder = new Button().init({ content: '📂', title: '新建图层组', size: SizeType.Small })
+    this.footer.addChild(this.btnAddFolder);
   }
   layers() { return this._layers }
   setLayers() { }

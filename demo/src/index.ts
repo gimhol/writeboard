@@ -5,6 +5,7 @@ import {
   ShapeEnum, ShapePen,
   ToolEnum
 } from "../../dist";
+import { EventEnum } from "../../dist/event";
 import { RGBA } from "./colorPalette/Color";
 import ColorView from "./ColorView";
 import demo_helloworld from "./demo_helloworld";
@@ -89,7 +90,7 @@ layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
       name: factory.newLayerName(),
       id: factory.newLayerId()
     },
-    onscreen: addLayerCanvas().inner
+    onscreen: document.createElement('canvas')
   })
   layersView.addLayer(layer);
   board.addLayer(layer);
@@ -289,8 +290,17 @@ const blackboard = new View('div');
 blackboard.styles.addCls('blackboard');
 rootView.addChild(blackboard);
 
-function addLayerCanvas(ele?: HTMLCanvasElement) {
-  const canvas = new Canvas(ele);
+board = factory.newWhiteBoard({ width: 1024, height: 1024 });
+const layer = board.layer();
+
+Object.assign(window, {
+  board, factory, workspace, FactoryMgr: Gaia
+});
+workspace.dockToRoot(layersView, DockableDirection.H, 'end');
+workspace.dockToRoot(toolsView, DockableDirection.H, 'start');
+
+board.addEventListener(EventEnum.LayerAdded, e => {
+  const canvas = new Canvas(e.detail.onscreen);
   canvas.styles.apply('', {
     position: 'absolute',
     touchAction: 'none',
@@ -304,18 +314,8 @@ function addLayerCanvas(ele?: HTMLCanvasElement) {
   canvas.inner.addEventListener('contextmenu', (e) => {
     menu.move(e.x, e.y).show();
   })
+  canvas.id = e.detail.info.id;
   canvas.draggable = false;
   blackboard.addChild(canvas);
-  return canvas;
-}
-
-board = factory.newWhiteBoard({ width: 1024, height: 1024 });
-const layer = board.layer();
-addLayerCanvas(layer.onscreen)
-layersView.addLayer(layer);
-
-Object.assign(window, {
-  board, factory, workspace, FactoryMgr: Gaia
-});
-workspace.dockToRoot(layersView, DockableDirection.H, 'end');
-workspace.dockToRoot(toolsView, DockableDirection.H, 'start');
+})
+layersView.btnAddLayer.inner.click();
