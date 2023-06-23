@@ -1,8 +1,9 @@
 import { WhiteBoardEvent } from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
-import { Shape, ShapeData } from "../shape/base"
+import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Rect } from "../utils"
+import { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 
 export interface BoardOptions {
@@ -11,8 +12,6 @@ export interface BoardOptions {
   height?: number
   toolType?: ToolType
 }
-export interface IPointerEventHandler { (ev: PointerEvent): void }
-
 const Tag = '[Board]'
 export class Board implements IShapesMgr {
   private _factory: IFactory
@@ -127,25 +126,27 @@ export class Board implements IShapesMgr {
   find(id: string): Shape | undefined {
     return this._shapesMgr.find(id)
   }
-  toJson(): any {
+  toJson(): ISnapshot {
     return {
-      x: 0, y: 0,
+      v: 0,
+      x: 0,
+      y: 0,
       w: this.width,
       h: this.height,
-      layers: Array.from(this._layers.values()).map(v => v.info),
-      shapes: this.shapes().map(v => v.data)
+      l: Array.from(this._layers.values()).map(v => v.info),
+      s: this.shapes().map(v => v.data)
     }
   }
   toJsonStr(): string {
     return JSON.stringify(this.toJson())
   }
-  fromJson(jobj: any) {
+  fromJson(jobj: ISnapshot) {
     this.removeAll();
     this._layers.forEach(layer => {
       layer.onscreen.width = jobj.w
       layer.onscreen.height = jobj.h
     })
-    const shapes = jobj.shapes.map((v: ShapeData) => this.factory.newShape(v))
+    const shapes = jobj.s.map((v: IShapeData) => this.factory.newShape(v))
     this.add(...shapes)
   }
   fromJsonStr(json: string) {
@@ -303,7 +304,7 @@ export class Board implements IShapesMgr {
     return this._tool
   }
 
-  pointerdown: IPointerEventHandler = (e) => {
+  pointerdown = (e: PointerEvent) => {
     if (e.button !== 0) {
       e.preventDefault()
       e.stopPropagation()
@@ -314,7 +315,7 @@ export class Board implements IShapesMgr {
     e.stopPropagation();
   }
 
-  pointermove: IPointerEventHandler = (e) => {
+  pointermove = (e: PointerEvent) => {
     if (this._mousedown) {
       this.tool?.pointerDraw(this.getDot(e));
     } else {
@@ -322,7 +323,7 @@ export class Board implements IShapesMgr {
     }
     e.stopPropagation();
   }
-  pointerup: IPointerEventHandler = (e) => {
+  pointerup = (e: PointerEvent) => {
     this._mousedown = false
     this.tool?.pointerUp(this.getDot(e))
     e.stopPropagation();

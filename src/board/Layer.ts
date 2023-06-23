@@ -20,13 +20,15 @@ export interface ILayer {
   opacity: number;
 }
 export class LayerInfo implements ILayerInfo {
-  protected _id: string;
-  protected _name: string;
-  get id() { return this._id; }
-  get name() { return this._name };
+  protected a: string;
+  protected b: string;
+  get id() { return this.a; }
+  get name() { return this.b };
+  set id(v) { this.a = v; }
+  set name(v) { this.b = v };
   constructor(inits: ILayerInfoInit) {
-    this._id = inits.id;
-    this._name = inits.name;
+    this.a = inits.id;
+    this.b = inits.name;
   }
 }
 export class Layer implements ILayer {

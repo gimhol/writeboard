@@ -3726,11 +3726,13 @@ class Board {
     }
     toJson() {
         return {
-            x: 0, y: 0,
+            v: 0,
+            x: 0,
+            y: 0,
             w: this.width,
             h: this.height,
-            layers: Array.from(this._layers.values()).map(v => v.info),
-            shapes: this.shapes().map(v => v.data)
+            l: Array.from(this._layers.values()).map(v => v.info),
+            s: this.shapes().map(v => v.data)
         };
     }
     toJsonStr() {
@@ -3742,7 +3744,7 @@ class Board {
             layer.onscreen.width = jobj.w;
             layer.onscreen.height = jobj.h;
         });
-        const shapes = jobj.shapes.map((v) => this.factory.newShape(v));
+        const shapes = jobj.s.map((v) => this.factory.newShape(v));
         this.add(...shapes);
     }
     fromJsonStr(json) {
@@ -3922,12 +3924,15 @@ exports.Board = Board;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
 class LayerInfo {
-    get id() { return this._id; }
-    get name() { return this._name; }
+    get id() { return this.a; }
+    get name() { return this.b; }
+    ;
+    set id(v) { this.a = v; }
+    set name(v) { this.b = v; }
     ;
     constructor(inits) {
-        this._id = inits.id;
-        this._name = inits.name;
+        this.a = inits.id;
+        this.b = inits.name;
     }
 }
 exports.LayerInfo = LayerInfo;
