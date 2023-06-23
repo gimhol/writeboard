@@ -185,6 +185,8 @@ const onkeydown = (e: KeyboardEvent) => {
     const func = ctrlShorcuts.get(e.key);
     if (func) {
       func();
+      e.stopPropagation();
+      e.preventDefault();
     }
   } else if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
     do {
@@ -192,11 +194,15 @@ const onkeydown = (e: KeyboardEvent) => {
       if (toolEnum) {
         board.setToolType(toolEnum);
         toolsView.setToolType(toolEnum);
+        e.stopPropagation();
+        e.preventDefault();
         break;
       }
       const func = onekeyShorcuts.get(e.key);
       if (func) {
         func();
+        e.stopPropagation();
+        e.preventDefault();
         break;
       }
     } while (false);
@@ -217,7 +223,7 @@ const onekeyShorcuts = new Map<string, () => void>([
   ['Delete', () => board.removeSelected()]
 ])
 const ctrlShorcuts = new Map<string, () => void>([
-  ['a', () => board.toolType === ToolEnum.Selector && board.selectAll()],
+  ['a', () => board.selectAll()],
   ['d', () => board.deselect()],
 ])
 board.addEventListener(EventEnum.LayerAdded, e => {
@@ -234,3 +240,9 @@ board.layers.forEach(layer => {
   layersView.addLayer(layer)
 })
 window.addEventListener('resize', () => workspace.clampAllSubwin())
+
+window.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'a') {
+    e.stopPropagation();
+  }
+})

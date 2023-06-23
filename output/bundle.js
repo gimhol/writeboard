@@ -24664,6 +24664,8 @@ const onkeydown = (e) => {
         const func = ctrlShorcuts.get(e.key);
         if (func) {
             func();
+            e.stopPropagation();
+            e.preventDefault();
         }
     }
     else if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
@@ -24672,11 +24674,15 @@ const onkeydown = (e) => {
             if (toolEnum) {
                 board.setToolType(toolEnum);
                 toolsView.setToolType(toolEnum);
+                e.stopPropagation();
+                e.preventDefault();
                 break;
             }
             const func = onekeyShorcuts.get(e.key);
             if (func) {
                 func();
+                e.stopPropagation();
+                e.preventDefault();
                 break;
             }
         } while (false);
@@ -24697,7 +24703,7 @@ const onekeyShorcuts = new Map([
     ['Delete', () => board.removeSelected()]
 ]);
 const ctrlShorcuts = new Map([
-    ['a', () => board.toolType === dist_1.ToolEnum.Selector && board.selectAll()],
+    ['a', () => board.selectAll()],
     ['d', () => board.deselect()],
 ]);
 board.addEventListener(event_1.EventEnum.LayerAdded, e => {
@@ -24714,6 +24720,11 @@ board.layers.forEach(layer => {
     layersView.addLayer(layer);
 });
 window.addEventListener('resize', () => workspace.clampAllSubwin());
+window.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'a') {
+        e.stopPropagation();
+    }
+});
 
 },{"../../dist":52,"../../dist/event":47,"./ColorView":1,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./RecorderView":33,"./SnapshotView":34,"./ToolsView":35,"./ToyView":36}],42:[function(require,module,exports){
 "use strict";
