@@ -58,15 +58,13 @@ export class LayersView extends Subwin {
     this.footer.addChild(this.btnAddFolder);
   }
   layers() { return this._layers }
-  setLayers() { }
-  addLayer(inits: ILayerInfoInit) {
+  addLayer(inits: ILayerInfoInit): LayerItemView {
     const item = new LayerItemView(inits);
     this._layers.push(item);
     this.content?.addChild(item);
     item.addEventListener('click', () => {
-      this.content?.children?.forEach(v => (v as any).selected = false)
       item.selected = true;
-
+      this.content?.children?.forEach(v => (v as any).selected = false)
       type Detail = LayersViewEventMap[LayersViewEventType.LayerActived]['detail'];
       const detail: Detail = { id: item.state.id }
       this.inner.dispatchEvent(new CustomEvent<Detail>(LayersViewEventType.LayerActived, { detail }))

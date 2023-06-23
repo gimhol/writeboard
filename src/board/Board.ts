@@ -7,12 +7,14 @@ import { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 
 export interface BoardOptions {
+  element?: HTMLElement;
   layers?: ILayerInits[]
   width?: number
   height?: number
   toolType?: ToolType
 }
 const Tag = '[Board]'
+
 export class Board implements IShapesMgr {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
@@ -22,7 +24,7 @@ export class Board implements IShapesMgr {
   private _tools: { [key in ToolEnum | string]?: ITool } = {}
   private _tool: ITool | undefined
   private _selects: Shape[] = []
-  private _eventEmitter = document.createElement('div');
+  private _element: HTMLElement;
   private _operator = 'whiteboard'
   private _editingLayerId: string = '';
   private _width = 512;
@@ -42,6 +44,7 @@ export class Board implements IShapesMgr {
     this._height = v;
     this._layers.forEach(l => l.height = v);
   }
+
   addLayer(layer: ILayerInits | Layer): boolean {
     if (this._layers.has(layer.info.id)) {
       console.error(`[WhiteBoard] addLayer(): layerId already existed! id = ${layer.info.id}`)
@@ -54,9 +57,10 @@ export class Board implements IShapesMgr {
       layer.onscreen.addEventListener('pointerdown', this.pointerdown);
       layer.onscreen.addEventListener('pointermove', this.pointermove);
       layer.onscreen.addEventListener('pointerup', this.pointerup);
-      layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() });
+      this._element.appendChild(layer.onscreen);
       this._layers.set(layer.info.id, layer);
       this.dispatchEvent(new CustomEvent(EventEnum.LayerAdded, { detail: layer }));
+      this.markDirty({ x: 0, y: 0, w: this.width, h: this.height })
     } else {
       layer = this.factory.newLayer(layer);
       this.addLayer(layer);
@@ -64,19 +68,19 @@ export class Board implements IShapesMgr {
     return true;
   }
   removeLayer(layerId: string): boolean {
-    if (this._layers.has(layerId)) {
+    const layer = this._layers.get(layerId);
+    if (!layer) {
       console.error(`[WhiteBoard] removeLayer(): layer not found! id = ${layerId}`)
       return false;
     }
-    const layer = this._layers.get(layerId)!;
+    this._layers.delete(layerId);
     layer.onscreen.removeEventListener('pointerdown', this.pointerdown);
     layer.onscreen.removeEventListener('pointermove', this.pointermove);
     layer.onscreen.removeEventListener('pointerup', this.pointerup);
-    layer.onscreen.removeEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation() });
+    this._element.removeChild(layer.onscreen);
+    this.dispatchEvent(new CustomEvent(EventEnum.LayerRemoved, { detail: layer }));
     return true;
   }
-
-
   editLayer(layerId: string): boolean {
     if (!this._layers.has(layerId)) {
       console.error(`[WhiteBoard] editLayer(): layer not found! id = ${layerId}`)
@@ -97,16 +101,15 @@ export class Board implements IShapesMgr {
 
   addLayers(layers: ILayerInits[]): void {
     if (!layers.length) { return; }
-
     layers.forEach(v => this.addLayer(v));
     this.editLayer(layers[0].info.id);
-    this._dirty = { x: 0, y: 0, w: this.width, h: this.height };
-    this.render();
   }
+  get layers(): Layer[] { return Array.from(this._layers.values()) }
 
   constructor(factory: IFactory, options: BoardOptions) {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();
+    this._element = options.element ?? document.createElement('div');
 
     options.width && (this._width = options.width)
     options.height && (this._height = options.height)
@@ -118,12 +121,10 @@ export class Board implements IShapesMgr {
         info: {
           id: factory.newLayerId(),
           name: factory.newLayerName(),
-        },
-        onscreen: document.createElement('canvas')
+        }
       })
     }
     this.addLayers(layers);
-
     window.addEventListener('pointermove', this.pointermove);
     window.addEventListener('pointerup', this.pointerup);
   }
@@ -134,7 +135,7 @@ export class Board implements IShapesMgr {
   find(id: string): Shape | undefined {
     return this._shapesMgr.find(id)
   }
-  toJson(): ISnapshot {
+  toSnapshot(): ISnapshot {
     return {
       v: 0,
       x: 0,
@@ -145,23 +146,19 @@ export class Board implements IShapesMgr {
       s: this.shapes().map(v => v.data)
     }
   }
-  toJsonStr(): string {
-    return JSON.stringify(this.toJson())
-  }
-  fromJson(jobj: ISnapshot) {
 
+  fromSnapshot(snapshot: ISnapshot) {
     this.removeAll();
     Array.from(this._layers.keys()).forEach((layerId) => this.removeLayer(layerId))
-
-    this.addLayers(jobj.l.map(info => ({
-      info,
-      onscreen: document.createElement('canvas')
-    })));
-    const shapes = jobj.s.map((v: IShapeData) => this.factory.newShape(v))
+    this.addLayers(snapshot.l.map(info => ({ info })));
+    const shapes = snapshot.s.map((v: IShapeData) => this.factory.newShape(v))
     this.add(...shapes)
   }
-  fromJsonStr(json: string) {
-    this.fromJson(JSON.parse(json))
+  toJson(): string {
+    return JSON.stringify(this.toSnapshot())
+  }
+  fromJson(json: string) {
+    this.fromSnapshot(JSON.parse(json))
   }
   shapes(): Shape<ShapeData>[] {
     return this._shapesMgr.shapes()
@@ -179,17 +176,17 @@ export class Board implements IShapesMgr {
   addEventListener<K extends keyof WhiteBoardEvent.EventMap>(type: K, listener: (this: HTMLDivElement, ev: WhiteBoardEvent.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
   addEventListener(arg0: any, arg1: any, arg2: any): void {
-    return this._eventEmitter.addEventListener(arg0, arg1, arg2);
+    return this._element.addEventListener(arg0, arg1, arg2);
   }
 
 
   removeEventListener<K extends keyof WhiteBoardEvent.EventMap>(type: K, listener: (this: HTMLDivElement, ev: WhiteBoardEvent.EventMap[K]) => any, options?: boolean | EventListenerOptions): void;
   removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
   removeEventListener(arg0: any, arg1: any, arg2: any): void {
-    return this._eventEmitter.removeEventListener(arg0, arg1, arg2);
+    return this._element.removeEventListener(arg0, arg1, arg2);
   }
   dispatchEvent(e: CustomEvent<any>): boolean {
-    return this._eventEmitter.dispatchEvent(e)
+    return this._element.dispatchEvent(e)
   }
 
   get factory() { return this._factory }

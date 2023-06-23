@@ -65,6 +65,7 @@ export namespace WhiteBoardEvent {
     [EventEnum.ShapesResized]: CustomEvent<IPartDetail<IShapePositionData>>;
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;
     [EventEnum.LayerAdded]: CustomEvent<Layer>;
+    [EventEnum.LayerRemoved]: CustomEvent<Layer>;
   }
 }
 

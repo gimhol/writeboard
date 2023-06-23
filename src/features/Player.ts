@@ -18,7 +18,7 @@ export class Player {
     this.startTime = Date.now();
     this.firstEventTime = 0;
     if (screenplay.snapshot) {
-      actor.fromJson(screenplay.snapshot);
+      actor.fromSnapshot(screenplay.snapshot);
     }
     this.tick();
   }
@@ -46,7 +46,7 @@ export class Player {
     this.timer = setTimeout(() => this.tick(), diff);
   }
   applyEvent(e: PureCustomEvent<any>) {
-    console.log('[Player] applyEvent(), e = ', e);
+    // console.log('[Player] applyEvent(), e = ', e);
     const actor = this.actor;
     if (!actor) { return; }
     switch (e.type) {

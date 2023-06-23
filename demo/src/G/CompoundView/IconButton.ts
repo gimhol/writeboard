@@ -7,6 +7,14 @@ export interface IconButtonInits extends ButtonInits {
 }
 export class IconButton extends Button {
   protected private?: Map<ButtonState, string>;
+  protected _icon = new Image({
+    style: {
+      width: '100%',
+      height: '100%',
+      objectFit: CssObjectFit.Contain,
+    }
+  })
+  get icon() { return this._icon; }
   get srcs(): Map<ButtonState, string> {
     this.private = this.private ?? new Map<ButtonState, string>();
     return this.private;
@@ -19,15 +27,8 @@ export class IconButton extends Button {
     super();
   }
   override init(inits?: IconButtonInits | undefined): this {
-    const content = new Image({
-      style: {
-        width: '100%',
-        height: '100%',
-        objectFit: CssObjectFit.Contain,
-      }
-    })
-    content.draggable = false;
-    const superInits: ButtonInits = { ...inits, content }
+    this._icon.draggable = false;
+    const superInits: ButtonInits = { ...inits, content: this._icon }
     if (inits?.srcs) {
       this.srcs.set(ButtonState.Normal, inits.srcs[0])
       this.srcs.set(ButtonState.Checked, inits.srcs[1])

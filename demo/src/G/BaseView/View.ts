@@ -159,12 +159,12 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     delete this._inner;
   }
   protected _prehandleAddedChild(children: View[]): View[] {
-    console.log('[View]_prehandleAddedChild', children)
+    // console.log('[View]_prehandleAddedChild', children)
     children.forEach(child => child.removeSelf());
     return children;
   }
   protected _prehandleRemovedChildren(children: View[]): View[] {
-    console.log('[View]_prehandleRemovedChildren', children)
+    // console.log('[View]_prehandleRemovedChildren', children)
     children = children.filter(child => child.inner.parentElement === this.inner);
     children.forEach(child => {
       child.inner.dispatchEvent(new Event(ViewEventType.Removed));
@@ -173,7 +173,7 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
     return children;
   }
   protected _handleAddedChildren(children: View[]) {
-    console.log('[View]_handleAddedChildren', children)
+    // console.log('[View]_handleAddedChildren', children)
     children.forEach(child => {
       child.inner.dispatchEvent(new Event(ViewEventType.Added));
       child.onAdded();

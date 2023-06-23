@@ -82,13 +82,22 @@ export class TextTool implements ITool {
   }
 
   start(): void {
+    this._editor.addEventListener('keydown', this._keydown)
     this._editor.addEventListener('input', this._updateShapeText)
     document.addEventListener('selectionchange', this._updateShapeText)
   }
   end(): void {
+    this._editor.removeEventListener('keydown', this._keydown)
     this._editor.removeEventListener('input', this._updateShapeText)
     document.removeEventListener('selectionchange', this._updateShapeText)
     this.curShape = undefined;
+  }
+  private _keydown = (e: KeyboardEvent) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      this.curShape = undefined;
+    } else if (e.key === 'Escape') {
+      this.curShape = undefined;
+    }
   }
   get type() { return ToolEnum.Text }
 

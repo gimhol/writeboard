@@ -181,7 +181,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
     }
 }
 
-},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":34,"./colorPalette/ColorPalette":35}],2:[function(require,module,exports){
+},{"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/NumberInput":5,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25,"./colorPalette/Color":37,"./colorPalette/ColorPalette":38}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.ButtonState = void 0;
@@ -356,6 +356,12 @@ class Image extends View_1.View {
         super('img');
         (inits === null || inits === void 0 ? void 0 : inits.src) && (this.src = inits.src);
         (inits === null || inits === void 0 ? void 0 : inits.style) && (this.styles.apply('_', inits.style));
+    }
+    addEventListener(arg0, arg1, arg2) {
+        return super.addEventListener(arg0, arg1, arg2);
+    }
+    removeEventListener(arg0, arg1, arg2) {
+        return super.removeEventListener(arg0, arg1, arg2);
     }
 }
 exports.Image = Image;
@@ -877,12 +883,12 @@ class View {
         delete this._inner;
     }
     _prehandleAddedChild(children) {
-        console.log('[View]_prehandleAddedChild', children);
+        // console.log('[View]_prehandleAddedChild', children)
         children.forEach(child => child.removeSelf());
         return children;
     }
     _prehandleRemovedChildren(children) {
-        console.log('[View]_prehandleRemovedChildren', children);
+        // console.log('[View]_prehandleRemovedChildren', children)
         children = children.filter(child => child.inner.parentElement === this.inner);
         children.forEach(child => {
             child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Removed));
@@ -891,7 +897,7 @@ class View {
         return children;
     }
     _handleAddedChildren(children) {
-        console.log('[View]_handleAddedChildren', children);
+        // console.log('[View]_handleAddedChildren', children)
         children.forEach(child => {
             child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Added));
             child.onAdded();
@@ -977,6 +983,7 @@ const Button_1 = require("../BaseView/Button");
 const Image_1 = require("../BaseView/Image");
 const StyleType_1 = require("../BaseView/StyleType");
 class IconButton extends Button_1.Button {
+    get icon() { return this._icon; }
     get srcs() {
         var _a;
         this.private = (_a = this.private) !== null && _a !== void 0 ? _a : new Map();
@@ -988,17 +995,17 @@ class IconButton extends Button_1.Button {
     }
     constructor() {
         super();
-    }
-    init(inits) {
-        const content = new Image_1.Image({
+        this._icon = new Image_1.Image({
             style: {
                 width: '100%',
                 height: '100%',
                 objectFit: StyleType_1.CssObjectFit.Contain,
             }
         });
-        content.draggable = false;
-        const superInits = Object.assign(Object.assign({}, inits), { content });
+    }
+    init(inits) {
+        this._icon.draggable = false;
+        const superInits = Object.assign(Object.assign({}, inits), { content: this._icon });
         if (inits === null || inits === void 0 ? void 0 : inits.srcs) {
             this.srcs.set(Button_1.ButtonState.Normal, inits.srcs[0]);
             this.srcs.set(Button_1.ButtonState.Checked, inits.srcs[1]);
@@ -1023,18 +1030,10 @@ exports.IconButton = IconButton;
 },{"../BaseView/Button":2,"../BaseView/Image":4,"../BaseView/StyleType":7}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Menu = exports.MenuEventType = exports.MenuItemView = exports.StyleNames = void 0;
-const StyleType_1 = require("../BaseView/StyleType");
+exports.Menu = exports.MenuEventType = exports.MenuItemView = void 0;
 const View_1 = require("../BaseView/View");
 const HoverOb_1 = require("../Observer/HoverOb");
 const utils_1 = require("../utils");
-var StyleNames;
-(function (StyleNames) {
-    StyleNames["Normal"] = "Normal";
-    StyleNames["ItemDivider"] = "ItemDivider";
-    StyleNames["ItemNormal"] = "ItemNormal";
-    StyleNames["ItemHover"] = "ItemHover";
-})(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
 class MenuItemView extends View_1.View {
     get menu() { return this._menu; }
     get submenu() { return this._submenu; }
@@ -1043,10 +1042,13 @@ class MenuItemView extends View_1.View {
         var _a, _b;
         this._info = info;
         if (info.divider) {
-            this.styles.clear().add(StyleNames.ItemDivider).refresh();
+            this.styles.setCls('g_menu_item_divider');
+        }
+        else if (info.danger) {
+            this.styles.setCls('g_menu_item_normal', 'g_menu_item_danger');
         }
         else {
-            this.styles.clear().add(StyleNames.ItemNormal).refresh();
+            this.styles.setCls('g_menu_item_normal');
         }
         const label = new View_1.View('div');
         label.styles.apply('', { flex: 1 });
@@ -1064,10 +1066,10 @@ class MenuItemView extends View_1.View {
     onHover(hover) {
         var _a;
         if (hover) {
-            this.styles.add(StyleNames.ItemHover).refresh();
+            this.styles.addCls('g_menu_item_hover');
         }
         else {
-            this.styles.del(StyleNames.ItemHover).refresh();
+            this.styles.delCls('g_menu_item_hover');
         }
         if (hover) {
             const { left, top, width, height } = this.inner.getBoundingClientRect();
@@ -1078,20 +1080,6 @@ class MenuItemView extends View_1.View {
         super('div');
         this._menu = menu;
         this._info = info;
-        this.styles.register(StyleNames.ItemDivider, {
-            height: 1,
-            background: '#00000011'
-        }).register(StyleNames.ItemHover, {
-            background: '#00000011'
-        }).register(StyleNames.ItemNormal, {
-            display: 'flex',
-            borderRadius: 5,
-            paddingTop: 5,
-            paddingBottom: 5,
-            paddingLeft: 10,
-            paddingRight: 10,
-            fontSize: 12,
-        });
         this.setup();
     }
 }
@@ -1100,35 +1088,29 @@ var MenuEventType;
 (function (MenuEventType) {
     MenuEventType["ItemClick"] = "onItemClick";
 })(MenuEventType = exports.MenuEventType || (exports.MenuEventType = {}));
-class GlobalDown extends View_1.View {
+class GlobalPointerDown extends View_1.View {
     constructor() {
         super('div');
-        document.addEventListener('pointerdown', e => {
+        window.addEventListener('pointerdown', e => {
             if ((0, utils_1.findParent)(e.target, ele => !!View_1.View.try(ele, Menu))) {
                 return;
             }
             this.inner.dispatchEvent(new PointerEvent('fired'));
-        });
+        }, true);
     }
 }
-const globalDown = new GlobalDown();
+const globalDown = new GlobalPointerDown();
 class Menu extends View_1.View {
     get container() { return this._container; }
     constructor(container, inits) {
-        var _a;
+        var _a, _b;
         super('div');
         this._items = [];
+        this._zIndex = 9999;
         this._container = container;
-        this.styles.apply(StyleNames.Normal, {
-            position: StyleType_1.CssPosition.Fixed,
-            display: 'none',
-            gridTemplateColumns: 'auto',
-            background: 'white',
-            borderRadius: 5,
-            userSelect: 'none',
-            transition: 'opacity 200ms',
-        });
-        this.setup((_a = inits === null || inits === void 0 ? void 0 : inits.items) !== null && _a !== void 0 ? _a : []);
+        this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
+        this.styles.setCls('g_menu');
+        this.setup((_b = inits === null || inits === void 0 ? void 0 : inits.items) !== null && _b !== void 0 ? _b : []);
         globalDown.addEventListener('fired', () => this.hide());
         window.addEventListener('blur', () => this.hide());
     }
@@ -1160,7 +1142,7 @@ class Menu extends View_1.View {
                 this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: e.detail }));
                 this.hide();
             };
-            const view = new MenuItemView(this, info);
+            const view = new MenuItemView(this, Object.assign(Object.assign({}, info), { zIndex: this._zIndex + 1 }));
             this.addChild(view);
             view.addEventListener('click', this._onitemclick);
             (_a = view.submenu) === null || _a === void 0 ? void 0 : _a.addEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick);
@@ -1182,26 +1164,25 @@ class Menu extends View_1.View {
     }
     move(x, y) {
         this._items.forEach(item => { var _a; return (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.hide(); });
-        this.styles.merge(StyleNames.Normal, { left: x, top: y }).refresh();
+        this.styles.apply('', v => (Object.assign(Object.assign({}, v), { left: x, top: y })));
         return this;
     }
     show() {
-        this.styles.merge(StyleNames.Normal, { display: 'grid' }).refresh();
+        this.styles.apply('', v => (Object.assign(Object.assign({}, v), { display: 'flex', zIndex: this._zIndex })));
         this.container.addChild(this);
         return this;
     }
     hide() {
         this._items.forEach(item => { var _a; return (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.hide(); });
-        this.styles.merge(StyleNames.Normal, { display: 'none' }).refresh();
+        this.styles.forgo('');
         this.removeSelf();
         return this;
     }
 }
 exports.Menu = Menu;
-Menu.StyleNames = StyleNames;
 Menu.EventType = MenuEventType;
 
-},{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":30,"../utils":31}],15:[function(require,module,exports){
+},{"../BaseView/View":10,"../Observer/HoverOb":30,"../utils":31}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinFooter = void 0;
@@ -1218,6 +1199,7 @@ exports.SubwinFooter = SubwinFooter;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinHeader = void 0;
+const SizeType_1 = require("../../BaseView/SizeType");
 const View_1 = require("../../BaseView/View");
 const IconButton_1 = require("../IconButton");
 class SubwinHeader extends View_1.View {
@@ -1229,17 +1211,19 @@ class SubwinHeader extends View_1.View {
     constructor() {
         super('div');
         this.styles.addCls('g_subwin_header');
-        this._iconView = new IconButton_1.IconButton().init().styles.addCls('g_subwin_icon').view;
+        this._iconView = new IconButton_1.IconButton().init({ size: SizeType_1.SizeType.Small }).styles.addCls('g_subwin_icon').view;
+        this._iconView.icon.addEventListener('load', e => this._iconView.styles.apply('', { display: undefined }));
+        this._iconView.icon.addEventListener('error', e => this._iconView.styles.apply('', { display: 'none' }));
         this.addChild(this._iconView);
         this._titleView = new View_1.View('div').styles.addCls('g_subwin_title').view;
         this.addChild(this._titleView);
-        this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg' }).styles.addCls('g_subwin_btn_close').view;
+        this._btnClose = new IconButton_1.IconButton().init({ src: './ic_btn_close.svg', size: SizeType_1.SizeType.Small }).styles.addCls('g_subwin_btn_close').view;
         this.addChild(this._btnClose);
     }
 }
 exports.SubwinHeader = SubwinHeader;
 
-},{"../../BaseView/View":10,"../IconButton":13}],17:[function(require,module,exports){
+},{"../../BaseView/SizeType":6,"../../BaseView/View":10,"../IconButton":13}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subwin = exports.StyleNames = void 0;
@@ -1922,6 +1906,8 @@ class WorkspaceView extends View_1.View {
             this.addChild(this._rootDockView);
         }
         (target instanceof SubWin_1.Subwin) && this._dockedWins.insert(0, target);
+        (target instanceof SubWin_1.Subwin) && target.styles.forgo('free_in_workspace');
+        this._updateUndockedWinsStyle();
     }
     dockAround(target, anchor, direction, pos) {
         // if (anchor !== this._deepestDockView) {
@@ -1952,6 +1938,8 @@ class WorkspaceView extends View_1.View {
             }
         }
         (target instanceof SubWin_1.Subwin) && this._dockedWins.insert(0, target);
+        (target instanceof SubWin_1.Subwin) && target.styles.forgo('free_in_workspace');
+        this._updateUndockedWinsStyle();
     }
     undock(target) {
         var _a;
@@ -1975,6 +1963,7 @@ class WorkspaceView extends View_1.View {
                 this._rootDockView.asRoot(true);
             }
         }
+        this._updateUndockedWinsStyle();
         return this;
     }
     clampAllSubwin() {
@@ -2016,7 +2005,7 @@ class WorkspaceView extends View_1.View {
         return this;
     }
     _handleAddedChildren(children) {
-        console.log('[Workspace]_handleAddedChildren', children);
+        // console.log('[Workspace]_handleAddedChildren', children)
         children.forEach(v => {
             if (!(v instanceof SubWin_1.Subwin)) {
                 return;
@@ -2038,7 +2027,7 @@ class WorkspaceView extends View_1.View {
         super._handleAddedChildren(children);
     }
     _prehandleRemovedChildren(children) {
-        console.log('[Workspace]_prehandleRemovedChildren', children);
+        // console.log('[Workspace]_prehandleRemovedChildren', children)
         children.forEach(child => {
             if (!(child instanceof SubWin_1.Subwin)) {
                 return;
@@ -2136,12 +2125,12 @@ class ElementDragger {
     }
     get handles() { return this._handles; }
     set handles(v) {
-        this._handles.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
-        this._handles.forEach(v => v.removeEventListener('touchstart', this._ontouchstart));
+        this._handles.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown, true));
+        this._handles.forEach(v => v.removeEventListener('touchstart', this._ontouchstart, true));
         this._handles = v;
         if (!this._disabled) {
-            this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
-            this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
+            this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown, true));
+            this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { capture: true, passive: false }));
         }
     }
     set handleMove(v) { this._handleMove = v; }
@@ -2159,22 +2148,22 @@ class ElementDragger {
         v ? this.stopListen() : this.startListen();
     }
     startListen() {
-        document.addEventListener('pointermove', this._pointermove);
-        document.addEventListener('pointerup', this._onpointerup);
+        document.addEventListener('pointermove', this._pointermove, true);
+        document.addEventListener('pointerup', this._onpointerup, true);
         document.addEventListener('blur', this._onblur);
-        this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
-        document.addEventListener('touchmove', this._ontouchmove);
-        document.addEventListener('touchend', this._ontouchend);
+        this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown, true));
+        document.addEventListener('touchmove', this._ontouchmove, true);
+        document.addEventListener('touchend', this._ontouchend, true);
         document.addEventListener('touchcancel', this._ontouchend);
-        this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
+        this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { capture: true, passive: true }));
     }
     stopListen() {
-        document.removeEventListener('pointermove', this._pointermove);
-        document.removeEventListener('pointerup', this._onpointerup);
+        document.removeEventListener('pointermove', this._pointermove, true);
+        document.removeEventListener('pointerup', this._onpointerup, true);
         document.removeEventListener('blur', this._onblur);
         this._handles.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
-        document.removeEventListener('touchmove', this._ontouchmove);
-        document.removeEventListener('touchend', this._ontouchend);
+        document.removeEventListener('touchmove', this._ontouchmove, true);
+        document.removeEventListener('touchend', this._ontouchend, true);
         document.removeEventListener('touchcancel', this._ontouchend);
         this._handles.forEach(v => v.removeEventListener('touchstart', this._ontouchstart));
     }
@@ -2230,6 +2219,8 @@ class ElementDragger {
                 detail: { pageX, pageY, dragger: this }
             });
             (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(event);
+            event.preventDefault();
+            event.stopPropagation();
         };
         this._onmove = (pageX, pageY) => {
             var _a, _b;
@@ -2241,6 +2232,8 @@ class ElementDragger {
                 detail: { pageX, pageY, dragger: this }
             });
             (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(event);
+            event.preventDefault();
+            event.stopPropagation();
         };
         this._onup = () => {
             var _a, _b;
@@ -2252,6 +2245,8 @@ class ElementDragger {
             });
             (_b = this.responser) === null || _b === void 0 ? void 0 : _b.dispatchEvent(event);
             this._down = false;
+            event.preventDefault();
+            event.stopPropagation();
         };
         this._onpointerdown = (e) => {
             if (e.button !== 0) {
@@ -2556,7 +2551,6 @@ class LayersView extends SubWin_1.Subwin {
         this.footer.addChild(this.btnAddFolder);
     }
     layers() { return this._layers; }
-    setLayers() { }
     addLayer(inits) {
         var _a;
         const item = new LayerItemView(inits);
@@ -2564,8 +2558,8 @@ class LayersView extends SubWin_1.Subwin {
         (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(item);
         item.addEventListener('click', () => {
             var _a, _b;
-            (_b = (_a = this.content) === null || _a === void 0 ? void 0 : _a.children) === null || _b === void 0 ? void 0 : _b.forEach(v => v.selected = false);
             item.selected = true;
+            (_b = (_a = this.content) === null || _a === void 0 ? void 0 : _a.children) === null || _b === void 0 ? void 0 : _b.forEach(v => v.selected = false);
             const detail = { id: item.state.id };
             this.inner.dispatchEvent(new CustomEvent(LayersViewEventType.LayerActived, { detail }));
         });
@@ -2661,6 +2655,138 @@ exports.LayerItemView = LayerItemView;
 
 },{"./G/BaseView/Button":2,"./G/BaseView/SizeType":6,"./G/BaseView/TextInput":9,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./G/Observer/FocusOb":29}],33:[function(require,module,exports){
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RecorderView = void 0;
+const Player_1 = require("../../dist/features/Player");
+const Recorder_1 = require("../../dist/features/Recorder");
+const Button_1 = require("./G/BaseView/Button");
+const StyleType_1 = require("./G/BaseView/StyleType");
+const View_1 = require("./G/BaseView/View");
+const SubWin_1 = require("./G/CompoundView/SubWin");
+const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
+const demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
+class RecorderView extends SubWin_1.Subwin {
+    get btnStartRecord() { return this._btnStartRecord; }
+    get btnStopRecord() { return this._btnStopRecord; }
+    get btnPlay() { return this._btnPlay; }
+    get btnDemo0() { return this._btnDemo0; }
+    get btnDemo1() { return this._btnDemo1; }
+    get textarea() { return this._textarea; }
+    get board() { return this._board; }
+    set board(v) { this._board = v; }
+    constructor() {
+        super();
+        this._btnStartRecord = new Button_1.Button().init({ content: '开始录制' });
+        this._btnStopRecord = new Button_1.Button().init({ content: '停止录制' });
+        this._btnPlay = new Button_1.Button().init({ content: '播放' });
+        this._btnDemo0 = new Button_1.Button().init({ content: '"hello world"' });
+        this._btnDemo1 = new Button_1.Button().init({ content: '"rect & oval"' });
+        this._textarea = new View_1.View('textarea');
+        this.header.title = 'recorder';
+        this.content = new View_1.View('div');
+        this.content.styles.apply('', { flex: 1, display: StyleType_1.CssDisplay.Flex, flexDirection: StyleType_1.CssFlexDirection.column });
+        this.content.addChild(this._btnStartRecord);
+        this.content.addChild(this._btnStopRecord);
+        this.content.addChild(this._btnPlay);
+        this.content.addChild(this._btnDemo0);
+        this.content.addChild(this._btnDemo1);
+        this.content.addChild(this._textarea);
+        this._textarea.styles.apply('', { resize: 'vertical' });
+        this.btnStartRecord.addEventListener('click', () => this.startRecord());
+        this.btnStopRecord.addEventListener('click', () => this.endRecord());
+        this.btnPlay.addEventListener('click', () => {
+            this.endRecord();
+            this.replay();
+        });
+        this.btnDemo0.addEventListener('click', () => {
+            this.endRecord();
+            this.textarea.inner.value = demo_helloworld_1.default;
+            this.replay();
+        });
+        this.btnDemo1.addEventListener('click', () => {
+            this.endRecord();
+            this.textarea.inner.value = demo_rect_n_oval_1.default;
+            this.replay();
+        });
+    }
+    startRecord() {
+        var _a, _b;
+        const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+        if (!board) {
+            return;
+        }
+        (_b = this._recorder) === null || _b === void 0 ? void 0 : _b.destory();
+        this._recorder = new Recorder_1.Recorder();
+        this._recorder.start(board);
+    }
+    endRecord() {
+        var _a;
+        if (!this._recorder) {
+            return;
+        }
+        this.textarea.inner.value = this._recorder.toJsonStr();
+        (_a = this._recorder) === null || _a === void 0 ? void 0 : _a.destory();
+        this._recorder = undefined;
+    }
+    replay() {
+        var _a, _b;
+        const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+        if (!board) {
+            return;
+        }
+        this.endRecord();
+        const str = this.textarea.inner.value;
+        (_b = this._player) === null || _b === void 0 ? void 0 : _b.stop();
+        this._player = new Player_1.Player();
+        this._player.start(board, JSON.parse(str));
+    }
+}
+exports.RecorderView = RecorderView;
+
+},{"../../dist/features/Player":48,"../../dist/features/Recorder":49,"./G/BaseView/Button":2,"./G/BaseView/StyleType":7,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17,"./demo_helloworld":39,"./demo_rect_n_oval":40}],34:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SnapshotView = void 0;
+const Button_1 = require("./G/BaseView/Button");
+const StyleType_1 = require("./G/BaseView/StyleType");
+const View_1 = require("./G/BaseView/View");
+const SubWin_1 = require("./G/CompoundView/SubWin");
+class SnapshotView extends SubWin_1.Subwin {
+    get board() { return this._board; }
+    set board(v) { this._board = v; }
+    constructor() {
+        super();
+        this._textarea = new View_1.View('textarea');
+        this.header.title = 'snapshot';
+        this.content = new View_1.View('div');
+        this.content.styles.apply('', { flex: 1, display: StyleType_1.CssDisplay.Flex, flexDirection: StyleType_1.CssFlexDirection.column });
+        this.content.addChild(new Button_1.Button().init({ content: 'save Snapshot' }).addEventListener('click', () => {
+            var _a;
+            const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+            if (!board) {
+                return;
+            }
+            this._textarea.inner.value = board.toJson();
+        }));
+        this.content.addChild(new Button_1.Button().init({ content: 'load Snapshot' }).addEventListener('click', () => {
+            var _a;
+            const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+            if (!board) {
+                return;
+            }
+            board.fromJson(this._textarea.inner.value);
+        }));
+        this.content.addChild(this._textarea);
+        this._textarea.styles.apply('', { resize: 'vertical' });
+    }
+}
+exports.SnapshotView = SnapshotView;
+
+},{"./G/BaseView/Button":2,"./G/BaseView/StyleType":7,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17}],35:[function(require,module,exports){
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsView = exports.ToolButton = void 0;
 const dist_1 = require("../../dist");
@@ -2684,6 +2810,11 @@ class ToolsView extends SubWin_1.Subwin {
     set onToolClick(v) {
         this._toolButtonGroup.onClick = v;
     }
+    setToolType(toolEnum) {
+        this._toolsBtns.forEach(v => {
+            v.checked = toolEnum === v.toolType;
+        });
+    }
     constructor() {
         super();
         this.header.title = 'tools';
@@ -2691,9 +2822,10 @@ class ToolsView extends SubWin_1.Subwin {
         this.content.styles.apply("", {
             flex: '1',
             overflowY: 'auto',
-            overflowX: 'hidden'
+            overflowX: 'hidden',
+            width: 64,
         });
-        const toolsBtns = [
+        this._toolsBtns = [
             new ToolButton().init({ src: './ic_tool_selector.svg', toolType: dist_1.ToolEnum.Selector }),
             new ToolButton().init({ src: './ic_tool_pen.svg', toolType: dist_1.ToolEnum.Pen }),
             new ToolButton().init({ src: './ic_tool_rect.svg', toolType: dist_1.ToolEnum.Rect }),
@@ -2704,14 +2836,112 @@ class ToolsView extends SubWin_1.Subwin {
             new ToolButton().init({ src: './ic_tool_cross.svg', toolType: dist_1.ToolEnum.Cross }),
             new ToolButton().init({ src: './ic_tool_lines.svg', toolType: dist_1.ToolEnum.Lines })
         ];
-        toolsBtns.forEach(btn => { var _a; return (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(btn); });
-        this._toolButtonGroup = new ButtonGroup_1.ButtonGroup({ buttons: toolsBtns });
+        this._toolsBtns.forEach(btn => { var _a; return (_a = this.content) === null || _a === void 0 ? void 0 : _a.addChild(btn); });
+        this._toolButtonGroup = new ButtonGroup_1.ButtonGroup({ buttons: this._toolsBtns });
         this.removeChild(this.footer);
     }
 }
 exports.ToolsView = ToolsView;
 
-},{"../../dist":49,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":13,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25}],34:[function(require,module,exports){
+},{"../../dist":52,"./G/BaseView/SizeType":6,"./G/BaseView/View":10,"./G/CompoundView/IconButton":13,"./G/CompoundView/SubWin":17,"./G/Helper/ButtonGroup":25}],36:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ToyView = void 0;
+const dist_1 = require("../../dist");
+const Button_1 = require("./G/BaseView/Button");
+const View_1 = require("./G/BaseView/View");
+const SubWin_1 = require("./G/CompoundView/SubWin");
+const v255 = () => Math.floor(Math.random() * 255);
+const rColor = () => `rgb(${v255()},${v255()},${v255()})`;
+class ToyView extends SubWin_1.Subwin {
+    get board() { return this._board; }
+    set board(v) { this._board = v; }
+    constructor() {
+        super();
+        this.header.title = 'toys';
+        this.content = new View_1.View('div');
+        this.content.styles.apply('', {
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden'
+        });
+        const randomShapeItem = (item) => {
+            var _a;
+            const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+            if (!board) {
+                return;
+            }
+            item.geo(Math.floor(Math.random() * board.width), Math.floor(Math.random() * board.height), 50, 50);
+            item.data.fillStyle = rColor();
+            item.data.strokeStyle = rColor();
+        };
+        this.content.addChild(new Button_1.Button().init({
+            content: 'random add 1000 rect'
+        }).addEventListener('click', () => {
+            var _a;
+            const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+            if (!board) {
+                return;
+            }
+            const items = [];
+            for (let i = 0; i < 1000; ++i) {
+                const item = board.factory.newShape(dist_1.ShapeEnum.Rect);
+                item.data.layer = board.layer().id;
+                randomShapeItem(item);
+                items.push(item);
+            }
+            board.add(...items);
+        }));
+        this.content.addChild(new Button_1.Button().init({
+            content: 'random add 1000 oval'
+        }).addEventListener('click', () => {
+            var _a;
+            const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+            if (!board) {
+                return;
+            }
+            const items = [];
+            for (let i = 0; i < 1000; ++i) {
+                const item = board.factory.newShape(dist_1.ShapeEnum.Oval);
+                item.data.layer = board.layer().id;
+                randomShapeItem(item);
+                items.push(item);
+            }
+            board.add(...items);
+        }));
+        this.content.addChild(new Button_1.Button().init({
+            content: 'random draw 1000 pen'
+        }).addEventListener('click', () => {
+            var _a;
+            const board = (_a = this._board) === null || _a === void 0 ? void 0 : _a.call(this);
+            if (!board) {
+                return;
+            }
+            const items = [];
+            for (let i = 0; i < 1000; ++i) {
+                const item = board.factory.newShape(dist_1.ShapeEnum.Pen);
+                item.data.layer = board.layer().id;
+                let x = Math.floor(Math.random() * board.width);
+                let y = Math.floor(Math.random() * board.height);
+                const v5 = () => Math.floor(Math.random() * 5);
+                const lenth = Math.floor(Math.random() * 100);
+                for (let j = 0; j < lenth; ++j) {
+                    x += v5();
+                    y += v5();
+                    item.appendDot({ x, y, p: 0.5 });
+                }
+                randomShapeItem(item);
+                items.push(item);
+            }
+            board.add(...items);
+        }));
+    }
+}
+exports.ToyView = ToyView;
+
+},{"../../dist":52,"./G/BaseView/Button":2,"./G/BaseView/View":10,"./G/CompoundView/SubWin":17}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HSB = exports.RGBA = exports.RGB = exports.clampI = exports.clampF = void 0;
@@ -2909,7 +3139,7 @@ class HSB {
 }
 exports.HSB = HSB;
 
-},{}],35:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ColorPalette = void 0;
@@ -3278,12 +3508,11 @@ class ColorPalette {
 }
 exports.ColorPalette = ColorPalette;
 
-},{"../../../dist/utils/Rect":111,"../../../dist/utils/Vector":113,"./Color":34}],36:[function(require,module,exports){
+},{"../../../dist/utils/Rect":114,"../../../dist/utils/Vector":116,"./Color":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = `
-{
-  "startTime": 10287.800000000745,
+exports.default = `{
+  "startTime": 2124.7999999970198,
   "snapshot": {
     "v": 0,
     "x": 0,
@@ -3292,67 +3521,28 @@ exports.default = `
     "h": 1024,
     "l": [
       {
-        "a": "layer_1687520198135_1",
-        "b": "layer_1687520198135_2"
+        "id": "layer_1687536696552_1",
+        "name": "layer_1687536696552_2"
       }
     ],
-    "s": [
-      {
-        "t": 1,
-        "i": "1_16875202067233",
-        "x": 793,
-        "y": 393,
-        "w": 21,
-        "h": 43,
-        "z": 1687520206724,
-        "l": "layer_1687520198135_1",
-        "style": {
-          "a": "#ff0000",
-          "c": "round",
-          "f": "round",
-          "g": 3
-        },
-        "status": {},
-        "dotsType": 1,
-        "coords": [
-          814,
-          393,
-          812,
-          399,
-          810,
-          407,
-          806,
-          416,
-          802,
-          424,
-          799,
-          429,
-          795,
-          433,
-          793,
-          436,
-          793,
-          436
-        ]
-      }
-    ]
+    "s": []
   },
   "events": [
     {
-      "timeStamp": 909.4000000003725,
+      "timeStamp": 488.20000000298023,
       "type": "SHAPES_ADDED",
       "detail": {
         "operator": "whiteboard",
         "shapeDatas": [
           {
             "t": 1,
-            "i": "1_16875202091754",
+            "i": "1_16875366990673",
             "x": 0,
             "y": 0,
             "w": 0,
             "h": 0,
-            "z": 1687520209177,
-            "l": "layer_1687520198135_1",
+            "z": 1687536699068,
+            "l": "layer_1687536696552_1",
             "style": {
               "a": "#ff0000",
               "c": "round",
@@ -3369,7 +3559,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 909.8000000007451,
+      "timeStamp": 489.20000000298023,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -3377,13 +3567,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
               "w": 0,
               "h": 0,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -3395,19 +3585,19 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                58,
-                36
+                54,
+                76
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202091754",
+              "i": "1_16875366990673",
               "x": 0,
               "y": 0,
               "w": 0,
               "h": 0,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -3425,7 +3615,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 968.1999999992549,
+      "timeStamp": 550.9000000022352,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -3433,13 +3623,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 12,
-              "h": 13,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 16,
+              "h": 33,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -3451,9606 +3641,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                59,
-                36,
-                64,
-                40,
-                70,
-                49
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 0,
-              "h": 0,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                58,
-                36
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1017.6999999992549,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 20,
-              "h": 60,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                76,
+                55,
+                79,
                 62,
-                78,
-                80,
-                78,
-                96
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 12,
-              "h": 13,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                58,
-                36,
-                59,
-                36,
-                64,
-                40,
+                90,
                 70,
-                49
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1068.0999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 20,
-              "h": 83,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                76,
-                108,
-                73,
-                115,
-                72,
-                119
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 20,
-              "h": 60,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                58,
-                36,
-                59,
-                36,
-                64,
-                40,
-                70,
-                49,
-                76,
-                62,
-                78,
-                80,
-                78,
-                96
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1117.199999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 20,
-              "h": 85,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                72,
-                120,
-                72,
-                121
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 20,
-              "h": 83,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                58,
-                36,
-                59,
-                36,
-                64,
-                40,
-                70,
-                49,
-                76,
-                62,
-                78,
-                80,
-                78,
-                96,
-                76,
-                108,
-                73,
-                115,
-                72,
-                119
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1153.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 20,
-              "h": 85,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {},
-              "dotsType": 2,
-              "coords": [
-                72,
-                121
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202091754",
-              "x": 58,
-              "y": 36,
-              "w": 20,
-              "h": 85,
-              "z": 1687520209177,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {},
-              "dotsType": 1,
-              "coords": [
-                58,
-                36,
-                59,
-                36,
-                64,
-                40,
-                70,
-                49,
-                76,
-                62,
-                78,
-                80,
-                78,
-                96,
-                76,
-                108,
-                73,
-                115,
-                72,
-                119,
-                72,
-                120,
-                72,
-                121
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1344.4000000003725,
-      "type": "SHAPES_ADDED",
-      "detail": {
-        "operator": "whiteboard",
-        "shapeDatas": [
-          {
-            "t": 1,
-            "i": "1_16875202096105",
-            "x": 0,
-            "y": 0,
-            "w": 0,
-            "h": 0,
-            "z": 1687520209613,
-            "l": "layer_1687520198135_1",
-            "style": {
-              "a": "#ff0000",
-              "c": "round",
-              "f": "round",
-              "g": 3
-            },
-            "status": {
-              "e": 1
-            },
-            "dotsType": 1,
-            "coords": []
-          }
-        ]
-      }
-    },
-    {
-      "timeStamp": 1344.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 0,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                119,
-                36
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 0,
-              "y": 0,
-              "w": 0,
-              "h": 0,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": []
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1385.300000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 23,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                119,
-                38,
-                119,
-                45,
-                119,
-                59
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 0,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1435.199999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 61,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                119,
-                73,
-                119,
-                86,
-                119,
-                97
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 23,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1483.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                119,
-                104,
-                119,
-                106
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 61,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1551.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 109,
-              "y": 36,
-              "w": 10,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 119,
-              "y": 36,
-              "w": 0,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1601.300000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 100,
-              "y": 36,
-              "w": 19,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                104,
-                89,
-                102,
-                87,
-                100,
-                87
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 109,
-              "y": 36,
-              "w": 10,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1668.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 22,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                99,
-                88,
-                97,
-                91,
-                97,
-                93
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 100,
-              "y": 36,
-              "w": 19,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1718.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 22,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                98,
-                97,
-                103,
-                102,
-                111,
-                105
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 22,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1768.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 42,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                121,
-                106,
-                130,
-                106,
-                139,
-                103
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 22,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1818.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                144,
-                100,
-                146,
-                95,
-                148,
-                91
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 42,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1868,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                148,
-                84,
-                148,
-                81,
-                148,
-                80
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 1951.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2001.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                135,
-                92,
-                132,
-                98,
-                131,
-                105
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2051.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 81,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                131,
-                111,
-                135,
-                115,
-                137,
-                117
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 70,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2101.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 55,
-              "h": 81,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                139,
-                117,
-                144,
-                116,
-                152,
-                111
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 51,
-              "h": 81,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2151.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 84,
-              "h": 81,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                163,
-                101,
-                174,
-                88,
-                181,
-                75
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 55,
-              "h": 81,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2201.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 34,
-              "w": 98,
-              "h": 83,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                186,
-                60,
-                191,
-                46,
-                195,
-                34
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 36,
-              "w": 84,
-              "h": 81,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2252.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                196,
-                32,
-                196,
-                31
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 34,
-              "w": 98,
-              "h": 83,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2335,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                192,
-                35,
-                187,
-                41,
-                181,
-                53
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2385,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                176,
-                66,
-                175,
-                80,
-                176,
-                93
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2434.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                179,
-                102,
-                182,
-                107,
-                183,
-                108
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2485,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                184,
-                108,
-                185,
-                108,
-                191,
-                102
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2535.0999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 123,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                199,
-                91,
-                209,
-                79,
-                220,
-                61
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 99,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2584.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                228,
-                45,
-                231,
-                36,
-                233,
-                32
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 123,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2685,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                231,
-                36,
-                228,
-                41,
-                223,
-                51
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2734.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                218,
-                63,
-                216,
-                75,
-                215,
-                88
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2785,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                215,
-                97,
-                218,
-                103,
-                222,
-                105
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2834.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                224,
-                107,
-                228,
-                106,
-                232,
-                102
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2885,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 148,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                237,
-                96,
-                242,
-                89,
-                245,
-                85
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 136,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2934.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 148,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                245,
-                83,
-                245,
-                84
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 148,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102,
-                237,
-                96,
-                242,
-                89,
-                245,
-                85
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 2985.0999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 148,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                244,
-                90,
-                244,
-                97,
-                244,
-                103
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 148,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102,
-                237,
-                96,
-                242,
-                89,
-                245,
-                85,
-                245,
-                83,
-                245,
-                84
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3034.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 154,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                247,
-                107,
-                249,
-                108,
-                251,
-                108
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 148,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102,
-                237,
-                96,
-                242,
-                89,
-                245,
-                85,
-                245,
-                83,
-                245,
-                84,
-                244,
-                90,
-                244,
-                97,
-                244,
-                103
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3085,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 161,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                253,
-                106,
-                255,
-                102,
-                258,
-                95
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 154,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102,
-                237,
-                96,
-                242,
-                89,
-                245,
-                85,
-                245,
-                83,
-                245,
-                84,
-                244,
-                90,
-                244,
-                97,
-                244,
-                103,
-                247,
-                107,
-                249,
-                108,
-                251,
-                108
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3134.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 163,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                260,
-                90,
-                260,
-                85,
-                257,
-                82
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 161,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102,
-                237,
-                96,
-                242,
-                89,
-                245,
-                85,
-                245,
-                83,
-                245,
-                84,
-                244,
-                90,
-                244,
-                97,
-                244,
-                103,
-                247,
-                107,
-                249,
-                108,
-                251,
-                108,
-                253,
-                106,
-                255,
-                102,
-                258,
-                95
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3184.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 163,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                253,
-                80,
-                246,
-                80,
-                243,
-                83
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 163,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102,
-                237,
-                96,
-                242,
-                89,
-                245,
-                85,
-                245,
-                83,
-                245,
-                84,
-                244,
-                90,
-                244,
-                97,
-                244,
-                103,
-                247,
-                107,
-                249,
-                108,
-                251,
-                108,
-                253,
-                106,
-                255,
-                102,
-                258,
-                95,
-                260,
-                90,
-                260,
-                85,
-                257,
-                82
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3234,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 163,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {},
-              "dotsType": 2,
-              "coords": [
-                243,
-                85,
-                250,
-                87,
-                250,
-                87
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202096105",
-              "x": 97,
-              "y": 31,
-              "w": 163,
-              "h": 86,
-              "z": 1687520209613,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                119,
-                36,
-                119,
-                38,
-                119,
-                45,
-                119,
-                59,
-                119,
-                73,
-                119,
-                86,
-                119,
-                97,
-                119,
-                104,
-                119,
-                106,
-                118,
-                106,
-                117,
-                104,
-                113,
-                98,
-                109,
-                93,
-                104,
-                89,
-                102,
-                87,
-                100,
-                87,
-                99,
-                88,
-                97,
-                91,
-                97,
-                93,
-                98,
-                97,
-                103,
-                102,
-                111,
-                105,
-                121,
-                106,
-                130,
-                106,
-                139,
-                103,
-                144,
-                100,
-                146,
-                95,
-                148,
-                91,
-                148,
-                84,
-                148,
-                81,
-                148,
-                80,
-                147,
-                80,
-                147,
-                81,
-                144,
-                83,
-                140,
-                86,
-                135,
-                92,
-                132,
-                98,
-                131,
-                105,
-                131,
-                111,
-                135,
-                115,
-                137,
-                117,
-                139,
-                117,
-                144,
-                116,
-                152,
-                111,
-                163,
-                101,
-                174,
-                88,
-                181,
-                75,
-                186,
-                60,
-                191,
-                46,
-                195,
-                34,
-                196,
-                32,
-                196,
-                31,
-                192,
-                35,
-                187,
-                41,
-                181,
-                53,
-                176,
-                66,
-                175,
-                80,
-                176,
-                93,
-                179,
-                102,
-                182,
-                107,
-                183,
-                108,
-                184,
-                108,
-                185,
-                108,
-                191,
-                102,
-                199,
-                91,
-                209,
-                79,
-                220,
-                61,
-                228,
-                45,
-                231,
-                36,
-                233,
-                32,
-                231,
-                36,
-                228,
-                41,
-                223,
-                51,
-                218,
-                63,
-                216,
-                75,
-                215,
-                88,
-                215,
-                97,
-                218,
-                103,
-                222,
-                105,
-                224,
-                107,
-                228,
-                106,
-                232,
-                102,
-                237,
-                96,
-                242,
-                89,
-                245,
-                85,
-                245,
-                83,
-                245,
-                84,
-                244,
-                90,
-                244,
-                97,
-                244,
-                103,
-                247,
-                107,
-                249,
-                108,
-                251,
-                108,
-                253,
-                106,
-                255,
-                102,
-                258,
-                95,
-                260,
-                90,
-                260,
-                85,
-                257,
-                82,
-                253,
-                80,
-                246,
-                80,
-                243,
-                83
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3648.699999999255,
-      "type": "SHAPES_ADDED",
-      "detail": {
-        "operator": "whiteboard",
-        "shapeDatas": [
-          {
-            "t": 1,
-            "i": "1_16875202119146",
-            "x": 0,
-            "y": 0,
-            "w": 0,
-            "h": 0,
-            "z": 1687520211918,
-            "l": "layer_1687520198135_1",
-            "style": {
-              "a": "#ff0000",
-              "c": "round",
-              "f": "round",
-              "g": 3
-            },
-            "status": {
-              "e": 1
-            },
-            "dotsType": 1,
-            "coords": []
-          }
-        ]
-      }
-    },
-    {
-      "timeStamp": 3648.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 320,
-              "y": 80,
-              "w": 0,
-              "h": 0,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                320,
-                80
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 0,
-              "y": 0,
-              "w": 0,
-              "h": 0,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": []
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3701.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 80,
-              "w": 8,
-              "h": 11,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                317,
-                82,
-                315,
-                86,
-                312,
-                91
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 320,
-              "y": 80,
-              "w": 0,
-              "h": 0,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3751.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 80,
-              "w": 8,
-              "h": 30,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                312,
-                99,
-                313,
-                105,
-                319,
-                110
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 80,
-              "w": 8,
-              "h": 11,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3801.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 80,
-              "w": 34,
-              "h": 32,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                326,
-                112,
-                338,
-                111,
-                346,
-                105
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 80,
-              "w": 8,
-              "h": 30,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3851.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 38,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                350,
-                94,
-                350,
-                85,
-                350,
-                79
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 80,
-              "w": 34,
-              "h": 32,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3901.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 38,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                348,
-                79,
-                347,
-                80
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 38,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 3951.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 38,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                347,
-                84,
-                347,
-                88,
-                347,
-                93
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 38,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4001.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 44,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                350,
-                97,
-                353,
-                101,
-                356,
-                104
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 38,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4051.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 52,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                359,
-                105,
-                361,
-                105,
-                364,
-                103
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 44,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4101.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 65,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                369,
-                99,
-                374,
-                92,
-                377,
-                85
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 52,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4151.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 65,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                377,
-                79,
-                376,
-                77,
-                375,
-                77
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 79,
-              "w": 65,
-              "h": 33,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4201.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 65,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                374,
-                78,
-                372,
-                81,
-                371,
-                85
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 65,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4251.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 65,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                370,
-                86,
-                370,
-                87
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 65,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4301.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 68,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                373,
-                87,
-                376,
-                87,
-                380,
-                87
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 65,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4351.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 74,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                383,
-                87,
-                385,
-                87,
-                386,
-                87
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 68,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4401.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 78,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                387,
-                86,
-                388,
-                86,
-                390,
-                86
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 74,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4451.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 79,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                391,
-                85
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 78,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4551.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 79,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 79,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4601.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 87,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                392,
-                109,
-                396,
-                113,
-                399,
-                113
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 79,
-              "h": 35,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4651.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 103,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                402,
-                112,
-                408,
-                106,
-                415,
-                99
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 87,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4701.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 107,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                419,
-                91,
-                419,
-                86,
-                415,
-                82
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 103,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4751.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 107,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                409,
-                81,
-                403,
-                81,
-                401,
-                83
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 107,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4801.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 107,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                400,
-                84,
-                400,
-                85,
-                404,
-                86
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 107,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4851.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 109,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                409,
-                86,
-                415,
-                86,
-                421,
-                85
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 107,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4900.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 113,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                424,
-                84,
-                425,
-                83
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 109,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 4985,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 115,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                426,
-                83,
-                427,
-                85,
-                427,
-                91
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 113,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 5034.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 115,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                427,
-                99,
-                427,
-                106,
-                426,
                 109
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 115,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 0,
+              "h": 0,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -13062,150 +3669,8 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83,
-                426,
-                83,
-                427,
-                85,
-                427,
-                91
+                54,
+                76
               ]
             }
           ]
@@ -13213,7 +3678,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 5111.5,
+      "timeStamp": 600.9000000022352,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -13221,13 +3686,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 115,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 23,
+              "h": 91,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -13239,23 +3704,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                426,
-                108,
-                426,
-                105,
-                426,
-                99
+                75,
+                131,
+                77,
+                151,
+                74,
+                167
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 115,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 16,
+              "h": 33,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -13267,155 +3732,13 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
+                54,
+                76,
+                55,
                 79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83,
-                426,
-                83,
-                427,
-                85,
-                427,
-                91,
-                427,
-                99,
-                427,
-                106,
-                426,
+                62,
+                90,
+                70,
                 109
               ]
             }
@@ -13424,7 +3747,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 5151.5,
+      "timeStamp": 650.9000000022352,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -13432,13 +3755,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 130,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 23,
+              "h": 129,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -13450,23 +3773,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                429,
-                92,
-                435,
-                87,
-                442,
-                84
+                68,
+                182,
+                61,
+                195,
+                57,
+                205
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 115,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 23,
+              "h": 91,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -13478,162 +3801,20 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
+                54,
+                76,
+                55,
                 79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
+                62,
+                90,
+                70,
                 109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83,
-                426,
-                83,
-                427,
-                85,
-                427,
-                91,
-                427,
-                99,
-                427,
-                106,
-                426,
-                109,
-                426,
-                108,
-                426,
-                105,
-                426,
-                99
+                75,
+                131,
+                77,
+                151,
+                74,
+                167
               ]
             }
           ]
@@ -13641,7 +3822,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 5201.4000000003725,
+      "timeStamp": 700.5,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -13649,13 +3830,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 137,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 23,
+              "h": 134,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -13667,23 +3848,21 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                447,
-                84,
-                448,
-                83,
-                449,
-                83
+                57,
+                210,
+                57,
+                209
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 130,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 23,
+              "h": 129,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -13695,168 +3874,26 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
+                54,
+                76,
+                55,
                 79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
+                62,
+                90,
+                70,
                 109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83,
-                426,
-                83,
-                427,
-                85,
-                427,
-                91,
-                427,
-                99,
-                427,
-                106,
-                426,
-                109,
-                426,
-                108,
-                426,
-                105,
-                426,
-                99,
-                429,
-                92,
-                435,
-                87,
-                442,
-                84
+                75,
+                131,
+                77,
+                151,
+                74,
+                167,
+                68,
+                182,
+                61,
+                195,
+                57,
+                205
               ]
             }
           ]
@@ -13864,7 +3901,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 5251.4000000003725,
+      "timeStamp": 735.3000000007451,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -13872,475 +3909,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 139,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                450,
-                85,
-                451,
-                89,
-                451,
-                93
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 137,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83,
-                426,
-                83,
-                427,
-                85,
-                427,
-                91,
-                427,
-                99,
-                427,
-                106,
-                426,
-                109,
-                426,
-                108,
-                426,
-                105,
-                426,
-                99,
-                429,
-                92,
-                435,
-                87,
-                442,
-                84,
-                447,
-                84,
-                448,
-                83,
-                449,
-                83
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 5302.300000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 139,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                451,
-                94,
-                451,
-                95
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 139,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
-                79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
-                109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83,
-                426,
-                83,
-                427,
-                85,
-                427,
-                91,
-                427,
-                99,
-                427,
-                106,
-                426,
-                109,
-                426,
-                108,
-                426,
-                105,
-                426,
-                99,
-                429,
-                92,
-                435,
-                87,
-                442,
-                84,
-                447,
-                84,
-                448,
-                83,
-                449,
-                83,
-                450,
-                85,
-                451,
-                89,
-                451,
-                93
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 5351.0999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 139,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 23,
+              "h": 134,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -14350,23 +3925,21 @@ exports.default = `
               "status": {},
               "dotsType": 2,
               "coords": [
-                449,
-                93,
-                449,
-                91,
-                449,
-                91
+                58,
+                208,
+                58,
+                208
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202119146",
-              "x": 312,
-              "y": 77,
-              "w": 139,
-              "h": 36,
-              "z": 1687520211918,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366990673",
+              "x": 54,
+              "y": 76,
+              "w": 23,
+              "h": 134,
+              "z": 1687536699068,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -14378,184 +3951,30 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                320,
-                80,
-                317,
-                82,
-                315,
-                86,
-                312,
-                91,
-                312,
-                99,
-                313,
-                105,
-                319,
-                110,
-                326,
-                112,
-                338,
-                111,
-                346,
-                105,
-                350,
-                94,
-                350,
-                85,
-                350,
+                54,
+                76,
+                55,
                 79,
-                348,
-                79,
-                347,
-                80,
-                347,
-                84,
-                347,
-                88,
-                347,
-                93,
-                350,
-                97,
-                353,
-                101,
-                356,
-                104,
-                359,
-                105,
-                361,
-                105,
-                364,
-                103,
-                369,
-                99,
-                374,
-                92,
-                377,
-                85,
-                377,
-                79,
-                376,
-                77,
-                375,
-                77,
-                374,
-                78,
-                372,
-                81,
-                371,
-                85,
-                370,
-                86,
-                370,
-                87,
-                373,
-                87,
-                376,
-                87,
-                380,
-                87,
-                383,
-                87,
-                385,
-                87,
-                386,
-                87,
-                387,
-                86,
-                388,
-                86,
-                390,
-                86,
-                391,
-                85,
-                391,
-                86,
-                391,
-                87,
-                391,
-                94,
-                391,
-                102,
-                392,
+                62,
+                90,
+                70,
                 109,
-                396,
-                113,
-                399,
-                113,
-                402,
-                112,
-                408,
-                106,
-                415,
-                99,
-                419,
-                91,
-                419,
-                86,
-                415,
-                82,
-                409,
-                81,
-                403,
-                81,
-                401,
-                83,
-                400,
-                84,
-                400,
-                85,
-                404,
-                86,
-                409,
-                86,
-                415,
-                86,
-                421,
-                85,
-                424,
-                84,
-                425,
-                83,
-                426,
-                83,
-                427,
-                85,
-                427,
-                91,
-                427,
-                99,
-                427,
-                106,
-                426,
-                109,
-                426,
-                108,
-                426,
-                105,
-                426,
-                99,
-                429,
-                92,
-                435,
-                87,
-                442,
-                84,
-                447,
-                84,
-                448,
-                83,
-                449,
-                83,
-                450,
-                85,
-                451,
-                89,
-                451,
-                93,
-                451,
-                94,
-                451,
-                95
+                75,
+                131,
+                77,
+                151,
+                74,
+                167,
+                68,
+                182,
+                61,
+                195,
+                57,
+                205,
+                57,
+                210,
+                57,
+                209
               ]
             }
           ]
@@ -14563,20 +3982,20 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 5815.5999999996275,
+      "timeStamp": 923.9000000022352,
       "type": "SHAPES_ADDED",
       "detail": {
         "operator": "whiteboard",
         "shapeDatas": [
           {
             "t": 1,
-            "i": "1_16875202140817",
+            "i": "1_16875366995044",
             "x": 0,
             "y": 0,
             "w": 0,
             "h": 0,
-            "z": 1687520214086,
-            "l": "layer_1687520198135_1",
+            "z": 1687536699506,
+            "l": "layer_1687536696552_1",
             "style": {
               "a": "#ff0000",
               "c": "round",
@@ -14593,7 +4012,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 5815.699999999255,
+      "timeStamp": 924.1000000014901,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -14601,13 +4020,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202140817",
-              "x": 473,
-              "y": 46,
+              "i": "1_16875366995044",
+              "x": 120,
+              "y": 88,
               "w": 0,
               "h": 0,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -14619,2138 +4038,19 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                473,
-                46
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 0,
-              "y": 0,
-              "w": 0,
-              "h": 0,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": []
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 5867.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 472,
-              "y": 46,
-              "w": 1,
-              "h": 16,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                473,
-                51,
-                473,
-                56,
-                472,
-                62
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 473,
-              "y": 46,
-              "w": 0,
-              "h": 0,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 5917.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 470,
-              "y": 46,
-              "w": 3,
-              "h": 37,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                471,
-                69,
-                470,
-                76,
-                470,
-                83
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 472,
-              "y": 46,
-              "w": 1,
-              "h": 16,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46,
-                473,
-                51,
-                473,
-                56,
-                472,
-                62
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 5967.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 4,
-              "h": 53,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                470,
-                90,
-                470,
-                95,
-                469,
-                99
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 470,
-              "y": 46,
-              "w": 3,
-              "h": 37,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46,
-                473,
-                51,
-                473,
-                56,
-                472,
-                62,
-                471,
-                69,
-                470,
-                76,
-                470,
-                83
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6017.5999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 4,
-              "h": 57,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                469,
-                101,
-                469,
-                102,
-                469,
-                103
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 4,
-              "h": 53,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46,
-                473,
-                51,
-                473,
-                56,
-                472,
-                62,
-                471,
-                69,
-                470,
-                76,
-                470,
-                83,
-                470,
-                90,
-                470,
-                95,
-                469,
-                99
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6067.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 6,
-              "h": 58,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                471,
-                104,
-                473,
-                104,
-                475,
-                104
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 4,
-              "h": 57,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46,
-                473,
-                51,
-                473,
-                56,
-                472,
-                62,
-                471,
-                69,
-                470,
-                76,
-                470,
-                83,
-                470,
-                90,
-                470,
-                95,
-                469,
-                99,
-                469,
-                101,
-                469,
-                102,
-                469,
-                103
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6117.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 15,
-              "h": 58,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                478,
-                104,
-                481,
-                104,
-                484,
-                102
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 6,
-              "h": 58,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46,
-                473,
-                51,
-                473,
-                56,
-                472,
-                62,
-                471,
-                69,
-                470,
-                76,
-                470,
-                83,
-                470,
-                90,
-                470,
-                95,
-                469,
-                99,
-                469,
-                101,
-                469,
-                102,
-                469,
-                103,
-                471,
-                104,
-                473,
-                104,
-                475,
-                104
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6167.199999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 22,
-              "h": 58,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                487,
-                98,
-                491,
-                91
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 15,
-              "h": 58,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46,
-                473,
-                51,
-                473,
-                56,
-                472,
-                62,
-                471,
-                69,
-                470,
-                76,
-                470,
-                83,
-                470,
-                90,
-                470,
-                95,
-                469,
-                99,
-                469,
-                101,
-                469,
-                102,
-                469,
-                103,
-                471,
-                104,
-                473,
-                104,
-                475,
-                104,
-                478,
-                104,
-                481,
-                104,
-                484,
-                102
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6200.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 26,
-              "h": 58,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {},
-              "dotsType": 2,
-              "coords": [
-                495,
-                85,
-                495,
-                85
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202140817",
-              "x": 469,
-              "y": 46,
-              "w": 22,
-              "h": 58,
-              "z": 1687520214086,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                473,
-                46,
-                473,
-                51,
-                473,
-                56,
-                472,
-                62,
-                471,
-                69,
-                470,
-                76,
-                470,
-                83,
-                470,
-                90,
-                470,
-                95,
-                469,
-                99,
-                469,
-                101,
-                469,
-                102,
-                469,
-                103,
-                471,
-                104,
-                473,
-                104,
-                475,
-                104,
-                478,
-                104,
-                481,
-                104,
-                484,
-                102,
-                487,
-                98,
-                491,
-                91
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6452.5,
-      "type": "SHAPES_ADDED",
-      "detail": {
-        "operator": "whiteboard",
-        "shapeDatas": [
-          {
-            "t": 1,
-            "i": "1_16875202147188",
-            "x": 0,
-            "y": 0,
-            "w": 0,
-            "h": 0,
-            "z": 1687520214724,
-            "l": "layer_1687520198135_1",
-            "style": {
-              "a": "#ff0000",
-              "c": "round",
-              "f": "round",
-              "g": 3
-            },
-            "status": {
-              "e": 1
-            },
-            "dotsType": 1,
-            "coords": []
-          }
-        ]
-      }
-    },
-    {
-      "timeStamp": 6452.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 514,
-              "y": 83,
-              "w": 0,
-              "h": 0,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                514,
-                83
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 0,
-              "y": 0,
-              "w": 0,
-              "h": 0,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": []
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6517,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 508,
-              "y": 83,
-              "w": 6,
-              "h": 2,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                513,
-                83,
-                512,
-                83,
-                508,
-                85
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 514,
-              "y": 83,
-              "w": 0,
-              "h": 0,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6551,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 500,
-              "y": 83,
-              "w": 14,
-              "h": 10,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                503,
-                87,
-                501,
-                90,
-                500,
-                93
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 508,
-              "y": 83,
-              "w": 6,
-              "h": 2,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6601,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 83,
-              "w": 15,
-              "h": 20,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                499,
-                98,
-                499,
-                102,
-                499,
-                103
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 500,
-              "y": 83,
-              "w": 14,
-              "h": 10,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6651.0999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 83,
-              "w": 15,
-              "h": 20,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                501,
-                103,
-                502,
-                103,
-                506,
-                100
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 83,
-              "w": 15,
-              "h": 20,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6701.300000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 78,
-              "w": 27,
-              "h": 25,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                513,
-                93,
-                519,
-                85,
-                526,
-                78
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 83,
-              "w": 15,
-              "h": 20,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6751.0999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 55,
-              "w": 31,
-              "h": 48,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                529,
-                70,
-                530,
-                63,
-                530,
-                55
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 78,
-              "w": 27,
-              "h": 25,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6801.0999999996275,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                528,
-                47,
-                528,
-                43,
-                527,
-                40
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 55,
-              "w": 31,
-              "h": 48,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78,
-                529,
-                70,
-                530,
-                63,
-                530,
-                55
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6883.300000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                527,
-                41,
-                526,
-                42,
-                524,
-                48
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78,
-                529,
-                70,
-                530,
-                63,
-                530,
-                55,
-                528,
-                47,
-                528,
-                43,
-                527,
-                40
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6917.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                522,
-                57,
-                520,
-                67,
-                518,
-                80
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78,
-                529,
-                70,
-                530,
-                63,
-                530,
-                55,
-                528,
-                47,
-                528,
-                43,
-                527,
-                40,
-                527,
-                41,
-                526,
-                42,
-                524,
-                48
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 6968,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                517,
-                90,
-                518,
-                96,
-                521,
-                98
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78,
-                529,
-                70,
-                530,
-                63,
-                530,
-                55,
-                528,
-                47,
-                528,
-                43,
-                527,
-                40,
-                527,
-                41,
-                526,
-                42,
-                524,
-                48,
-                522,
-                57,
-                520,
-                67,
-                518,
-                80
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 7017.699999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                522,
-                99,
-                524,
-                99,
-                528,
-                99
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78,
-                529,
-                70,
-                530,
-                63,
-                530,
-                55,
-                528,
-                47,
-                528,
-                43,
-                527,
-                40,
-                527,
-                41,
-                526,
-                42,
-                524,
-                48,
-                522,
-                57,
-                520,
-                67,
-                518,
-                80,
-                517,
-                90,
-                518,
-                96,
-                521,
-                98
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 7067.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 44,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                534,
-                95,
-                540,
-                93,
-                543,
-                90
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 31,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78,
-                529,
-                70,
-                530,
-                63,
-                530,
-                55,
-                528,
-                47,
-                528,
-                43,
-                527,
-                40,
-                527,
-                41,
-                526,
-                42,
-                524,
-                48,
-                522,
-                57,
-                520,
-                67,
-                518,
-                80,
-                517,
-                90,
-                518,
-                96,
-                521,
-                98,
-                522,
-                99,
-                524,
-                99,
-                528,
-                99
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 7115.199999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 44,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {},
-              "dotsType": 2,
-              "coords": [
-                543,
-                88,
-                543,
+                120,
                 88
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202147188",
-              "x": 499,
-              "y": 40,
-              "w": 44,
-              "h": 63,
-              "z": 1687520214724,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                514,
-                83,
-                513,
-                83,
-                512,
-                83,
-                508,
-                85,
-                503,
-                87,
-                501,
-                90,
-                500,
-                93,
-                499,
-                98,
-                499,
-                102,
-                499,
-                103,
-                501,
-                103,
-                502,
-                103,
-                506,
-                100,
-                513,
-                93,
-                519,
-                85,
-                526,
-                78,
-                529,
-                70,
-                530,
-                63,
-                530,
-                55,
-                528,
-                47,
-                528,
-                43,
-                527,
-                40,
-                527,
-                41,
-                526,
-                42,
-                524,
-                48,
-                522,
-                57,
-                520,
-                67,
-                518,
-                80,
-                517,
-                90,
-                518,
-                96,
-                521,
-                98,
-                522,
-                99,
-                524,
-                99,
-                528,
-                99,
-                534,
-                95,
-                540,
-                93,
-                543,
-                90
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 7765.300000000745,
-      "type": "SHAPES_ADDED",
-      "detail": {
-        "operator": "whiteboard",
-        "shapeDatas": [
-          {
-            "t": 1,
-            "i": "1_16875202160309",
-            "x": 0,
-            "y": 0,
-            "w": 0,
-            "h": 0,
-            "z": 1687520216038,
-            "l": "layer_1687520198135_1",
-            "style": {
-              "a": "#ff0000",
-              "c": "round",
-              "f": "round",
-              "g": 3
-            },
-            "status": {
-              "e": 1
-            },
-            "dotsType": 1,
-            "coords": []
-          }
-        ]
-      }
-    },
-    {
-      "timeStamp": 7765.4000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 204,
-              "w": 0,
-              "h": 0,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                337,
-                204
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202160309",
+              "i": "1_16875366995044",
               "x": 0,
               "y": 0,
               "w": 0,
               "h": 0,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -16768,7 +4068,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 7818.699999999255,
+      "timeStamp": 967.8000000007451,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -16776,13 +4076,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 191,
-              "w": 11,
-              "h": 13,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366995044",
+              "x": 115,
+              "y": 88,
+              "w": 5,
+              "h": 58,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -16794,23 +4094,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                337,
-                203,
-                339,
-                199,
-                348,
-                191
+                120,
+                94,
+                117,
+                114,
+                115,
+                146
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 204,
+              "i": "1_16875366995044",
+              "x": 120,
+              "y": 88,
               "w": 0,
               "h": 0,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -16822,8 +4122,8 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                337,
-                204
+                120,
+                88
               ]
             }
           ]
@@ -16831,7 +4131,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 7868.4000000003725,
+      "timeStamp": 1017.4000000022352,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -16839,13 +4139,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 48,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366995044",
+              "x": 115,
+              "y": 88,
+              "w": 5,
+              "h": 120,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -16857,23 +4157,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                362,
-                180,
-                378,
-                171,
-                385,
-                168
+                115,
+                175,
+                115,
+                197,
+                117,
+                208
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 191,
-              "w": 11,
-              "h": 13,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366995044",
+              "x": 115,
+              "y": 88,
+              "w": 5,
+              "h": 58,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -16885,14 +4185,14 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                337,
-                204,
-                337,
-                203,
-                339,
-                199,
-                348,
-                191
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146
               ]
             }
           ]
@@ -16900,7 +4200,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 7918.4000000003725,
+      "timeStamp": 1067.4000000022352,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -16908,13 +4208,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 63,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366995044",
+              "x": 115,
+              "y": 88,
+              "w": 5,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -16926,23 +4226,19 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                389,
-                170,
-                395,
-                178,
-                400,
-                187
+                117,
+                209
               ]
             },
             {
               "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 48,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366995044",
+              "x": 115,
+              "y": 88,
+              "w": 5,
+              "h": 120,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -16954,20 +4250,20 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                337,
-                204,
-                337,
-                203,
-                339,
-                199,
-                348,
-                191,
-                362,
-                180,
-                378,
-                171,
-                385,
-                168
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208
               ]
             }
           ]
@@ -16975,7 +4271,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 7968.199999999255,
+      "timeStamp": 1101.300000000745,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -16983,13 +4279,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 72,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366995044",
+              "x": 108,
+              "y": 88,
+              "w": 12,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17001,737 +4297,807 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                405,
-                195,
-                408,
-                199,
-                409,
-                200
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 63,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                337,
-                204,
-                337,
-                203,
-                339,
-                199,
-                348,
-                191,
-                362,
-                180,
-                378,
-                171,
-                385,
-                168,
-                389,
-                170,
-                395,
-                178,
-                400,
-                187
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8036,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 72,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                409,
-                199,
-                409,
-                196,
-                409,
-                191
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 72,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                337,
-                204,
-                337,
-                203,
-                339,
-                199,
-                348,
-                191,
-                362,
-                180,
-                378,
-                171,
-                385,
-                168,
-                389,
-                170,
-                395,
-                178,
-                400,
-                187,
-                405,
-                195,
-                408,
-                199,
-                409,
-                200
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8072.9000000003725,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 72,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {},
-              "dotsType": 2,
-              "coords": [
-                409,
-                190,
-                409,
-                190
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_16875202160309",
-              "x": 337,
-              "y": 168,
-              "w": 72,
-              "h": 36,
-              "z": 1687520216038,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                337,
-                204,
-                337,
-                203,
-                339,
-                199,
-                348,
-                191,
-                362,
-                180,
-                378,
-                171,
-                385,
-                168,
-                389,
-                170,
-                395,
-                178,
-                400,
-                187,
-                405,
-                195,
-                408,
-                199,
-                409,
-                200,
-                409,
-                199,
-                409,
-                196,
-                409,
-                191
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8483.400000000373,
-      "type": "SHAPES_ADDED",
-      "detail": {
-        "operator": "whiteboard",
-        "shapeDatas": [
-          {
-            "t": 1,
-            "i": "1_168752021674910",
-            "x": 0,
-            "y": 0,
-            "w": 0,
-            "h": 0,
-            "z": 1687520216757,
-            "l": "layer_1687520198135_1",
-            "style": {
-              "a": "#ff0000",
-              "c": "round",
-              "f": "round",
-              "g": 3
-            },
-            "status": {
-              "e": 1
-            },
-            "dotsType": 1,
-            "coords": []
-          }
-        ]
-      }
-    },
-    {
-      "timeStamp": 8483.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 195,
-              "w": 0,
-              "h": 0,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                448,
-                195
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 0,
-              "y": 0,
-              "w": 0,
-              "h": 0,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": []
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8568.199999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 181,
-              "w": 11,
-              "h": 14,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                448,
-                193,
-                451,
-                188,
-                459,
-                181
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 195,
-              "w": 0,
-              "h": 0,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                448,
-                195
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8617.800000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 33,
-              "h": 26,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                469,
-                174,
-                478,
-                170,
-                481,
-                169
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 181,
-              "w": 11,
-              "h": 14,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                448,
-                195,
-                448,
-                193,
-                451,
-                188,
-                459,
-                181
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8701.199999999255,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 43,
-              "h": 26,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                482,
-                170,
-                486,
-                176,
-                491,
-                184
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 33,
-              "h": 26,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                448,
-                195,
-                448,
-                193,
-                451,
-                188,
-                459,
-                181,
-                469,
-                174,
-                478,
-                170,
-                481,
-                169
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8751.099999999627,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 58,
-              "h": 38,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                499,
-                195,
-                504,
-                203,
-                506,
-                207
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 43,
-              "h": 26,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                448,
-                195,
-                448,
-                193,
-                451,
-                188,
-                459,
-                181,
-                469,
-                174,
-                478,
-                170,
-                481,
-                169,
-                482,
-                170,
-                486,
-                176,
-                491,
-                184
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8800.5,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 59,
-              "h": 38,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                507,
-                207
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 58,
-              "h": 38,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                448,
-                195,
-                448,
-                193,
-                451,
-                188,
-                459,
-                181,
-                469,
-                174,
-                478,
-                170,
-                481,
-                169,
-                482,
-                170,
-                486,
-                176,
-                491,
-                184,
-                499,
-                195,
-                504,
-                203,
-                506,
-                207
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 8834.400000000373,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 59,
-              "h": 38,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {},
-              "dotsType": 2,
-              "coords": [
-                507,
-                206,
-                505,
+                117,
+                208,
+                114,
                 202,
-                505,
-                201,
-                505,
+                108,
+                195
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 115,
+              "y": 88,
+              "w": 5,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1150.6000000014901,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 85,
+              "y": 88,
+              "w": 35,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                99,
+                187,
+                90,
+                183,
+                85,
+                183
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 108,
+              "y": 88,
+              "w": 12,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1200.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 36,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                84,
+                183,
+                84,
+                184,
+                84,
+                186
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 85,
+              "y": 88,
+              "w": 35,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1250.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 36,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                86,
+                188,
+                91,
+                190,
+                101,
+                191
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 36,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1300.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 61,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                114,
+                191,
+                131,
+                189,
+                145,
+                185
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 36,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1350.6000000014901,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                150,
+                181,
+                151,
+                178,
+                151,
+                175
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 61,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1400.4000000022352,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                149,
+                172,
+                148,
+                169,
+                146,
+                168
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1450.6000000014901,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                145,
+                168,
+                144,
+                168,
+                140,
+                171
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1500.7000000029802,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                135,
+                180,
+                131,
+                191,
+                130,
                 201
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021674910",
-              "x": 448,
-              "y": 169,
-              "w": 59,
-              "h": 38,
-              "z": 1687520216757,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17743,34 +5109,70 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                448,
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
                 195,
-                448,
-                193,
-                451,
-                188,
-                459,
-                181,
-                469,
-                174,
-                478,
-                170,
-                481,
-                169,
-                482,
-                170,
-                486,
-                176,
-                491,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
                 184,
-                499,
-                195,
-                504,
-                203,
-                506,
-                207,
-                507,
-                207
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171
               ]
             }
           ]
@@ -17778,20 +5180,5322 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9250.800000000745,
+      "timeStamp": 1550.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                131,
+                206,
+                134,
+                208,
+                138,
+                209
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1600.7000000029802,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 86,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                145,
+                207,
+                156,
+                200,
+                170,
+                189
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 67,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1651,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 111,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                180,
+                176,
+                188,
+                160,
+                195,
+                142
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 86,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1701,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                201,
+                120,
+                208,
+                99,
+                212,
+                87
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 88,
+              "w": 111,
+              "h": 121,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1777.4000000022352,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                212,
+                88,
+                211,
+                91,
+                206,
+                102
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1817.7000000029802,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                199,
+                117,
+                190,
+                138,
+                182,
+                155
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1867.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                177,
+                174,
+                175,
+                189,
+                175,
+                200
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1919.4000000022352,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                176,
+                203,
+                178,
+                205,
+                182,
+                205
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1967.9000000022352,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 138,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                190,
+                200,
+                206,
+                186,
+                222,
+                169
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 128,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2017.6000000014901,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 170,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                240,
+                144,
+                250,
+                123,
+                254,
+                103
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 138,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2068.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                256,
+                84,
+                255,
+                75
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 87,
+              "w": 170,
+              "h": 122,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2117.10000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                254,
+                75,
+                250,
+                82,
+                242,
+                98
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2166.900000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                230,
+                124,
+                220,
+                153,
+                217,
+                174
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2216.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                217,
+                187,
+                219,
+                193,
+                222,
+                195
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2267.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                224,
+                195,
+                231,
+                193,
+                241,
+                186
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2318.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 180,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                253,
+                176,
+                262,
+                166,
+                264,
+                162
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 172,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2398.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 180,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                264,
+                163,
+                262,
+                168,
+                259,
+                176
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 180,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2435.2000000029802,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 180,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                259,
+                186,
+                259,
+                192,
+                262,
+                195
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 180,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2483.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 190,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                264,
+                195,
+                269,
+                192,
+                274,
+                185
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 180,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2535.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 195,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                278,
+                176,
+                279,
+                167,
+                277,
+                160
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 190,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195,
+                264,
+                195,
+                269,
+                192,
+                274,
+                185
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2583.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 195,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                271,
+                156,
+                267,
+                156,
+                264,
+                160
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 195,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195,
+                264,
+                195,
+                269,
+                192,
+                274,
+                185,
+                278,
+                176,
+                279,
+                167,
+                277,
+                160
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2633.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 195,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                263,
+                168,
+                264,
+                175,
+                268,
+                179
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 195,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195,
+                264,
+                195,
+                269,
+                192,
+                274,
+                185,
+                278,
+                176,
+                279,
+                167,
+                277,
+                160,
+                271,
+                156,
+                267,
+                156,
+                264,
+                160
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2683.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 203,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                273,
+                180,
+                280,
+                178,
+                287,
+                173
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 195,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195,
+                264,
+                195,
+                269,
+                192,
+                274,
+                185,
+                278,
+                176,
+                279,
+                167,
+                277,
+                160,
+                271,
+                156,
+                267,
+                156,
+                264,
+                160,
+                263,
+                168,
+                264,
+                175,
+                268,
+                179
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2732.7000000029802,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 208,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                292,
+                168,
+                292,
+                166
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 203,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195,
+                264,
+                195,
+                269,
+                192,
+                274,
+                185,
+                278,
+                176,
+                279,
+                167,
+                277,
+                160,
+                271,
+                156,
+                267,
+                156,
+                264,
+                160,
+                263,
+                168,
+                264,
+                175,
+                268,
+                179,
+                273,
+                180,
+                280,
+                178,
+                287,
+                173
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2816.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 209,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                293,
+                165
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 208,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195,
+                264,
+                195,
+                269,
+                192,
+                274,
+                185,
+                278,
+                176,
+                279,
+                167,
+                277,
+                160,
+                271,
+                156,
+                267,
+                156,
+                264,
+                160,
+                263,
+                168,
+                264,
+                175,
+                268,
+                179,
+                273,
+                180,
+                280,
+                178,
+                287,
+                173,
+                292,
+                168,
+                292,
+                166
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2983.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 209,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                293,
+                165
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875366995044",
+              "x": 84,
+              "y": 75,
+              "w": 209,
+              "h": 134,
+              "z": 1687536699506,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 1,
+              "coords": [
+                120,
+                88,
+                120,
+                94,
+                117,
+                114,
+                115,
+                146,
+                115,
+                175,
+                115,
+                197,
+                117,
+                208,
+                117,
+                209,
+                117,
+                208,
+                114,
+                202,
+                108,
+                195,
+                99,
+                187,
+                90,
+                183,
+                85,
+                183,
+                84,
+                183,
+                84,
+                184,
+                84,
+                186,
+                86,
+                188,
+                91,
+                190,
+                101,
+                191,
+                114,
+                191,
+                131,
+                189,
+                145,
+                185,
+                150,
+                181,
+                151,
+                178,
+                151,
+                175,
+                149,
+                172,
+                148,
+                169,
+                146,
+                168,
+                145,
+                168,
+                144,
+                168,
+                140,
+                171,
+                135,
+                180,
+                131,
+                191,
+                130,
+                201,
+                131,
+                206,
+                134,
+                208,
+                138,
+                209,
+                145,
+                207,
+                156,
+                200,
+                170,
+                189,
+                180,
+                176,
+                188,
+                160,
+                195,
+                142,
+                201,
+                120,
+                208,
+                99,
+                212,
+                87,
+                212,
+                88,
+                211,
+                91,
+                206,
+                102,
+                199,
+                117,
+                190,
+                138,
+                182,
+                155,
+                177,
+                174,
+                175,
+                189,
+                175,
+                200,
+                176,
+                203,
+                178,
+                205,
+                182,
+                205,
+                190,
+                200,
+                206,
+                186,
+                222,
+                169,
+                240,
+                144,
+                250,
+                123,
+                254,
+                103,
+                256,
+                84,
+                255,
+                75,
+                254,
+                75,
+                250,
+                82,
+                242,
+                98,
+                230,
+                124,
+                220,
+                153,
+                217,
+                174,
+                217,
+                187,
+                219,
+                193,
+                222,
+                195,
+                224,
+                195,
+                231,
+                193,
+                241,
+                186,
+                253,
+                176,
+                262,
+                166,
+                264,
+                162,
+                264,
+                163,
+                262,
+                168,
+                259,
+                176,
+                259,
+                186,
+                259,
+                192,
+                262,
+                195,
+                264,
+                195,
+                269,
+                192,
+                274,
+                185,
+                278,
+                176,
+                279,
+                167,
+                277,
+                160,
+                271,
+                156,
+                267,
+                156,
+                264,
+                160,
+                263,
+                168,
+                264,
+                175,
+                268,
+                179,
+                273,
+                180,
+                280,
+                178,
+                287,
+                173,
+                292,
+                168,
+                292,
+                166,
+                293,
+                165
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3220.5,
       "type": "SHAPES_ADDED",
       "detail": {
         "operator": "whiteboard",
         "shapeDatas": [
           {
             "t": 1,
-            "i": "1_168752021751611",
+            "i": "1_16875367018005",
             "x": 0,
             "y": 0,
             "w": 0,
             "h": 0,
-            "z": 1687520217525,
-            "l": "layer_1687520198135_1",
+            "z": 1687536701803,
+            "l": "layer_1687536696552_1",
             "style": {
               "a": "#ff0000",
               "c": "round",
@@ -17808,7 +10512,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9250.900000000373,
+      "timeStamp": 3220.60000000149,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -17816,13 +10520,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
+              "i": "1_16875367018005",
+              "x": 370,
+              "y": 158,
               "w": 0,
               "h": 0,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17834,19 +10538,19 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                374,
-                246
+                370,
+                158
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
+              "i": "1_16875367018005",
               "x": 0,
               "y": 0,
               "w": 0,
               "h": 0,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17864,7 +10568,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9301.099999999627,
+      "timeStamp": 3267.60000000149,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -17872,13 +10576,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 7,
-              "h": 13,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 364,
+              "y": 158,
+              "w": 6,
+              "h": 14,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17890,23 +10594,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                376,
-                249,
-                378,
-                253,
-                381,
-                259
+                369,
+                159,
+                367,
+                165,
+                364,
+                172
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
+              "i": "1_16875367018005",
+              "x": 370,
+              "y": 158,
               "w": 0,
               "h": 0,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17918,8 +10622,8 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                374,
-                246
+                370,
+                158
               ]
             }
           ]
@@ -17927,7 +10631,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9351.199999999255,
+      "timeStamp": 3317.400000002235,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -17935,13 +10639,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 25,
-              "h": 35,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 9,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17953,23 +10657,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                387,
-                267,
-                394,
-                275,
-                399,
-                281
+                362,
+                180,
+                361,
+                186,
+                363,
+                189
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 7,
-              "h": 13,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 364,
+              "y": 158,
+              "w": 6,
+              "h": 14,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -17981,14 +10685,14 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
-                374,
-                246,
-                376,
-                249,
-                378,
-                253,
-                381,
-                259
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172
               ]
             }
           ]
@@ -17996,7 +10700,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9401.099999999627,
+      "timeStamp": 3367.400000002235,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18004,13 +10708,88 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 13,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                366,
+                189,
+                368,
+                189,
+                374,
+                186
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 9,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3417.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
               "w": 30,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18022,23 +10801,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                403,
-                283,
-                403,
-                284,
-                404,
-                284
+                381,
+                179,
+                387,
+                172,
+                391,
+                167
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 25,
-              "h": 35,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 13,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18050,20 +10829,26 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
-                381,
-                259,
-                387,
-                267,
-                394,
-                275,
-                399,
-                281
+                186
               ]
             }
           ]
@@ -18071,7 +10856,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9451,
+      "timeStamp": 3466.300000000745,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18079,92 +10864,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 32,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 2,
-              "coords": [
-                405,
-                284,
-                406,
-                284
-              ]
-            },
-            {
-              "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
               "w": 30,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
-              "style": {
-                "a": "#ff0000",
-                "c": "round",
-                "f": "round",
-                "g": 3
-              },
-              "status": {
-                "e": 1
-              },
-              "dotsType": 1,
-              "coords": [
-                374,
-                246,
-                376,
-                249,
-                378,
-                253,
-                381,
-                259,
-                387,
-                267,
-                394,
-                275,
-                399,
-                281,
-                403,
-                283,
-                403,
-                284,
-                404,
-                284
-              ]
-            }
-          ]
-        ]
-      }
-    },
-    {
-      "timeStamp": 9500.300000000745,
-      "type": "SHAPES_CHANGED",
-      "detail": {
-        "shapeType": "TOOL_PEN",
-        "shapeDatas": [
-          [
-            {
-              "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 39,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18176,21 +10882,19 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                409,
-                284,
-                413,
-                283
+                391,
+                166
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 32,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 30,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18202,30 +10906,32 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
+                186,
                 381,
-                259,
+                179,
                 387,
-                267,
-                394,
-                275,
-                399,
-                281,
-                403,
-                283,
-                403,
-                284,
-                404,
-                284,
-                405,
-                284,
-                406,
-                284
+                172,
+                391,
+                167
               ]
             }
           ]
@@ -18233,7 +10939,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9533.800000000745,
+      "timeStamp": 3500.60000000149,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18241,13 +10947,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 48,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 30,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18259,21 +10965,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                417,
-                282,
-                422,
-                280
+                391,
+                167,
+                391,
+                173,
+                391,
+                180
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 39,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 30,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18285,34 +10993,34 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
+                186,
                 381,
-                259,
+                179,
                 387,
-                267,
-                394,
-                275,
-                399,
-                281,
-                403,
-                283,
-                403,
-                284,
-                404,
-                284,
-                405,
-                284,
-                406,
-                284,
-                409,
-                284,
-                413,
-                283
+                172,
+                391,
+                167,
+                391,
+                166
               ]
             }
           ]
@@ -18320,7 +11028,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9567.800000000745,
+      "timeStamp": 3550.5,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18328,13 +11036,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 69,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 38,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18346,23 +11054,558 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                426,
-                280,
-                433,
-                278,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 30,
+              "h": 31,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3600.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 50,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                403,
+                188,
+                408,
+                182,
+                411,
+                174
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 38,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3650.7000000029802,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 50,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                411,
+                167,
+                409,
+                161,
+                407,
+                158
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 50,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3717.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 50,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                407,
+                159,
+                407,
+                163,
+                411,
+                166
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 50,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3767.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 75,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                418,
+                169,
+                427,
+                169,
+                436,
+                169
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 50,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3817.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
                 443,
-                275
+                167,
+                445,
+                166,
+                445,
+                165
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 48,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 75,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18374,38 +11617,70 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
+                186,
                 381,
-                259,
+                179,
                 387,
-                267,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
                 394,
-                275,
+                186,
+                396,
+                190,
                 399,
-                281,
+                190,
                 403,
-                283,
-                403,
-                284,
-                404,
-                284,
-                405,
-                284,
-                406,
-                284,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
                 409,
-                284,
-                413,
-                283,
-                417,
-                282,
-                422,
-                280
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169
               ]
             }
           ]
@@ -18413,7 +11688,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9617.900000000373,
+      "timeStamp": 3900.7000000029802,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18421,13 +11696,424 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 97,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                444,
+                165,
+                440,
+                167,
+                436,
+                171
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 3950.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                432,
+                175,
+                431,
+                179,
+                431,
+                181
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4000.7000000029802,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                431,
+                182,
+                434,
+                183,
+                444,
+                182
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4050.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 107,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18440,22 +12126,22 @@ exports.default = `
               "dotsType": 2,
               "coords": [
                 455,
-                271,
-                465,
-                265,
-                471,
-                258
+                178,
+                464,
+                173,
+                468,
+                168
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 69,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 84,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18467,44 +12153,94 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
+                186,
                 381,
-                259,
+                179,
                 387,
-                267,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
                 394,
-                275,
+                186,
+                396,
+                190,
                 399,
-                281,
+                190,
                 403,
-                283,
-                403,
-                284,
-                404,
-                284,
-                405,
-                284,
-                406,
-                284,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
                 409,
-                284,
-                413,
-                283,
-                417,
-                282,
-                422,
-                280,
-                426,
-                280,
-                433,
-                278,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
                 443,
-                275
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182
               ]
             }
           ]
@@ -18512,7 +12248,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9667.800000000745,
+      "timeStamp": 4100.70000000298,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18520,13 +12256,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 245,
-              "w": 108,
-              "h": 39,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 153,
+              "w": 107,
+              "h": 37,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18538,23 +12274,673 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                477,
-                252,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 158,
+              "w": 107,
+              "h": 32,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4150.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 107,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                456,
+                151,
+                456,
+                156
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 153,
+              "w": 107,
+              "h": 37,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4200.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 107,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                457,
+                160,
+                461,
+                164,
+                466,
+                165
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 107,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4250.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 118,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                473,
+                165,
+                478,
+                163,
+                479,
+                162
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 107,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4328.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 123,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
                 480,
-                248,
+                162,
                 482,
-                245
+                163,
+                484,
+                167
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 246,
-              "w": 97,
-              "h": 38,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 118,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18566,50 +12952,122 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
+                186,
                 381,
-                259,
+                179,
                 387,
-                267,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
                 394,
-                275,
+                186,
+                396,
+                190,
                 399,
-                281,
+                190,
                 403,
-                283,
-                403,
-                284,
-                404,
-                284,
-                405,
-                284,
-                406,
-                284,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
                 409,
-                284,
-                413,
-                283,
-                417,
-                282,
-                422,
-                280,
-                426,
-                280,
-                433,
-                278,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
                 443,
-                275,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
                 455,
-                271,
-                465,
-                265,
-                471,
-                258
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162
               ]
             }
           ]
@@ -18617,7 +13075,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9717.099999999627,
+      "timeStamp": 4367.5,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18625,13 +13083,13 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 245,
-              "w": 109,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 125,
               "h": 39,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18643,19 +13101,23 @@ exports.default = `
               },
               "dotsType": 2,
               "coords": [
-                483,
-                245
+                486,
+                172,
+                486,
+                178,
+                484,
+                182
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 245,
-              "w": 108,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 123,
               "h": 39,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18667,56 +13129,128 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
+                186,
                 381,
-                259,
+                179,
                 387,
-                267,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
                 394,
-                275,
+                186,
+                396,
+                190,
                 399,
-                281,
+                190,
                 403,
-                283,
-                403,
-                284,
-                404,
-                284,
-                405,
-                284,
-                406,
-                284,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
                 409,
-                284,
-                413,
-                283,
-                417,
-                282,
-                422,
-                280,
-                426,
-                280,
-                433,
-                278,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
                 443,
-                275,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
                 455,
-                271,
-                465,
-                265,
-                471,
-                258,
-                477,
-                252,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
                 480,
-                248,
+                162,
                 482,
-                245
+                163,
+                484,
+                167
               ]
             }
           ]
@@ -18724,7 +13258,7 @@ exports.default = `
       }
     },
     {
-      "timeStamp": 9799.900000000373,
+      "timeStamp": 4418,
       "type": "SHAPES_CHANGED",
       "detail": {
         "shapeType": "TOOL_PEN",
@@ -18732,13 +13266,1219 @@ exports.default = `
           [
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 245,
-              "w": 109,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 125,
               "h": 39,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                481,
+                183
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 125,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
+                480,
+                162,
+                482,
+                163,
+                484,
+                167,
+                486,
+                172,
+                486,
+                178,
+                484,
+                182
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4467.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 125,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                481,
+                182,
+                481,
+                180,
+                482,
+                174,
+                486,
+                162
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 125,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
+                480,
+                162,
+                482,
+                163,
+                484,
+                167,
+                486,
+                172,
+                486,
+                178,
+                484,
+                182,
+                481,
+                183
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4517.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 151,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                493,
+                153,
+                502,
+                147,
+                512,
+                145
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 151,
+              "w": 125,
+              "h": 39,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
+                480,
+                162,
+                482,
+                163,
+                484,
+                167,
+                486,
+                172,
+                486,
+                178,
+                484,
+                182,
+                481,
+                183,
+                481,
+                182,
+                481,
+                180,
+                482,
+                174,
+                486,
+                162
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4567.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 163,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                518,
+                147,
+                522,
+                154,
+                524,
+                162
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 151,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
+                480,
+                162,
+                482,
+                163,
+                484,
+                167,
+                486,
+                172,
+                486,
+                178,
+                484,
+                182,
+                481,
+                183,
+                481,
+                182,
+                481,
+                180,
+                482,
+                174,
+                486,
+                162,
+                493,
+                153,
+                502,
+                147,
+                512,
+                145
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4616.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 163,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                524,
+                166,
+                524,
+                167
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 163,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
+                480,
+                162,
+                482,
+                163,
+                484,
+                167,
+                486,
+                172,
+                486,
+                178,
+                484,
+                182,
+                481,
+                183,
+                481,
+                182,
+                481,
+                180,
+                482,
+                174,
+                486,
+                162,
+                493,
+                153,
+                502,
+                147,
+                512,
+                145,
+                518,
+                147,
+                522,
+                154,
+                524,
+                162
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4676.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 163,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                524,
+                166,
+                524,
+                164,
+                524,
+                161
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 163,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
+                374,
+                186,
+                381,
+                179,
+                387,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
+                394,
+                186,
+                396,
+                190,
+                399,
+                190,
+                403,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
+                409,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
+                443,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
+                455,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
+                480,
+                162,
+                482,
+                163,
+                484,
+                167,
+                486,
+                172,
+                486,
+                178,
+                484,
+                182,
+                481,
+                183,
+                481,
+                182,
+                481,
+                180,
+                482,
+                174,
+                486,
+                162,
+                493,
+                153,
+                502,
+                147,
+                512,
+                145,
+                518,
+                147,
+                522,
+                154,
+                524,
+                162,
+                524,
+                166,
+                524,
+                167
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4712.10000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 164,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18748,21 +14488,21 @@ exports.default = `
               "status": {},
               "dotsType": 2,
               "coords": [
-                483,
-                246,
-                483,
-                246
+                525,
+                157,
+                525,
+                157
               ]
             },
             {
               "t": 1,
-              "i": "1_168752021751611",
-              "x": 374,
-              "y": 245,
-              "w": 109,
-              "h": 39,
-              "z": 1687520217525,
-              "l": "layer_1687520198135_1",
+              "i": "1_16875367018005",
+              "x": 361,
+              "y": 145,
+              "w": 163,
+              "h": 45,
+              "z": 1687536701803,
+              "l": "layer_1687536696552_1",
               "style": {
                 "a": "#ff0000",
                 "c": "round",
@@ -18774,59 +14514,9972 @@ exports.default = `
               },
               "dotsType": 1,
               "coords": [
+                370,
+                158,
+                369,
+                159,
+                367,
+                165,
+                364,
+                172,
+                362,
+                180,
+                361,
+                186,
+                363,
+                189,
+                366,
+                189,
+                368,
+                189,
                 374,
-                246,
-                376,
-                249,
-                378,
-                253,
+                186,
                 381,
-                259,
+                179,
                 387,
-                267,
+                172,
+                391,
+                167,
+                391,
+                166,
+                391,
+                167,
+                391,
+                173,
+                391,
+                180,
                 394,
-                275,
+                186,
+                396,
+                190,
                 399,
-                281,
+                190,
                 403,
-                283,
-                403,
-                284,
-                404,
-                284,
-                405,
-                284,
-                406,
-                284,
+                188,
+                408,
+                182,
+                411,
+                174,
+                411,
+                167,
                 409,
-                284,
-                413,
-                283,
-                417,
-                282,
-                422,
-                280,
-                426,
-                280,
-                433,
-                278,
+                161,
+                407,
+                158,
+                407,
+                159,
+                407,
+                163,
+                411,
+                166,
+                418,
+                169,
+                427,
+                169,
+                436,
+                169,
                 443,
-                275,
+                167,
+                445,
+                166,
+                445,
+                165,
+                444,
+                165,
+                440,
+                167,
+                436,
+                171,
+                432,
+                175,
+                431,
+                179,
+                431,
+                181,
+                431,
+                182,
+                434,
+                183,
+                444,
+                182,
                 455,
-                271,
-                465,
-                265,
-                471,
-                258,
-                477,
-                252,
+                178,
+                464,
+                173,
+                468,
+                168,
+                468,
+                163,
+                464,
+                157,
+                459,
+                153,
+                456,
+                151,
+                456,
+                156,
+                457,
+                160,
+                461,
+                164,
+                466,
+                165,
+                473,
+                165,
+                478,
+                163,
+                479,
+                162,
                 480,
-                248,
+                162,
                 482,
-                245,
-                483,
-                245
+                163,
+                484,
+                167,
+                486,
+                172,
+                486,
+                178,
+                484,
+                182,
+                481,
+                183,
+                481,
+                182,
+                481,
+                180,
+                482,
+                174,
+                486,
+                162,
+                493,
+                153,
+                502,
+                147,
+                512,
+                145,
+                518,
+                147,
+                522,
+                154,
+                524,
+                162,
+                524,
+                166,
+                524,
+                167,
+                524,
+                166,
+                524,
+                164,
+                524,
+                161
               ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 4993.5,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_16875367035736",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536703577,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 4993.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 571,
+              "y": 95,
+              "w": 0,
+              "h": 0,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                571,
+                95
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5033.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 561,
+              "y": 95,
+              "w": 10,
+              "h": 15,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                570,
+                95,
+                567,
+                100,
+                561,
+                110
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 571,
+              "y": 95,
+              "w": 0,
+              "h": 0,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5083.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 543,
+              "y": 95,
+              "w": 28,
+              "h": 60,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                554,
+                125,
+                548,
+                141,
+                543,
+                155
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 561,
+              "y": 95,
+              "w": 10,
+              "h": 15,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5133.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 35,
+              "h": 90,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                538,
+                169,
+                536,
+                179,
+                536,
+                185
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 543,
+              "y": 95,
+              "w": 28,
+              "h": 60,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5183.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 35,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                536,
+                189,
+                537,
+                190,
+                539,
+                190
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 35,
+              "h": 90,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5233.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 35,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                541,
+                190,
+                548,
+                184,
+                559,
+                176
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 35,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5282.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 44,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                572,
+                167,
+                580,
+                160
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 35,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5316.900000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                582,
+                156,
+                583,
+                155
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 44,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5400.10000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                582,
+                158,
+                579,
+                164,
+                576,
+                171
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5450,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                574,
+                179,
+                574,
+                185,
+                575,
+                186
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5500.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                576,
+                186,
+                577,
+                186,
+                578,
+                186
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5550.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 58,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                582,
+                185,
+                587,
+                181,
+                594,
+                174
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 47,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5600.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 69,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                601,
+                163,
+                604,
+                151,
+                605,
+                136
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 58,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5650.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 88,
+              "w": 69,
+              "h": 102,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                605,
+                119,
+                604,
+                104,
+                603,
+                88
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 95,
+              "w": 69,
+              "h": 95,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174,
+                601,
+                163,
+                604,
+                151,
+                605,
+                136
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5700.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                603,
+                80,
+                603,
+                81
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 88,
+              "w": 69,
+              "h": 102,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174,
+                601,
+                163,
+                604,
+                151,
+                605,
+                136,
+                605,
+                119,
+                604,
+                104,
+                603,
+                88
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5750.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                602,
+                93,
+                599,
+                108,
+                596,
+                125
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174,
+                601,
+                163,
+                604,
+                151,
+                605,
+                136,
+                605,
+                119,
+                604,
+                104,
+                603,
+                88,
+                603,
+                80,
+                603,
+                81
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5800.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                593,
+                142,
+                593,
+                157,
+                593,
+                170
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174,
+                601,
+                163,
+                604,
+                151,
+                605,
+                136,
+                605,
+                119,
+                604,
+                104,
+                603,
+                88,
+                603,
+                80,
+                603,
+                81,
+                602,
+                93,
+                599,
+                108,
+                596,
+                125
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5850.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                598,
+                179,
+                600,
+                181,
+                601,
+                181
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174,
+                601,
+                163,
+                604,
+                151,
+                605,
+                136,
+                605,
+                119,
+                604,
+                104,
+                603,
+                88,
+                603,
+                80,
+                603,
+                81,
+                602,
+                93,
+                599,
+                108,
+                596,
+                125,
+                593,
+                142,
+                593,
+                157,
+                593,
+                170
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5900.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 98,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                605,
+                179,
+                617,
+                169,
+                634,
+                156
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 69,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174,
+                601,
+                163,
+                604,
+                151,
+                605,
+                136,
+                605,
+                119,
+                604,
+                104,
+                603,
+                88,
+                603,
+                80,
+                603,
+                81,
+                602,
+                93,
+                599,
+                108,
+                596,
+                125,
+                593,
+                142,
+                593,
+                157,
+                593,
+                170,
+                598,
+                179,
+                600,
+                181,
+                601,
+                181
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5950.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 119,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                651,
+                144,
+                655,
+                140,
+                655,
+                140
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367035736",
+              "x": 536,
+              "y": 80,
+              "w": 98,
+              "h": 110,
+              "z": 1687536703577,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                571,
+                95,
+                570,
+                95,
+                567,
+                100,
+                561,
+                110,
+                554,
+                125,
+                548,
+                141,
+                543,
+                155,
+                538,
+                169,
+                536,
+                179,
+                536,
+                185,
+                536,
+                189,
+                537,
+                190,
+                539,
+                190,
+                541,
+                190,
+                548,
+                184,
+                559,
+                176,
+                572,
+                167,
+                580,
+                160,
+                582,
+                156,
+                583,
+                155,
+                582,
+                158,
+                579,
+                164,
+                576,
+                171,
+                574,
+                179,
+                574,
+                185,
+                575,
+                186,
+                576,
+                186,
+                577,
+                186,
+                578,
+                186,
+                582,
+                185,
+                587,
+                181,
+                594,
+                174,
+                601,
+                163,
+                604,
+                151,
+                605,
+                136,
+                605,
+                119,
+                604,
+                104,
+                603,
+                88,
+                603,
+                80,
+                603,
+                81,
+                602,
+                93,
+                599,
+                108,
+                596,
+                125,
+                593,
+                142,
+                593,
+                157,
+                593,
+                170,
+                598,
+                179,
+                600,
+                181,
+                601,
+                181,
+                605,
+                179,
+                617,
+                169,
+                634,
+                156
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 6548.60000000149,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_16875367051287",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536705133,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 6548.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 681,
+              "y": 79,
+              "w": 0,
+              "h": 0,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                681,
+                79
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 6600.10000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 680,
+              "y": 79,
+              "w": 2,
+              "h": 31,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                682,
+                85,
+                682,
+                97,
+                680,
+                110
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 681,
+              "y": 79,
+              "w": 0,
+              "h": 0,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                681,
+                79
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 6650,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 673,
+              "y": 79,
+              "w": 9,
+              "h": 78,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                677,
+                126,
+                675,
+                141,
+                673,
+                157
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 680,
+              "y": 79,
+              "w": 2,
+              "h": 31,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                681,
+                79,
+                682,
+                85,
+                682,
+                97,
+                680,
+                110
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 6699.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 673,
+              "y": 79,
+              "w": 9,
+              "h": 93,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                673,
+                168,
+                673,
+                172,
+                673,
+                172
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367051287",
+              "x": 673,
+              "y": 79,
+              "w": 9,
+              "h": 78,
+              "z": 1687536705133,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                681,
+                79,
+                682,
+                85,
+                682,
+                97,
+                680,
+                110,
+                677,
+                126,
+                675,
+                141,
+                673,
+                157
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 6811.800000000745,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_16875367053928",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536705398,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 6811.900000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367053928",
+              "x": 673,
+              "y": 176,
+              "w": 0,
+              "h": 0,
+              "z": 1687536705398,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                673,
+                176
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367053928",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536705398,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 6866.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367053928",
+              "x": 673,
+              "y": 176,
+              "w": 0,
+              "h": 8,
+              "z": 1687536705398,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                673,
+                179,
+                673,
+                182,
+                673,
+                184
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367053928",
+              "x": 673,
+              "y": 176,
+              "w": 0,
+              "h": 0,
+              "z": 1687536705398,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                673,
+                176
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 6916.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367053928",
+              "x": 673,
+              "y": 176,
+              "w": 1,
+              "h": 12,
+              "z": 1687536705398,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                674,
+                187,
+                674,
+                188,
+                674,
+                188
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367053928",
+              "x": 673,
+              "y": 176,
+              "w": 0,
+              "h": 8,
+              "z": 1687536705398,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                673,
+                176,
+                673,
+                179,
+                673,
+                182,
+                673,
+                184
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7519.400000002235,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_16875367060999",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536706106,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 7519.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 293,
+              "w": 0,
+              "h": 0,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                197,
+                293
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7583.5,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 21,
+              "h": 2,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                199,
+                292,
+                208,
+                292,
+                218,
+                294
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 293,
+              "w": 0,
+              "h": 0,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                197,
+                293
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7633.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 37,
+              "h": 35,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                227,
+                301,
+                232,
+                313,
+                234,
+                327
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 21,
+              "h": 2,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                197,
+                293,
+                199,
+                292,
+                208,
+                292,
+                218,
+                294
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7683.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 37,
+              "h": 67,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                233,
+                341,
+                229,
+                353,
+                228,
+                359
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 37,
+              "h": 35,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                197,
+                293,
+                199,
+                292,
+                208,
+                292,
+                218,
+                294,
+                227,
+                301,
+                232,
+                313,
+                234,
+                327
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7732.900000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 37,
+              "h": 70,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                227,
+                362
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 37,
+              "h": 67,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                197,
+                293,
+                199,
+                292,
+                208,
+                292,
+                218,
+                294,
+                227,
+                301,
+                232,
+                313,
+                234,
+                327,
+                233,
+                341,
+                229,
+                353,
+                228,
+                359
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7783.10000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 37,
+              "h": 70,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                227,
+                361,
+                229,
+                357,
+                230,
+                355,
+                230,
+                355
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_16875367060999",
+              "x": 197,
+              "y": 292,
+              "w": 37,
+              "h": 70,
+              "z": 1687536706106,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                197,
+                293,
+                199,
+                292,
+                208,
+                292,
+                218,
+                294,
+                227,
+                301,
+                232,
+                313,
+                234,
+                327,
+                233,
+                341,
+                229,
+                353,
+                228,
+                359,
+                227,
+                362
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 9946.300000000745,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_168753670852610",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536708534,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 9946.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 0,
+              "h": 0,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                232,
+                386
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 9984.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 11,
+              "h": 14,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                233,
+                388,
+                237,
+                393,
+                243,
+                400
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 0,
+              "h": 0,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                232,
+                386
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 10034.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 42,
+              "h": 31,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                251,
+                407,
+                262,
+                413,
+                274,
+                417
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 11,
+              "h": 14,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                232,
+                386,
+                233,
+                388,
+                237,
+                393,
+                243,
+                400
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 10084.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 99,
+              "h": 31,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                288,
+                417,
+                308,
+                410,
+                331,
+                394
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 42,
+              "h": 31,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                232,
+                386,
+                233,
+                388,
+                237,
+                393,
+                243,
+                400,
+                251,
+                407,
+                262,
+                413,
+                274,
+                417
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 10134.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 355,
+              "w": 132,
+              "h": 62,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                352,
+                376,
+                362,
+                362,
+                364,
+                355
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 386,
+              "w": 99,
+              "h": 31,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                232,
+                386,
+                233,
+                388,
+                237,
+                393,
+                243,
+                400,
+                251,
+                407,
+                262,
+                413,
+                274,
+                417,
+                288,
+                417,
+                308,
+                410,
+                331,
+                394
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 10184.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 352,
+              "w": 132,
+              "h": 65,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                364,
+                352,
+                364,
+                352
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670852610",
+              "x": 232,
+              "y": 355,
+              "w": 132,
+              "h": 62,
+              "z": 1687536708534,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                232,
+                386,
+                233,
+                388,
+                237,
+                393,
+                243,
+                400,
+                251,
+                407,
+                262,
+                413,
+                274,
+                417,
+                288,
+                417,
+                308,
+                410,
+                331,
+                394,
+                352,
+                376,
+                362,
+                362,
+                364,
+                355
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11151.70000000298,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_168753670973111",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536709740,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 11151.900000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 307,
+              "w": 0,
+              "h": 0,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                387,
+                307
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11186.10000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 303,
+              "w": 0,
+              "h": 4,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                387,
+                306,
+                387,
+                305,
+                387,
+                303
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 307,
+              "w": 0,
+              "h": 0,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                387,
+                307
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11234.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 290,
+              "w": 31,
+              "h": 17,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                391,
+                299,
+                403,
+                294,
+                418,
+                290
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 303,
+              "w": 0,
+              "h": 4,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                387,
+                307,
+                387,
+                306,
+                387,
+                305,
+                387,
+                303
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11284.20000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 289,
+              "w": 57,
+              "h": 18,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                431,
+                289,
+                440,
+                290,
+                444,
+                295
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 290,
+              "w": 31,
+              "h": 17,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                387,
+                307,
+                387,
+                306,
+                387,
+                305,
+                387,
+                303,
+                391,
+                299,
+                403,
+                294,
+                418,
+                290
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11334,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 289,
+              "w": 59,
+              "h": 22,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                445,
+                301,
+                446,
+                308,
+                446,
+                311
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 289,
+              "w": 57,
+              "h": 18,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                387,
+                307,
+                387,
+                306,
+                387,
+                305,
+                387,
+                303,
+                391,
+                299,
+                403,
+                294,
+                418,
+                290,
+                431,
+                289,
+                440,
+                290,
+                444,
+                295
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11410.10000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 289,
+              "w": 59,
+              "h": 22,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                446,
+                311
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753670973111",
+              "x": 387,
+              "y": 289,
+              "w": 59,
+              "h": 22,
+              "z": 1687536709740,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 1,
+              "coords": [
+                387,
+                307,
+                387,
+                306,
+                387,
+                305,
+                387,
+                303,
+                391,
+                299,
+                403,
+                294,
+                418,
+                290,
+                431,
+                289,
+                440,
+                290,
+                444,
+                295,
+                445,
+                301,
+                446,
+                308,
+                446,
+                311
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11628.60000000149,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_168753671020812",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536710218,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 11628.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 306,
+              "w": 0,
+              "h": 0,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                480,
+                306
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11683.60000000149,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 295,
+              "w": 7,
+              "h": 11,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                480,
+                305,
+                480,
+                301,
+                487,
+                295
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 306,
+              "w": 0,
+              "h": 0,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                480,
+                306
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11732.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 286,
+              "w": 30,
+              "h": 20,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                497,
+                290,
+                510,
+                286
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 295,
+              "w": 7,
+              "h": 11,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                480,
+                306,
+                480,
+                305,
+                480,
+                301,
+                487,
+                295
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11766.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 285,
+              "w": 49,
+              "h": 21,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                521,
+                285,
+                526,
+                288,
+                529,
+                294
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 286,
+              "w": 30,
+              "h": 20,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                480,
+                306,
+                480,
+                305,
+                480,
+                301,
+                487,
+                295,
+                497,
+                290,
+                510,
+                286
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11816.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 285,
+              "w": 52,
+              "h": 24,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                530,
+                301,
+                532,
+                306,
+                532,
+                309
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 285,
+              "w": 49,
+              "h": 21,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                480,
+                306,
+                480,
+                305,
+                480,
+                301,
+                487,
+                295,
+                497,
+                290,
+                510,
+                286,
+                521,
+                285,
+                526,
+                288,
+                529,
+                294
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11896.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 285,
+              "w": 52,
+              "h": 24,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                532,
+                309
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671020812",
+              "x": 480,
+              "y": 285,
+              "w": 52,
+              "h": 24,
+              "z": 1687536710218,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 1,
+              "coords": [
+                480,
+                306,
+                480,
+                305,
+                480,
+                301,
+                487,
+                295,
+                497,
+                290,
+                510,
+                286,
+                521,
+                285,
+                526,
+                288,
+                529,
+                294,
+                530,
+                301,
+                532,
+                306,
+                532,
+                309
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12253.300000000745,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 1,
+            "i": "1_168753671083313",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687536710844,
+            "l": "layer_1687536696552_1",
+            "style": {
+              "a": "#ff0000",
+              "c": "round",
+              "f": "round",
+              "g": 3
+            },
+            "status": {
+              "e": 1
+            },
+            "dotsType": 1,
+            "coords": []
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 12253.400000002235,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 0,
+              "h": 0,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                413,
+                347
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12301.70000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 12,
+              "h": 18,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                415,
+                351,
+                418,
+                358,
+                425,
+                365
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 0,
+              "h": 0,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                413,
+                347
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12351.300000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 62,
+              "h": 26,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                437,
+                370,
+                454,
+                373,
+                475,
+                372
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 12,
+              "h": 18,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                413,
+                347,
+                415,
+                351,
+                418,
+                358,
+                425,
+                365
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12400.20000000298,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 84,
+              "h": 26,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 2,
+              "coords": [
+                488,
+                367,
+                496,
+                362,
+                497,
+                358
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 62,
+              "h": 26,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                413,
+                347,
+                415,
+                351,
+                418,
+                358,
+                425,
+                365,
+                437,
+                370,
+                454,
+                373,
+                475,
+                372
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12449.800000000745,
+      "type": "SHAPES_CHANGED",
+      "detail": {
+        "shapeType": "TOOL_PEN",
+        "shapeDatas": [
+          [
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 84,
+              "h": 26,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {},
+              "dotsType": 2,
+              "coords": [
+                497,
+                351,
+                497,
+                349,
+                497,
+                349
+              ]
+            },
+            {
+              "t": 1,
+              "i": "1_168753671083313",
+              "x": 413,
+              "y": 347,
+              "w": 84,
+              "h": 26,
+              "z": 1687536710844,
+              "l": "layer_1687536696552_1",
+              "style": {
+                "a": "#ff0000",
+                "c": "round",
+                "f": "round",
+                "g": 3
+              },
+              "status": {
+                "e": 1
+              },
+              "dotsType": 1,
+              "coords": [
+                413,
+                347,
+                415,
+                351,
+                418,
+                358,
+                425,
+                365,
+                437,
+                370,
+                454,
+                373,
+                475,
+                372,
+                488,
+                367,
+                496,
+                362,
+                497,
+                358
+              ]
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}`;
+
+},{}],40:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = `{
+  "startTime": 2668.89999999851,
+  "snapshot": {
+    "v": 0,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024,
+    "l": [
+      {
+        "id": "layer_1687544552448_1",
+        "name": "layer_1687544552448_2"
+      }
+    ],
+    "s": []
+  },
+  "events": [
+    {
+      "timeStamp": 1178.1000000014901,
+      "type": "TOOL_CHANGED",
+      "detail": {
+        "operator": "whiteboard",
+        "from": "TOOL_PEN",
+        "to": "TOOL_RECT"
+      }
+    },
+    {
+      "timeStamp": 1537.7000000029802,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445565373",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544556538,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#ff0000",
+              "g": 2
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 1554.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 0,
+              "h": 1
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1579.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 3,
+              "h": 6
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 0,
+              "h": 1
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1598.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 6,
+              "h": 11
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 3,
+              "h": 6
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1614.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 10,
+              "h": 16
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 6,
+              "h": 11
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1633.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 13,
+              "h": 21
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 10,
+              "h": 16
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1651.1000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 16,
+              "h": 26
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 13,
+              "h": 21
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1670.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 20,
+              "h": 31
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 16,
+              "h": 26
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1687.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 23,
+              "h": 35
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 20,
+              "h": 31
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1706.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 26,
+              "h": 39
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 23,
+              "h": 35
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1726.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 29,
+              "h": 43
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 26,
+              "h": 39
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1745.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 32,
+              "h": 45
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 29,
+              "h": 43
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1764.1000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 35,
+              "h": 48
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 32,
+              "h": 45
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1784.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 39,
+              "h": 50
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 35,
+              "h": 48
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1803.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 42,
+              "h": 53
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 39,
+              "h": 50
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1823.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 45,
+              "h": 56
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 42,
+              "h": 53
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1845.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 48,
+              "h": 59
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 45,
+              "h": 56
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1863.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 52,
+              "h": 62
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 48,
+              "h": 59
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1887.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 56,
+              "h": 64
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 52,
+              "h": 62
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1908.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 60,
+              "h": 67
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 56,
+              "h": 64
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1927.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 65,
+              "h": 70
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 60,
+              "h": 67
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1949.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 69,
+              "h": 72
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 65,
+              "h": 70
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1967.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 73,
+              "h": 75
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 69,
+              "h": 72
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1987.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 78,
+              "h": 77
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 73,
+              "h": 75
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2006.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 83,
+              "h": 80
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 78,
+              "h": 77
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2025.1000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 90,
+              "h": 83
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 83,
+              "h": 80
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2042.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 96,
+              "h": 84
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 90,
+              "h": 83
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2061.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 102,
+              "h": 85
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 96,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2080.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 106,
+              "h": 86
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 102,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2101.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 107,
+              "h": 87
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 106,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2122,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 109,
+              "h": 88
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 107,
+              "h": 87
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2140.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 112,
+              "h": 88
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 109,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2159.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 112,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2176.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 118,
+              "h": 91
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2195.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 120,
+              "h": 91
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 118,
+              "h": 91
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2218.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 91
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 120,
+              "h": 91
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2243.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 92
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 91
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2269.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 122,
+              "h": 92
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 92
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2302.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 123,
+              "h": 93
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 122,
+              "h": 92
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2324.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 124,
+              "h": 93
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 123,
+              "h": 93
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2347.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 126,
+              "h": 95
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 124,
+              "h": 93
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2368.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 127,
+              "h": 96
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 126,
+              "h": 95
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2386.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 128,
+              "h": 97
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 127,
+              "h": 96
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2407.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 130,
+              "h": 98
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 128,
+              "h": 97
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2433.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 131,
+              "h": 99
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 130,
+              "h": 98
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2462.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 132,
+              "h": 100
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 131,
+              "h": 99
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2480.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 133,
+              "h": 101
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 132,
+              "h": 100
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2501.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 134,
+              "h": 103
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 133,
+              "h": 101
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2522.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 136,
+              "h": 104
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 134,
+              "h": 103
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2565.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 138,
+              "h": 105
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 136,
+              "h": 104
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2603.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 140,
+              "h": 106
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 138,
+              "h": 105
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2621.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 141,
+              "h": 108
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 140,
+              "h": 106
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2646.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 143,
+              "h": 109
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 141,
+              "h": 108
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2664.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 144,
+              "h": 110
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 143,
+              "h": 109
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2681.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 145,
+              "h": 112
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 144,
+              "h": 110
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2698.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 147,
+              "h": 113
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 145,
+              "h": 112
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2716.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 149,
+              "h": 115
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 147,
+              "h": 113
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2742.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 149,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2773.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2935.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5687.4000000059605,
+      "type": "TOOL_CHANGED",
+      "detail": {
+        "operator": "whiteboard",
+        "from": "TOOL_RECT",
+        "to": "TOOL_OVAL"
+      }
+    },
+    {
+      "timeStamp": 7692.30000000447,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 3,
+            "i": "3_16875445626924",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544562694,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#ff0000",
+              "g": 2
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 7709.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 0,
+              "h": 0
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7768,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 6,
+              "h": 3
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7788.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 12,
+              "h": 7
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 6,
+              "h": 3
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7804.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 18,
+              "h": 11
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 12,
+              "h": 7
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7822,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 24,
+              "h": 15
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 18,
+              "h": 11
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7842.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 28,
+              "h": 19
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 24,
+              "h": 15
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7862.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 32,
+              "h": 22
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 28,
+              "h": 19
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7881.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 36,
+              "h": 25
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 32,
+              "h": 22
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7899.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 40,
+              "h": 28
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 36,
+              "h": 25
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7918.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 44,
+              "h": 31
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 40,
+              "h": 28
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7935,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 48,
+              "h": 33
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 44,
+              "h": 31
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7952,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 52,
+              "h": 36
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 48,
+              "h": 33
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7970,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 55,
+              "h": 40
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 52,
+              "h": 36
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7990.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 59,
+              "h": 43
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 55,
+              "h": 40
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8010.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 63,
+              "h": 45
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 59,
+              "h": 43
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8032.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 67,
+              "h": 48
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 63,
+              "h": 45
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8053,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 70,
+              "h": 51
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 67,
+              "h": 48
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8070.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 74,
+              "h": 54
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 70,
+              "h": 51
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8087,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 79,
+              "h": 58
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 74,
+              "h": 54
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8106,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 85,
+              "h": 62
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 79,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8124,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 90,
+              "h": 66
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 85,
+              "h": 62
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8143,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 95,
+              "h": 70
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 90,
+              "h": 66
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8165,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 99,
+              "h": 74
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 95,
+              "h": 70
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8183.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 103,
+              "h": 77
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 99,
+              "h": 74
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8201.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 107,
+              "h": 81
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 103,
+              "h": 77
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8222.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 110,
+              "h": 84
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 107,
+              "h": 81
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8239.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 113,
+              "h": 86
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 110,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8257.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 113,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8274.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 118,
+              "h": 92
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8292.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 121,
+              "h": 95
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 118,
+              "h": 92
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8310.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 124,
+              "h": 99
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 121,
+              "h": 95
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8332.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 127,
+              "h": 102
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 124,
+              "h": 99
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8352,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 129,
+              "h": 104
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 127,
+              "h": 102
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8377,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 130,
+              "h": 105
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 129,
+              "h": 104
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8397.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 131,
+              "h": 106
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 130,
+              "h": 105
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8416.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 133,
+              "h": 107
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 131,
+              "h": 106
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8443.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 135,
+              "h": 109
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 133,
+              "h": 107
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8464.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 136,
+              "h": 110
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 135,
+              "h": 109
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8486.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 137,
+              "h": 111
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 136,
+              "h": 110
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8512.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 139,
+              "h": 112
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 137,
+              "h": 111
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8532.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 140,
+              "h": 113
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 139,
+              "h": 112
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8554.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 114
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 140,
+              "h": 113
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8575.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 114
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8600.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 142,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8626.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 143,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 142,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8647.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 145,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 143,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8676.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 147,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 145,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8715.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 148,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 147,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8819.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 149,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 148,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 9155.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 149,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 9179.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 10980,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11391.80000000447,
+      "type": "TOOL_CHANGED",
+      "detail": {
+        "operator": "whiteboard",
+        "from": "TOOL_OVAL",
+        "to": "TOOL_RECT"
+      }
+    },
+    {
+      "timeStamp": 12682.20000000298,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445676825",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544567685,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#ff0000",
+              "g": 2
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 12699.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 0
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12755.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 1
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12786.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 1,
+              "h": 3
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 1
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12805.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 4,
+              "h": 6
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 1,
+              "h": 3
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12825.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 7,
+              "h": 10
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 4,
+              "h": 6
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12842.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 12,
+              "h": 14
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 7,
+              "h": 10
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12860.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 16,
+              "h": 19
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 12,
+              "h": 14
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12879,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 21,
+              "h": 24
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 16,
+              "h": 19
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12898,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 26,
+              "h": 29
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 21,
+              "h": 24
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12917,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 31,
+              "h": 34
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 26,
+              "h": 29
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12938.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 35,
+              "h": 37
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 31,
+              "h": 34
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12958.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 39,
+              "h": 39
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 35,
+              "h": 37
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12976.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 42,
+              "h": 41
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 39,
+              "h": 39
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13000,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 45,
+              "h": 43
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 42,
+              "h": 41
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13018.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 49,
+              "h": 45
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 45,
+              "h": 43
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13036.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 54,
+              "h": 50
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 49,
+              "h": 45
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13055.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 60,
+              "h": 54
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 54,
+              "h": 50
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13072.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 65,
+              "h": 59
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 60,
+              "h": 54
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13089.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 70,
+              "h": 63
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 65,
+              "h": 59
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13110,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 75,
+              "h": 67
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 70,
+              "h": 63
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13129.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 79,
+              "h": 70
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 75,
+              "h": 67
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13149.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 83,
+              "h": 73
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 79,
+              "h": 70
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13172,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 86,
+              "h": 74
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 83,
+              "h": 73
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13190,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 88,
+              "h": 76
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 86,
+              "h": 74
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13208,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 91,
+              "h": 78
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 88,
+              "h": 76
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13226.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 94,
+              "h": 81
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 91,
+              "h": 78
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13245.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 97,
+              "h": 83
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 94,
+              "h": 81
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13264,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 100,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 97,
+              "h": 83
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13286.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 102,
+              "h": 87
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 100,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13304,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 103,
+              "h": 88
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 102,
+              "h": 87
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13334.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 104,
+              "h": 88
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 103,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13411.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 105,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 104,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13439.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 105,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13479.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13561.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13623.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 110,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13662.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 110,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13703.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13776.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13800.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 116,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13832.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 116,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13855.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 118,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13987.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 88
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 118,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14010.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14032.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14076,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14278.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14304.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 85
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14390.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14698.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 111,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14725.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 111,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14764,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14833.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 85
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14872.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 85
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14996.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 15072,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22103.60000000149,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445771036",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544577107,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#000cffff",
+              "g": 2,
+              "b": "#646464ff"
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 22120.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 1,
+              "h": 0
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22138.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 13,
+              "h": 10
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 1,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22155.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 36,
+              "h": 26
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 13,
+              "h": 10
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22172.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 59,
+              "h": 42
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 36,
+              "h": 26
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22189.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 73,
+              "h": 55
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 59,
+              "h": 42
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22207.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 80,
+              "h": 62
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 73,
+              "h": 55
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22230.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 81,
+              "h": 63
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 80,
+              "h": 62
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22274.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 81,
+              "h": 63
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 81,
+              "h": 63
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24346.40000000596,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445793467",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544579351,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#000cffff",
+              "g": 2,
+              "b": "#6464645c"
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 24362.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 0,
+              "h": 0
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24382.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 9,
+              "h": 5
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24400.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 26,
+              "h": 15
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 9,
+              "h": 5
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24417.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 40,
+              "h": 26
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 26,
+              "h": 15
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24434.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 50,
+              "h": 36
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 40,
+              "h": 26
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24451.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 57,
+              "h": 44
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 50,
+              "h": 36
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24468.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 62,
+              "h": 51
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 57,
+              "h": 44
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24486.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 64,
+              "h": 55
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 62,
+              "h": 51
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24503.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 65,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 64,
+              "h": 55
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24525.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 66,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 65,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24589.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 67,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 66,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24660.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 68,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 67,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24699.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 68,
+              "h": 59
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 68,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25290.20000000298,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445802908",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544580296,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#000cffff",
+              "g": 2,
+              "b": "#6464645c"
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 25306.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 4,
+              "h": 2
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25323.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 18,
+              "h": 13
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 4,
+              "h": 2
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25341.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 32,
+              "h": 24
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 18,
+              "h": 13
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25358.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 41,
+              "h": 32
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 32,
+              "h": 24
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25375.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 45,
+              "h": 35
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 41,
+              "h": 32
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25399.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 46,
+              "h": 37
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 45,
+              "h": 35
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25445.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 46,
+              "h": 37
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 46,
+              "h": 37
             }
           ]
         ]
@@ -18836,12 +24489,7 @@ exports.default = `
 }
 `;
 
-},{}],37:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = `{"snapshot":{"x":0,"y":0,"w":4096,"h":4096,"shapes":[]},"events":[{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328594833,"detail":{"from":"TOOL_SELECTOR","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328595289,"detail":{"shapeDatas":[{"t":2,"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0,"z":1665328595290,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595306,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0},{"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595348,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2},{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595365,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8},{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595400,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18},{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595432,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32},{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595466,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39},{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595519,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40},{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595552,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43},{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595583,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45},{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595608,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51},{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595632,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54},{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595650,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60},{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595681,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63},{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595698,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66},{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595715,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68},{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595733,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72},{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595766,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74},{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595784,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80},{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595817,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86},{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595850,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93},{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595884,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99},{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595917,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106},{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595948,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109},{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595965,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111},{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595982,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112},{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596000,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114},{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596034,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116},{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596083,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596388,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328598413,"detail":{"from":"TOOL_RECT","to":"TOOL_OVAL"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328598860,"detail":{"shapeDatas":[{"t":3,"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0,"z":1665328598862,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598876,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0},{"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598920,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7},{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598952,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14},{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598969,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30},{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599001,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38},{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599019,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53},{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599071,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63},{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599104,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71},{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599135,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80},{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599154,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87},{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599185,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89},{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599205,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96},{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599238,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101},{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599268,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104},{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599287,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109},{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599320,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113},{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599439,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114},{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599469,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115},{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599487,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117},{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599504,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121},{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599535,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122},{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599707,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":120},{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328601336,"detail":{"shapeDatas":[{"t":3,"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0,"z":1665328601339,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601353,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0},{"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601374,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3},{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601407,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13},{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601438,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22},{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601454,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32},{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601472,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51},{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601504,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57},{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601522,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68},{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601590,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81},{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601624,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90},{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601654,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92},{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601672,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94},{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601689,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95},{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601707,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97},{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601740,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98},{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601771,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99},{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601892,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101},{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601921,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103},{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601939,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108},{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601972,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114},{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602004,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116},{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602023,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119},{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602054,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120},{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602073,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123},{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602106,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126},{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602138,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128},{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602157,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130},{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602188,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131},{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602206,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602363,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328603214,"detail":{"from":"TOOL_OVAL","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328603748,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0,"z":1665328603752,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603766,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0},{"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603823,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0},{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603840,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15},{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603873,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27},{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603891,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46},{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603924,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51},{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603941,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55},{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603994,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58},{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604021,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62},{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604041,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67},{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604058,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75},{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604091,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79},{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604108,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85},{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604140,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88},{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604159,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94},{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604192,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97},{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604226,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99},{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604258,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100},{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604275,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103},{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604323,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104},{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604371,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105},{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604469,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":197,"w":123,"h":106},{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328605718,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0,"z":1665328605723,"style":{"b":"#ff0000","a":"rgba(85,51,51,1.00)","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605736,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0},{"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605827,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6},{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605858,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15},{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605875,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27},{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605892,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39},{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605908,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48},{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605926,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57},{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605942,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68},{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605975,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72},{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605992,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77},{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606011,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80},{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606044,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87},{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606109,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96},{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606125,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98},{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606142,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99},{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606160,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101},{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606193,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102},{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606211,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105},{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606242,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107},{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606259,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107},{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606276,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108},{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606294,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110},{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606326,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111},{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606374,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112},{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606443,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112},{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606477,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112},{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606510,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112},{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606543,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112},{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606577,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112},{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606593,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111},{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606627,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111},{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606659,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110},{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606794,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":157,"w":127,"h":111},{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110}]]}}]}`;
-
-},{}],38:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -18850,17 +24498,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
 const event_1 = require("../../dist/event");
 const ColorView_1 = __importDefault(require("./ColorView"));
-const demo_helloworld_1 = __importDefault(require("./demo_helloworld"));
-const demo_rect_n_oval_1 = __importDefault(require("./demo_rect_n_oval"));
-const Button_1 = require("./G/BaseView/Button");
-const Canvas_1 = require("./G/BaseView/Canvas");
 const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
-const SubWin_1 = require("./G/CompoundView/SubWin");
 const DockableDirection_1 = require("./G/CompoundView/Workspace/DockableDirection");
 const WorkspaceView_1 = require("./G/CompoundView/Workspace/WorkspaceView");
+const SnapshotView_1 = require("./SnapshotView");
 const LayersView_1 = require("./LayersView");
+const RecorderView_1 = require("./RecorderView");
 const ToolsView_1 = require("./ToolsView");
+const ToyView_1 = require("./ToyView");
 const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
 let board;
 const workspace = new WorkspaceView_1.WorkspaceView('body', {
@@ -18873,37 +24519,37 @@ const workspace = new WorkspaceView_1.WorkspaceView('body', {
     },
     zIndex: 1000,
 });
+var MenuKey;
+(function (MenuKey) {
+    MenuKey["SelectAll"] = "SelectAll";
+    MenuKey["RemoveSelected"] = "RemoveSelected";
+    MenuKey["Deselect"] = "Deselect";
+    MenuKey["ClearUp"] = "ClearUp";
+})(MenuKey || (MenuKey = {}));
 const menu = new Menu_1.Menu(workspace, {
     items: [{
-            key: 'tool_view',
             label: '工具',
             items: dist_1.Gaia.listTools().map(v => ({ key: v, label: v }))
         }, {
-            key: 'menu_item_1',
-            label: 'menu_item_1'
-        }, {
-            key: 'menu_item_2',
             divider: true
         }, {
-            key: 'menu_item_3',
-            label: 'menu_item_3',
-            items: [{
-                    key: 'menu_item_3_0',
-                    label: 'menu_item_3_0'
-                }, {
-                    key: 'menu_item_3_1',
-                    label: 'menu_item_3_1'
-                }, {
-                    key: 'menu_item_3_2',
-                    divider: true
-                }, {
-                    key: 'menu_item_3_3',
-                    label: 'menu_item_3_3',
-                }]
+            key: MenuKey.SelectAll,
+            label: '全选'
+        }, {
+            key: MenuKey.Deselect,
+            label: '取消选择'
+        }, {
+            key: MenuKey.RemoveSelected,
+            label: '删除选择'
+        }, {
+            divider: true
+        }, {
+            key: MenuKey.ClearUp,
+            label: '删除全部',
+            danger: true,
         }]
 });
 menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
-    console.log(e.detail.key);
     switch (e.detail.key) {
         case dist_1.ToolEnum.Rect:
         case dist_1.ToolEnum.Oval:
@@ -18916,6 +24562,18 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
         case dist_1.ToolEnum.HalfTick:
         case dist_1.ToolEnum.Lines:
             board.setToolType(e.detail.key);
+            break;
+        case MenuKey.SelectAll:
+            board.selectAll();
+            break;
+        case MenuKey.Deselect:
+            board.deselect();
+            break;
+        case MenuKey.RemoveSelected:
+            board.removeSelected();
+            break;
+        case MenuKey.ClearUp:
+            board.removeAll();
             break;
     }
 });
@@ -18946,11 +24604,9 @@ layersView.addEventListener(LayersView_1.LayersView.EventType.LayerActived, e =>
 });
 const toolsView = new ToolsView_1.ToolsView;
 workspace.addChild(toolsView);
-toolsView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: 5 })));
 toolsView.onToolClick = (btn) => board.setToolType(btn.toolType);
 const colorView = new ColorView_1.default;
 workspace.addChild(colorView);
-colorView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '400px' })));
 colorView.inner.addEventListener(ColorView_1.default.EventTypes.LineColorChange, (e) => {
     const rgba = e.detail;
     dist_1.Gaia.listTools().forEach(toolType => {
@@ -18973,173 +24629,93 @@ colorView.inner.addEventListener(ColorView_1.default.EventTypes.FillColorChange,
         template.fillStyle = '' + rgba.toHex();
     });
 });
-class ToyView extends SubWin_1.Subwin {
-}
-const toyView = new ToyView();
-toyView.header.title = 'others';
+const toyView = new ToyView_1.ToyView();
+toyView.board = () => board;
 workspace.addChild(toyView);
-window.addEventListener('resize', () => workspace.clampAllSubwin());
-toyView.content = new View_1.View('div');
-toyView.content.styles.apply('', {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    overflowY: 'auto',
-    overflowX: 'hidden'
-});
-toyView.content.addChild();
-new Button_1.Button().init({
-    content: 'select all'
-}).addEventListener('click', () => board.selectAll());
-toyView.content.addChild(new Button_1.Button().init({
-    content: 'remove selected'
-}).addEventListener('click', () => board.removeSelected()));
-toyView.content.addChild(new Button_1.Button().init({
-    content: 'remove all'
-}).addEventListener('click', () => board.removeAll()));
-function randomShapeItem(item) {
-    const v255 = () => Math.floor(Math.random() * 255);
-    item.geo(Math.floor(Math.random() * board.width), Math.floor(Math.random() * board.height), 50, 50);
-    item.data.fillStyle = `rgb(${v255()},${v255()},${v255()})`;
-    item.data.strokeStyle = `rgb(${v255()},${v255()},${v255()})`;
-}
-toyView.content.addChild(new Button_1.Button().init({
-    content: 'random add 1000 rect'
-}).addEventListener('click', () => {
-    const items = [];
-    for (let i = 0; i < 1000; ++i) {
-        const item = board.factory.newShape(dist_1.ShapeEnum.Rect);
-        item.data.layer = board.layer().id;
-        randomShapeItem(item);
-        items.push(item);
-    }
-    board.add(...items);
-}));
-toyView.content.addChild(new Button_1.Button().init({
-    content: 'random add 1000 oval'
-}).addEventListener('click', () => {
-    const items = [];
-    for (let i = 0; i < 1000; ++i) {
-        const item = board.factory.newShape(dist_1.ShapeEnum.Oval);
-        item.data.layer = board.layer().id;
-        randomShapeItem(item);
-        items.push(item);
-    }
-    board.add(...items);
-}));
-toyView.content.addChild(new Button_1.Button().init({
-    content: 'random draw 1000 pen'
-}).addEventListener('click', () => {
-    const items = [];
-    for (let i = 0; i < 1000; ++i) {
-        const item = board.factory.newShape(dist_1.ShapeEnum.Pen);
-        item.data.layer = board.layer().id;
-        let x = Math.floor(Math.random() * board.width);
-        let y = Math.floor(Math.random() * board.height);
-        const v5 = () => Math.floor(Math.random() * 5);
-        const lenth = Math.floor(Math.random() * 100);
-        for (let j = 0; j < lenth; ++j) {
-            x += v5();
-            y += v5();
-            item.appendDot({ x, y, p: 0.5 });
-        }
-        randomShapeItem(item);
-        items.push(item);
-    }
-    board.add(...items);
-}));
-let _recorder;
-let _player;
-class JsonView extends SubWin_1.Subwin {
-}
-const jsonView = new JsonView();
-workspace.addChild(jsonView);
-jsonView.header.title = 'json';
-jsonView.content = new View_1.View('div');
-jsonView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
-const json_textarea = new View_1.View('textarea');
-jsonView.content.addChild(new Button_1.Button().init({ content: 'JSON化' }).addEventListener('click', () => {
-    json_textarea.inner.value = board.toJsonStr();
-}));
-jsonView.content.addChild(new Button_1.Button().init({ content: '反JSON化' }).addEventListener('click', () => {
-    board.fromJsonStr(json_textarea.inner.value);
-}));
-jsonView.content.addChild(json_textarea);
-const startRecord = () => {
-    _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
-    _recorder = new dist_1.Recorder();
-    _recorder.start(board);
-};
-const endRecord = () => {
-    if (!_recorder_textarea || !_recorder)
-        return;
-    _recorder_textarea.inner.value = _recorder.toJsonStr();
-    _recorder === null || _recorder === void 0 ? void 0 : _recorder.destory();
-    _recorder = undefined;
-};
-const replay = (str) => {
-    _player === null || _player === void 0 ? void 0 : _player.stop();
-    _player = new dist_1.Player();
-    _player.start(board, JSON.parse(str));
-};
-class RecorderView extends SubWin_1.Subwin {
-}
-const recorderView = new RecorderView();
+const snapshotView = new SnapshotView_1.SnapshotView();
+snapshotView.board = () => board;
+workspace.addChild(snapshotView);
+const recorderView = new RecorderView_1.RecorderView();
+recorderView.board = () => board;
 workspace.addChild(recorderView);
-recorderView.header.title = 'recorder';
-recorderView.content = new View_1.View('div');
-recorderView.content.styles.apply('', { flex: 1, display: 'flex', flexDirection: 'column' });
-const _recorder_textarea = new View_1.View('textarea');
-recorderView.content.addChild(new Button_1.Button().init({ content: '开始录制' }).addEventListener('click', startRecord));
-recorderView.content.addChild(new Button_1.Button().init({ content: '停止录制' }).addEventListener('click', endRecord));
-recorderView.content.addChild(new Button_1.Button().init({ content: '回放' }).addEventListener('click', () => {
-    endRecord();
-    replay(_recorder_textarea.inner.value);
-}));
-recorderView.content.addChild(new Button_1.Button().init({ content: 'replay: write "hello world"' }).addEventListener('click', () => {
-    endRecord();
-    replay(demo_helloworld_1.default);
-}));
-recorderView.content.addChild(new Button_1.Button().init({ content: 'replay: rect & oval' }).addEventListener('click', () => {
-    endRecord();
-    replay(demo_rect_n_oval_1.default);
-}));
-recorderView.content.addChild(_recorder_textarea);
 const rootView = new View_1.View('div');
 rootView.styles.apply('', { pointerEvents: 'all' }).addCls('root');
 workspace.rootDockView.setContent(rootView);
 const blackboard = new View_1.View('div');
 blackboard.styles.addCls('blackboard');
 rootView.addChild(blackboard);
-board = factory.newWhiteBoard({ width: 1024, height: 1024 });
-const layer = board.layer();
+board = factory.newWhiteBoard({ width: 1024, height: 1024, element: blackboard.inner });
 Object.assign(window, {
     board, factory, workspace, FactoryMgr: dist_1.Gaia
 });
-workspace.dockToRoot(layersView, DockableDirection_1.DockableDirection.H, 'end');
 workspace.dockToRoot(toolsView, DockableDirection_1.DockableDirection.H, 'start');
+workspace.dockToRoot(colorView, DockableDirection_1.DockableDirection.H, 'end');
+workspace.dockAround(toyView, colorView, DockableDirection_1.DockableDirection.V, 'end');
+workspace.dockAround(recorderView, toyView, DockableDirection_1.DockableDirection.V, 'end');
+workspace.dockAround(snapshotView, recorderView, DockableDirection_1.DockableDirection.V, 'end');
+workspace.dockAround(layersView, snapshotView, DockableDirection_1.DockableDirection.V, 'end');
+const oncontextmenu = (e) => {
+    menu.move(e.x, e.y).show();
+    e.stopPropagation();
+    e.preventDefault();
+};
+const onkeydown = (e) => {
+    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+        const func = ctrlShorcuts.get(e.key);
+        if (func) {
+            func();
+        }
+    }
+    else if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
+        do {
+            const toolEnum = toolShortcuts.get(e.key);
+            if (toolEnum) {
+                board.setToolType(toolEnum);
+                toolsView.setToolType(toolEnum);
+                break;
+            }
+            const func = onekeyShorcuts.get(e.key);
+            if (func) {
+                func();
+                break;
+            }
+        } while (false);
+    }
+};
+const toolShortcuts = new Map([
+    ['s', dist_1.ToolEnum.Selector],
+    ['p', dist_1.ToolEnum.Pen],
+    ['r', dist_1.ToolEnum.Rect],
+    ['o', dist_1.ToolEnum.Oval],
+    ['t', dist_1.ToolEnum.Text],
+    ['z', dist_1.ToolEnum.Tick],
+    ['c', dist_1.ToolEnum.Cross],
+    ['x', dist_1.ToolEnum.HalfTick],
+    ['l', dist_1.ToolEnum.Lines]
+]);
+const onekeyShorcuts = new Map([
+    ['Delete', () => board.removeSelected()]
+]);
+const ctrlShorcuts = new Map([
+    ['a', () => board.toolType === dist_1.ToolEnum.Selector && board.selectAll()],
+    ['d', () => board.deselect()],
+]);
 board.addEventListener(event_1.EventEnum.LayerAdded, e => {
-    const canvas = new Canvas_1.Canvas(e.detail.onscreen);
-    canvas.styles.apply('', {
-        position: 'absolute',
-        touchAction: 'none',
-        userSelect: 'none',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        transition: 'opacity 200ms'
-    });
-    canvas.inner.addEventListener('contextmenu', (e) => {
-        menu.move(e.x, e.y).show();
-    });
-    canvas.id = e.detail.info.id;
-    canvas.draggable = false;
-    blackboard.addChild(canvas);
+    e.detail.onscreen.addEventListener('keydown', onkeydown);
+    e.detail.onscreen.addEventListener('contextmenu', oncontextmenu);
 });
-layersView.btnAddLayer.inner.click();
+board.addEventListener(event_1.EventEnum.LayerRemoved, e => {
+    e.detail.onscreen.removeEventListener('keydown', onkeydown);
+    e.detail.onscreen.removeEventListener('contextmenu', oncontextmenu);
+});
+board.layers.forEach(layer => {
+    layer.onscreen.addEventListener('keydown', onkeydown);
+    layer.onscreen.addEventListener('contextmenu', oncontextmenu);
+    layersView.addLayer(layer);
+});
+window.addEventListener('resize', () => workspace.clampAllSubwin());
 
-},{"../../dist":49,"../../dist/event":44,"./ColorView":1,"./G/BaseView/Button":2,"./G/BaseView/Canvas":3,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/SubWin":17,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./ToolsView":33,"./demo_helloworld":36,"./demo_rect_n_oval":37}],39:[function(require,module,exports){
+},{"../../dist":52,"../../dist/event":47,"./ColorView":1,"./G/BaseView/View":10,"./G/CompoundView/Menu":14,"./G/CompoundView/Workspace/DockableDirection":19,"./G/CompoundView/Workspace/WorkspaceView":23,"./LayersView":32,"./RecorderView":33,"./SnapshotView":34,"./ToolsView":35,"./ToyView":36}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
@@ -19175,9 +24751,10 @@ class Board {
             layer.onscreen.addEventListener('pointerdown', this.pointerdown);
             layer.onscreen.addEventListener('pointermove', this.pointermove);
             layer.onscreen.addEventListener('pointerup', this.pointerup);
-            layer.onscreen.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); });
+            this._element.appendChild(layer.onscreen);
             this._layers.set(layer.info.id, layer);
             this.dispatchEvent(new CustomEvent(event_1.EventEnum.LayerAdded, { detail: layer }));
+            this.markDirty({ x: 0, y: 0, w: this.width, h: this.height });
         }
         else {
             layer = this.factory.newLayer(layer);
@@ -19186,15 +24763,17 @@ class Board {
         return true;
     }
     removeLayer(layerId) {
-        if (this._layers.has(layerId)) {
+        const layer = this._layers.get(layerId);
+        if (!layer) {
             console.error(`[WhiteBoard] removeLayer(): layer not found! id = ${layerId}`);
             return false;
         }
-        const layer = this._layers.get(layerId);
+        this._layers.delete(layerId);
         layer.onscreen.removeEventListener('pointerdown', this.pointerdown);
         layer.onscreen.removeEventListener('pointermove', this.pointermove);
         layer.onscreen.removeEventListener('pointerup', this.pointerup);
-        layer.onscreen.removeEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); });
+        this._element.removeChild(layer.onscreen);
+        this.dispatchEvent(new CustomEvent(event_1.EventEnum.LayerRemoved, { detail: layer }));
         return true;
     }
     editLayer(layerId) {
@@ -19217,17 +24796,15 @@ class Board {
         }
         layers.forEach(v => this.addLayer(v));
         this.editLayer(layers[0].info.id);
-        this._dirty = { x: 0, y: 0, w: this.width, h: this.height };
-        this.render();
     }
+    get layers() { return Array.from(this._layers.values()); }
     constructor(factory, options) {
-        var _a;
+        var _a, _b;
         this._toolType = tools_1.ToolEnum.Pen;
         this._layers = new Map();
         this._mousedown = false;
         this._tools = {};
         this._selects = [];
-        this._eventEmitter = document.createElement('div');
         this._operator = 'whiteboard';
         this._editingLayerId = '';
         this._width = 512;
@@ -19261,17 +24838,17 @@ class Board {
         };
         this._factory = factory;
         this._shapesMgr = this._factory.newShapesMgr();
+        this._element = (_a = options.element) !== null && _a !== void 0 ? _a : document.createElement('div');
         options.width && (this._width = options.width);
         options.height && (this._height = options.height);
         options.toolType && (this._toolType = options.toolType);
-        const layers = (_a = options.layers) !== null && _a !== void 0 ? _a : [];
+        const layers = (_b = options.layers) !== null && _b !== void 0 ? _b : [];
         if (!layers.length) {
             layers.push({
                 info: {
                     id: factory.newLayerId(),
                     name: factory.newLayerName(),
-                },
-                onscreen: document.createElement('canvas')
+                }
             });
         }
         this.addLayers(layers);
@@ -19284,7 +24861,7 @@ class Board {
     find(id) {
         return this._shapesMgr.find(id);
     }
-    toJson() {
+    toSnapshot() {
         return {
             v: 0,
             x: 0,
@@ -19295,21 +24872,18 @@ class Board {
             s: this.shapes().map(v => v.data)
         };
     }
-    toJsonStr() {
-        return JSON.stringify(this.toJson());
-    }
-    fromJson(jobj) {
+    fromSnapshot(snapshot) {
         this.removeAll();
         Array.from(this._layers.keys()).forEach((layerId) => this.removeLayer(layerId));
-        this.addLayers(jobj.l.map(info => ({
-            info,
-            onscreen: document.createElement('canvas')
-        })));
-        const shapes = jobj.s.map((v) => this.factory.newShape(v));
+        this.addLayers(snapshot.l.map(info => ({ info })));
+        const shapes = snapshot.s.map((v) => this.factory.newShape(v));
         this.add(...shapes);
     }
-    fromJsonStr(json) {
-        this.fromJson(JSON.parse(json));
+    toJson() {
+        return JSON.stringify(this.toSnapshot());
+    }
+    fromJson(json) {
+        this.fromSnapshot(JSON.parse(json));
     }
     shapes() {
         return this._shapesMgr.shapes();
@@ -19324,13 +24898,13 @@ class Board {
         return this._shapesMgr.hits(rect);
     }
     addEventListener(arg0, arg1, arg2) {
-        return this._eventEmitter.addEventListener(arg0, arg1, arg2);
+        return this._element.addEventListener(arg0, arg1, arg2);
     }
     removeEventListener(arg0, arg1, arg2) {
-        return this._eventEmitter.removeEventListener(arg0, arg1, arg2);
+        return this._element.removeEventListener(arg0, arg1, arg2);
     }
     dispatchEvent(e) {
-        return this._eventEmitter.dispatchEvent(e);
+        return this._element.dispatchEvent(e);
     }
     get factory() { return this._factory; }
     set factory(v) { this._factory = v; }
@@ -19480,20 +25054,14 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":44,"../tools":103,"../utils":114,"./Layer":40}],40:[function(require,module,exports){
+},{"../event":47,"../tools":106,"../utils":117,"./Layer":43}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
 class LayerInfo {
-    get id() { return this.a; }
-    get name() { return this.b; }
-    ;
-    set id(v) { this.a = v; }
-    set name(v) { this.b = v; }
-    ;
     constructor(inits) {
-        this.a = inits.id;
-        this.b = inits.name;
+        this.id = inits.id;
+        this.name = inits.name;
     }
 }
 exports.LayerInfo = LayerInfo;
@@ -19516,14 +25084,29 @@ class Layer {
     ;
     get id() { return this._info.id; }
     constructor(inits) {
+        var _a;
         this._info = new LayerInfo(inits.info);
-        this._onscreen = inits.onscreen;
+        this._onscreen = (_a = inits.onscreen) !== null && _a !== void 0 ? _a : document.createElement('canvas');
         this._onscreen.setAttribute('layer_id', this.id);
         this._onscreen.setAttribute('layer_name', this.name);
+        this._onscreen.tabIndex = 0;
+        this._onscreen.draggable = false;
+        this._onscreen.style.position = 'absolute';
+        this._onscreen.style.touchAction = 'none';
+        this._onscreen.style.userSelect = 'none';
+        this._onscreen.style.left = '0px';
+        this._onscreen.style.right = '0px';
+        this._onscreen.style.top = '0px';
+        this._onscreen.style.bottom = '0px';
+        this._onscreen.style.transition = 'opacity 200ms';
+        this._onscreen.style.outline = 'none';
+        this._onscreen.addEventListener('pointerdown', () => {
+            this._onscreen.focus();
+        }, { passive: true });
         this._ctx = this._onscreen.getContext('2d');
         this._offscreen = document.createElement('canvas');
-        this._offscreen.width = inits.onscreen.width;
-        this._offscreen.height = inits.onscreen.height;
+        this._offscreen.width = this._onscreen.width;
+        this._offscreen.height = this._onscreen.height;
         this._octx = this._offscreen.getContext('2d');
     }
     get width() {
@@ -19543,7 +25126,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{}],41:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -19563,7 +25146,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Layer"), exports);
 __exportStar(require("./Board"), exports);
 
-},{"./Board":39,"./Layer":40}],42:[function(require,module,exports){
+},{"./Board":42,"./Layer":43}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventEnum = void 0;
@@ -19577,9 +25160,10 @@ var EventEnum;
     EventEnum["ShapesResized"] = "SHAPES_RESIZED";
     EventEnum["ToolChanged"] = "TOOL_CHANGED";
     EventEnum["LayerAdded"] = "LAYER_ADDED";
+    EventEnum["LayerRemoved"] = "LAYER_REMOVED";
 })(EventEnum = exports.EventEnum || (exports.EventEnum = {}));
 
-},{}],43:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhiteBoardEvent = void 0;
@@ -19630,7 +25214,7 @@ var WhiteBoardEvent;
     WhiteBoardEvent.toolChanged = toolChanged;
 })(WhiteBoardEvent = exports.WhiteBoardEvent || (exports.WhiteBoardEvent = {}));
 
-},{"./EventType":42}],44:[function(require,module,exports){
+},{"./EventType":45}],47:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -19650,7 +25234,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Events"), exports);
 __exportStar(require("./EventType"), exports);
 
-},{"./EventType":42,"./Events":43}],45:[function(require,module,exports){
+},{"./EventType":45,"./Events":46}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
@@ -19672,7 +25256,7 @@ class Player {
         this.startTime = Date.now();
         this.firstEventTime = 0;
         if (screenplay.snapshot) {
-            actor.fromJson(screenplay.snapshot);
+            actor.fromSnapshot(screenplay.snapshot);
         }
         this.tick();
     }
@@ -19700,7 +25284,7 @@ class Player {
     }
     applyEvent(e) {
         var _a, _b;
-        console.log('[Player] applyEvent(), e = ', e);
+        // console.log('[Player] applyEvent(), e = ', e);
         const actor = this.actor;
         if (!actor) {
             return;
@@ -19734,7 +25318,7 @@ class Player {
 }
 exports.Player = Player;
 
-},{"../event":44}],46:[function(require,module,exports){
+},{"../event":47}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recorder = void 0;
@@ -19759,7 +25343,7 @@ class Recorder {
         const startTime = new CustomEvent('').timeStamp;
         this._screenplay = {
             startTime,
-            snapshot: actor.toJson(),
+            snapshot: actor.toSnapshot(),
             events: []
         };
         for (const key in event_1.EventEnum) {
@@ -19785,11 +25369,11 @@ class Recorder {
 }
 exports.Recorder = Recorder;
 
-},{"../event":44}],47:[function(require,module,exports){
+},{"../event":47}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],48:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -19810,7 +25394,7 @@ __exportStar(require("./Player"), exports);
 __exportStar(require("./Recorder"), exports);
 __exportStar(require("./Screenplay"), exports);
 
-},{"./Player":45,"./Recorder":46,"./Screenplay":47}],49:[function(require,module,exports){
+},{"./Player":48,"./Recorder":49,"./Screenplay":50}],52:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -19835,7 +25419,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":41,"./features":48,"./mgr":54,"./shape":68,"./tools":103,"./utils":114}],50:[function(require,module,exports){
+},{"./board":44,"./features":51,"./mgr":57,"./shape":71,"./tools":106,"./utils":117}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultFactory = void 0;
@@ -19926,7 +25510,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":41,"../shape/base/Data":56,"../shape/base/Shape":57,"../tools/base/InvalidTool":99,"./FactoryEnum":51,"./Gaia":52,"./ShapesMgr":53}],51:[function(require,module,exports){
+},{"../board":44,"../shape/base/Data":59,"../shape/base/Shape":60,"../tools/base/InvalidTool":102,"./FactoryEnum":54,"./Gaia":55,"./ShapesMgr":56}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -19944,7 +25528,7 @@ function getFactoryName(type) {
 }
 exports.getFactoryName = getFactoryName;
 
-},{}],52:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gaia = void 0;
@@ -20031,7 +25615,7 @@ Gaia._shapeInfos = new Map();
 Gaia._factorys = new Map();
 Gaia._factoryInfos = new Map();
 
-},{"../shape/ShapeEnum":55,"../tools/ToolEnum":98}],53:[function(require,module,exports){
+},{"../shape/ShapeEnum":58,"../tools/ToolEnum":101}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultShapesMgr = void 0;
@@ -20107,7 +25691,7 @@ class DefaultShapesMgr {
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/Rect":111}],54:[function(require,module,exports){
+},{"../utils/Rect":114}],57:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -20129,7 +25713,7 @@ __exportStar(require("./FactoryEnum"), exports);
 __exportStar(require("./Gaia"), exports);
 __exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":50,"./FactoryEnum":51,"./Gaia":52,"./ShapesMgr":53}],55:[function(require,module,exports){
+},{"./Factory":53,"./FactoryEnum":54,"./Gaia":55,"./ShapesMgr":56}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -20163,7 +25747,7 @@ function getShapeName(type) {
 }
 exports.getShapeName = getShapeName;
 
-},{}],56:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
@@ -20348,7 +25932,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":55}],57:[function(require,module,exports){
+},{"../ShapeEnum":58}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = void 0;
@@ -20489,7 +26073,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":111}],58:[function(require,module,exports){
+},{"../../utils/Rect":114}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -20523,7 +26107,7 @@ class ShapeNeedPath extends Shape_1.Shape {
 }
 exports.ShapeNeedPath = ShapeNeedPath;
 
-},{"./Shape":57}],59:[function(require,module,exports){
+},{"./Shape":60}],62:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -20544,7 +26128,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./ShapeNeedPath"), exports);
 
-},{"./Data":56,"./Shape":57,"./ShapeNeedPath":58}],60:[function(require,module,exports){
+},{"./Data":59,"./Shape":60,"./ShapeNeedPath":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossData = void 0;
@@ -20563,7 +26147,7 @@ class CrossData extends base_1.ShapeData {
 }
 exports.CrossData = CrossData;
 
-},{"../ShapeEnum":55,"../base":59}],61:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeCross = void 0;
@@ -20588,7 +26172,7 @@ class ShapeCross extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeCross = ShapeCross;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Cross, () => new Data_1.CrossData, d => new ShapeCross(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":60}],62:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base/ShapeNeedPath":61,"./Data":63}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossTool = void 0;
@@ -20599,7 +26183,7 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "CrossTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
 
-},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],63:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../../tools/base/SimpleTool":103,"../ShapeEnum":58}],66:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -20620,7 +26204,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":60,"./Shape":61,"./Tool":62}],64:[function(require,module,exports){
+},{"./Data":63,"./Shape":64,"./Tool":65}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickData = void 0;
@@ -20639,7 +26223,7 @@ class HalfTickData extends base_1.ShapeData {
 }
 exports.HalfTickData = HalfTickData;
 
-},{"../ShapeEnum":55,"../base":59}],65:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeHalfTick = void 0;
@@ -20666,7 +26250,7 @@ class ShapeHalfTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeHalfTick = ShapeHalfTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.HalfTick, () => new Data_1.HalfTickData, d => new ShapeHalfTick(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":64}],66:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base/ShapeNeedPath":61,"./Data":67}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickTool = void 0;
@@ -20677,9 +26261,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "HalfTickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
 
-},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],67:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":64,"./Shape":65,"./Tool":66,"dup":63}],68:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../../tools/base/SimpleTool":103,"../ShapeEnum":58}],70:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./Data":67,"./Shape":68,"./Tool":69,"dup":66}],71:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -20708,7 +26292,7 @@ __exportStar(require("./cross"), exports);
 __exportStar(require("./halftick"), exports);
 __exportStar(require("./lines"), exports);
 
-},{"./ShapeEnum":55,"./base":59,"./cross":63,"./halftick":67,"./lines":72,"./oval":76,"./pen":80,"./polygon":84,"./rect":88,"./text":93,"./tick":97}],69:[function(require,module,exports){
+},{"./ShapeEnum":58,"./base":62,"./cross":66,"./halftick":70,"./lines":75,"./oval":79,"./pen":83,"./polygon":87,"./rect":91,"./text":96,"./tick":100}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesData = void 0;
@@ -20743,7 +26327,7 @@ class LinesData extends base_1.ShapeData {
 }
 exports.LinesData = LinesData;
 
-},{"../ShapeEnum":55,"../base":59}],70:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeLines = void 0;
@@ -20857,7 +26441,7 @@ class ShapeLines extends base_1.Shape {
 exports.ShapeLines = ShapeLines;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeLines(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base":59,"./Data":69}],71:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base":62,"./Data":72}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesTool = void 0;
@@ -21036,9 +26620,9 @@ class LinesTool {
 exports.LinesTool = LinesTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
 
-},{"../../event":44,"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../ShapeEnum":55}],72:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":69,"./Shape":70,"./Tool":71,"dup":63}],73:[function(require,module,exports){
+},{"../../event":47,"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../ShapeEnum":58}],75:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./Data":72,"./Shape":73,"./Tool":74,"dup":66}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalData = void 0;
@@ -21058,7 +26642,7 @@ class OvalData extends base_1.ShapeData {
 }
 exports.OvalData = OvalData;
 
-},{"../ShapeEnum":55,"../base":59}],74:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeOval = void 0;
@@ -21082,7 +26666,7 @@ class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeOval = ShapeOval;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":73}],75:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base/ShapeNeedPath":61,"./Data":76}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
@@ -21124,9 +26708,9 @@ class OvalTool extends SimpleTool_1.SimpleTool {
 exports.OvalTool = OvalTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],76:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":73,"./Shape":74,"./Tool":75,"dup":63}],77:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../../tools/base/SimpleTool":103,"../ShapeEnum":58}],79:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./Data":76,"./Shape":77,"./Tool":78,"dup":66}],80:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenData = exports.DotsType = void 0;
@@ -21173,7 +26757,7 @@ class PenData extends base_1.ShapeData {
 }
 exports.PenData = PenData;
 
-},{"../ShapeEnum":55,"../base":59}],78:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePen = void 0;
@@ -21319,7 +26903,7 @@ class ShapePen extends base_1.Shape {
 exports.ShapePen = ShapePen;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base":59,"./Data":77}],79:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base":62,"./Data":80}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
@@ -21396,9 +26980,9 @@ class PenTool {
 exports.PenTool = PenTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event":44,"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../ShapeEnum":55,"./Data":77}],80:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":77,"./Shape":78,"./Tool":79,"dup":63}],81:[function(require,module,exports){
+},{"../../event":47,"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../ShapeEnum":58,"./Data":80}],83:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./Data":80,"./Shape":81,"./Tool":82,"dup":66}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonData = void 0;
@@ -21425,7 +27009,7 @@ class PolygonData extends base_1.ShapeData {
 }
 exports.PolygonData = PolygonData;
 
-},{"../ShapeEnum":55,"../base":59}],82:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePolygon = void 0;
@@ -21444,7 +27028,7 @@ class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapePolygon = ShapePolygon;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":81}],83:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base/ShapeNeedPath":61,"./Data":84}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonTool = void 0;
@@ -21458,9 +27042,9 @@ const desc = {
 };
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
 
-},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],84:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":81,"./Shape":82,"./Tool":83,"dup":63}],85:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../../tools/base/SimpleTool":103,"../ShapeEnum":58}],87:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./Data":84,"./Shape":85,"./Tool":86,"dup":66}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectData = void 0;
@@ -21479,7 +27063,7 @@ class RectData extends base_1.ShapeData {
 }
 exports.RectData = RectData;
 
-},{"../ShapeEnum":55,"../base":59}],86:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRect = void 0;
@@ -21498,7 +27082,7 @@ class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeRect = ShapeRect;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":85}],87:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base/ShapeNeedPath":61,"./Data":88}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -21509,9 +27093,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],88:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":85,"./Shape":86,"./Tool":87,"dup":63}],89:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../../tools/base/SimpleTool":103,"../ShapeEnum":58}],91:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./Data":88,"./Shape":89,"./Tool":90,"dup":66}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextData = void 0;
@@ -21569,7 +27153,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../ShapeEnum":55,"../base":59}],90:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -21725,7 +27309,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/Gaia":52,"../../utils/Rect":111,"../ShapeEnum":55,"../base":59,"./Data":89,"./TextSelection":91}],91:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../../utils/Rect":114,"../ShapeEnum":58,"../base":62,"./Data":92,"./TextSelection":94}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -21742,7 +27326,7 @@ class TextSelection {
 }
 exports.TextSelection = TextSelection;
 
-},{}],92:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
@@ -21806,6 +27390,14 @@ class TextTool {
             const curr = shape.data.copy();
             board.dispatchEvent(event_1.WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }));
         };
+        this._keydown = (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                this.curShape = undefined;
+            }
+            else if (e.key === 'Escape') {
+                this.curShape = undefined;
+            }
+        };
         this._editor.wrap = 'off';
         this._editor.style.display = 'none';
         this._editor.style.position = 'absolute';
@@ -21821,10 +27413,12 @@ class TextTool {
         this._editor.style.opacity = '0%';
     }
     start() {
+        this._editor.addEventListener('keydown', this._keydown);
         this._editor.addEventListener('input', this._updateShapeText);
         document.addEventListener('selectionchange', this._updateShapeText);
     }
     end() {
+        this._editor.removeEventListener('keydown', this._keydown);
         this._editor.removeEventListener('input', this._updateShapeText);
         document.removeEventListener('selectionchange', this._updateShapeText);
         this.curShape = undefined;
@@ -21873,7 +27467,7 @@ class TextTool {
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":44,"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../ShapeEnum":55}],93:[function(require,module,exports){
+},{"../../event":47,"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../ShapeEnum":58}],96:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -21895,7 +27489,7 @@ __exportStar(require("./Shape"), exports);
 __exportStar(require("./TextSelection"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":89,"./Shape":90,"./TextSelection":91,"./Tool":92}],94:[function(require,module,exports){
+},{"./Data":92,"./Shape":93,"./TextSelection":94,"./Tool":95}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickData = void 0;
@@ -21914,7 +27508,7 @@ class TickData extends base_1.ShapeData {
 }
 exports.TickData = TickData;
 
-},{"../ShapeEnum":55,"../base":59}],95:[function(require,module,exports){
+},{"../ShapeEnum":58,"../base":62}],98:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeTick = void 0;
@@ -21937,7 +27531,7 @@ class ShapeTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeTick = ShapeTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Tick, () => new Data_1.TickData, d => new ShapeTick(d));
 
-},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":94}],96:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../ShapeEnum":58,"../base/ShapeNeedPath":61,"./Data":97}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickTool = void 0;
@@ -21948,9 +27542,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "TickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
 
-},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],97:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./Data":94,"./Shape":95,"./Tool":96,"dup":63}],98:[function(require,module,exports){
+},{"../../mgr/Gaia":55,"../../tools/ToolEnum":101,"../../tools/base/SimpleTool":103,"../ShapeEnum":58}],100:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./Data":97,"./Shape":98,"./Tool":99,"dup":66}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToolName = exports.ToolEnum = void 0;
@@ -21985,7 +27579,7 @@ function getToolName(type) {
 }
 exports.getToolName = getToolName;
 
-},{}],99:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidTool = void 0;
@@ -22023,7 +27617,7 @@ class InvalidTool {
 }
 exports.InvalidTool = InvalidTool;
 
-},{"../ToolEnum":98}],100:[function(require,module,exports){
+},{"../ToolEnum":101}],103:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
@@ -22135,11 +27729,11 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":44,"../../utils/RectHelper":112}],101:[function(require,module,exports){
+},{"../../event":47,"../../utils/RectHelper":115}],104:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],102:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22160,7 +27754,7 @@ __exportStar(require("./InvalidTool"), exports);
 __exportStar(require("./SimpleTool"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./InvalidTool":99,"./SimpleTool":100,"./Tool":101}],103:[function(require,module,exports){
+},{"./InvalidTool":102,"./SimpleTool":103,"./Tool":104}],106:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22181,7 +27775,7 @@ __exportStar(require("./base"), exports);
 __exportStar(require("./selector"), exports);
 __exportStar(require("./ToolEnum"), exports);
 
-},{"./ToolEnum":98,"./base":102,"./selector":105}],104:[function(require,module,exports){
+},{"./ToolEnum":101,"./base":105,"./selector":108}],107:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
@@ -22316,7 +27910,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'selector'
 });
 
-},{"../../event/Events":43,"../../mgr/Gaia":52,"../../shape/base/Data":56,"../../shape/rect/Shape":86,"../../utils/RectHelper":112,"../ToolEnum":98}],105:[function(require,module,exports){
+},{"../../event/Events":46,"../../mgr/Gaia":55,"../../shape/base/Data":59,"../../shape/rect/Shape":89,"../../utils/RectHelper":115,"../ToolEnum":101}],108:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22335,7 +27929,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./SelectorTool"), exports);
 
-},{"./SelectorTool":104}],106:[function(require,module,exports){
+},{"./SelectorTool":107}],109:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
@@ -22357,7 +27951,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],107:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -22514,15 +28108,15 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":106}],108:[function(require,module,exports){
+},{"./BinaryRange":109}],111:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],109:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],110:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -22753,7 +28347,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":111}],111:[function(require,module,exports){
+},{"./Rect":114}],114:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -22824,7 +28418,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],112:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -22929,7 +28523,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":113}],113:[function(require,module,exports){
+},{"./Vector":116}],116:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -22956,7 +28550,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],114:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22986,4 +28580,4 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 
-},{"./BinaryRange":106,"./BinaryTree":107,"./Dot":108,"./ITree":109,"./QuadTree":110,"./Rect":111,"./Vector":113}]},{},[38]);
+},{"./BinaryRange":109,"./BinaryTree":110,"./Dot":111,"./ITree":112,"./QuadTree":113,"./Rect":114,"./Vector":116}]},{},[41]);

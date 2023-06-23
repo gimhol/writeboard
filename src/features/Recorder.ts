@@ -20,7 +20,7 @@ export class Recorder {
     const startTime = new CustomEvent('').timeStamp;
     this._screenplay = {
       startTime,
-      snapshot: actor.toJson(),
+      snapshot: actor.toSnapshot(),
       events: []
     }
     for (const key in EventEnum) {

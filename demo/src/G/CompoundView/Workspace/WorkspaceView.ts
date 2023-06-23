@@ -106,6 +106,8 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       this.addChild(this._rootDockView);
     }
     (target instanceof Subwin) && this._dockedWins.insert(0, target);
+    (target instanceof Subwin) && target.styles.forgo('free_in_workspace');
+    this._updateUndockedWinsStyle();
   }
 
   public dockAround(target: IDockable, anchor: IDockable, direction: DockableDirection, pos: 'start' | 'end') {
@@ -134,6 +136,8 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
       }
     }
     (target instanceof Subwin) && this._dockedWins.insert(0, target);
+    (target instanceof Subwin) && target.styles.forgo('free_in_workspace');
+    this._updateUndockedWinsStyle();
   }
   undock(target: IDockable): this {
     const view = target.dockableView();
@@ -158,6 +162,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
         this._rootDockView.asRoot(true);
       }
     }
+    this._updateUndockedWinsStyle();
     return this;
   }
   clampAllSubwin() {
@@ -266,7 +271,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   }
 
   protected override _handleAddedChildren(children: View[]) {
-    console.log('[Workspace]_handleAddedChildren', children)
+    // console.log('[Workspace]_handleAddedChildren', children)
     children.forEach(v => {
       if (!(v instanceof Subwin)) { return; }
       v.setWorkspace(this);
@@ -287,7 +292,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   }
 
   protected override _prehandleRemovedChildren(children: View[]) {
-    console.log('[Workspace]_prehandleRemovedChildren', children)
+    // console.log('[Workspace]_prehandleRemovedChildren', children)
     children.forEach(child => {
       if (!(child instanceof Subwin)) { return; }
       const listener = this._pointerdowns.get(child);

@@ -5,15 +5,18 @@ import { HoverOb } from "../Observer/HoverOb";
 import { findParent } from "../utils";
 
 export interface IMenuItemInfo<K extends string | number | symbol> {
-  key: K;
+  key?: K;
   divider?: boolean;
+  danger?: boolean;
   icon?: string;
   label?: string;
   items?: IMenuItemInfo<K>[];
+  zIndex?: number;
 }
 
 export interface IMenuInits<K extends string | number | symbol> {
   items?: IMenuItemInfo<K>[];
+  zIndex?: number;
 }
 export interface IMenu<K extends string | number | symbol> {
   setup(items: IMenuItemInfo<K>[]): void;
@@ -22,12 +25,7 @@ export interface IMenu<K extends string | number | symbol> {
   show(): void;
   hide(): void;
 }
-export enum StyleNames {
-  Normal = 'Normal',
-  ItemDivider = 'ItemDivider',
-  ItemNormal = 'ItemNormal',
-  ItemHover = 'ItemHover',
-}
+
 export class MenuItemView<K extends string | number | symbol> extends View<'div'>{
   private _info: IMenuItemInfo<K>;
   private _submenu?: Menu<K>;
@@ -39,9 +37,11 @@ export class MenuItemView<K extends string | number | symbol> extends View<'div'
   setup(info: IMenuItemInfo<K> = this._info) {
     this._info = info;
     if (info.divider) {
-      this.styles.clear().add(StyleNames.ItemDivider).refresh()
+      this.styles.setCls('g_menu_item_divider')
+    } else if (info.danger) {
+      this.styles.setCls('g_menu_item_normal', 'g_menu_item_danger')
     } else {
-      this.styles.clear().add(StyleNames.ItemNormal).refresh()
+      this.styles.setCls('g_menu_item_normal')
     }
     const label = new View('div');
     label.styles.apply('', { flex: 1 })
@@ -59,9 +59,9 @@ export class MenuItemView<K extends string | number | symbol> extends View<'div'
 
   override onHover(hover: boolean): void {
     if (hover) {
-      this.styles.add(StyleNames.ItemHover).refresh()
+      this.styles.addCls('g_menu_item_hover');
     } else {
-      this.styles.del(StyleNames.ItemHover).refresh()
+      this.styles.delCls('g_menu_item_hover');
     }
     if (hover) {
       const { left, top, width, height } = this.inner.getBoundingClientRect();
@@ -73,20 +73,6 @@ export class MenuItemView<K extends string | number | symbol> extends View<'div'
     super('div');
     this._menu = menu;
     this._info = info;
-    this.styles.register(StyleNames.ItemDivider, {
-      height: 1,
-      background: '#00000011'
-    }).register(StyleNames.ItemHover, {
-      background: '#00000011'
-    }).register(StyleNames.ItemNormal, {
-      display: 'flex',
-      borderRadius: 5,
-      paddingTop: 5,
-      paddingBottom: 5,
-      paddingLeft: 10,
-      paddingRight: 10,
-      fontSize: 12,
-    })
     this.setup();
   }
 }
@@ -98,39 +84,32 @@ export interface MenuEventMap<K extends string | number | symbol> {
   [MenuEventType.ItemClick]: CustomEvent<IMenuItemInfo<K>>;
 }
 
-class GlobalDown extends View<'div'>{
+class GlobalPointerDown extends View<'div'>{
   constructor() {
     super('div');
-    document.addEventListener('pointerdown', e => {
+    window.addEventListener('pointerdown', e => {
       if (findParent(e.target, ele => !!View.try(ele, Menu))) {
         return;
       }
       this.inner.dispatchEvent(new PointerEvent('fired'))
-    })
+    }, true)
   }
 }
-const globalDown = new GlobalDown();
+const globalDown = new GlobalPointerDown();
 
 export class Menu<K extends string | number | symbol> extends View<'div'> implements IMenu<K>{
-  static StyleNames = StyleNames;
   static EventType = MenuEventType;
   private _items: MenuItemView<K>[] = [];
   private _container: View;
   private _onitemclick?: () => void;
   private _onsubmenuitemclick?: (e: CustomEvent<IMenuItemInfo<K>>) => void;
+  private _zIndex = 9999;
   get container() { return this._container; }
   constructor(container: View, inits?: IMenuInits<K>) {
     super('div');
     this._container = container;
-    this.styles.apply(StyleNames.Normal, {
-      position: CssPosition.Fixed,
-      display: 'none',
-      gridTemplateColumns: 'auto',
-      background: 'white',
-      borderRadius: 5,
-      userSelect: 'none',
-      transition: 'opacity 200ms',
-    })
+    this._zIndex = inits?.zIndex ?? this._zIndex;
+    this.styles.setCls('g_menu');
     this.setup(inits?.items ?? []);
     globalDown.addEventListener('fired', () => this.hide());
     window.addEventListener('blur', () => this.hide());
@@ -180,8 +159,6 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
       item.submenu?.removeSelf();
       this.removeChild(item);
     });
-
-
     this._items = items.map(info => {
       this._onitemclick = () => {
         this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: info }))
@@ -192,9 +169,8 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
         this.hide();
       }
 
-      const view = new MenuItemView(this, info);
+      const view = new MenuItemView(this, { ...info, zIndex: this._zIndex + 1 });
       this.addChild(view);
-
 
       view.addEventListener('click', this._onitemclick);
       view.submenu?.addEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick);
@@ -213,19 +189,19 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
 
   move(x: number, y: number): Menu<K> {
     this._items.forEach(item => item.submenu?.hide())
-    this.styles.merge(StyleNames.Normal, { left: x, top: y }).refresh();
+    this.styles.apply('', v => ({ ...v, left: x, top: y }));
     return this;
   }
 
   show(): Menu<K> {
-    this.styles.merge(StyleNames.Normal, { display: 'grid' }).refresh();
+    this.styles.apply('', v => ({ ...v, display: 'flex', zIndex: this._zIndex }));
     this.container.addChild(this);
     return this;
   }
 
   hide(): Menu<K> {
     this._items.forEach(item => item.submenu?.hide())
-    this.styles.merge(StyleNames.Normal, { display: 'none' }).refresh();
+    this.styles.forgo('')
     this.removeSelf()
     return this;
   }

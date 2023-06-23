@@ -1,2 +1,4875 @@
 export default
-  `{"snapshot":{"x":0,"y":0,"w":4096,"h":4096,"shapes":[]},"events":[{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328594833,"detail":{"from":"TOOL_SELECTOR","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328595289,"detail":{"shapeDatas":[{"t":2,"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0,"z":1665328595290,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595306,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0},{"i":"2_16653285952891","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595348,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2},{"i":"2_16653285952891","x":52,"y":44,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595365,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8},{"i":"2_16653285952891","x":52,"y":44,"w":1,"h":2}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595400,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18},{"i":"2_16653285952891","x":52,"y":44,"w":5,"h":8}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595432,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32},{"i":"2_16653285952891","x":52,"y":44,"w":13,"h":18}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595466,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39},{"i":"2_16653285952891","x":52,"y":44,"w":33,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595519,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40},{"i":"2_16653285952891","x":52,"y":44,"w":47,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595552,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43},{"i":"2_16653285952891","x":52,"y":44,"w":49,"h":40}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595583,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45},{"i":"2_16653285952891","x":52,"y":44,"w":52,"h":43}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595608,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51},{"i":"2_16653285952891","x":52,"y":44,"w":56,"h":45}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595632,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54},{"i":"2_16653285952891","x":52,"y":44,"w":63,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595650,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60},{"i":"2_16653285952891","x":52,"y":44,"w":67,"h":54}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595681,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63},{"i":"2_16653285952891","x":52,"y":44,"w":74,"h":60}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595698,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66},{"i":"2_16653285952891","x":52,"y":44,"w":77,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595715,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68},{"i":"2_16653285952891","x":52,"y":44,"w":80,"h":66}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595733,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72},{"i":"2_16653285952891","x":52,"y":44,"w":82,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595766,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74},{"i":"2_16653285952891","x":52,"y":44,"w":87,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595784,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80},{"i":"2_16653285952891","x":52,"y":44,"w":90,"h":74}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595817,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86},{"i":"2_16653285952891","x":52,"y":44,"w":97,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595850,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93},{"i":"2_16653285952891","x":52,"y":44,"w":106,"h":86}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595884,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99},{"i":"2_16653285952891","x":52,"y":44,"w":114,"h":93}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595917,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106},{"i":"2_16653285952891","x":52,"y":44,"w":123,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595948,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109},{"i":"2_16653285952891","x":52,"y":44,"w":132,"h":106}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595965,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111},{"i":"2_16653285952891","x":52,"y":44,"w":134,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328595982,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112},{"i":"2_16653285952891","x":52,"y":44,"w":136,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596000,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114},{"i":"2_16653285952891","x":52,"y":44,"w":137,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596034,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116},{"i":"2_16653285952891","x":52,"y":44,"w":139,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596083,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":141,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328596388,"detail":{"shapeDatas":[[{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117},{"i":"2_16653285952891","x":52,"y":44,"w":142,"h":117}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328598413,"detail":{"from":"TOOL_RECT","to":"TOOL_OVAL"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328598860,"detail":{"shapeDatas":[{"t":3,"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0,"z":1665328598862,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598876,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0},{"i":"3_16653285988602","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598920,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7},{"i":"3_16653285988602","x":282,"y":49,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598952,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14},{"i":"3_16653285988602","x":282,"y":49,"w":7,"h":7}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328598969,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30},{"i":"3_16653285988602","x":282,"y":49,"w":15,"h":14}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599001,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38},{"i":"3_16653285988602","x":282,"y":49,"w":27,"h":30}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599019,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53},{"i":"3_16653285988602","x":282,"y":49,"w":35,"h":38}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599071,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63},{"i":"3_16653285988602","x":282,"y":49,"w":52,"h":53}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599104,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71},{"i":"3_16653285988602","x":282,"y":49,"w":62,"h":63}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599135,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80},{"i":"3_16653285988602","x":282,"y":49,"w":69,"h":71}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599154,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87},{"i":"3_16653285988602","x":282,"y":49,"w":78,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599185,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89},{"i":"3_16653285988602","x":282,"y":49,"w":86,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599205,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96},{"i":"3_16653285988602","x":282,"y":49,"w":89,"h":89}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599238,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101},{"i":"3_16653285988602","x":282,"y":49,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599268,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104},{"i":"3_16653285988602","x":282,"y":49,"w":104,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599287,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109},{"i":"3_16653285988602","x":282,"y":49,"w":107,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599320,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113},{"i":"3_16653285988602","x":282,"y":49,"w":113,"h":109}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599439,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114},{"i":"3_16653285988602","x":282,"y":49,"w":118,"h":113}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599469,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115},{"i":"3_16653285988602","x":282,"y":49,"w":120,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599487,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117},{"i":"3_16653285988602","x":282,"y":49,"w":122,"h":115}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599504,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121},{"i":"3_16653285988602","x":282,"y":49,"w":125,"h":117}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599535,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122},{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":121}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328599707,"detail":{"shapeDatas":[[{"i":"3_16653285988602","x":282,"y":49,"w":129,"h":120},{"i":"3_16653285988602","x":282,"y":49,"w":131,"h":122}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328601336,"detail":{"shapeDatas":[{"t":3,"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0,"z":1665328601339,"style":{"b":"#0000ff","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601353,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0},{"i":"3_16653286013363","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601374,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3},{"i":"3_16653286013363","x":212,"y":327,"w":2,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601407,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13},{"i":"3_16653286013363","x":202,"y":324,"w":12,"h":3}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601438,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22},{"i":"3_16653286013363","x":186,"y":314,"w":28,"h":13}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601454,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32},{"i":"3_16653286013363","x":172,"y":305,"w":42,"h":22}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601472,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51},{"i":"3_16653286013363","x":159,"y":295,"w":55,"h":32}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601504,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57},{"i":"3_16653286013363","x":132,"y":276,"w":82,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601522,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68},{"i":"3_16653286013363","x":122,"y":270,"w":92,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601590,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81},{"i":"3_16653286013363","x":106,"y":259,"w":108,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601624,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90},{"i":"3_16653286013363","x":91,"y":246,"w":123,"h":81}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601654,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92},{"i":"3_16653286013363","x":80,"y":237,"w":134,"h":90}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601672,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94},{"i":"3_16653286013363","x":77,"y":235,"w":137,"h":92}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601689,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95},{"i":"3_16653286013363","x":76,"y":233,"w":138,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601707,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97},{"i":"3_16653286013363","x":74,"y":232,"w":140,"h":95}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601740,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98},{"i":"3_16653286013363","x":73,"y":230,"w":141,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601771,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99},{"i":"3_16653286013363","x":72,"y":229,"w":142,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601892,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101},{"i":"3_16653286013363","x":71,"y":228,"w":143,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601921,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103},{"i":"3_16653286013363","x":70,"y":226,"w":144,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601939,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108},{"i":"3_16653286013363","x":69,"y":224,"w":145,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328601972,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114},{"i":"3_16653286013363","x":67,"y":219,"w":147,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602004,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116},{"i":"3_16653286013363","x":65,"y":213,"w":149,"h":114}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602023,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119},{"i":"3_16653286013363","x":64,"y":211,"w":150,"h":116}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602054,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120},{"i":"3_16653286013363","x":64,"y":208,"w":150,"h":119}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602073,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123},{"i":"3_16653286013363","x":64,"y":207,"w":150,"h":120}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602106,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126},{"i":"3_16653286013363","x":64,"y":204,"w":150,"h":123}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602138,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128},{"i":"3_16653286013363","x":64,"y":201,"w":150,"h":126}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602157,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130},{"i":"3_16653286013363","x":65,"y":199,"w":149,"h":128}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602188,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131},{"i":"3_16653286013363","x":66,"y":197,"w":148,"h":130}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602206,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":66,"y":196,"w":148,"h":131}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_OVAL","timeStamp":1665328602363,"detail":{"shapeDatas":[[{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133},{"i":"3_16653286013363","x":67,"y":194,"w":147,"h":133}]]}},{"type":"TOOL_CHANGED","operator":"whiteboard","timeStamp":1665328603214,"detail":{"from":"TOOL_OVAL","to":"TOOL_RECT"}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328603748,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0,"z":1665328603752,"style":{"b":"#ff0000","a":"#000000","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603766,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0},{"i":"2_16653286037484","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603823,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0},{"i":"2_16653286037484","x":385,"y":303,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603840,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15},{"i":"2_16653286037484","x":384,"y":303,"w":1,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603873,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27},{"i":"2_16653286037484","x":370,"y":288,"w":15,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603891,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46},{"i":"2_16653286037484","x":358,"y":276,"w":27,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603924,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51},{"i":"2_16653286037484","x":337,"y":257,"w":48,"h":46}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603941,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55},{"i":"2_16653286037484","x":331,"y":252,"w":54,"h":51}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328603994,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58},{"i":"2_16653286037484","x":326,"y":248,"w":59,"h":55}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604021,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62},{"i":"2_16653286037484","x":320,"y":245,"w":65,"h":58}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604041,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67},{"i":"2_16653286037484","x":313,"y":241,"w":72,"h":62}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604058,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75},{"i":"2_16653286037484","x":307,"y":236,"w":78,"h":67}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604091,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79},{"i":"2_16653286037484","x":296,"y":228,"w":89,"h":75}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604108,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85},{"i":"2_16653286037484","x":291,"y":224,"w":94,"h":79}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604140,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88},{"i":"2_16653286037484","x":283,"y":218,"w":102,"h":85}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604159,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94},{"i":"2_16653286037484","x":279,"y":215,"w":106,"h":88}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604192,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97},{"i":"2_16653286037484","x":273,"y":209,"w":112,"h":94}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604226,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99},{"i":"2_16653286037484","x":269,"y":206,"w":116,"h":97}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604258,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100},{"i":"2_16653286037484","x":267,"y":204,"w":118,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604275,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103},{"i":"2_16653286037484","x":266,"y":203,"w":119,"h":100}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604323,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104},{"i":"2_16653286037484","x":264,"y":200,"w":121,"h":103}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604371,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105},{"i":"2_16653286037484","x":263,"y":199,"w":122,"h":104}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328604469,"detail":{"shapeDatas":[[{"i":"2_16653286037484","x":262,"y":197,"w":123,"h":106},{"i":"2_16653286037484","x":262,"y":198,"w":123,"h":105}]]}},{"type":"SHAPES_ADDED","operator":"whiteboard","timeStamp":1665328605718,"detail":{"shapeDatas":[{"t":2,"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0,"z":1665328605723,"style":{"b":"#ff0000","a":"rgba(85,51,51,1.00)","g":2},"status":{}}]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605736,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0},{"i":"2_16653286057185","x":0,"y":0,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605827,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6},{"i":"2_16653286057185","x":613,"y":268,"w":0,"h":0}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605858,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15},{"i":"2_16653286057185","x":606,"y":262,"w":7,"h":6}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605875,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27},{"i":"2_16653286057185","x":596,"y":253,"w":17,"h":15}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605892,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39},{"i":"2_16653286057185","x":583,"y":241,"w":30,"h":27}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605908,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48},{"i":"2_16653286057185","x":570,"y":229,"w":43,"h":39}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605926,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57},{"i":"2_16653286057185","x":560,"y":220,"w":53,"h":48}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605942,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68},{"i":"2_16653286057185","x":550,"y":211,"w":63,"h":57}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605975,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72},{"i":"2_16653286057185","x":539,"y":200,"w":74,"h":68}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328605992,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77},{"i":"2_16653286057185","x":535,"y":196,"w":78,"h":72}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606011,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80},{"i":"2_16653286057185","x":532,"y":191,"w":81,"h":77}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606044,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87},{"i":"2_16653286057185","x":529,"y":188,"w":84,"h":80}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606109,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96},{"i":"2_16653286057185","x":524,"y":181,"w":89,"h":87}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606125,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98},{"i":"2_16653286057185","x":517,"y":172,"w":96,"h":96}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606142,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99},{"i":"2_16653286057185","x":516,"y":170,"w":97,"h":98}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606160,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101},{"i":"2_16653286057185","x":515,"y":169,"w":98,"h":99}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606193,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102},{"i":"2_16653286057185","x":513,"y":167,"w":100,"h":101}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606211,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105},{"i":"2_16653286057185","x":511,"y":166,"w":102,"h":102}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606242,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107},{"i":"2_16653286057185","x":508,"y":163,"w":105,"h":105}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606259,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107},{"i":"2_16653286057185","x":507,"y":161,"w":106,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606276,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108},{"i":"2_16653286057185","x":506,"y":161,"w":107,"h":107}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606294,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110},{"i":"2_16653286057185","x":506,"y":160,"w":107,"h":108}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606326,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111},{"i":"2_16653286057185","x":504,"y":158,"w":109,"h":110}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606374,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112},{"i":"2_16653286057185","x":502,"y":157,"w":111,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606443,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112},{"i":"2_16653286057185","x":502,"y":156,"w":111,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606477,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112},{"i":"2_16653286057185","x":501,"y":156,"w":112,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606510,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112},{"i":"2_16653286057185","x":498,"y":156,"w":115,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606543,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112},{"i":"2_16653286057185","x":497,"y":156,"w":116,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606577,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112},{"i":"2_16653286057185","x":495,"y":156,"w":118,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606593,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111},{"i":"2_16653286057185","x":493,"y":156,"w":120,"h":112}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606627,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111},{"i":"2_16653286057185","x":490,"y":157,"w":123,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606659,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110},{"i":"2_16653286057185","x":487,"y":157,"w":126,"h":111}]]}},{"type":"SHAPES_CHANGED","operator":"TOOL_RECT","timeStamp":1665328606794,"detail":{"shapeDatas":[[{"i":"2_16653286057185","x":486,"y":157,"w":127,"h":111},{"i":"2_16653286057185","x":486,"y":158,"w":127,"h":110}]]}}]}`
+`{
+  "startTime": 2668.89999999851,
+  "snapshot": {
+    "v": 0,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024,
+    "l": [
+      {
+        "id": "layer_1687544552448_1",
+        "name": "layer_1687544552448_2"
+      }
+    ],
+    "s": []
+  },
+  "events": [
+    {
+      "timeStamp": 1178.1000000014901,
+      "type": "TOOL_CHANGED",
+      "detail": {
+        "operator": "whiteboard",
+        "from": "TOOL_PEN",
+        "to": "TOOL_RECT"
+      }
+    },
+    {
+      "timeStamp": 1537.7000000029802,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445565373",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544556538,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#ff0000",
+              "g": 2
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 1554.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 0,
+              "h": 1
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1579.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 3,
+              "h": 6
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 0,
+              "h": 1
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1598.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 6,
+              "h": 11
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 3,
+              "h": 6
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1614.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 10,
+              "h": 16
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 6,
+              "h": 11
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1633.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 13,
+              "h": 21
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 10,
+              "h": 16
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1651.1000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 16,
+              "h": 26
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 13,
+              "h": 21
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1670.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 20,
+              "h": 31
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 16,
+              "h": 26
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1687.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 23,
+              "h": 35
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 20,
+              "h": 31
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1706.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 26,
+              "h": 39
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 23,
+              "h": 35
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1726.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 29,
+              "h": 43
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 26,
+              "h": 39
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1745.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 32,
+              "h": 45
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 29,
+              "h": 43
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1764.1000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 35,
+              "h": 48
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 32,
+              "h": 45
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1784.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 39,
+              "h": 50
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 35,
+              "h": 48
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1803.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 42,
+              "h": 53
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 39,
+              "h": 50
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1823.6000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 45,
+              "h": 56
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 42,
+              "h": 53
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1845.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 48,
+              "h": 59
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 45,
+              "h": 56
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1863.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 52,
+              "h": 62
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 48,
+              "h": 59
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1887.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 56,
+              "h": 64
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 52,
+              "h": 62
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1908.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 60,
+              "h": 67
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 56,
+              "h": 64
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1927.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 65,
+              "h": 70
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 60,
+              "h": 67
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1949.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 69,
+              "h": 72
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 65,
+              "h": 70
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1967.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 73,
+              "h": 75
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 69,
+              "h": 72
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 1987.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 78,
+              "h": 77
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 73,
+              "h": 75
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2006.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 83,
+              "h": 80
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 78,
+              "h": 77
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2025.1000000014901,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 90,
+              "h": 83
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 83,
+              "h": 80
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2042.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 96,
+              "h": 84
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 90,
+              "h": 83
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2061.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 102,
+              "h": 85
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 96,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2080.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 106,
+              "h": 86
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 102,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2101.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 107,
+              "h": 87
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 106,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2122,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 109,
+              "h": 88
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 107,
+              "h": 87
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2140.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 112,
+              "h": 88
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 109,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2159.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 112,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2176.3000000044703,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 118,
+              "h": 91
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2195.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 120,
+              "h": 91
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 118,
+              "h": 91
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2218.7000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 91
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 120,
+              "h": 91
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2243.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 92
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 91
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2269.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 122,
+              "h": 92
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 121,
+              "h": 92
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2302.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 123,
+              "h": 93
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 122,
+              "h": 92
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2324.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 124,
+              "h": 93
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 123,
+              "h": 93
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2347.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 126,
+              "h": 95
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 124,
+              "h": 93
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2368.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 127,
+              "h": 96
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 126,
+              "h": 95
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2386.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 128,
+              "h": 97
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 127,
+              "h": 96
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2407.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 130,
+              "h": 98
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 128,
+              "h": 97
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2433.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 131,
+              "h": 99
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 130,
+              "h": 98
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2462.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 132,
+              "h": 100
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 131,
+              "h": 99
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2480.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 133,
+              "h": 101
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 132,
+              "h": 100
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2501.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 134,
+              "h": 103
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 133,
+              "h": 101
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2522.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 136,
+              "h": 104
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 134,
+              "h": 103
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2565.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 138,
+              "h": 105
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 136,
+              "h": 104
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2603.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 140,
+              "h": 106
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 138,
+              "h": 105
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2621.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 141,
+              "h": 108
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 140,
+              "h": 106
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2646.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 143,
+              "h": 109
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 141,
+              "h": 108
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2664.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 144,
+              "h": 110
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 143,
+              "h": 109
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2681.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 145,
+              "h": 112
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 144,
+              "h": 110
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2698.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 147,
+              "h": 113
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 145,
+              "h": 112
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2716.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 149,
+              "h": 115
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 147,
+              "h": 113
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2742.4000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 149,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2773.2000000029802,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 2935.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "2_16875445565373",
+              "x": 58,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 5687.4000000059605,
+      "type": "TOOL_CHANGED",
+      "detail": {
+        "operator": "whiteboard",
+        "from": "TOOL_RECT",
+        "to": "TOOL_OVAL"
+      }
+    },
+    {
+      "timeStamp": 7692.30000000447,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 3,
+            "i": "3_16875445626924",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544562694,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#ff0000",
+              "g": 2
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 7709.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 0,
+              "h": 0
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7768,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 6,
+              "h": 3
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7788.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 12,
+              "h": 7
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 6,
+              "h": 3
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7804.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 18,
+              "h": 11
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 12,
+              "h": 7
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7822,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 24,
+              "h": 15
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 18,
+              "h": 11
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7842.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 28,
+              "h": 19
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 24,
+              "h": 15
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7862.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 32,
+              "h": 22
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 28,
+              "h": 19
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7881.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 36,
+              "h": 25
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 32,
+              "h": 22
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7899.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 40,
+              "h": 28
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 36,
+              "h": 25
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7918.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 44,
+              "h": 31
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 40,
+              "h": 28
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7935,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 48,
+              "h": 33
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 44,
+              "h": 31
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7952,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 52,
+              "h": 36
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 48,
+              "h": 33
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7970,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 55,
+              "h": 40
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 52,
+              "h": 36
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 7990.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 59,
+              "h": 43
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 55,
+              "h": 40
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8010.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 63,
+              "h": 45
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 59,
+              "h": 43
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8032.9000000059605,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 67,
+              "h": 48
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 63,
+              "h": 45
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8053,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 70,
+              "h": 51
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 67,
+              "h": 48
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8070.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 74,
+              "h": 54
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 70,
+              "h": 51
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8087,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 79,
+              "h": 58
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 74,
+              "h": 54
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8106,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 85,
+              "h": 62
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 79,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8124,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 90,
+              "h": 66
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 85,
+              "h": 62
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8143,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 95,
+              "h": 70
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 90,
+              "h": 66
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8165,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 99,
+              "h": 74
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 95,
+              "h": 70
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8183.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 103,
+              "h": 77
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 99,
+              "h": 74
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8201.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 107,
+              "h": 81
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 103,
+              "h": 77
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8222.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 110,
+              "h": 84
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 107,
+              "h": 81
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8239.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 113,
+              "h": 86
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 110,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8257.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 113,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8274.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 118,
+              "h": 92
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 115,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8292.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 121,
+              "h": 95
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 118,
+              "h": 92
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8310.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 124,
+              "h": 99
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 121,
+              "h": 95
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8332.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 127,
+              "h": 102
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 124,
+              "h": 99
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8352,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 129,
+              "h": 104
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 127,
+              "h": 102
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8377,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 130,
+              "h": 105
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 129,
+              "h": 104
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8397.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 131,
+              "h": 106
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 130,
+              "h": 105
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8416.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 133,
+              "h": 107
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 131,
+              "h": 106
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8443.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 135,
+              "h": 109
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 133,
+              "h": 107
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8464.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 136,
+              "h": 110
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 135,
+              "h": 109
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8486.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 137,
+              "h": 111
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 136,
+              "h": 110
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8512.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 139,
+              "h": 112
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 137,
+              "h": 111
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8532.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 140,
+              "h": 113
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 139,
+              "h": 112
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8554.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 114
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 140,
+              "h": 113
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8575.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 114
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8600.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 142,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 141,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8626.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 143,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 142,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8647.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 145,
+              "h": 115
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 143,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8676.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 147,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 145,
+              "h": 115
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8715.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 148,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 147,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 8819.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 149,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 148,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 9155.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 149,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 9179.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 150,
+              "h": 116
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 10980,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            },
+            {
+              "i": "3_16875445626924",
+              "x": 57,
+              "y": 41,
+              "w": 151,
+              "h": 117
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 11391.80000000447,
+      "type": "TOOL_CHANGED",
+      "detail": {
+        "operator": "whiteboard",
+        "from": "TOOL_OVAL",
+        "to": "TOOL_RECT"
+      }
+    },
+    {
+      "timeStamp": 12682.20000000298,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445676825",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544567685,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#ff0000",
+              "g": 2
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 12699.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 0
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12755.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 1
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12786.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 1,
+              "h": 3
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 0,
+              "h": 1
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12805.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 4,
+              "h": 6
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 1,
+              "h": 3
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12825.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 7,
+              "h": 10
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 4,
+              "h": 6
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12842.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 12,
+              "h": 14
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 7,
+              "h": 10
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12860.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 16,
+              "h": 19
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 12,
+              "h": 14
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12879,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 21,
+              "h": 24
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 16,
+              "h": 19
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12898,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 26,
+              "h": 29
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 21,
+              "h": 24
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12917,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 31,
+              "h": 34
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 26,
+              "h": 29
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12938.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 35,
+              "h": 37
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 31,
+              "h": 34
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12958.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 39,
+              "h": 39
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 35,
+              "h": 37
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 12976.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 42,
+              "h": 41
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 39,
+              "h": 39
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13000,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 45,
+              "h": 43
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 42,
+              "h": 41
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13018.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 49,
+              "h": 45
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 45,
+              "h": 43
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13036.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 54,
+              "h": 50
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 49,
+              "h": 45
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13055.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 60,
+              "h": 54
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 54,
+              "h": 50
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13072.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 65,
+              "h": 59
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 60,
+              "h": 54
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13089.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 70,
+              "h": 63
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 65,
+              "h": 59
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13110,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 75,
+              "h": 67
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 70,
+              "h": 63
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13129.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 79,
+              "h": 70
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 75,
+              "h": 67
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13149.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 83,
+              "h": 73
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 79,
+              "h": 70
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13172,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 86,
+              "h": 74
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 83,
+              "h": 73
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13190,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 88,
+              "h": 76
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 86,
+              "h": 74
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13208,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 91,
+              "h": 78
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 88,
+              "h": 76
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13226.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 94,
+              "h": 81
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 91,
+              "h": 78
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13245.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 97,
+              "h": 83
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 94,
+              "h": 81
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13264,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 100,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 97,
+              "h": 83
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13286.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 102,
+              "h": 87
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 100,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13304,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 103,
+              "h": 88
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 102,
+              "h": 87
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13334.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 104,
+              "h": 88
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 103,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13411.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 105,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 104,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13439.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 105,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13479.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13561.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13623.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 110,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13662.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 110,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13703.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13776.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13800.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 116,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13832.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 116,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13855.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 118,
+              "h": 89
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 13987.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 88
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 118,
+              "h": 89
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14010.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 117,
+              "h": 88
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14032.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 114,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14076,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14278.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 112,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14304.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 85
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14390.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14698.10000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 111,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 113,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14725.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 111,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14764,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 86
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 109,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14833.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 85
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 86
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14872.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 85
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 108,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 14996.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 85
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 15072,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 84
+            },
+            {
+              "i": "2_16875445676825",
+              "x": 78,
+              "y": 57,
+              "w": 107,
+              "h": 84
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22103.60000000149,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445771036",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544577107,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#000cffff",
+              "g": 2,
+              "b": "#646464ff"
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 22120.20000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 1,
+              "h": 0
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22138.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 13,
+              "h": 10
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 1,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22155.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 36,
+              "h": 26
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 13,
+              "h": 10
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22172.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 59,
+              "h": 42
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 36,
+              "h": 26
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22189.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 73,
+              "h": 55
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 59,
+              "h": 42
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22207.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 80,
+              "h": 62
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 73,
+              "h": 55
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22230.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 81,
+              "h": 63
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 80,
+              "h": 62
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 22274.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 81,
+              "h": 63
+            },
+            {
+              "i": "2_16875445771036",
+              "x": 268,
+              "y": 79,
+              "w": 81,
+              "h": 63
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24346.40000000596,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445793467",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544579351,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#000cffff",
+              "g": 2,
+              "b": "#6464645c"
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 24362.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 0,
+              "h": 0
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24382.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 9,
+              "h": 5
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24400.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 26,
+              "h": 15
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 9,
+              "h": 5
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24417.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 40,
+              "h": 26
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 26,
+              "h": 15
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24434.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 50,
+              "h": 36
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 40,
+              "h": 26
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24451.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 57,
+              "h": 44
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 50,
+              "h": 36
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24468.30000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 62,
+              "h": 51
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 57,
+              "h": 44
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24486.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 64,
+              "h": 55
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 62,
+              "h": 51
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24503.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 65,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 64,
+              "h": 55
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24525.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 66,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 65,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24589.70000000298,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 67,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 66,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24660.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 68,
+              "h": 58
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 67,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 24699.60000000149,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 68,
+              "h": 59
+            },
+            {
+              "i": "2_16875445793467",
+              "x": 314,
+              "y": 109,
+              "w": 68,
+              "h": 58
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25290.20000000298,
+      "type": "SHAPES_ADDED",
+      "detail": {
+        "operator": "whiteboard",
+        "shapeDatas": [
+          {
+            "t": 2,
+            "i": "2_16875445802908",
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0,
+            "z": 1687544580296,
+            "l": "layer_1687544552448_1",
+            "style": {
+              "a": "#000cffff",
+              "g": 2,
+              "b": "#6464645c"
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "timeStamp": 25306.80000000447,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 4,
+              "h": 2
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25323.90000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 18,
+              "h": 13
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 4,
+              "h": 2
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25341.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 32,
+              "h": 24
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 18,
+              "h": 13
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25358.40000000596,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 41,
+              "h": 32
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 32,
+              "h": 24
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25375.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 45,
+              "h": 35
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 41,
+              "h": 32
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25399.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 46,
+              "h": 37
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 45,
+              "h": 35
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "timeStamp": 25445.5,
+      "type": "SHAPES_RESIZED",
+      "detail": {
+        "shapeDatas": [
+          [
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 46,
+              "h": 37
+            },
+            {
+              "i": "2_16875445802908",
+              "x": 237,
+              "y": 64,
+              "w": 46,
+              "h": 37
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}
+`

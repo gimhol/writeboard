@@ -25,8 +25,14 @@ export class ToolButton extends IconButton {
 }
 export class ToolsView extends Subwin {
   private _toolButtonGroup: ButtonGroup<ToolButton>;
+  private _toolsBtns: ToolButton[];
   set onToolClick(v: (target: ToolButton) => void) {
     this._toolButtonGroup.onClick = v;
+  }
+  setToolType(toolEnum: ToolEnum) {
+    this._toolsBtns.forEach(v => {
+      v.checked = toolEnum === v.toolType;
+    })
   }
   constructor() {
     super();
@@ -35,9 +41,10 @@ export class ToolsView extends Subwin {
     this.content.styles.apply("", {
       flex: '1',
       overflowY: 'auto',
-      overflowX: 'hidden'
+      overflowX: 'hidden',
+      width: 64,
     });
-    const toolsBtns = [
+    this._toolsBtns = [
       new ToolButton().init({ src: './ic_tool_selector.svg', toolType: ToolEnum.Selector }),
       new ToolButton().init({ src: './ic_tool_pen.svg', toolType: ToolEnum.Pen }),
       new ToolButton().init({ src: './ic_tool_rect.svg', toolType: ToolEnum.Rect }),
@@ -48,8 +55,8 @@ export class ToolsView extends Subwin {
       new ToolButton().init({ src: './ic_tool_cross.svg', toolType: ToolEnum.Cross }),
       new ToolButton().init({ src: './ic_tool_lines.svg', toolType: ToolEnum.Lines })
     ];
-    toolsBtns.forEach(btn => this.content?.addChild(btn));
-    this._toolButtonGroup = new ButtonGroup({ buttons: toolsBtns });
+    this._toolsBtns.forEach(btn => this.content?.addChild(btn));
+    this._toolButtonGroup = new ButtonGroup({ buttons: this._toolsBtns });
     this.removeChild(this.footer);
   }
 }

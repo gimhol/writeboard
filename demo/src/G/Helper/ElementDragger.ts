@@ -67,7 +67,9 @@ export class ElementDragger {
       EventType.ViewDragStart, {
       detail: { pageX, pageY, dragger: this }
     });
-    this.responser?.dispatchEvent(event)
+    this.responser?.dispatchEvent(event);
+    event.preventDefault();
+    event.stopPropagation();
   }
   private _onmove = (pageX: number, pageY: number) => {
     if (!this._responser || !this._down) { return; }
@@ -81,7 +83,9 @@ export class ElementDragger {
       EventType.ViewDragging, {
       detail: { pageX, pageY, dragger: this }
     });
-    this.responser?.dispatchEvent(event)
+    this.responser?.dispatchEvent(event);
+    event.preventDefault();
+    event.stopPropagation();
   }
   private _onup = () => {
     if (!this._down) return;
@@ -93,6 +97,8 @@ export class ElementDragger {
     });
     this.responser?.dispatchEvent(event)
     this._down = false;
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   private _onpointerdown = (e: PointerEvent) => {
@@ -125,12 +131,12 @@ export class ElementDragger {
 
   get handles() { return this._handles; }
   set handles(v) {
-    this._handles.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
-    this._handles.forEach(v => v.removeEventListener('touchstart', this._ontouchstart));
+    this._handles.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown, true));
+    this._handles.forEach(v => v.removeEventListener('touchstart', this._ontouchstart, true));
     this._handles = v;
     if (!this._disabled) {
-      this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
-      this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
+      this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown, true));
+      this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { capture: true, passive: false }));
     }
   }
   set handleMove(v: OnMoveCallback | undefined) { this._handleMove = v }
@@ -147,25 +153,25 @@ export class ElementDragger {
     v ? this.stopListen() : this.startListen()
   }
   private startListen() {
-    document.addEventListener('pointermove', this._pointermove);
-    document.addEventListener('pointerup', this._onpointerup);
+    document.addEventListener('pointermove', this._pointermove, true);
+    document.addEventListener('pointerup', this._onpointerup, true);
     document.addEventListener('blur', this._onblur)
-    this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown));
+    this._handles.forEach(v => v.addEventListener('pointerdown', this._onpointerdown, true));
 
-    document.addEventListener('touchmove', this._ontouchmove);
-    document.addEventListener('touchend', this._ontouchend);
+    document.addEventListener('touchmove', this._ontouchmove, true);
+    document.addEventListener('touchend', this._ontouchend, true);
     document.addEventListener('touchcancel', this._ontouchend);
-    this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { passive: true }));
+    this._handles.forEach(v => v.addEventListener('touchstart', this._ontouchstart, { capture:true, passive: true }));
   }
 
   private stopListen() {
-    document.removeEventListener('pointermove', this._pointermove);
-    document.removeEventListener('pointerup', this._onpointerup);
+    document.removeEventListener('pointermove', this._pointermove, true);
+    document.removeEventListener('pointerup', this._onpointerup, true);
     document.removeEventListener('blur', this._onblur)
     this._handles.forEach(v => v.removeEventListener('pointerdown', this._onpointerdown));
 
-    document.removeEventListener('touchmove', this._ontouchmove);
-    document.removeEventListener('touchend', this._ontouchend);
+    document.removeEventListener('touchmove', this._ontouchmove, true);
+    document.removeEventListener('touchend', this._ontouchend, true);
     document.removeEventListener('touchcancel', this._ontouchend);
     this._handles.forEach(v => v.removeEventListener('touchstart', this._ontouchstart));
   }

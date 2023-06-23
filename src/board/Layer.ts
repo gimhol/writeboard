@@ -4,7 +4,7 @@ export interface ILayerInfoInit {
 }
 export interface ILayerInits {
   readonly info: ILayerInfoInit;
-  readonly onscreen: HTMLCanvasElement;
+  readonly onscreen?: HTMLCanvasElement;
 }
 export interface ILayerInfo {
   id: string;
@@ -20,15 +20,11 @@ export interface ILayer {
   opacity: number;
 }
 export class LayerInfo implements ILayerInfo {
-  protected a: string;
-  protected b: string;
-  get id() { return this.a; }
-  get name() { return this.b };
-  set id(v) { this.a = v; }
-  set name(v) { this.b = v };
+  id: string;
+  name: string;
   constructor(inits: ILayerInfoInit) {
-    this.a = inits.id;
-    this.b = inits.name;
+    this.id = inits.id;
+    this.name = inits.name;
   }
 }
 export class Layer implements ILayer {
@@ -50,15 +46,28 @@ export class Layer implements ILayer {
 
   constructor(inits: ILayerInits) {
     this._info = new LayerInfo(inits.info);
-    this._onscreen = inits.onscreen;
+    this._onscreen = inits.onscreen ?? document.createElement('canvas');
     this._onscreen.setAttribute('layer_id', this.id);
     this._onscreen.setAttribute('layer_name', this.name);
+    this._onscreen.tabIndex = 0;
+    this._onscreen.draggable = false;
+    this._onscreen.style.position = 'absolute';
+    this._onscreen.style.touchAction = 'none';
+    this._onscreen.style.userSelect = 'none';
+    this._onscreen.style.left = '0px';
+    this._onscreen.style.right = '0px';
+    this._onscreen.style.top = '0px';
+    this._onscreen.style.bottom = '0px';
+    this._onscreen.style.transition = 'opacity 200ms';
+    this._onscreen.style.outline = 'none';
+    this._onscreen.addEventListener('pointerdown', () => {
+      this._onscreen.focus();
+    }, { passive: true })
     this._ctx = this._onscreen.getContext('2d')!
     this._offscreen = document.createElement('canvas')
-    this._offscreen.width = inits.onscreen.width;
-    this._offscreen.height = inits.onscreen.height;
+    this._offscreen.width = this._onscreen.width;
+    this._offscreen.height = this._onscreen.height;
     this._octx = this._offscreen.getContext('2d')!
-
   }
   get width() {
     return this._onscreen.width;
