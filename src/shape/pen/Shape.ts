@@ -1,5 +1,5 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { Shape } from "../base"
 import { DotsType, PenData } from "./Data"
 import { IRect } from "../../utils/Rect"
@@ -149,4 +149,4 @@ export class ShapePen extends Shape<PenData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Pen, () => new PenData, d => new ShapePen(d))
+Gaia.registerShape(ShapeEnum.Pen, () => new PenData, d => new ShapePen(d))

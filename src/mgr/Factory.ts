@@ -1,10 +1,10 @@
 import { IShapeData, ShapeData } from "../shape/base/Data";
-import { IShapesMgr, ShapesMgr } from "./ShapesMgr";
+import { IShapesMgr, DefaultShapesMgr } from "./ShapesMgr";
 import { Shape } from "../shape/base/Shape";
 import type { ITool } from "../tools/base/Tool";
 import { InvalidTool } from "../tools/base/InvalidTool";
 import { FactoryEnum, FactoryType } from "./FactoryEnum";
-import { FactoryMgr } from "./FactoryMgr";
+import { Gaia } from "./Gaia";
 import { Board, ILayerInits, Layer } from "../board";
 import { BoardOptions } from "../board/Board";
 import type { ShapeType } from "../shape/ShapeEnum";
@@ -27,8 +27,8 @@ export interface IFactory {
   newLayer(inits: ILayerInits): Layer;
 }
 
-const Tag = '[Factory]';
-export class Factory implements IFactory {
+const Tag = '[DefaultFactory]';
+export class DefaultFactory implements IFactory {
   private _z = 0;
   private _time = 0;
   private _shapeTemplates: { [key in ShapeType]?: ShapeData } = {}
@@ -47,10 +47,10 @@ export class Factory implements IFactory {
     return new Board(this, options)
   }
   newShapesMgr(): IShapesMgr {
-    return new ShapesMgr();
+    return new DefaultShapesMgr();
   }
   newTool(toolType: ToolType): ITool {
-    const create = FactoryMgr.tools[toolType];
+    const create = Gaia.tool(toolType);
     if (!create) {
       console.warn(Tag, `newTool("${toolType}"), ${toolType} is not registered`);
       return new InvalidTool;
@@ -62,7 +62,7 @@ export class Factory implements IFactory {
     return ret;
   }
   newShapeData(shapeType: ShapeType): ShapeData {
-    const create = FactoryMgr.shapeDatas[shapeType];
+    const create = Gaia.shapeData(shapeType);
     if (!create) {
       console.warn(Tag, `newShapeData("${shapeType}"), ${shapeType} is not registered`);
       return new ShapeData;
@@ -91,8 +91,7 @@ export class Factory implements IFactory {
       data.id = this.newId(data);
       data.z = this.newZ(data);
     }
-    const create = FactoryMgr.shapes[type];
-    return create ? create(data) : new Shape(data);
+    return Gaia.shape(type)?.(data) ?? new Shape(data);
   }
   newLayerId(): string {
     return `layer_${Date.now()}_${++this._time}`
@@ -105,4 +104,4 @@ export class Factory implements IFactory {
   }
 }
 
-FactoryMgr.registerFactory(FactoryEnum.Default, () => new Factory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' })
+Gaia.registerFactory(FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' })

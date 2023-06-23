@@ -1,4 +1,4 @@
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { ShapeEnum } from "../ShapeEnum"
 import { ToolEnum } from "../../tools/ToolEnum"
 import { SimpleTool } from "../../tools/base/SimpleTool"
@@ -31,6 +31,6 @@ export class OvalTool extends SimpleTool {
   }
 }
 
-FactoryMgr.registerTool(ToolEnum.Oval,
+Gaia.registerTool(ToolEnum.Oval,
   () => new OvalTool(),
   { name: 'oval', desc: 'oval drawer', shape: ShapeEnum.Oval })

@@ -1,6 +1,5 @@
 import { Shape } from "../shape/base/Shape"
 import { IRect, Rect } from "../utils/Rect"
-const Tag = '[ShapesMgr]'
 export interface IShapesMgr {
   finds(id: string[]): Shape[]
   find(id: string): Shape | undefined
@@ -12,7 +11,8 @@ export interface IShapesMgr {
   hits(rect: IRect): Shape[]
 }
 
-export class ShapesMgr implements IShapesMgr {
+const Tag = '[DefaultShapesMgr]'
+export class DefaultShapesMgr implements IShapesMgr {
   finds(ids: string[]): Shape[] {
     const ret: Shape[] = []
     ids.forEach(id => {

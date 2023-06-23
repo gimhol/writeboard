@@ -5,11 +5,11 @@ export enum ToolEnum {
   Rect = 'TOOL_RECT',
   Oval = 'TOOL_OVAL',
   Text = 'TOOL_TEXT',
-  Polygon = 'TOOL_Polygon',
-  Tick = 'TOOL_Tick',
-  Cross = 'TOOL_Cross',
-  HalfTick = 'TOOL_HalfTick',
-  Lines = "TOOL_StraightLine"
+  Polygon = 'TOOL_POLYGON',
+  Tick = 'TOOL_TICK',
+  Cross = 'TOOL_CROSS',
+  HalfTick = 'TOOL_HALFTICK',
+  Lines = "TOOL_Lines"
 }
 export type ToolType = ToolEnum | string
 export function getToolName(type: ToolType): string {

@@ -1,5 +1,5 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { TextData } from "./Data"
 import { Shape } from "../base"
 import { IRect, Rect } from "../../utils/Rect"
@@ -161,6 +161,6 @@ export class ShapeText extends Shape<TextData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Text,
+Gaia.registerShape(ShapeEnum.Text,
   () => new TextData,
   d => new ShapeText(d))

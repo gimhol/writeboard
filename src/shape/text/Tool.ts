@@ -1,4 +1,4 @@
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { ShapeEnum } from "../ShapeEnum"
 import { ToolEnum } from "../../tools/ToolEnum"
 import { Board } from "../../board"
@@ -131,6 +131,6 @@ export class TextTool implements ITool {
   pointerDraw(dot: IDot): void { }
   pointerUp(dot: IDot): void { }
 }
-FactoryMgr.registerTool(ToolEnum.Text,
+Gaia.registerTool(ToolEnum.Text,
   () => new TextTool,
   { name: 'text', desc: 'text drawer', shape: ShapeEnum.Text })

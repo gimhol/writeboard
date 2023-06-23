@@ -1,6 +1,6 @@
 import { Board } from "../../board/Board"
 import { ToolEnum } from "../../tools/ToolEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { ShapePen } from "./Shape"
 import { ShapeEnum } from "../ShapeEnum"
 import { DotsType, PenData } from "./Data"
@@ -77,6 +77,6 @@ export class PenTool implements ITool {
   private _board: Board | undefined
 }
 
-FactoryMgr.registerTool(ToolEnum.Pen,
+Gaia.registerTool(ToolEnum.Pen,
   () => new PenTool(),
   { name: 'pen', desc: 'simple pen', shape: ShapeEnum.Pen })

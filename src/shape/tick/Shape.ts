@@ -1,5 +1,5 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { TickData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
@@ -24,4 +24,4 @@ export class ShapeTick extends ShapeNeedPath<TickData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Tick, () => new TickData, d => new ShapeTick(d))
+Gaia.registerShape(ShapeEnum.Tick, () => new TickData, d => new ShapeTick(d))

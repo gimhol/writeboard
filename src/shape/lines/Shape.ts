@@ -1,5 +1,5 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { Shape } from "../base"
 import { LinesData } from "./Data"
 import { IRect } from "../../utils/Rect"
@@ -117,4 +117,4 @@ export class ShapeLines extends Shape<LinesData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Lines, () => new LinesData, d => new ShapeLines(d))
+Gaia.registerShape(ShapeEnum.Lines, () => new LinesData, d => new ShapeLines(d))

@@ -1,5 +1,5 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { PolygonData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
@@ -12,4 +12,4 @@ export class ShapePolygon extends ShapeNeedPath<PolygonData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Polygon, () => new PolygonData, d => new ShapePolygon(d))
+Gaia.registerShape(ShapeEnum.Polygon, () => new PolygonData, d => new ShapePolygon(d))

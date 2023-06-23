@@ -1,5 +1,5 @@
 import {
-  Board, FactoryEnum, FactoryMgr, Player, Recorder,
+  Board, FactoryEnum, Gaia, Player, Recorder,
   Shape,
   ShapeData,
   ShapeEnum, ShapePen,
@@ -19,7 +19,7 @@ import { WorkspaceView } from "./G/CompoundView/Workspace/WorkspaceView";
 import { LayersView } from "./LayersView";
 import { ToolsView } from "./ToolsView";
 
-const factory = FactoryMgr.createFactory(FactoryEnum.Default);
+const factory = Gaia.factory(FactoryEnum.Default)();
 
 let board: Board
 
@@ -38,7 +38,7 @@ const menu = new Menu(workspace, {
   items: [{
     key: 'tool_view',
     label: '工具',
-    items: FactoryMgr.listTools().map(v => ({ key: v, label: v }))
+    items: Gaia.listTools().map(v => ({ key: v, label: v }))
   }, {
     key: 'menu_item_1',
     label: 'menu_item_1'
@@ -115,8 +115,8 @@ workspace.addChild(colorView)
 colorView.styles.apply('normal', (v) => ({ ...v, left: '150px', top: '400px' }))
 colorView.inner.addEventListener(ColorView.EventTypes.LineColorChange, (e) => {
   const rgba = (e as CustomEvent).detail as RGBA;
-  FactoryMgr.listTools().forEach(toolType => {
-    const shape = FactoryMgr.toolInfo(toolType)?.shape
+  Gaia.listTools().forEach(toolType => {
+    const shape = Gaia.toolInfo(toolType)?.shape
     if (!shape) return;
     const template = board.factory.shapeTemplate(shape);
     template.strokeStyle = '' + rgba.toHex();
@@ -124,8 +124,8 @@ colorView.inner.addEventListener(ColorView.EventTypes.LineColorChange, (e) => {
 })
 colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
   const rgba = (e as CustomEvent).detail as RGBA;
-  FactoryMgr.listTools().forEach(toolType => {
-    const shape = FactoryMgr.toolInfo(toolType)?.shape
+  Gaia.listTools().forEach(toolType => {
+    const shape = Gaia.toolInfo(toolType)?.shape
     if (!shape) return;
     const template = board.factory.shapeTemplate(shape);
     template.fillStyle = '' + rgba.toHex();
@@ -315,7 +315,7 @@ addLayerCanvas(layer.onscreen)
 layersView.addLayer(layer);
 
 Object.assign(window, {
-  board, factory, workspace, FactoryMgr
+  board, factory, workspace, FactoryMgr: Gaia
 });
 workspace.dockToRoot(layersView, DockableDirection.H, 'end');
 workspace.dockToRoot(toolsView, DockableDirection.H, 'start');

@@ -1,6 +1,6 @@
 import { RectHelper } from "../../utils/RectHelper"
 import { ShapeData } from "../../shape/base/Data"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { ShapeRect } from "../../shape/rect/Shape"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { Shape } from "../../shape/base"
@@ -126,7 +126,7 @@ export class SelectorTool implements ITool {
   }
 }
 
-FactoryMgr.registerTool(ToolEnum.Selector, () => new SelectorTool, {
+Gaia.registerTool(ToolEnum.Selector, () => new SelectorTool, {
   name: 'selector',
   desc: 'selector'
 })

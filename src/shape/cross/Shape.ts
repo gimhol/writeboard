@@ -1,5 +1,5 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { CrossData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
@@ -25,4 +25,4 @@ export class ShapeCross extends ShapeNeedPath<CrossData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Cross, () => new CrossData, d => new ShapeCross(d))
+Gaia.registerShape(ShapeEnum.Cross, () => new CrossData, d => new ShapeCross(d))

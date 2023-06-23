@@ -3307,7 +3307,7 @@ const DockableDirection_1 = require("./G/CompoundView/Workspace/DockableDirectio
 const WorkspaceView_1 = require("./G/CompoundView/Workspace/WorkspaceView");
 const LayersView_1 = require("./LayersView");
 const ToolsView_1 = require("./ToolsView");
-const factory = dist_1.FactoryMgr.createFactory(dist_1.FactoryEnum.Default);
+const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
 let board;
 const workspace = new WorkspaceView_1.WorkspaceView('body', {
     rect() {
@@ -3323,7 +3323,7 @@ const menu = new Menu_1.Menu(workspace, {
     items: [{
             key: 'tool_view',
             label: '工具',
-            items: dist_1.FactoryMgr.listTools().map(v => ({ key: v, label: v }))
+            items: dist_1.Gaia.listTools().map(v => ({ key: v, label: v }))
         }, {
             key: 'menu_item_1',
             label: 'menu_item_1'
@@ -3399,9 +3399,9 @@ workspace.addChild(colorView);
 colorView.styles.apply('normal', (v) => (Object.assign(Object.assign({}, v), { left: '150px', top: '400px' })));
 colorView.inner.addEventListener(ColorView_1.default.EventTypes.LineColorChange, (e) => {
     const rgba = e.detail;
-    dist_1.FactoryMgr.listTools().forEach(toolType => {
+    dist_1.Gaia.listTools().forEach(toolType => {
         var _a;
-        const shape = (_a = dist_1.FactoryMgr.toolInfo(toolType)) === null || _a === void 0 ? void 0 : _a.shape;
+        const shape = (_a = dist_1.Gaia.toolInfo(toolType)) === null || _a === void 0 ? void 0 : _a.shape;
         if (!shape)
             return;
         const template = board.factory.shapeTemplate(shape);
@@ -3410,9 +3410,9 @@ colorView.inner.addEventListener(ColorView_1.default.EventTypes.LineColorChange,
 });
 colorView.inner.addEventListener(ColorView_1.default.EventTypes.FillColorChange, (e) => {
     const rgba = e.detail;
-    dist_1.FactoryMgr.listTools().forEach(toolType => {
+    dist_1.Gaia.listTools().forEach(toolType => {
         var _a;
-        const shape = (_a = dist_1.FactoryMgr.toolInfo(toolType)) === null || _a === void 0 ? void 0 : _a.shape;
+        const shape = (_a = dist_1.Gaia.toolInfo(toolType)) === null || _a === void 0 ? void 0 : _a.shape;
         if (!shape)
             return;
         const template = board.factory.shapeTemplate(shape);
@@ -3581,7 +3581,7 @@ const layer = board.layer();
 addLayerCanvas(layer.onscreen);
 layersView.addLayer(layer);
 Object.assign(window, {
-    board, factory, workspace, FactoryMgr: dist_1.FactoryMgr
+    board, factory, workspace, FactoryMgr: dist_1.Gaia
 });
 workspace.dockToRoot(layersView, DockableDirection_1.DockableDirection.H, 'end');
 workspace.dockToRoot(toolsView, DockableDirection_1.DockableDirection.H, 'start');
@@ -4268,16 +4268,16 @@ __exportStar(require("./utils"), exports);
 },{"./board":41,"./features":48,"./mgr":54,"./shape":68,"./tools":103,"./utils":114}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Factory = void 0;
+exports.DefaultFactory = void 0;
 const Data_1 = require("../shape/base/Data");
 const ShapesMgr_1 = require("./ShapesMgr");
 const Shape_1 = require("../shape/base/Shape");
 const InvalidTool_1 = require("../tools/base/InvalidTool");
 const FactoryEnum_1 = require("./FactoryEnum");
-const FactoryMgr_1 = require("./FactoryMgr");
+const Gaia_1 = require("./Gaia");
 const board_1 = require("../board");
-const Tag = '[Factory]';
-class Factory {
+const Tag = '[DefaultFactory]';
+class DefaultFactory {
     constructor() {
         this._z = 0;
         this._time = 0;
@@ -4298,10 +4298,10 @@ class Factory {
         return new board_1.Board(this, options);
     }
     newShapesMgr() {
-        return new ShapesMgr_1.ShapesMgr();
+        return new ShapesMgr_1.DefaultShapesMgr();
     }
     newTool(toolType) {
-        const create = FactoryMgr_1.FactoryMgr.tools[toolType];
+        const create = Gaia_1.Gaia.tool(toolType);
         if (!create) {
             console.warn(Tag, `newTool("${toolType}"), ${toolType} is not registered`);
             return new InvalidTool_1.InvalidTool;
@@ -4313,7 +4313,7 @@ class Factory {
         return ret;
     }
     newShapeData(shapeType) {
-        const create = FactoryMgr_1.FactoryMgr.shapeDatas[shapeType];
+        const create = Gaia_1.Gaia.shapeData(shapeType);
         if (!create) {
             console.warn(Tag, `newShapeData("${shapeType}"), ${shapeType} is not registered`);
             return new Data_1.ShapeData;
@@ -4331,6 +4331,7 @@ class Factory {
         return Date.now() + (++this._z);
     }
     newShape(v) {
+        var _a, _b;
         const isNew = typeof v === 'string' || typeof v === 'number';
         const type = isNew ? v : v.t;
         const data = this.newShapeData(type);
@@ -4340,8 +4341,7 @@ class Factory {
             data.id = this.newId(data);
             data.z = this.newZ(data);
         }
-        const create = FactoryMgr_1.FactoryMgr.shapes[type];
-        return create ? create(data) : new Shape_1.Shape(data);
+        return (_b = (_a = Gaia_1.Gaia.shape(type)) === null || _a === void 0 ? void 0 : _a(data)) !== null && _b !== void 0 ? _b : new Shape_1.Shape(data);
     }
     newLayerId() {
         return `layer_${Date.now()}_${++this._time}`;
@@ -4353,10 +4353,10 @@ class Factory {
         return new board_1.Layer(inits);
     }
 }
-exports.Factory = Factory;
-FactoryMgr_1.FactoryMgr.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new Factory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
+exports.DefaultFactory = DefaultFactory;
+Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":41,"../shape/base/Data":56,"../shape/base/Shape":57,"../tools/base/InvalidTool":99,"./FactoryEnum":51,"./FactoryMgr":52,"./ShapesMgr":53}],51:[function(require,module,exports){
+},{"../board":41,"../shape/base/Data":56,"../shape/base/Shape":57,"../tools/base/InvalidTool":99,"./FactoryEnum":51,"./Gaia":52,"./ShapesMgr":53}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -4377,72 +4377,97 @@ exports.getFactoryName = getFactoryName;
 },{}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FactoryMgr = void 0;
+exports.Gaia = void 0;
 const ToolEnum_1 = require("../tools/ToolEnum");
 const ShapeEnum_1 = require("../shape/ShapeEnum");
-const Tag = '[Factory]';
-class FactoryMgr {
-    static listFactories() {
-        return Object.keys(this.factoryInfos);
-    }
-    static createFactory(type) {
-        const create = this.factorys[type];
-        if (!create) {
-            const error = new Error(`${Tag}create("${type}"), ${type} is not registered`);
-            throw error;
-        }
-        const ret = create();
-        if (ret.type !== type) {
-            console.warn(Tag, `create("${type}"), ${type} is not corrent! check member 'type' of your Factory!`);
-        }
-        return ret;
-    }
+const Tag = '[Gaia]';
+class Gaia {
     static registerFactory(type, creator, info) {
-        this.factorys[type] = creator;
-        this.factoryInfos[type] = info;
+        if (this._factorys.has(type)) {
+            console.warn(Tag, `registerFactory(), factory '${type}' already exists!`);
+        }
+        else if (this._factoryInfos.has(type)) {
+            console.warn(Tag, `registerFactory(), factory info '${type}' already exists!`);
+        }
+        this._factorys.set(type, creator);
+        this._factoryInfos.set(type, info);
     }
-    static listTools() {
-        return Object.keys(this.tools);
+    static listFactories() {
+        return Array.from(this._factoryInfos.keys());
     }
-    static toolInfo(type) {
-        return this.toolInfos[type];
+    static factory(type) {
+        return this._factorys.get(type);
     }
     static registerTool(type, creator, info) {
-        this.tools[type] = creator;
-        this.toolInfos[type] = Object.assign(Object.assign({}, info), { name: (info === null || info === void 0 ? void 0 : info.name) || (0, ToolEnum_1.getToolName)(type), desc: (info === null || info === void 0 ? void 0 : info.desc) || (0, ToolEnum_1.getToolName)(type) });
+        if (this._tools.has(type)) {
+            console.warn(Tag, `registerTool(), tool '${type}' already exists!`);
+        }
+        else if (this._toolInfos.has(type)) {
+            console.warn(Tag, `registerTool(), tool info '${type}' already exists!`);
+        }
+        this._tools.set(type, creator);
+        this._toolInfos.set(type, {
+            shape: info === null || info === void 0 ? void 0 : info.shape,
+            name: (info === null || info === void 0 ? void 0 : info.name) || (0, ToolEnum_1.getToolName)(type),
+            desc: (info === null || info === void 0 ? void 0 : info.desc) || (0, ToolEnum_1.getToolName)(type),
+        });
     }
-    static listShapes() {
-        return Object.keys(this.shapes);
+    static listTools() {
+        return Array.from(this._tools.keys());
+    }
+    static tool(type) {
+        return this._tools.get(type);
+    }
+    static toolInfo(type) {
+        return this._toolInfos.get(type);
     }
     static registerShape(type, dataCreator, shapeCreator, info) {
-        this.shapeDatas[type] = dataCreator;
-        this.shapes[type] = shapeCreator;
-        this.shapeInfos[type] = {
+        if (this._shapeInfos.has(type)) {
+            console.warn(Tag, `registerShape(), shape info '${type}' already exists!`);
+        }
+        else if (this._shapeDatas.has(type)) {
+            console.warn(Tag, `registerShape(), shape data'${type}' already exists!`);
+        }
+        else if (this._shapes.has(type)) {
+            console.warn(Tag, `registerShape(), shape '${type}' already exists!`);
+        }
+        this._shapeInfos.set(type, {
             name: (info === null || info === void 0 ? void 0 : info.name) || (0, ShapeEnum_1.getShapeName)(type),
             desc: (info === null || info === void 0 ? void 0 : info.desc) || (0, ShapeEnum_1.getShapeName)(type),
             type
-        };
+        });
+        this._shapeDatas.set(type, dataCreator);
+        this._shapes.set(type, shapeCreator);
+    }
+    static listShapes() {
+        return Array.from(this._shapes.keys());
     }
     static shapeInfo(type) {
-        return this.shapeInfos[type];
+        return this._shapeInfos.get(type);
+    }
+    static shapeData(type) {
+        return this._shapeDatas.get(type);
+    }
+    static shape(type) {
+        return this._shapes.get(type);
     }
 }
-exports.FactoryMgr = FactoryMgr;
-FactoryMgr.tools = {};
-FactoryMgr.toolInfos = {};
-FactoryMgr.shapeDatas = {};
-FactoryMgr.shapes = {};
-FactoryMgr.shapeInfos = {};
-FactoryMgr.factorys = {};
-FactoryMgr.factoryInfos = {};
+exports.Gaia = Gaia;
+Gaia._tools = new Map();
+Gaia._toolInfos = new Map();
+Gaia._shapeDatas = new Map();
+Gaia._shapes = new Map();
+Gaia._shapeInfos = new Map();
+Gaia._factorys = new Map();
+Gaia._factoryInfos = new Map();
 
 },{"../shape/ShapeEnum":55,"../tools/ToolEnum":98}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShapesMgr = void 0;
+exports.DefaultShapesMgr = void 0;
 const Rect_1 = require("../utils/Rect");
-const Tag = '[ShapesMgr]';
-class ShapesMgr {
+const Tag = '[DefaultShapesMgr]';
+class DefaultShapesMgr {
     constructor() {
         this._items = [];
         this._kvs = {};
@@ -4510,7 +4535,7 @@ class ShapesMgr {
         }
     }
 }
-exports.ShapesMgr = ShapesMgr;
+exports.DefaultShapesMgr = DefaultShapesMgr;
 
 },{"../utils/Rect":111}],54:[function(require,module,exports){
 "use strict";
@@ -4531,10 +4556,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Factory"), exports);
 __exportStar(require("./FactoryEnum"), exports);
-__exportStar(require("./FactoryMgr"), exports);
+__exportStar(require("./Gaia"), exports);
 __exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":50,"./FactoryEnum":51,"./FactoryMgr":52,"./ShapesMgr":53}],55:[function(require,module,exports){
+},{"./Factory":50,"./FactoryEnum":51,"./Gaia":52,"./ShapesMgr":53}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -4973,7 +4998,7 @@ exports.CrossData = CrossData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeCross = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Data_1 = require("./Data");
 const ShapeNeedPath_1 = require("../base/ShapeNeedPath");
 class ShapeCross extends ShapeNeedPath_1.ShapeNeedPath {
@@ -4991,20 +5016,20 @@ class ShapeCross extends ShapeNeedPath_1.ShapeNeedPath {
     }
 }
 exports.ShapeCross = ShapeCross;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Cross, () => new Data_1.CrossData, d => new ShapeCross(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Cross, () => new Data_1.CrossData, d => new ShapeCross(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":60}],62:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":60}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossTool = void 0;
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "CrossTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
 
-},{"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],63:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],63:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5049,7 +5074,7 @@ exports.HalfTickData = HalfTickData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeHalfTick = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Data_1 = require("./Data");
 const ShapeNeedPath_1 = require("../base/ShapeNeedPath");
 class ShapeHalfTick extends ShapeNeedPath_1.ShapeNeedPath {
@@ -5069,20 +5094,20 @@ class ShapeHalfTick extends ShapeNeedPath_1.ShapeNeedPath {
     }
 }
 exports.ShapeHalfTick = ShapeHalfTick;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.HalfTick, () => new Data_1.HalfTickData, d => new ShapeHalfTick(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.HalfTick, () => new Data_1.HalfTickData, d => new ShapeHalfTick(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":64}],66:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":64}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickTool = void 0;
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "HalfTickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
 
-},{"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],67:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],67:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
 },{"./Data":64,"./Shape":65,"./Tool":66,"dup":63}],68:[function(require,module,exports){
 "use strict";
@@ -5153,7 +5178,7 @@ exports.LinesData = LinesData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeLines = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const base_1 = require("../base");
 const Data_1 = require("./Data");
 class ShapeLines extends base_1.Shape {
@@ -5260,14 +5285,14 @@ class ShapeLines extends base_1.Shape {
     }
 }
 exports.ShapeLines = ShapeLines;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeLines(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeLines(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base":59,"./Data":69}],71:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base":59,"./Data":69}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesTool = void 0;
 const ToolEnum_1 = require("../../tools/ToolEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const event_1 = require("../../event");
 const Tag = '[LinesTool]';
@@ -5439,9 +5464,9 @@ class LinesTool {
     }
 }
 exports.LinesTool = LinesTool;
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
 
-},{"../../event":44,"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../ShapeEnum":55}],72:[function(require,module,exports){
+},{"../../event":44,"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../ShapeEnum":55}],72:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
 },{"./Data":69,"./Shape":70,"./Tool":71,"dup":63}],73:[function(require,module,exports){
 "use strict";
@@ -5468,7 +5493,7 @@ exports.OvalData = OvalData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeOval = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Data_1 = require("./Data");
 const ShapeNeedPath_1 = require("../base/ShapeNeedPath");
 class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
@@ -5485,13 +5510,13 @@ class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
     }
 }
 exports.ShapeOval = ShapeOval;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":73}],75:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":73}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
@@ -5527,9 +5552,9 @@ class OvalTool extends SimpleTool_1.SimpleTool {
     }
 }
 exports.OvalTool = OvalTool;
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],76:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],76:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
 },{"./Data":73,"./Shape":74,"./Tool":75,"dup":63}],77:[function(require,module,exports){
 "use strict";
@@ -5583,7 +5608,7 @@ exports.PenData = PenData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePen = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const base_1 = require("../base");
 const Data_1 = require("./Data");
 class ShapePen extends base_1.Shape {
@@ -5722,14 +5747,14 @@ class ShapePen extends base_1.Shape {
     }
 }
 exports.ShapePen = ShapePen;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base":59,"./Data":77}],79:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base":59,"./Data":77}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
 const ToolEnum_1 = require("../../tools/ToolEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const Data_1 = require("./Data");
 const event_1 = require("../../event");
@@ -5799,9 +5824,9 @@ class PenTool {
     }
 }
 exports.PenTool = PenTool;
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event":44,"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../ShapeEnum":55,"./Data":77}],80:[function(require,module,exports){
+},{"../../event":44,"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../ShapeEnum":55,"./Data":77}],80:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
 },{"./Data":77,"./Shape":78,"./Tool":79,"dup":63}],81:[function(require,module,exports){
 "use strict";
@@ -5835,7 +5860,7 @@ exports.PolygonData = PolygonData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePolygon = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Data_1 = require("./Data");
 const ShapeNeedPath_1 = require("../base/ShapeNeedPath");
 class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
@@ -5847,13 +5872,13 @@ class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
     }
 }
 exports.ShapePolygon = ShapePolygon;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":81}],83:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":81}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonTool = void 0;
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
@@ -5861,9 +5886,9 @@ Object.defineProperty(exports, "PolygonTool", { enumerable: true, get: function 
 const desc = {
     name: 'Polygon', desc: 'Polygon Drawer', shape: ShapeEnum_1.ShapeEnum.Polygon
 };
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
 
-},{"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],84:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],84:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
 },{"./Data":81,"./Shape":82,"./Tool":83,"dup":63}],85:[function(require,module,exports){
 "use strict";
@@ -5889,7 +5914,7 @@ exports.RectData = RectData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRect = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Data_1 = require("./Data");
 const ShapeNeedPath_1 = require("../base/ShapeNeedPath");
 class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
@@ -5901,20 +5926,20 @@ class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
     }
 }
 exports.ShapeRect = ShapeRect;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":85}],87:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":85}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],88:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],88:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
 },{"./Data":85,"./Shape":86,"./Tool":87,"dup":63}],89:[function(require,module,exports){
 "use strict";
@@ -5963,7 +5988,7 @@ exports.TextData = TextData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Data_1 = require("./Data");
 const base_1 = require("../base");
 const Rect_1 = require("../../utils/Rect");
@@ -6112,9 +6137,9 @@ class ShapeText extends base_1.Shape {
     }
 }
 exports.ShapeText = ShapeText;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/FactoryMgr":52,"../../utils/Rect":111,"../ShapeEnum":55,"../base":59,"./Data":89,"./TextSelection":91}],91:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../../utils/Rect":111,"../ShapeEnum":55,"../base":59,"./Data":89,"./TextSelection":91}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -6135,7 +6160,7 @@ exports.TextSelection = TextSelection;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const event_1 = require("../../event");
@@ -6260,9 +6285,9 @@ class TextTool {
     pointerUp(dot) { }
 }
 exports.TextTool = TextTool;
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":44,"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../ShapeEnum":55}],93:[function(require,module,exports){
+},{"../../event":44,"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../ShapeEnum":55}],93:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6308,7 +6333,7 @@ exports.TickData = TickData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeTick = void 0;
 const ShapeEnum_1 = require("../ShapeEnum");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Data_1 = require("./Data");
 const ShapeNeedPath_1 = require("../base/ShapeNeedPath");
 class ShapeTick extends ShapeNeedPath_1.ShapeNeedPath {
@@ -6324,20 +6349,20 @@ class ShapeTick extends ShapeNeedPath_1.ShapeNeedPath {
     }
 }
 exports.ShapeTick = ShapeTick;
-FactoryMgr_1.FactoryMgr.registerShape(ShapeEnum_1.ShapeEnum.Tick, () => new Data_1.TickData, d => new ShapeTick(d));
+Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Tick, () => new Data_1.TickData, d => new ShapeTick(d));
 
-},{"../../mgr/FactoryMgr":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":94}],96:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../ShapeEnum":55,"../base/ShapeNeedPath":58,"./Data":94}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickTool = void 0;
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "TickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
 
-},{"../../mgr/FactoryMgr":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],97:[function(require,module,exports){
+},{"../../mgr/Gaia":52,"../../tools/ToolEnum":98,"../../tools/base/SimpleTool":100,"../ShapeEnum":55}],97:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
 },{"./Data":94,"./Shape":95,"./Tool":96,"dup":63}],98:[function(require,module,exports){
 "use strict";
@@ -6351,11 +6376,11 @@ var ToolEnum;
     ToolEnum["Rect"] = "TOOL_RECT";
     ToolEnum["Oval"] = "TOOL_OVAL";
     ToolEnum["Text"] = "TOOL_TEXT";
-    ToolEnum["Polygon"] = "TOOL_Polygon";
-    ToolEnum["Tick"] = "TOOL_Tick";
-    ToolEnum["Cross"] = "TOOL_Cross";
-    ToolEnum["HalfTick"] = "TOOL_HalfTick";
-    ToolEnum["Lines"] = "TOOL_StraightLine";
+    ToolEnum["Polygon"] = "TOOL_POLYGON";
+    ToolEnum["Tick"] = "TOOL_TICK";
+    ToolEnum["Cross"] = "TOOL_CROSS";
+    ToolEnum["HalfTick"] = "TOOL_HALFTICK";
+    ToolEnum["Lines"] = "TOOL_Lines";
 })(ToolEnum = exports.ToolEnum || (exports.ToolEnum = {}));
 function getToolName(type) {
     switch (type) {
@@ -6576,7 +6601,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
 const RectHelper_1 = require("../../utils/RectHelper");
 const Data_1 = require("../../shape/base/Data");
-const FactoryMgr_1 = require("../../mgr/FactoryMgr");
+const Gaia_1 = require("../../mgr/Gaia");
 const Shape_1 = require("../../shape/rect/Shape");
 const ToolEnum_1 = require("../ToolEnum");
 const Events_1 = require("../../event/Events");
@@ -6700,12 +6725,12 @@ class SelectorTool {
     }
 }
 exports.SelectorTool = SelectorTool;
-FactoryMgr_1.FactoryMgr.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     name: 'selector',
     desc: 'selector'
 });
 
-},{"../../event/Events":43,"../../mgr/FactoryMgr":52,"../../shape/base/Data":56,"../../shape/rect/Shape":86,"../../utils/RectHelper":112,"../ToolEnum":98}],105:[function(require,module,exports){
+},{"../../event/Events":43,"../../mgr/Gaia":52,"../../shape/base/Data":56,"../../shape/rect/Shape":86,"../../utils/RectHelper":112,"../ToolEnum":98}],105:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

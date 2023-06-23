@@ -1,5 +1,5 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { OvalData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
@@ -17,4 +17,4 @@ export class ShapeOval extends ShapeNeedPath<OvalData> {
   }
 }
 
-FactoryMgr.registerShape(ShapeEnum.Oval, () => new OvalData, d => new ShapeOval(d))
+Gaia.registerShape(ShapeEnum.Oval, () => new OvalData, d => new ShapeOval(d))

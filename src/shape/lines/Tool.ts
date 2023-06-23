@@ -1,6 +1,6 @@
 import { Board } from "../../board/Board"
 import { ToolEnum } from "../../tools/ToolEnum"
-import { FactoryMgr } from "../../mgr/FactoryMgr"
+import { Gaia } from "../../mgr/Gaia"
 import { ShapeLines } from "./Shape"
 import { ShapeEnum } from "../ShapeEnum"
 import { LinesData } from "./Data"
@@ -170,6 +170,6 @@ export class LinesTool implements ITool {
   private _board: Board | undefined
 }
 
-FactoryMgr.registerTool(ToolEnum.Lines,
+Gaia.registerTool(ToolEnum.Lines,
   () => new LinesTool(),
   { name: 'lines', desc: 'lines', shape: ShapeEnum.Lines })
