@@ -11,6 +11,7 @@ import { IDockable as IDockable } from "./Dockable";
 import { HoverOb } from "../../Observer/HoverOb";
 import DockResultPreview from "../DockResultPreview";
 import { DockPosition } from "../DockPosition";
+import HeaderView from "./HeaderView";
 
 export interface WorkspaceInits {
   rect?: GetValue<Rect>;
@@ -26,6 +27,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
   private _undockedWins = new List<Subwin>();
   private _dockedWins = new List<Subwin>();
   private _draggingIn: Subwin | DockView | undefined;
+  private _header = new HeaderView();
   private _updateUndockedWinsStyle() {
     this._undockedWins.forEach((win, idx, arr) => {
       win.styles.apply(
@@ -86,6 +88,7 @@ export class WorkspaceView<T extends keyof HTMLElementTagNameMap = keyof HTMLEle
     this.styles.addCls('workspaceView')
     this._rect = inits.rect;
     this._zIndex = inits?.zIndex ?? this._zIndex;
+    this.addChild(this._header)
     this.addChild(this._rootDockView);
     this.addChild(this._dockResultPreview)
     this.addChild(this._dockLeftIndicator);

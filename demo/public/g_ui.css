@@ -56,6 +56,10 @@
   justify-content: center;
 }
 
+.g_button:hover {
+  background: #00000044
+}
+
 .g_button_small {
   min-width: 18px;
   height: 18px;
@@ -83,10 +87,6 @@
 
 .g_button_checked {
   background: #00000022;
-}
-
-.g_button_hover {
-  background: #00000044
 }
 
 .g_dockable_resizer {
@@ -248,4 +248,16 @@
 
 .g_menu_item_danger:hover {
   background-color: #FF5555FF;
+}
+
+.g_workspace_header_btn {
+  color: lightgray;
+  padding: 10px 5px;
+}
+
+.g_workspace_header_btn:hover {
+  background-color: #ffffff22 !important;
+}
+.g_workspace_header_btn:active {
+  background-color: #ffffff11 !important;
 }

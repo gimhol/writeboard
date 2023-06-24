@@ -111,7 +111,6 @@ export class Button extends View<'button'> {
   updateStyle() {
     const styles = this.styles;
     styles[this.checked ? 'addCls' : 'delCls']('g_button_checked')
-    styles[this.hover ? 'addCls' : 'delCls']('g_button_hover')
     styles[this.disabled ? 'addCls' : 'delCls']('g_button_disbaled')
     styles.refresh();
   }

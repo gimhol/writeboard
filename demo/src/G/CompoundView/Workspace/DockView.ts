@@ -15,9 +15,9 @@ export const DockViewStyles: Partial<Record<StyleName, Style>> = {
   [StyleName.AsRoot]: {
     position: 'absolute',
     left: 0,
-    top: 0,
+    top: 30,
+    height: 'calc(100% - 30px)',
     width: '100%',
-    height: '100%',
   },
   [StyleName.Normal]: {
     pointerEvents: 'none',

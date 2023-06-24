@@ -1,25 +1,19 @@
 import {
-  Board, FactoryEnum, Gaia, Player, Recorder,
-  Shape,
-  ShapeData,
-  ShapeEnum, ShapePen,
+  Board, FactoryEnum, Gaia,
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
-import { RGBA } from "./colorPalette/Color";
 import ColorView from "./ColorView";
-import demo_helloworld from "./demo_helloworld";
-import demo_rect_n_oval from "./demo_rect_n_oval";
-import { Button } from "./G/BaseView/Button";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { DockableDirection } from "./G/CompoundView/Workspace/DockableDirection";
 import { WorkspaceView } from "./G/CompoundView/Workspace/WorkspaceView";
-import { SnapshotView } from "./SnapshotView";
 import { LayersView } from "./LayersView";
 import { RecorderView } from "./RecorderView";
+import { SnapshotView } from "./SnapshotView";
 import { ToolsView } from "./ToolsView";
 import { ToyView } from "./ToyView";
+import { RGBA } from "./colorPalette/Color";
 
 const factory = Gaia.factory(FactoryEnum.Default)();
 
@@ -156,13 +150,11 @@ const recorderView = new RecorderView();
 recorderView.board = () => board;
 workspace.addChild(recorderView)
 
-const rootView = new View('div');
-rootView.styles.apply('', { pointerEvents: 'all' }).addCls('root');
-workspace.rootDockView.setContent(rootView);
-
 const blackboard = new View('div');
-blackboard.styles.addCls('blackboard');
-rootView.addChild(blackboard);
+blackboard.styles.addCls('root', 'blackboard').apply('', {
+  pointerEvents: 'all',
+});
+workspace.rootDockView.setContent(blackboard);
 
 board = factory.newWhiteBoard({ width: 1024, height: 1024, element: blackboard.inner });
 Object.assign(window, {
