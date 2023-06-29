@@ -1,3 +1,4 @@
+import { Styles } from "../../BaseView/Styles";
 import { View } from "../../BaseView/View";
 import { ViewDragger } from "../../Helper/ViewDragger";
 import { HoverOb } from "../../Observer/HoverOb";
@@ -8,6 +9,7 @@ import { DockableDirection } from "./DockableDirection";
 export class DockableResizer extends View<'div'> {
   constructor(direction: DockableDirection) {
     super('div');
+    Styles.css('./g_dockable_resizer.css')
     const w = direction === DockableDirection.H ? 1 : undefined;
     const h = direction === DockableDirection.V ? 1 : undefined;
     const hOffset = direction === DockableDirection.H ? -3 : 0;

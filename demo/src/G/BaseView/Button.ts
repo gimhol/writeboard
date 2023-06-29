@@ -1,4 +1,5 @@
 import { SizeType } from "./SizeType";
+import { Styles } from "./Styles";
 import { View } from "./View";
 
 export type ButtonContent = string | View;
@@ -70,6 +71,8 @@ export class Button extends View<'button'> {
   }
   constructor() {
     super('button');
+    Styles.css('./g_button.css');
+
     this.hoverOb;
     this.styles.addCls('g_button');
 

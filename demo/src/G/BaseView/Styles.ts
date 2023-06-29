@@ -3,6 +3,20 @@ import { ReValue, reValue } from "../utils";
 import { View } from "./View";
 
 export class Styles<T extends string = string, V extends View<keyof HTMLElementTagNameMap> = View<keyof HTMLElementTagNameMap>>{
+  static csses = new Map<string, HTMLLinkElement>();
+
+  static css(href: string): HTMLLinkElement {
+    let link = this.csses.get(href);
+    if (link) { return link; }
+
+    link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+    this.csses.set(href, link);
+    return link;
+  }
+
   private _view?: V;
   private _pool?: Map<T, Style | null>;
   private _applieds?: Set<T>;

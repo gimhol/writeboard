@@ -186,6 +186,7 @@ class ColorNumInput extends NumberInput_1.NumberInput {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.ButtonState = void 0;
 const SizeType_1 = require("./SizeType");
+const Styles_1 = require("./Styles");
 const View_1 = require("./View");
 var ButtonState;
 (function (ButtonState) {
@@ -251,6 +252,7 @@ class Button extends View_1.View {
             [SizeType_1.SizeType.Middle]: 'g_button_middle',
             [SizeType_1.SizeType.Large]: 'g_button_large',
         };
+        Styles_1.Styles.css('./g_button.css');
         this.hoverOb;
         this.styles.addCls('g_button');
         this.inner.addEventListener('click', () => {
@@ -329,7 +331,7 @@ class Button extends View_1.View {
 exports.Button = Button;
 Button.State = ButtonState;
 
-},{"./SizeType":6,"./View":10}],3:[function(require,module,exports){
+},{"./SizeType":6,"./Styles":8,"./View":10}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Canvas = void 0;
@@ -524,6 +526,18 @@ exports.Styles = void 0;
 const StyleType_1 = require("./StyleType");
 const utils_1 = require("../utils");
 class Styles {
+    static css(href) {
+        let link = this.csses.get(href);
+        if (link) {
+            return link;
+        }
+        link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+        this.csses.set(href, link);
+        return link;
+    }
     get view() { return this._view; }
     get pool() {
         var _a;
@@ -642,6 +656,7 @@ class Styles {
     }
 }
 exports.Styles = Styles;
+Styles.csses = new Map();
 
 },{"../utils":32,"./StyleType":7}],9:[function(require,module,exports){
 "use strict";
@@ -1030,6 +1045,7 @@ exports.IconButton = IconButton;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Menu = exports.MenuEventType = exports.MenuItemView = void 0;
+const Styles_1 = require("../BaseView/Styles");
 const View_1 = require("../BaseView/View");
 const HoverOb_1 = require("../Observer/HoverOb");
 const utils_1 = require("../utils");
@@ -1106,6 +1122,7 @@ class Menu extends View_1.View {
         super('div');
         this._items = [];
         this._zIndex = 9999;
+        Styles_1.Styles.css('./g_menu.css');
         this._container = container;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
         this.styles.setCls('g_menu');
@@ -1181,7 +1198,7 @@ class Menu extends View_1.View {
 exports.Menu = Menu;
 Menu.EventType = MenuEventType;
 
-},{"../BaseView/View":10,"../Observer/HoverOb":31,"../utils":32}],15:[function(require,module,exports){
+},{"../BaseView/Styles":8,"../BaseView/View":10,"../Observer/HoverOb":31,"../utils":32}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinFooter = void 0;
@@ -1230,6 +1247,7 @@ const Footer_1 = require("./Footer");
 const Header_1 = require("./Header");
 const View_1 = require("../../BaseView/View");
 const ViewDragger_1 = require("../../Helper/ViewDragger");
+const Styles_1 = require("../../BaseView/Styles");
 var StyleNames;
 (function (StyleNames) {
     StyleNames["Normal"] = "normal";
@@ -1272,6 +1290,7 @@ class Subwin extends View_1.View {
                 this._dragger.offsetX = (w1 - 60) * this._dragger.offsetX / w0;
             }
         };
+        Styles_1.Styles.css('./g_subwin.css');
         this.styles.addCls('g_subwin').apply(StyleNames.Normal, {});
         this.addChild(this._header, this._footer);
         this._dragger = new ViewDragger_1.ViewDragger({
@@ -1332,7 +1351,7 @@ class Subwin extends View_1.View {
 exports.Subwin = Subwin;
 Subwin.StyleNames = StyleNames;
 
-},{"../../BaseView/View":10,"../../Helper/ViewDragger":29,"./Footer":15,"./Header":16}],18:[function(require,module,exports){
+},{"../../BaseView/Styles":8,"../../BaseView/View":10,"../../Helper/ViewDragger":29,"./Footer":15,"./Header":16}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockView = exports.DockViewStyles = exports.StyleName = void 0;
@@ -1524,6 +1543,7 @@ var DockableDirection;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableResizer = void 0;
+const Styles_1 = require("../../BaseView/Styles");
 const View_1 = require("../../BaseView/View");
 const ViewDragger_1 = require("../../Helper/ViewDragger");
 const HoverOb_1 = require("../../Observer/HoverOb");
@@ -1533,6 +1553,7 @@ const DockableDirection_1 = require("./DockableDirection");
 class DockableResizer extends View_1.View {
     constructor(direction) {
         super('div');
+        Styles_1.Styles.css('./g_dockable_resizer.css');
         const w = direction === DockableDirection_1.DockableDirection.H ? 1 : undefined;
         const h = direction === DockableDirection_1.DockableDirection.V ? 1 : undefined;
         const hOffset = direction === DockableDirection_1.DockableDirection.H ? -3 : 0;
@@ -1585,7 +1606,7 @@ class DockableResizer extends View_1.View {
 }
 exports.DockableResizer = DockableResizer;
 
-},{"../../BaseView/View":10,"../../Helper/ViewDragger":29,"../../Observer/HoverOb":31,"../SubWin":17,"./DockView":18,"./DockableDirection":19}],21:[function(require,module,exports){
+},{"../../BaseView/Styles":8,"../../BaseView/View":10,"../../Helper/ViewDragger":29,"../../Observer/HoverOb":31,"../SubWin":17,"./DockView":18,"./DockableDirection":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Button_1 = require("../../BaseView/Button");
@@ -1696,40 +1717,37 @@ class IndicatorView extends View_1.View {
         this._center = new IndicatorImage_1.IndicatorImage({ type: DockPosition_1.DockPosition.ToCenter }).styles.apply('override', {
             borderRadius: 0,
         }).view;
-        this._dockResultPreview = new DockResultPreview_1.default()
+        this._dockPreview = new DockResultPreview_1.default()
             .addIndicator(DockPosition_1.DockPosition.ToLeft, this._left)
             .addIndicator(DockPosition_1.DockPosition.ToRight, this._right)
             .addIndicator(DockPosition_1.DockPosition.ToTop, this._top)
             .addIndicator(DockPosition_1.DockPosition.ToBottom, this._bottom)
             .addIndicator(DockPosition_1.DockPosition.ToCenter, this._center);
-        this.styles.addCls('g_indicator_view');
-        this.styles.register('appear', {
-            opacity: 1,
-            pointerEvents: 'all'
-        });
-        const content = new View_1.View('div');
-        content.styles.addCls('content');
-        content.addChild(new View_1.View('div'), this._top, new View_1.View('div'), this._left, this._center, this._right, new View_1.View('div'), this._bottom, new View_1.View('div'));
-        this.addChild(this._dockResultPreview);
-        this.addChild(content);
-        this._resizeOb = new ResizeObserver(entries => {
+        this._onResize = (entries) => {
             entries.forEach(e => {
                 var _a;
                 switch (e.target) {
                     case (_a = this._following) === null || _a === void 0 ? void 0 : _a.inner: {
                         const { left, top, width, height } = e.target.getBoundingClientRect();
-                        this.styles.apply('normal', v => (Object.assign(Object.assign({}, v), { left, top, width, height })));
+                        this.styles.apply('normal', { left, top, width, height });
                         break;
                     }
                 }
             });
-        });
+        };
+        this._resizeOb = new ResizeObserver(this._onResize);
+        this.styles.addCls('g_indicator_view');
+        const content = new View_1.View('div');
+        content.styles.addCls('content');
+        content.addChild(new View_1.View('div'), this._top, new View_1.View('div'), this._left, this._center, this._right, new View_1.View('div'), this._bottom, new View_1.View('div'));
+        this.addChild(this._dockPreview);
+        this.addChild(content);
     }
     fakeIn(v) {
         this._following = v;
         this._resizeOb.observe(this._following.inner);
         const { left, top, width, height } = v.inner.getBoundingClientRect();
-        this.styles.apply('normal', v => (Object.assign(Object.assign({}, v), { left, top, width, height })));
+        this.styles.apply('normal', { left, top, width, height });
         this.styles.addCls('g_indicator_view_appear');
         this.hoverOb.disabled = false;
         this._left.fakeIn();

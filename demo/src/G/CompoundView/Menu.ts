@@ -1,4 +1,5 @@
 import { CssPosition } from "../BaseView/StyleType";
+import { Styles } from "../BaseView/Styles";
 import { View } from "../BaseView/View";
 import { ViewEventMap } from "../Events/EventType";
 import { HoverOb } from "../Observer/HoverOb";
@@ -88,6 +89,7 @@ class GlobalPointerDown extends View<'div'>{
   constructor() {
     super('div');
     window.addEventListener('pointerdown', e => {
+      
       if (findParent(e.target, ele => !!View.try(ele, Menu))) {
         return;
       }
@@ -107,6 +109,8 @@ export class Menu<K extends string | number | symbol> extends View<'div'> implem
   get container() { return this._container; }
   constructor(container: View, inits?: IMenuInits<K>) {
     super('div');
+    Styles.css('./g_menu.css');
+    
     this._container = container;
     this._zIndex = inits?.zIndex ?? this._zIndex;
     this.styles.setCls('g_menu');

@@ -5,6 +5,7 @@ import { View } from "../../BaseView/View";
 import { ViewDragger } from "../../Helper/ViewDragger";
 import { IDockable } from "../Workspace/Dockable";
 import { DockableEventMap } from "../../Events/EventType";
+import { Styles } from "../../BaseView/Styles";
 export enum StyleNames {
   Normal = 'normal',
   Docked = 'docked'
@@ -40,6 +41,7 @@ export class Subwin extends View<'div'> implements IDockable {
   }
   constructor() {
     super('div');
+    Styles.css('./g_subwin.css')
     this.styles.addCls('g_subwin').apply(StyleNames.Normal, {});
     this.addChild(this._header, this._footer);
     this._dragger = new ViewDragger({

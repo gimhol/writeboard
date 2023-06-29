@@ -8,37 +8,52 @@ export class IndicatorView extends View<'div'> {
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
   }).view;
+
   _top = new IndicatorImage({ type: DockPosition.ToTop }).styles.apply('override', {
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   }).view;
+
   _right = new IndicatorImage({ type: DockPosition.ToRight }).styles.apply('override', {
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }).view;
+
   _bottom = new IndicatorImage({ type: DockPosition.ToBottom }).styles.apply('override', {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
   }).view;
+
   _center = new IndicatorImage({ type: DockPosition.ToCenter }).styles.apply('override', {
     borderRadius: 0,
   }).view;
 
-  _dockResultPreview = new DockResultPreview()
+  private _dockPreview = new DockResultPreview()
     .addIndicator(DockPosition.ToLeft, this._left)
     .addIndicator(DockPosition.ToRight, this._right)
     .addIndicator(DockPosition.ToTop, this._top)
     .addIndicator(DockPosition.ToBottom, this._bottom)
-    .addIndicator(DockPosition.ToCenter, this._center)
+    .addIndicator(DockPosition.ToCenter, this._center);
+
   private _following?: View;
-  private _resizeOb: ResizeObserver;
+
+  private _onResize: ResizeObserverCallback = (entries) => {
+    entries.forEach(e => {
+      switch (e.target) {
+        case this._following?.inner: {
+          const { left, top, width, height } = e.target.getBoundingClientRect();
+          this.styles.apply('normal', { left, top, width, height })
+          break;
+        }
+      }
+    })
+  }
+  
+  private _resizeOb = new ResizeObserver(this._onResize)
+
   constructor() {
     super('div');
-    this.styles.addCls('g_indicator_view')
-    this.styles.register('appear', {
-      opacity: 1,
-      pointerEvents: 'all'
-    });
+    this.styles.addCls('g_indicator_view');
 
     const content = new View('div');
     content.styles.addCls('content')
@@ -47,26 +62,15 @@ export class IndicatorView extends View<'div'> {
       this._left, this._center, this._right,
       new View('div'), this._bottom, new View('div')
     );
-    this.addChild(this._dockResultPreview)
+    this.addChild(this._dockPreview)
     this.addChild(content);
-    this._resizeOb = new ResizeObserver(entries => {
-      entries.forEach(e => {
-        switch (e.target) {
-          case this._following?.inner: {
-            const { left, top, width, height } = e.target.getBoundingClientRect();
-            this.styles.apply('normal', v => ({ ...v, left, top, width, height }))
-            break;
-          }
-        }
-      })
-    })
   }
 
   fakeIn(v: View) {
     this._following = v;
     this._resizeOb.observe(this._following.inner);
     const { left, top, width, height } = v.inner.getBoundingClientRect();
-    this.styles.apply('normal', v => ({ ...v, left, top, width, height }))
+    this.styles.apply('normal', { left, top, width, height })
     this.styles.addCls('g_indicator_view_appear');
     this.hoverOb.disabled = false;
     this._left.fakeIn();
@@ -75,6 +79,7 @@ export class IndicatorView extends View<'div'> {
     this._bottom.fakeIn();
     this._center.fakeIn();
   }
+
   fakeOut() {
     if (this._following) {
       this._resizeOb.unobserve(this._following.inner);
