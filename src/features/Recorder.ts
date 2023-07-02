@@ -1,24 +1,72 @@
+/******************************************************************
+ * Copyright @ 2023 朱剑豪. All rights reserverd.
+ * @file   src\features\Recorder.ts
+ * @author 朱剑豪
+ * @date   2023/07/02 23:31
+ * @desc   事件记录器
+ ******************************************************************/
+
 import { Board } from "../board";
 import { EventEnum } from "../event";
 import { Screenplay } from "./Screenplay";
 
 export class Recorder {
-  private cancellers: (() => void)[] = []
-  private _screenplay: Screenplay = {
-    startTime: Date.now(),
-    events: []
+  private _actor?: Board;
+  private _cancellers: (() => void)[] = []
+  private _screenplay?: Screenplay;
+  private _running = false;
+
+  constructor() {
+    console.log('[Recorder] constructor()')
   }
+
+  getScreenplay(): Screenplay | null {
+    return this._screenplay || null
+  }
+
+  getJson(): string | null {
+    return this._screenplay ? JSON.stringify(this._screenplay) : null
+  }
+
+  getActor(): Board | undefined {
+    return this._actor;
+  }
+
+  setActor(v: Board | undefined): this {
+    if (this._actor === v) {
+      return this;
+    }
+    if (this._running) { this.stop(); }
+    this._actor = v;
+    return this;
+  }
+
   destory(): void {
-    console.log('[Recorder] destory()')
-    this.cancellers.forEach(v => v())
-    this.cancellers = []
+    console.log('[Recorder] destory()');
   }
-  start(actor: Board) {
+
+  stop(): this {
+    console.log('[Recorder] stop()');
+    this._running = false;
+    this._cancellers.forEach(v => v())
+    this._cancellers = [];
+    return this;
+  }
+
+  start(): this {
     console.log('[Recorder] start()')
-    this.cancellers.forEach(v => v())
-    this.cancellers = []
+    const actor = this._actor;
+    if (!actor) {
+      console.warn('[Recorder] start() faild, actor not set.')
+      return this;
+    }
+
+    this._running = true;
+    this._cancellers.forEach(v => v())
+    this._cancellers = [];
+
     const startTime = new CustomEvent('').timeStamp;
-    this._screenplay = {
+    const screenplay: Screenplay = {
       startTime,
       snapshot: actor.toSnapshot(),
       events: []
@@ -26,22 +74,19 @@ export class Recorder {
     for (const key in EventEnum) {
       const v = (EventEnum as any)[key]
       const func = (e: CustomEvent) => {
-        this._screenplay.events.push({
-          timeStamp: e.timeStamp - startTime,
+        screenplay.events.push({
+          timestamp: e.timeStamp - startTime,
           type: e.type,
           detail: e.detail
         })
       };
+      this._screenplay = screenplay;
       actor.addEventListener(v, func);
       const canceller = () => actor.removeEventListener(v, func);
-      this.cancellers.push(canceller);
+      this._cancellers.push(canceller);
     }
+    return this;
   }
-  toJson(): Screenplay {
-    return this._screenplay
-  }
-  toJsonStr(): string {
-    return JSON.stringify(this.toJson(), null, 2)
-  }
+
 }
 

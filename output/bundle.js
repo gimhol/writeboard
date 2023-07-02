@@ -2777,15 +2777,15 @@ class RecorderView extends SubWin_1.Subwin {
         }
         (_b = this._recorder) === null || _b === void 0 ? void 0 : _b.destory();
         this._recorder = new Recorder_1.Recorder();
-        this._recorder.start(board);
+        this._recorder.setActor(board).start();
     }
     endRecord() {
-        var _a;
+        var _a, _b;
         if (!this._recorder) {
             return;
         }
-        this.textarea.inner.value = this._recorder.toJsonStr();
-        (_a = this._recorder) === null || _a === void 0 ? void 0 : _a.destory();
+        this.textarea.inner.value = (_a = this._recorder.getJson()) !== null && _a !== void 0 ? _a : '';
+        (_b = this._recorder) === null || _b === void 0 ? void 0 : _b.destory();
         this._recorder = undefined;
     }
     replay() {
@@ -25317,7 +25317,7 @@ class Player {
         const event = screenplay.events[this.eventIdx];
         if (!event)
             return this.stop();
-        let timeStamp = event.timeStamp;
+        let timeStamp = event.timestamp;
         if (!this.firstEventTime && timeStamp)
             this.firstEventTime = timeStamp;
         this.applyEvent(event);
@@ -25325,7 +25325,7 @@ class Player {
         const next = screenplay.events[this.eventIdx];
         if (!next)
             return this.stop();
-        timeStamp = next.timeStamp;
+        timeStamp = next.timestamp;
         const diff = Math.max(1, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
         this.timer = setTimeout(() => this.tick(), diff);
     }
@@ -25337,16 +25337,16 @@ class Player {
         }
         switch (e.type) {
             case event_1.EventEnum.ShapesAdded: {
-                const event = (e);
-                const shapes = (_a = event.detail.shapeDatas) === null || _a === void 0 ? void 0 : _a.map(v => actor.factory.newShape(v));
+                const detail = e.detail;
+                const shapes = (_a = detail.shapeDatas) === null || _a === void 0 ? void 0 : _a.map(v => actor.factory.newShape(v));
                 shapes && actor.add(...shapes);
                 break;
             }
             case event_1.EventEnum.ShapesMoved:
             case event_1.EventEnum.ShapesResized:
             case event_1.EventEnum.ShapesChanged: {
-                const event = (e);
-                event.detail.shapeDatas.forEach(([curr]) => {
+                const detail = e.detail;
+                detail.shapeDatas.forEach(([curr]) => {
                     var _a;
                     const id = curr.i;
                     id && ((_a = actor.find(id)) === null || _a === void 0 ? void 0 : _a.merge(curr));
@@ -25354,8 +25354,8 @@ class Player {
                 break;
             }
             case event_1.EventEnum.ShapesRemoved: {
-                const event = (e);
-                const shapes = (_b = event.detail.shapeDatas) === null || _b === void 0 ? void 0 : _b.map(data => actor.find(data.i)).filter(v => v);
+                const detail = e.detail;
+                const shapes = (_b = detail.shapeDatas) === null || _b === void 0 ? void 0 : _b.map(data => actor.find(data.i)).filter(v => v);
                 shapes && actor.remove(...shapes);
                 break;
             }
@@ -25366,28 +25366,63 @@ exports.Player = Player;
 
 },{"../event":48}],50:[function(require,module,exports){
 "use strict";
+/******************************************************************
+ * Copyright @ 2023 朱剑豪. All rights reserverd.
+ * @file   src\features\Recorder.ts
+ * @author 朱剑豪
+ * @date   2023/07/02 23:31
+ * @desc   事件记录器
+ ******************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recorder = void 0;
 const event_1 = require("../event");
 class Recorder {
     constructor() {
-        this.cancellers = [];
-        this._screenplay = {
-            startTime: Date.now(),
-            events: []
-        };
+        this._cancellers = [];
+        this._running = false;
+        console.log('[Recorder] constructor()');
+    }
+    getScreenplay() {
+        return this._screenplay || null;
+    }
+    getJson() {
+        return this._screenplay ? JSON.stringify(this._screenplay) : null;
+    }
+    getActor() {
+        return this._actor;
+    }
+    setActor(v) {
+        if (this._actor === v) {
+            return this;
+        }
+        if (this._running) {
+            this.stop();
+        }
+        this._actor = v;
+        return this;
     }
     destory() {
         console.log('[Recorder] destory()');
-        this.cancellers.forEach(v => v());
-        this.cancellers = [];
     }
-    start(actor) {
+    stop() {
+        console.log('[Recorder] stop()');
+        this._running = false;
+        this._cancellers.forEach(v => v());
+        this._cancellers = [];
+        return this;
+    }
+    start() {
         console.log('[Recorder] start()');
-        this.cancellers.forEach(v => v());
-        this.cancellers = [];
+        const actor = this._actor;
+        if (!actor) {
+            console.warn('[Recorder] start() faild, actor not set.');
+            return this;
+        }
+        this._running = true;
+        this._cancellers.forEach(v => v());
+        this._cancellers = [];
         const startTime = new CustomEvent('').timeStamp;
-        this._screenplay = {
+        const screenplay = {
             startTime,
             snapshot: actor.toSnapshot(),
             events: []
@@ -25395,22 +25430,18 @@ class Recorder {
         for (const key in event_1.EventEnum) {
             const v = event_1.EventEnum[key];
             const func = (e) => {
-                this._screenplay.events.push({
-                    timeStamp: e.timeStamp - startTime,
+                screenplay.events.push({
+                    timestamp: e.timeStamp - startTime,
                     type: e.type,
                     detail: e.detail
                 });
             };
+            this._screenplay = screenplay;
             actor.addEventListener(v, func);
             const canceller = () => actor.removeEventListener(v, func);
-            this.cancellers.push(canceller);
+            this._cancellers.push(canceller);
         }
-    }
-    toJson() {
-        return this._screenplay;
-    }
-    toJsonStr() {
-        return JSON.stringify(this.toJson(), null, 2);
+        return this;
     }
 }
 exports.Recorder = Recorder;

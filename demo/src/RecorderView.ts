@@ -66,12 +66,12 @@ export class RecorderView extends Subwin {
     if (!board) { return; }
     this._recorder?.destory();
     this._recorder = new Recorder();
-    this._recorder.start(board);
+    this._recorder.setActor(board).start();
   }
 
   endRecord(): void {
     if (!this._recorder) { return; }
-    this.textarea.inner.value = this._recorder.toJsonStr()
+    this.textarea.inner.value = this._recorder.getJson() ?? ''
     this._recorder?.destory()
     this._recorder = undefined
   }

@@ -32,7 +32,7 @@ export class Player {
     const event = screenplay.events[this.eventIdx];
     if (!event)
       return this.stop();
-    let timeStamp = event.timeStamp
+    let timeStamp = event.timestamp
     if (!this.firstEventTime && timeStamp)
       this.firstEventTime = timeStamp;
 
@@ -41,7 +41,7 @@ export class Player {
     const next = screenplay.events[this.eventIdx];
     if (!next)
       return this.stop();
-    timeStamp = next.timeStamp;
+    timeStamp = next.timestamp;
     const diff = Math.max(1, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
     this.timer = setTimeout(() => this.tick(), diff);
   }
@@ -50,28 +50,24 @@ export class Player {
     if (!actor) { return; }
     switch (e.type) {
       case EventEnum.ShapesAdded: {
-        const event = <Events.EventMap[EventEnum.ShapesAdded]>(e);
-        const shapes = event.detail.shapeDatas?.map(v => actor.factory.newShape(v));
+        const detail = e.detail as Events.EventDetailMap[typeof e.type];
+        const shapes = detail.shapeDatas?.map(v => actor.factory.newShape(v));
         shapes && actor.add(...shapes);
         break;
       }
       case EventEnum.ShapesMoved:
       case EventEnum.ShapesResized:
       case EventEnum.ShapesChanged: {
-        type Event =
-          Events.EventMap[EventEnum.ShapesMoved] |
-          Events.EventMap[EventEnum.ShapesResized] |
-          Events.EventMap[EventEnum.ShapesChanged];
-        const event = <Event>(e);
-        event.detail.shapeDatas.forEach(([curr]) => {
+        const detail = e.detail as Events.EventDetailMap[typeof e.type];
+        detail.shapeDatas.forEach(([curr]) => {
           const id = curr.i;
           id && actor.find(id)?.merge(curr);
         });
         break;
       }
       case EventEnum.ShapesRemoved: {
-        const event = <Events.EventMap[EventEnum.ShapesRemoved]>(e);
-        const shapes = event.detail.shapeDatas?.map(data => actor.find(data.i)!).filter(v => v);
+        const detail = e.detail as Events.EventDetailMap[typeof e.type];
+        const shapes = detail.shapeDatas?.map(data => actor.find(data.i)!).filter(v => v);
         shapes && actor.remove(...shapes);
         break;
       }

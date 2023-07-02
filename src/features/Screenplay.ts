@@ -1,7 +1,7 @@
 import type { ISnapshot } from "../board/ISnapshot";
 
 export interface PureCustomEvent<T = any> {
-  readonly timeStamp: number;
+  readonly timestamp: number;
   readonly type: string;
   readonly detail: T;
 }
