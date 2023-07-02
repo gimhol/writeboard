@@ -1,10 +1,10 @@
 import { Board } from "../../board/Board"
-import { WhiteBoardEvent as Event } from "../../event"
+import { Events as Event, EventEnum, Events } from "../../event"
 import { Shape } from "../../shape/base/Shape"
 import type { ShapeType } from "../../shape/ShapeEnum"
 import type { IDot } from "../../utils/Dot"
 import { RectHelper } from "../../utils/RectHelper"
-import type { ToolType } from "../ToolEnum"
+import { ToolEnum, type ToolType } from "../ToolEnum"
 import type { ITool } from "./Tool"
 const Tag = '[SimpleTool]'
 
@@ -105,7 +105,9 @@ export class SimpleTool implements ITool {
     const prev = this._prevData
     const emitEvent = () => {
       const curr = Event.pickShapeGeoData(shape.data)
-      board.dispatchEvent(Event.shapesResized({ shapeDatas: [[curr, prev]] }))
+      board.emitEvent(EventEnum.ShapesResized, {
+        shapeDatas: [[curr, prev]]
+      })
       delete this._prevData
     }
 

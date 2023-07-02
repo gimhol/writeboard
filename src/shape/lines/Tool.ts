@@ -6,7 +6,7 @@ import { ShapeEnum } from "../ShapeEnum"
 import { LinesData } from "./Data"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../../tools/base/Tool"
-import { WhiteBoardEvent } from "../../event"
+import { EventEnum, Events } from "../../event"
 const Tag = '[LinesTool]'
 export class LinesTool implements ITool {
   private _pressingShift = false;
@@ -61,9 +61,10 @@ export class LinesTool implements ITool {
       if (!prev) return
       const curr = shape.data.copy()
       curr.coords.splice(0, prev.coords.length)
-      board.dispatchEvent(
-        WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] })
-      )
+      board.emitEvent(EventEnum.ShapesChanged, {
+        shapeType: this.type,
+        shapeDatas: [[curr, prev]]
+      });
       delete this._prevData
     }
     this._prevData = shape.data.copy()
@@ -119,9 +120,10 @@ export class LinesTool implements ITool {
       if (!prev) return
       const curr = shape.data.copy()
       curr.coords.splice(0, prev.coords.length)
-      board.dispatchEvent(
-        WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] })
-      )
+      board.emitEvent(EventEnum.ShapesChanged, {
+        shapeType: this.type,
+        shapeDatas: [[curr, prev]]
+      })
       delete this._prevData
     }
     this._prevData = shape.data.copy()

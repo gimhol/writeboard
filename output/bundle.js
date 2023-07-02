@@ -24973,6 +24973,9 @@ class Board {
     dispatchEvent(e) {
         return this._element.dispatchEvent(e);
     }
+    emitEvent(k, detail) {
+        return this.dispatchEvent(new CustomEvent(k, { detail }));
+    }
     get factory() { return this._factory; }
     set factory(v) { this._factory = v; }
     ctx(layerId = this._editingLayerId) {
@@ -24998,7 +25001,10 @@ class Board {
             return;
         const from = this._toolType;
         this._toolType = to;
-        this.dispatchEvent(event_1.WhiteBoardEvent.toolChanged({ operator: this._operator, from, to }));
+        this.emitEvent(event_1.EventEnum.ToolChanged, {
+            operator: this._operator,
+            from, to
+        });
     }
     get selects() {
         return this._selects;
@@ -25018,11 +25024,10 @@ class Board {
                 this._selects.push(item);
             this.markDirty(item.boundingRect());
         });
-        const e = event_1.WhiteBoardEvent.shapesAdded({
+        this.emitEvent(event_1.EventEnum.ShapesAdded, {
             operator: this._operator,
             shapeDatas: shapes.map(v => v.data.copy())
         });
-        this.dispatchEvent(e);
         return ret;
     }
     remove(...shapes) {
@@ -25033,11 +25038,10 @@ class Board {
             this.markDirty(item.boundingRect());
             item.board = undefined;
         });
-        const e = event_1.WhiteBoardEvent.shapesRemoved({
+        this.emitEvent(event_1.EventEnum.ShapesRemoved, {
             operator: this._operator,
             shapeDatas: shapes.map(v => v.data.copy())
         });
-        this.dispatchEvent(e);
         return ret;
     }
     removeAll() {
@@ -25233,30 +25237,10 @@ var EventEnum;
 },{}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WhiteBoardEvent = void 0;
+exports.Events = void 0;
 const EventType_1 = require("./EventType");
-var WhiteBoardEvent;
-(function (WhiteBoardEvent) {
-    function shapesAdded(detail) {
-        return new CustomEvent(EventType_1.EventEnum.ShapesAdded, { detail });
-    }
-    WhiteBoardEvent.shapesAdded = shapesAdded;
-    function shapesRemoved(detail) {
-        return new CustomEvent(EventType_1.EventEnum.ShapesRemoved, { detail });
-    }
-    WhiteBoardEvent.shapesRemoved = shapesRemoved;
-    function shapesChanged(detail) {
-        return new CustomEvent(EventType_1.EventEnum.ShapesChanged, { detail });
-    }
-    WhiteBoardEvent.shapesChanged = shapesChanged;
-    function shapesMoved(detail) {
-        return new CustomEvent(EventType_1.EventEnum.ShapesMoved, { detail });
-    }
-    WhiteBoardEvent.shapesMoved = shapesMoved;
-    function shapesResized(detail) {
-        return new CustomEvent(EventType_1.EventEnum.ShapesResized, { detail });
-    }
-    WhiteBoardEvent.shapesResized = shapesResized;
+var Events;
+(function (Events) {
     function pickShapePositionData(data) {
         return {
             i: data.i,
@@ -25264,7 +25248,7 @@ var WhiteBoardEvent;
             y: data.y
         };
     }
-    WhiteBoardEvent.pickShapePositionData = pickShapePositionData;
+    Events.pickShapePositionData = pickShapePositionData;
     function pickShapeGeoData(data) {
         return {
             i: data.i,
@@ -25274,12 +25258,8 @@ var WhiteBoardEvent;
             h: data.h
         };
     }
-    WhiteBoardEvent.pickShapeGeoData = pickShapeGeoData;
-    function toolChanged(detail) {
-        return new CustomEvent(EventType_1.EventEnum.ToolChanged, { detail });
-    }
-    WhiteBoardEvent.toolChanged = toolChanged;
-})(WhiteBoardEvent = exports.WhiteBoardEvent || (exports.WhiteBoardEvent = {}));
+    Events.pickShapeGeoData = pickShapeGeoData;
+})(Events = exports.Events || (exports.Events = {}));
 
 },{"./EventType":46}],48:[function(require,module,exports){
 "use strict";
@@ -25351,7 +25331,6 @@ class Player {
     }
     applyEvent(e) {
         var _a, _b;
-        // console.log('[Player] applyEvent(), e = ', e);
         const actor = this.actor;
         if (!actor) {
             return;
@@ -26573,7 +26552,10 @@ class LinesTool {
                 return;
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
-            board.dispatchEvent(event_1.WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }));
+            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+                shapeType: this.type,
+                shapeDatas: [[curr, prev]]
+            });
             delete this._prevData;
         };
         this._prevData = shape.data.copy();
@@ -26634,7 +26616,10 @@ class LinesTool {
                 return;
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
-            board.dispatchEvent(event_1.WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }));
+            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+                shapeType: this.type,
+                shapeDatas: [[curr, prev]]
+            });
             delete this._prevData;
         };
         this._prevData = shape.data.copy();
@@ -27008,7 +26993,10 @@ class PenTool {
             const curr = shape.data.copy();
             curr.dotsType = Data_1.DotsType.Append;
             curr.coords.splice(0, prev.coords.length);
-            board.dispatchEvent(event_1.WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }));
+            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+                shapeType: this.type,
+                shapeDatas: [[curr, prev]]
+            });
             delete this._prevData;
         };
         this._prevData = shape.data.copy();
@@ -27455,7 +27443,10 @@ class TextTool {
             if (!board)
                 return;
             const curr = shape.data.copy();
-            board.dispatchEvent(event_1.WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }));
+            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+                shapeType: this.type,
+                shapeDatas: [[curr, prev]]
+            });
         };
         this._keydown = (e) => {
             if (e.ctrlKey && e.key === 'Enter') {
@@ -27783,11 +27774,13 @@ class SimpleTool {
             this.applyRect();
             return;
         }
-        this._prevData = event_1.WhiteBoardEvent.pickShapeGeoData(shape.data);
+        this._prevData = event_1.Events.pickShapeGeoData(shape.data);
         const prev = this._prevData;
         const emitEvent = () => {
-            const curr = event_1.WhiteBoardEvent.pickShapeGeoData(shape.data);
-            board.dispatchEvent(event_1.WhiteBoardEvent.shapesResized({ shapeDatas: [[curr, prev]] }));
+            const curr = event_1.Events.pickShapeGeoData(shape.data);
+            board.emitEvent(event_1.EventEnum.ShapesResized, {
+                shapeDatas: [[curr, prev]]
+            });
             delete this._prevData;
         };
         this.applyRect();
@@ -27852,6 +27845,7 @@ const Gaia_1 = require("../../mgr/Gaia");
 const Shape_1 = require("../../shape/rect/Shape");
 const ToolEnum_1 = require("../ToolEnum");
 const Events_1 = require("../../event/Events");
+const event_1 = require("../../event");
 var SelectorStatus;
 (function (SelectorStatus) {
     SelectorStatus["Invalid"] = "SELECTOR_STATUS_INVALID";
@@ -27938,7 +27932,7 @@ class SelectorTool {
             }
             case SelectorStatus.Dragging: {
                 this._shapes.forEach(v => {
-                    v.prevData = Events_1.WhiteBoardEvent.pickShapePositionData(v.shape.data);
+                    v.prevData = Events_1.Events.pickShapePositionData(v.shape.data);
                     v.shape.moveBy(diffX, diffY);
                 });
                 this.emitEvent(false);
@@ -27953,11 +27947,14 @@ class SelectorTool {
         const board = this.board;
         if (!board)
             return;
-        board.dispatchEvent(Events_1.WhiteBoardEvent.shapesMoved({
+        board.emitEvent(event_1.EventEnum.ShapesMoved, {
             shapeDatas: this._shapes.map(v => {
-                return [Events_1.WhiteBoardEvent.pickShapePositionData(v.shape.data), v.prevData];
+                const ret = [
+                    Events_1.Events.pickShapePositionData(v.shape.data), v.prevData
+                ];
+                return ret;
             })
-        }));
+        });
         setTimeout(() => { this._waiting = false; }, 1000 / 30);
     }
     pointerUp() {
@@ -27977,7 +27974,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'selector'
 });
 
-},{"../../event/Events":47,"../../mgr/Gaia":56,"../../shape/base/Data":60,"../../shape/rect/Shape":90,"../../utils/RectHelper":116,"../ToolEnum":102}],109:[function(require,module,exports){
+},{"../../event":48,"../../event/Events":47,"../../mgr/Gaia":56,"../../shape/base/Data":60,"../../shape/rect/Shape":90,"../../utils/RectHelper":116,"../ToolEnum":102}],109:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

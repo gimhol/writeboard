@@ -8,7 +8,8 @@ import { IVector } from "../../utils/Vector"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../base/Tool"
 import { Board } from "../../board"
-import { WhiteBoardEvent } from "../../event/Events"
+import { Events } from "../../event/Events"
+import { EventEnum } from "../../event"
 export enum SelectorStatus {
   Invalid = 'SELECTOR_STATUS_INVALID',
   Dragging = 'SELECTOR_STATUS_DRAGGING',
@@ -23,7 +24,7 @@ export class SelectorTool implements ITool {
   private _prevPos: IVector = { x: 0, y: 0 }
   private _shapes: {
     shape: Shape,
-    prevData: WhiteBoardEvent.IShapePositionData
+    prevData: Events.IShapePositionData
   }[] = []
   get board(): Board | undefined {
     return this._rect.board
@@ -92,7 +93,7 @@ export class SelectorTool implements ITool {
       }
       case SelectorStatus.Dragging: {
         this._shapes.forEach(v => {
-          v.prevData = WhiteBoardEvent.pickShapePositionData(v.shape.data)
+          v.prevData = Events.pickShapePositionData(v.shape.data)
           v.shape.moveBy(diffX, diffY)
         })
         this.emitEvent(false)
@@ -107,11 +108,14 @@ export class SelectorTool implements ITool {
     this._waiting = true
     const board = this.board
     if (!board) return
-    board.dispatchEvent(WhiteBoardEvent.shapesMoved({
+    board.emitEvent(EventEnum.ShapesMoved, {
       shapeDatas: this._shapes.map(v => {
-        return [WhiteBoardEvent.pickShapePositionData(v.shape.data), v.prevData]
+        const ret: [Events.IShapePositionData, Events.IShapePositionData] = [
+          Events.pickShapePositionData(v.shape.data), v.prevData
+        ]
+        return ret
       })
-    }))
+    });
     setTimeout(() => { this._waiting = false }, 1000 / 30)
   }
   pointerUp(): void {

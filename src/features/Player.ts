@@ -1,5 +1,5 @@
 import { Board } from "../board";
-import { EventEnum, WhiteBoardEvent } from "../event";
+import { EventEnum, Events } from "../event";
 import { PureCustomEvent, Screenplay } from "./Screenplay";
 export class Player {
   private screenplay: Screenplay | undefined;
@@ -46,12 +46,11 @@ export class Player {
     this.timer = setTimeout(() => this.tick(), diff);
   }
   applyEvent(e: PureCustomEvent<any>) {
-    // console.log('[Player] applyEvent(), e = ', e);
     const actor = this.actor;
     if (!actor) { return; }
     switch (e.type) {
       case EventEnum.ShapesAdded: {
-        const event = <WhiteBoardEvent.EventMap[EventEnum.ShapesAdded]>(e);
+        const event = <Events.EventMap[EventEnum.ShapesAdded]>(e);
         const shapes = event.detail.shapeDatas?.map(v => actor.factory.newShape(v));
         shapes && actor.add(...shapes);
         break;
@@ -60,9 +59,9 @@ export class Player {
       case EventEnum.ShapesResized:
       case EventEnum.ShapesChanged: {
         type Event =
-          WhiteBoardEvent.EventMap[EventEnum.ShapesMoved] |
-          WhiteBoardEvent.EventMap[EventEnum.ShapesResized] |
-          WhiteBoardEvent.EventMap[EventEnum.ShapesChanged];
+          Events.EventMap[EventEnum.ShapesMoved] |
+          Events.EventMap[EventEnum.ShapesResized] |
+          Events.EventMap[EventEnum.ShapesChanged];
         const event = <Event>(e);
         event.detail.shapeDatas.forEach(([curr]) => {
           const id = curr.i;
@@ -71,7 +70,7 @@ export class Player {
         break;
       }
       case EventEnum.ShapesRemoved: {
-        const event = <WhiteBoardEvent.EventMap[EventEnum.ShapesRemoved]>(e);
+        const event = <Events.EventMap[EventEnum.ShapesRemoved]>(e);
         const shapes = event.detail.shapeDatas?.map(data => actor.find(data.i)!).filter(v => v);
         shapes && actor.remove(...shapes);
         break;

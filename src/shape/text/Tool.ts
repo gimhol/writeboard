@@ -5,7 +5,7 @@ import { Board } from "../../board"
 import { ShapeText } from "./Shape"
 import { ITool } from "../../tools/base/Tool"
 import { IDot } from "../../utils/Dot"
-import { WhiteBoardEvent } from "../../event"
+import { EventEnum, Events } from "../../event"
 const Tag = '[TextTool]'
 
 export class TextTool implements ITool {
@@ -62,7 +62,10 @@ export class TextTool implements ITool {
     if (!board) return
 
     const curr = shape.data.copy()
-    board.dispatchEvent(WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] }))
+    board.emitEvent(EventEnum.ShapesChanged, {
+      shapeType: this.type,
+      shapeDatas: [[curr, prev]]
+    })
   }
 
   constructor() {

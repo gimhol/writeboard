@@ -6,7 +6,7 @@ import { ShapeEnum } from "../ShapeEnum"
 import { DotsType, PenData } from "./Data"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../../tools/base/Tool"
-import { WhiteBoardEvent } from "../../event"
+import { EventEnum, Events } from "../../event"
 const Tag = '[PenTool]'
 export class PenTool implements ITool {
   start(): void {
@@ -36,9 +36,10 @@ export class PenTool implements ITool {
       const curr = shape.data.copy()
       curr.dotsType = DotsType.Append
       curr.coords.splice(0, prev.coords.length)
-      board.dispatchEvent(
-        WhiteBoardEvent.shapesChanged({ shapeType: this.type, shapeDatas: [[curr, prev]] })
-      )
+      board.emitEvent(EventEnum.ShapesChanged, {
+        shapeType: this.type,
+        shapeDatas: [[curr, prev]]
+      })
       delete this._prevData
     }
     this._prevData = shape.data.copy()

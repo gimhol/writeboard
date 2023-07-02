@@ -1,4 +1,4 @@
-import { EventEnum, WhiteBoardEvent } from "../event"
+import { EventEnum, Events } from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
@@ -173,20 +173,24 @@ export class Board implements IShapesMgr {
     return this._shapesMgr.hits(rect)
   }
 
-  addEventListener<K extends keyof WhiteBoardEvent.EventMap>(type: K, listener: (this: HTMLDivElement, ev: WhiteBoardEvent.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
   addEventListener(arg0: any, arg1: any, arg2: any): void {
     return this._element.addEventListener(arg0, arg1, arg2);
   }
 
 
-  removeEventListener<K extends keyof WhiteBoardEvent.EventMap>(type: K, listener: (this: HTMLDivElement, ev: WhiteBoardEvent.EventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+  removeEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | EventListenerOptions): void;
   removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
   removeEventListener(arg0: any, arg1: any, arg2: any): void {
     return this._element.removeEventListener(arg0, arg1, arg2);
   }
+
   dispatchEvent(e: CustomEvent<any>): boolean {
     return this._element.dispatchEvent(e)
+  }
+  emitEvent<K extends keyof Events.EventDetailMap>(k: K, detail: Events.EventDetailMap[K]) {
+    return this.dispatchEvent(new CustomEvent(k, { detail }));
   }
 
   get factory() { return this._factory }
@@ -222,7 +226,10 @@ export class Board implements IShapesMgr {
     if (this._toolType === to) return
     const from = this._toolType
     this._toolType = to
-    this.dispatchEvent(WhiteBoardEvent.toolChanged({ operator: this._operator, from, to }))
+    this.emitEvent(EventEnum.ToolChanged, { 
+      operator: this._operator, 
+      from, to 
+    })
   }
   get selects() {
     return this._selects
@@ -240,11 +247,10 @@ export class Board implements IShapesMgr {
       if (item.selected) this._selects.push(item)
       this.markDirty(item.boundingRect())
     })
-    const e = WhiteBoardEvent.shapesAdded({
+    this.emitEvent(EventEnum.ShapesAdded, {
       operator: this._operator,
       shapeDatas: shapes.map(v => v.data.copy())
     })
-    this.dispatchEvent(e)
     return ret
   }
   remove(...shapes: Shape[]) {
@@ -254,11 +260,10 @@ export class Board implements IShapesMgr {
       this.markDirty(item.boundingRect())
       item.board = undefined
     })
-    const e = WhiteBoardEvent.shapesRemoved({
+    this.emitEvent(EventEnum.ShapesRemoved, {
       operator: this._operator,
       shapeDatas: shapes.map(v => v.data.copy())
     })
-    this.dispatchEvent(e)
     return ret
   }
   removeAll() {
