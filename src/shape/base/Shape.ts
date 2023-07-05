@@ -2,10 +2,14 @@ import { ShapeData } from "./Data"
 import { Board } from "../../board/Board"
 import { IRect, Rect } from "../../utils/Rect"
 import { ShapeType } from "../ShapeEnum"
-
+export enum Resizable {
+  None = 0,
+  All = 1,
+}
 export class Shape<D extends ShapeData = ShapeData> {
   private _data: D;
   private _board?: Board;
+  protected _resizable: Resizable = Resizable.None;
   constructor(data: D) {
     this._data = data
   }
@@ -34,6 +38,8 @@ export class Shape<D extends ShapeData = ShapeData> {
     this._data.selected = v
     this.markDirty()
   }
+
+  get resizable(): Resizable { return this._resizable; }
   merge(data: Partial<ShapeData>): void {
     this.markDirty()
     this.data.merge(data)
@@ -111,8 +117,8 @@ export class Shape<D extends ShapeData = ShapeData> {
     if (!this.visible) return
     if (this.selected) {
       // 虚线其实相当损耗性能
-      let lineWidth = 1
-      let halfLineW = lineWidth / 2
+      const lineWidth = 1
+      const halfLineW = lineWidth / 2
       ctx.lineWidth = lineWidth
       const { x, y, w, h } = this.boundingRect()
       ctx.beginPath()
@@ -124,6 +130,40 @@ export class Shape<D extends ShapeData = ShapeData> {
       ctx.strokeStyle = 'black'
       ctx.setLineDash([lineWidth * 4])
       ctx.stroke()
+
+      if (this._resizable === Resizable.All) {
+        ctx.fillStyle = 'white'
+        ctx.setLineDash([]);
+        const s = 5;
+        const lx = x + halfLineW;
+        const rx = x + w - s - halfLineW;
+        const ty = y + halfLineW;
+        const by = y + h - s - halfLineW;
+
+        // top-left resizer
+        ctx.beginPath()
+        ctx.rect(lx, ty, s, s)
+        ctx.fill()
+        ctx.stroke()
+
+        // top-right resizer
+        ctx.beginPath()
+        ctx.rect(rx, ty, s, s)
+        ctx.fill()
+        ctx.stroke()
+
+        // bottom-left resizer
+        ctx.beginPath()
+        ctx.rect(lx, by, s, s)
+        ctx.fill()
+        ctx.stroke()
+
+        // bottom-right resizer
+        ctx.beginPath()
+        ctx.rect(rx, by, s, s)
+        ctx.fill()
+        ctx.stroke()
+      }
     }
   }
 

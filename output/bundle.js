@@ -26012,10 +26012,16 @@ exports.ShapeData = ShapeData;
 },{"../ShapeEnum":59}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Shape = void 0;
+exports.Shape = exports.Resizable = void 0;
 const Rect_1 = require("../../utils/Rect");
+var Resizable;
+(function (Resizable) {
+    Resizable[Resizable["None"] = 0] = "None";
+    Resizable[Resizable["All"] = 1] = "All";
+})(Resizable = exports.Resizable || (exports.Resizable = {}));
 class Shape {
     constructor(data) {
+        this._resizable = Resizable.None;
         this._data = data;
     }
     get data() { return this._data; }
@@ -26045,6 +26051,7 @@ class Shape {
         this._data.selected = v;
         this.markDirty();
     }
+    get resizable() { return this._resizable; }
     merge(data) {
         this.markDirty();
         this.data.merge(data);
@@ -26112,8 +26119,8 @@ class Shape {
             return;
         if (this.selected) {
             // 虚线其实相当损耗性能
-            let lineWidth = 1;
-            let halfLineW = lineWidth / 2;
+            const lineWidth = 1;
+            const halfLineW = lineWidth / 2;
             ctx.lineWidth = lineWidth;
             const { x, y, w, h } = this.boundingRect();
             ctx.beginPath();
@@ -26125,6 +26132,35 @@ class Shape {
             ctx.strokeStyle = 'black';
             ctx.setLineDash([lineWidth * 4]);
             ctx.stroke();
+            if (this._resizable === Resizable.All) {
+                ctx.fillStyle = 'white';
+                ctx.setLineDash([]);
+                const s = 5;
+                const lx = x + halfLineW;
+                const rx = x + w - s - halfLineW;
+                const ty = y + halfLineW;
+                const by = y + h - s - halfLineW;
+                // top-left resizer
+                ctx.beginPath();
+                ctx.rect(lx, ty, s, s);
+                ctx.fill();
+                ctx.stroke();
+                // top-right resizer
+                ctx.beginPath();
+                ctx.rect(rx, ty, s, s);
+                ctx.fill();
+                ctx.stroke();
+                // bottom-left resizer
+                ctx.beginPath();
+                ctx.rect(lx, by, s, s);
+                ctx.fill();
+                ctx.stroke();
+                // bottom-right resizer
+                ctx.beginPath();
+                ctx.rect(rx, by, s, s);
+                ctx.fill();
+                ctx.stroke();
+            }
         }
     }
     drawingRect() {
@@ -26156,6 +26192,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
 const Shape_1 = require("./Shape");
 class ShapeNeedPath extends Shape_1.Shape {
+    constructor(data) {
+        super(data);
+        this._resizable = Shape_1.Resizable.All;
+    }
     path(ctx) {
         throw new Error("Method 'path' not implemented.");
     }
