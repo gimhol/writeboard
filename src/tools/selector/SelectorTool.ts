@@ -10,10 +10,12 @@ import { ITool } from "../base/Tool"
 import { Board } from "../../board"
 import { Events } from "../../event/Events"
 import { EventEnum } from "../../event"
+import { Rect } from "../../utils/Rect"
 export enum SelectorStatus {
-  Invalid = 'SELECTOR_STATUS_INVALID',
-  Dragging = 'SELECTOR_STATUS_DRAGGING',
-  Selecting = 'SELECTOR_STATUS_SELECTING',
+  Invalid = 0,
+  Dragging = 1,
+  Selecting = 2,
+  Resizing = 3,
 }
 const Tag = '[SelectorTool]'
 export class SelectorTool implements ITool {
@@ -22,6 +24,8 @@ export class SelectorTool implements ITool {
   private _rectHelper = new RectHelper()
   private _status = SelectorStatus.Invalid
   private _prevPos: IVector = { x: 0, y: 0 }
+  private _resizerRect?: Rect;
+
   private _shapes: {
     shape: Shape,
     prevData: Events.IShapePositionData
@@ -54,11 +58,20 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Invalid:
         this._rectHelper.start(x, y)
         this.updateGeo()
-        let shape = board.hit({ x, y, w: 0, h: 0 })
+        let shape = board.hit({ x, y, w: 0, h: 0 });
+        const firstHit = !shape?.selected;
         if (!shape || !shape.selected)
-          shape = board.selectNear({ x, y, w: 0, h: 0 })
+          shape = board.selectNear({ x, y, w: 0, h: 0 });
+
         if (shape) {
-          this._status = SelectorStatus.Dragging
+          const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
+          if (direction && !firstHit) {
+            this._resizerRect = resizerRect;
+            this._status = SelectorStatus.Resizing;
+            board.selects.forEach(v => v.selected = v === shape);
+          } else {
+            this._status = SelectorStatus.Dragging;
+          }
         } else {
           this._status = SelectorStatus.Selecting
           this._rect.visible = true
@@ -96,6 +109,15 @@ export class SelectorTool implements ITool {
           v.prevData = Events.pickShapePositionData(v.shape.data)
           v.shape.moveBy(diffX, diffY)
         })
+        this.emitEvent(false)
+        return
+      }
+      case SelectorStatus.Resizing: {
+        // TODO: RESIZE SHAPE AND EMIT EVENT HERE -GIM
+        // this._shapes.forEach(v => {
+        //   v.prevData = Events.pickShapePositionData(v.shape.data)
+        //   v.shape.moveBy(diffX, diffY)
+        // })
         this.emitEvent(false)
         return
       }

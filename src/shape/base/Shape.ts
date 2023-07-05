@@ -2,6 +2,13 @@ import { ShapeData } from "./Data"
 import { Board } from "../../board/Board"
 import { IRect, Rect } from "../../utils/Rect"
 import { ShapeType } from "../ShapeEnum"
+export enum ResizeDirection {
+  None = 0,
+  TopLeft,
+  TopRight,
+  BottomLeft,
+  BottomRight,
+}
 export enum Resizable {
   None = 0,
   All = 1,
@@ -40,15 +47,18 @@ export class Shape<D extends ShapeData = ShapeData> {
   }
 
   get resizable(): Resizable { return this._resizable; }
+
   merge(data: Partial<ShapeData>): void {
     this.markDirty()
     this.data.merge(data)
     this.markDirty()
   }
+
   markDirty(rect?: IRect): void {
     rect = rect ?? this.boundingRect();
     this.board?.markDirty(rect)
   }
+
   move(x: number, y: number): void {
     if (x === this._data.x && y === this._data.y)
       return
@@ -187,6 +197,39 @@ export class Shape<D extends ShapeData = ShapeData> {
       w: Math.ceil(d.w + d.lineWidth + offset),
       h: Math.ceil(d.h + d.lineWidth + offset)
     }
+  }
+
+  resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
+    if (!this.selected || !this._resizable) {
+      return [ResizeDirection.None, undefined];
+    }
+    const lineWidth = 1
+    const halfLineW = lineWidth / 2
+    const { x, y, w, h } = this.boundingRect();
+    const s = 5;
+    const lx = x + halfLineW;
+    const rx = x + w - s - halfLineW;
+    const ty = y + halfLineW;
+    const by = y + h - s - halfLineW;
+    const pos = { x: pointerX, y: pointerY }
+    const rect = new Rect(0, 0, s, s);
+    rect.moveTo(lx, ty)
+    if (rect.hit(pos)) {
+      return [ResizeDirection.TopLeft, rect];
+    }
+    rect.moveTo(rx, ty);
+    if (rect.hit(pos)) {
+      return [ResizeDirection.TopRight, rect];
+    }
+    rect.moveTo(lx, by);
+    if (rect.hit(pos)) {
+      return [ResizeDirection.BottomLeft, rect];
+    }
+    rect.moveTo(rx, by);
+    if (rect.hit(pos)) {
+      return [ResizeDirection.BottomRight, rect];
+    }
+    return [ResizeDirection.None, undefined]
   }
 }
 

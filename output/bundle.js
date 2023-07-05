@@ -26012,8 +26012,16 @@ exports.ShapeData = ShapeData;
 },{"../ShapeEnum":59}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Shape = exports.Resizable = void 0;
+exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
 const Rect_1 = require("../../utils/Rect");
+var ResizeDirection;
+(function (ResizeDirection) {
+    ResizeDirection[ResizeDirection["None"] = 0] = "None";
+    ResizeDirection[ResizeDirection["TopLeft"] = 1] = "TopLeft";
+    ResizeDirection[ResizeDirection["TopRight"] = 2] = "TopRight";
+    ResizeDirection[ResizeDirection["BottomLeft"] = 3] = "BottomLeft";
+    ResizeDirection[ResizeDirection["BottomRight"] = 4] = "BottomRight";
+})(ResizeDirection = exports.ResizeDirection || (exports.ResizeDirection = {}));
 var Resizable;
 (function (Resizable) {
     Resizable[Resizable["None"] = 0] = "None";
@@ -26182,6 +26190,38 @@ class Shape {
             w: Math.ceil(d.w + d.lineWidth + offset),
             h: Math.ceil(d.h + d.lineWidth + offset)
         };
+    }
+    resizeDirection(pointerX, pointerY) {
+        if (!this.selected || !this._resizable) {
+            return [ResizeDirection.None, undefined];
+        }
+        const lineWidth = 1;
+        const halfLineW = lineWidth / 2;
+        const { x, y, w, h } = this.boundingRect();
+        const s = 5;
+        const lx = x + halfLineW;
+        const rx = x + w - s - halfLineW;
+        const ty = y + halfLineW;
+        const by = y + h - s - halfLineW;
+        const pos = { x: pointerX, y: pointerY };
+        const rect = new Rect_1.Rect(0, 0, s, s);
+        rect.moveTo(lx, ty);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.TopLeft, rect];
+        }
+        rect.moveTo(rx, ty);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.TopRight, rect];
+        }
+        rect.moveTo(lx, by);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.BottomLeft, rect];
+        }
+        rect.moveTo(rx, by);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.BottomRight, rect];
+        }
+        return [ResizeDirection.None, undefined];
     }
 }
 exports.Shape = Shape;
@@ -27919,9 +27959,10 @@ const Events_1 = require("../../event/Events");
 const event_1 = require("../../event");
 var SelectorStatus;
 (function (SelectorStatus) {
-    SelectorStatus["Invalid"] = "SELECTOR_STATUS_INVALID";
-    SelectorStatus["Dragging"] = "SELECTOR_STATUS_DRAGGING";
-    SelectorStatus["Selecting"] = "SELECTOR_STATUS_SELECTING";
+    SelectorStatus[SelectorStatus["Invalid"] = 0] = "Invalid";
+    SelectorStatus[SelectorStatus["Dragging"] = 1] = "Dragging";
+    SelectorStatus[SelectorStatus["Selecting"] = 2] = "Selecting";
+    SelectorStatus[SelectorStatus["Resizing"] = 3] = "Resizing";
 })(SelectorStatus = exports.SelectorStatus || (exports.SelectorStatus = {}));
 const Tag = '[SelectorTool]';
 class SelectorTool {
@@ -27963,10 +28004,19 @@ class SelectorTool {
                 this._rectHelper.start(x, y);
                 this.updateGeo();
                 let shape = board.hit({ x, y, w: 0, h: 0 });
+                const firstHit = !(shape === null || shape === void 0 ? void 0 : shape.selected);
                 if (!shape || !shape.selected)
                     shape = board.selectNear({ x, y, w: 0, h: 0 });
                 if (shape) {
-                    this._status = SelectorStatus.Dragging;
+                    const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
+                    if (direction && !firstHit) {
+                        this._resizerRect = resizerRect;
+                        this._status = SelectorStatus.Resizing;
+                        board.selects.forEach(v => v.selected = v === shape);
+                    }
+                    else {
+                        this._status = SelectorStatus.Dragging;
+                    }
                 }
                 else {
                     this._status = SelectorStatus.Selecting;
@@ -28006,6 +28056,15 @@ class SelectorTool {
                     v.prevData = Events_1.Events.pickShapePositionData(v.shape.data);
                     v.shape.moveBy(diffX, diffY);
                 });
+                this.emitEvent(false);
+                return;
+            }
+            case SelectorStatus.Resizing: {
+                // TODO: RESIZE SHAPE AND EMIT EVENT HERE -GIM
+                // this._shapes.forEach(v => {
+                //   v.prevData = Events.pickShapePositionData(v.shape.data)
+                //   v.shape.moveBy(diffX, diffY)
+                // })
                 this.emitEvent(false);
                 return;
             }
@@ -28508,6 +28567,10 @@ class Rect {
     }
     toString() {
         return `Rect(x=${this.x}, y=${this.x}, w=${this.w}, h=${this.h})`;
+    }
+    moveTo(x, y) {
+        this.x = x;
+        this.y = y;
     }
     mid() {
         return { x: this.x + this.w / 2, y: this.y + this.h / 2 };

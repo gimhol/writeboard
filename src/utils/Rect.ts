@@ -28,6 +28,10 @@ export class Rect implements IRect {
   toString() {
     return `Rect(x=${this.x}, y=${this.x}, w=${this.w}, h=${this.h})`
   }
+  moveTo(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+  }
   mid(): IVector {
     return { x: this.x + this.w / 2, y: this.y + this.h / 2 }
   }
