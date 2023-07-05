@@ -68,7 +68,7 @@ export class SelectorTool implements ITool {
           if (direction && !firstHit) {
             this._resizerRect = resizerRect;
             this._status = SelectorStatus.Resizing;
-            board.selects.forEach(v => v.selected = v === shape);
+            board.selects = [shape];
           } else {
             this._status = SelectorStatus.Dragging;
           }
