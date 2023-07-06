@@ -133,18 +133,21 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
     }
     case MenuKey.ExportResult: {
       board.deselect();
-      const l = board.layer().onscreen;
-      const c = document.createElement('canvas');
-      c.width = l.width;
-      c.height = l.height;
-      c.getContext('2d')!.fillStyle = 'white';
-      c.getContext('2d')!.fillRect(0, 0, l.width, l.height)
-      c.getContext('2d')!.drawImage(l, 0, 0, l.width, l.height);
+      requestAnimationFrame(() => {
+        const l = board.layer().onscreen;
+        const c = document.createElement('canvas');
+        c.width = l.width;
+        c.height = l.height;
+        c.getContext('2d')!.fillStyle = 'white';
+        c.getContext('2d')!.fillRect(0, 0, l.width, l.height)
+        c.getContext('2d')!.drawImage(l, 0, 0, l.width, l.height);
 
-      const a = document.createElement('a');
-      a.href = c.toDataURL('image/jpeg', 90);
-      a.download = '' + Date.now() + '.jpg';
-      a.click();
+        const a = document.createElement('a');
+        a.href = c.toDataURL('image/jpeg', 90);
+        a.download = '' + Date.now() + '.jpg';
+        a.click();
+      })
+
     }
   }
 });
