@@ -14,22 +14,33 @@ export class ShapeImg extends Shape<ImgData> {
   }
 
   get img() {
-    if (this._img) { return this._img };
+    const d = this.data;
+    if (this._img?.src === d.src) {
+      return this._img
+    };
+    if (this._img) {
+      this._img.removeEventListener('load', this.onLoad)
+      this._img.removeEventListener('error', this.onError)
+    }
+    this._loaded = false;
+    this._error = '';
     this._img = new Image();
     this._img.src = this.data.src;
-    this._img.addEventListener('load', () => {
-      console.log('load')
-      this._loaded = true;
-      this.markDirty();
-    })
-    this._img.addEventListener('error', (e) => {
-      console.log('error', e)
-      this._loaded = true;
-      this._error = e.error;
-      this.markDirty();
-    })
+    this._img.addEventListener('load', this.onLoad)
+    this._img.addEventListener('error', this.onError)
     return this._img;
   }
+
+  onLoad = () => {
+    this._loaded = true;
+    this.markDirty();
+  }
+
+  onError = (e: ErrorEvent) => {
+    this._error = 'fail to load: ' + (e.target as any).src;
+    this.markDirty();
+  }
+
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible)
       return;
@@ -80,9 +91,28 @@ export class ShapeImg extends Shape<ImgData> {
           break;
         }
       }
+    } else if (this._error) {
+      this.drawText(ctx, 'error: ' + this._error)
+    } else {
+      this.drawText(ctx, 'loading: ' + this.data.src)
     }
-
     super.render(ctx);
+  }
+
+  drawText(ctx: CanvasRenderingContext2D, text: string): void {
+    const { x, y, w, h } = this.boundingRect();
+    ctx.fillStyle = '#00000088';
+    ctx.fillRect(x, y, w, h);
+    ctx.font = 'normal 16px serif'
+    ctx.fillStyle = 'white';
+    const {
+      fontBoundingBoxDescent: fd,
+      fontBoundingBoxAscent: fa,
+      actualBoundingBoxLeft: al
+    } = ctx.measureText(text);
+    const height = fd + fa;
+    ctx.fillText(this._error, 1 + x + al, y + height);
+
   }
 }
 

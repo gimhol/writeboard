@@ -1,5 +1,7 @@
 import {
   Board, FactoryEnum, Gaia,
+  ShapeEnum,
+  ShapeImg,
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
@@ -35,30 +37,43 @@ enum MenuKey {
   RemoveSelected = 'RemoveSelected',
   Deselect = 'Deselect',
   ClearUp = 'ClearUp',
+  InsertImage = 'InsertImage',
+  ExportResult = 'ExportResult',
 }
-const menu = new Menu(workspace, {
-  items: [{
-    label: '工具',
-    items: Gaia.listTools().map(v => ({ key: v, label: v }))
-  }, {
-    divider: true
-  }, {
-    key: MenuKey.SelectAll,
-    label: '全选'
-  }, {
-    key: MenuKey.Deselect,
-    label: '取消选择'
-  }, {
-    key: MenuKey.RemoveSelected,
-    label: '删除选择'
-  }, {
-    divider: true
-  }, {
-    key: MenuKey.ClearUp,
-    label: '删除全部',
-    danger: true,
-  }]
-});
+const menu = new Menu(workspace);
+
+
+menu.setup([{
+  label: '工具',
+  items: Gaia.listTools().map(v => ({ key: v, label: v }))
+}, {
+  divider: true
+}, {
+  key: MenuKey.InsertImage,
+  label: '插入图片'
+}, {
+  divider: true
+}, {
+  key: MenuKey.ExportResult,
+  label: '生成图片'
+}, {
+  divider: true
+}, {
+  key: MenuKey.SelectAll,
+  label: '全选'
+}, {
+  key: MenuKey.Deselect,
+  label: '取消选择'
+}, {
+  key: MenuKey.RemoveSelected,
+  label: '删除选择'
+}, {
+  divider: true
+}, {
+  key: MenuKey.ClearUp,
+  label: '删除全部',
+  danger: true,
+}])
 
 menu.addEventListener(Menu.EventType.ItemClick, (e) => {
   switch (e.detail.key) {
@@ -87,6 +102,48 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
     case MenuKey.ClearUp:
       board.removeAll();
       break;
+    case MenuKey.InsertImage: {
+      const input = document.createElement('input');
+      input.accept = '.png,.jpeg,.jpg'
+      input.type = 'file';
+      input.multiple = true;
+      input.title = '选择图片';
+      input.onchange = () => {
+        const { files } = input;
+        if (!files) { return }
+        for (let i = 0; i < files.length; ++i) {
+          const file = files.item(i);
+          if (!file) { continue; }
+          const img = new Image();
+          img.src = URL.createObjectURL(file)
+          img.onload = () => {
+            const shape = board.factory.newShape(ShapeEnum.Img) as ShapeImg;
+            shape.data.src = img.src;
+            shape.data.w = img.naturalWidth;
+            shape.data.h = img.naturalHeight;
+            shape.data.layer = board.layer().id;
+            board.add(shape);
+          }
+        }
+      }
+      input.click();
+      break;
+    }
+    case MenuKey.ExportResult: {
+      board.deselect();
+      const l = board.layer().onscreen;
+      const c = document.createElement('canvas');
+      c.width = l.width;
+      c.height = l.height;
+      c.getContext('2d')!.fillStyle = 'white';
+      c.getContext('2d')!.fillRect(0, 0, l.width, l.height)
+      c.getContext('2d')!.drawImage(l, 0, 0, l.width, l.height);
+
+      const a = document.createElement('a');
+      a.href = c.toDataURL('image/jpeg', 90);
+      a.download = '' + Date.now() + '.jpg';
+      a.click();
+    }
   }
 });
 

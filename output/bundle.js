@@ -1044,18 +1044,11 @@ exports.IconButton = IconButton;
 },{"../BaseView/Button":2,"../BaseView/Image":4,"../BaseView/StyleType":7}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Menu = exports.MenuEventType = exports.MenuItemView = exports.StyleNames = void 0;
-const StyleType_1 = require("../BaseView/StyleType");
+exports.Menu = exports.MenuEventType = exports.MenuItemView = void 0;
+const Styles_1 = require("../BaseView/Styles");
 const View_1 = require("../BaseView/View");
 const HoverOb_1 = require("../Observer/HoverOb");
 const utils_1 = require("../utils");
-var StyleNames;
-(function (StyleNames) {
-    StyleNames["Normal"] = "Normal";
-    StyleNames["ItemDivider"] = "ItemDivider";
-    StyleNames["ItemNormal"] = "ItemNormal";
-    StyleNames["ItemHover"] = "ItemHover";
-})(StyleNames = exports.StyleNames || (exports.StyleNames = {}));
 class MenuItemView extends View_1.View {
     get menu() { return this._menu; }
     get submenu() { return this._submenu; }
@@ -1064,10 +1057,13 @@ class MenuItemView extends View_1.View {
         var _a, _b;
         this._info = info;
         if (info.divider) {
-            this.styles.clear().add(StyleNames.ItemDivider).refresh();
+            this.styles.setCls('g_menu_item_divider');
+        }
+        else if (info.danger) {
+            this.styles.setCls('g_menu_item_normal', 'g_menu_item_danger');
         }
         else {
-            this.styles.clear().add(StyleNames.ItemNormal).refresh();
+            this.styles.setCls('g_menu_item_normal');
         }
         const label = new View_1.View('div');
         label.styles.apply('', { flex: 1 });
@@ -1085,10 +1081,10 @@ class MenuItemView extends View_1.View {
     onHover(hover) {
         var _a;
         if (hover) {
-            this.styles.add(StyleNames.ItemHover).refresh();
+            this.styles.addCls('g_menu_item_hover');
         }
         else {
-            this.styles.del(StyleNames.ItemHover).refresh();
+            this.styles.delCls('g_menu_item_hover');
         }
         if (hover) {
             const { left, top, width, height } = this.inner.getBoundingClientRect();
@@ -1099,20 +1095,6 @@ class MenuItemView extends View_1.View {
         super('div');
         this._menu = menu;
         this._info = info;
-        this.styles.register(StyleNames.ItemDivider, {
-            height: 1,
-            background: '#00000011'
-        }).register(StyleNames.ItemHover, {
-            background: '#00000011'
-        }).register(StyleNames.ItemNormal, {
-            display: 'flex',
-            borderRadius: 5,
-            paddingTop: 5,
-            paddingBottom: 5,
-            paddingLeft: 10,
-            paddingRight: 10,
-            fontSize: 12,
-        });
         this.setup();
     }
 }
@@ -1121,35 +1103,30 @@ var MenuEventType;
 (function (MenuEventType) {
     MenuEventType["ItemClick"] = "onItemClick";
 })(MenuEventType = exports.MenuEventType || (exports.MenuEventType = {}));
-class GlobalDown extends View_1.View {
+class GlobalPointerDown extends View_1.View {
     constructor() {
         super('div');
-        document.addEventListener('pointerdown', e => {
+        window.addEventListener('pointerdown', e => {
             if ((0, utils_1.findParent)(e.target, ele => !!View_1.View.try(ele, Menu))) {
                 return;
             }
             this.inner.dispatchEvent(new PointerEvent('fired'));
-        });
+        }, true);
     }
 }
-const globalDown = new GlobalDown();
+const globalDown = new GlobalPointerDown();
 class Menu extends View_1.View {
     get container() { return this._container; }
     constructor(container, inits) {
-        var _a;
+        var _a, _b;
         super('div');
         this._items = [];
+        this._zIndex = 9999;
+        Styles_1.Styles.css('./g_menu.css');
         this._container = container;
-        this.styles.apply(StyleNames.Normal, {
-            position: StyleType_1.CssPosition.Fixed,
-            display: 'none',
-            gridTemplateColumns: 'auto',
-            background: 'white',
-            borderRadius: 5,
-            userSelect: 'none',
-            transition: 'opacity 200ms',
-        });
-        this.setup((_a = inits === null || inits === void 0 ? void 0 : inits.items) !== null && _a !== void 0 ? _a : []);
+        this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
+        this.styles.setCls('g_menu');
+        this.setup((_b = inits === null || inits === void 0 ? void 0 : inits.items) !== null && _b !== void 0 ? _b : []);
         globalDown.addEventListener('fired', () => this.hide());
         window.addEventListener('blur', () => this.hide());
     }
@@ -1181,7 +1158,7 @@ class Menu extends View_1.View {
                 this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: e.detail }));
                 this.hide();
             };
-            const view = new MenuItemView(this, info);
+            const view = new MenuItemView(this, Object.assign(Object.assign({}, info), { zIndex: this._zIndex + 1 }));
             this.addChild(view);
             view.addEventListener('click', this._onitemclick);
             (_a = view.submenu) === null || _a === void 0 ? void 0 : _a.addEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick);
@@ -1203,26 +1180,25 @@ class Menu extends View_1.View {
     }
     move(x, y) {
         this._items.forEach(item => { var _a; return (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.hide(); });
-        this.styles.merge(StyleNames.Normal, { left: x, top: y }).refresh();
+        this.styles.apply('', v => (Object.assign(Object.assign({}, v), { left: x, top: y })));
         return this;
     }
     show() {
-        this.styles.merge(StyleNames.Normal, { display: 'grid' }).refresh();
+        this.styles.apply('', v => (Object.assign(Object.assign({}, v), { display: 'flex', zIndex: this._zIndex })));
         this.container.addChild(this);
         return this;
     }
     hide() {
         this._items.forEach(item => { var _a; return (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.hide(); });
-        this.styles.merge(StyleNames.Normal, { display: 'none' }).refresh();
+        this.styles.forgo('');
         this.removeSelf();
         return this;
     }
 }
 exports.Menu = Menu;
-Menu.StyleNames = StyleNames;
 Menu.EventType = MenuEventType;
 
-},{"../BaseView/StyleType":7,"../BaseView/View":10,"../Observer/HoverOb":31,"../utils":32}],15:[function(require,module,exports){
+},{"../BaseView/Styles":8,"../BaseView/View":10,"../Observer/HoverOb":31,"../utils":32}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubwinFooter = void 0;
@@ -24606,30 +24582,41 @@ var MenuKey;
     MenuKey["RemoveSelected"] = "RemoveSelected";
     MenuKey["Deselect"] = "Deselect";
     MenuKey["ClearUp"] = "ClearUp";
+    MenuKey["InsertImage"] = "InsertImage";
+    MenuKey["ExportResult"] = "ExportResult";
 })(MenuKey || (MenuKey = {}));
-const menu = new Menu_1.Menu(workspace, {
-    items: [{
-            label: '工具',
-            items: dist_1.Gaia.listTools().map(v => ({ key: v, label: v }))
-        }, {
-            divider: true
-        }, {
-            key: MenuKey.SelectAll,
-            label: '全选'
-        }, {
-            key: MenuKey.Deselect,
-            label: '取消选择'
-        }, {
-            key: MenuKey.RemoveSelected,
-            label: '删除选择'
-        }, {
-            divider: true
-        }, {
-            key: MenuKey.ClearUp,
-            label: '删除全部',
-            danger: true,
-        }]
-});
+const menu = new Menu_1.Menu(workspace);
+menu.setup([{
+        label: '工具',
+        items: dist_1.Gaia.listTools().map(v => ({ key: v, label: v }))
+    }, {
+        divider: true
+    }, {
+        key: MenuKey.InsertImage,
+        label: '插入图片'
+    }, {
+        divider: true
+    }, {
+        key: MenuKey.ExportResult,
+        label: '生成图片'
+    }, {
+        divider: true
+    }, {
+        key: MenuKey.SelectAll,
+        label: '全选'
+    }, {
+        key: MenuKey.Deselect,
+        label: '取消选择'
+    }, {
+        key: MenuKey.RemoveSelected,
+        label: '删除选择'
+    }, {
+        divider: true
+    }, {
+        key: MenuKey.ClearUp,
+        label: '删除全部',
+        danger: true,
+    }]);
 menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
     switch (e.detail.key) {
         case dist_1.ToolEnum.Rect:
@@ -24657,6 +24644,51 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
         case MenuKey.ClearUp:
             board.removeAll();
             break;
+        case MenuKey.InsertImage: {
+            const input = document.createElement('input');
+            input.accept = '.png,.jpeg,.jpg';
+            input.type = 'file';
+            input.multiple = true;
+            input.title = '选择图片';
+            input.onchange = () => {
+                const { files } = input;
+                if (!files) {
+                    return;
+                }
+                for (let i = 0; i < files.length; ++i) {
+                    const file = files.item(i);
+                    if (!file) {
+                        continue;
+                    }
+                    const img = new Image();
+                    img.src = URL.createObjectURL(file);
+                    img.onload = () => {
+                        const shape = board.factory.newShape(dist_1.ShapeEnum.Img);
+                        shape.data.src = img.src;
+                        shape.data.w = img.naturalWidth;
+                        shape.data.h = img.naturalHeight;
+                        shape.data.layer = board.layer().id;
+                        board.add(shape);
+                    };
+                }
+            };
+            input.click();
+            break;
+        }
+        case MenuKey.ExportResult: {
+            board.deselect();
+            const l = board.layer().onscreen;
+            const c = document.createElement('canvas');
+            c.width = l.width;
+            c.height = l.height;
+            c.getContext('2d').fillStyle = 'white';
+            c.getContext('2d').fillRect(0, 0, l.width, l.height);
+            c.getContext('2d').drawImage(l, 0, 0, l.width, l.height);
+            const a = document.createElement('a');
+            a.href = c.toDataURL('image/jpeg', 90);
+            a.download = '' + Date.now() + '.jpg';
+            a.click();
+        }
     }
 });
 const layersView = new LayersView_1.LayersView();
@@ -26460,6 +26492,12 @@ var ObjectFit;
     ObjectFit[ObjectFit["Cover"] = 2] = "Cover";
 })(ObjectFit = exports.ObjectFit || (exports.ObjectFit = {}));
 class ImgData extends base_1.ShapeData {
+    get src() {
+        return this.s;
+    }
+    set src(v) {
+        this.s = v;
+    }
     get objectFit() {
         var _a;
         return (_a = this.f) !== null && _a !== void 0 ? _a : ObjectFit.Fill;
@@ -26469,7 +26507,8 @@ class ImgData extends base_1.ShapeData {
     }
     constructor() {
         super();
-        this.src = 'http://download.niushibang.com/tvzwLPPzgRqnab818f2c19e1b1aefa67e9682fec5a77.jpg';
+        // src: string = 'http://download.niushibang.com/tvzwLPPzgRqnab818f2c19e1b1aefa67e9682fec5a77.jpg';
+        this.s = 'http://download.niushibang.com/niubo/wx/message/93482af6-597e-4d96-b91d-498222adcfaa/1686551265158.png';
         this.type = ShapeEnum_1.ShapeEnum.Img;
     }
     copy() {
@@ -26477,8 +26516,8 @@ class ImgData extends base_1.ShapeData {
     }
     copyFrom(other) {
         super.copyFrom(other);
-        if (typeof other.src === 'string')
-            this.src = other.src;
+        if (typeof other.s === 'string')
+            this.s = other.s;
         if (typeof other.f === 'number')
             this.f = other.f;
         return this;
@@ -26499,26 +26538,33 @@ class ShapeImg extends base_1.Shape {
         super(data);
         this._loaded = false;
         this._error = '';
+        this.onLoad = () => {
+            this._loaded = true;
+            this.markDirty();
+        };
+        this.onError = (e) => {
+            this._error = 'fail to load: ' + e.target.src;
+            this.markDirty();
+        };
         this._resizable = base_1.Resizable.All;
     }
     get img() {
-        if (this._img) {
+        var _a;
+        const d = this.data;
+        if (((_a = this._img) === null || _a === void 0 ? void 0 : _a.src) === d.src) {
             return this._img;
         }
         ;
+        if (this._img) {
+            this._img.removeEventListener('load', this.onLoad);
+            this._img.removeEventListener('error', this.onError);
+        }
+        this._loaded = false;
+        this._error = '';
         this._img = new Image();
         this._img.src = this.data.src;
-        this._img.addEventListener('load', () => {
-            console.log('load');
-            this._loaded = true;
-            this.markDirty();
-        });
-        this._img.addEventListener('error', (e) => {
-            console.log('error', e);
-            this._loaded = true;
-            this._error = e.error;
-            this.markDirty();
-        });
+        this._img.addEventListener('load', this.onLoad);
+        this._img.addEventListener('error', this.onError);
         return this._img;
     }
     render(ctx) {
@@ -26570,7 +26616,23 @@ class ShapeImg extends base_1.Shape {
                 }
             }
         }
+        else if (this._error) {
+            this.drawText(ctx, 'error: ' + this._error);
+        }
+        else {
+            this.drawText(ctx, 'loading: ' + this.data.src);
+        }
         super.render(ctx);
+    }
+    drawText(ctx, text) {
+        const { x, y, w, h } = this.boundingRect();
+        ctx.fillStyle = '#00000088';
+        ctx.fillRect(x, y, w, h);
+        ctx.font = 'normal 16px serif';
+        ctx.fillStyle = 'white';
+        const { fontBoundingBoxDescent: fd, fontBoundingBoxAscent: fa, actualBoundingBoxLeft: al } = ctx.measureText(text);
+        const height = fd + fa;
+        ctx.fillText(this._error, 1 + x + al, y + height);
     }
 }
 exports.ShapeImg = ShapeImg;
