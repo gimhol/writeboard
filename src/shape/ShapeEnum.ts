@@ -9,6 +9,7 @@ export enum ShapeEnum {
   Cross = 7,
   HalfTick = 8,
   Lines = 9,
+  Img = 10,
 }
 export type ShapeType = ShapeEnum | string
 export function getShapeName(type: ShapeType): string {
@@ -23,6 +24,7 @@ export function getShapeName(type: ShapeType): string {
     case ShapeEnum.Cross: return 'ShapeEnum.Cross'
     case ShapeEnum.HalfTick: return 'ShapeEnum.HalfTick'
     case ShapeEnum.Lines: return 'ShapeEnum.Lines'
+    case ShapeEnum.Img: return 'ShapeEnum.Img'
     default: return type
   }
 }

@@ -9,7 +9,8 @@ export enum ToolEnum {
   Tick = 'TOOL_TICK',
   Cross = 'TOOL_CROSS',
   HalfTick = 'TOOL_HALFTICK',
-  Lines = "TOOL_Lines"
+  Lines = "TOOL_Lines",
+  Img = "TOOL_Img",
 }
 export type ToolType = ToolEnum | string
 export function getToolName(type: ToolType): string {
@@ -24,6 +25,7 @@ export function getToolName(type: ToolType): string {
     case ToolEnum.Cross: return 'ToolEnum.Cross';
     case ToolEnum.HalfTick: return 'ToolEnum.HalfTick';
     case ToolEnum.Lines: return 'ToolEnum.Lines';
+    case ToolEnum.Lines: return 'ToolEnum.Img';
     default: return type
   }
 }
