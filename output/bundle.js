@@ -24668,6 +24668,7 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
                         shape.data.w = img.naturalWidth;
                         shape.data.h = img.naturalHeight;
                         shape.data.layer = board.layer().id;
+                        shape.data.objectFit = dist_1.ObjectFit.Cover;
                         board.add(shape);
                     };
                 }

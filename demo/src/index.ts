@@ -1,5 +1,6 @@
 import {
   Board, FactoryEnum, Gaia,
+  ObjectFit,
   ShapeEnum,
   ShapeImg,
   ToolEnum
@@ -122,6 +123,7 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
             shape.data.w = img.naturalWidth;
             shape.data.h = img.naturalHeight;
             shape.data.layer = board.layer().id;
+            shape.data.objectFit = ObjectFit.Cover;
             board.add(shape);
           }
         }
