@@ -443,6 +443,7 @@ const list: TTT[] = [{
 const btnChange = new Button().init({ content: ' ↻ ' });
 let i = 0;
 btnChange.addEventListener('click', () => {
+  board.removeAll(false);
   init(list[(++i) % list.length]!);
 })
 btnChange.inner.click();

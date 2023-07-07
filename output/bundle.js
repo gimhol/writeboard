@@ -1688,6 +1688,7 @@ const list = [{
 const btnChange = new Button_1.Button().init({ content: ' ↻ ' });
 let i = 0;
 btnChange.addEventListener('click', () => {
+    board.removeAll(false);
     init(list[(++i) % list.length]);
 });
 btnChange.inner.click();
