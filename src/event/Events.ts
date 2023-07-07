@@ -1,5 +1,5 @@
 import { Layer } from "../board";
-import { ShapeType } from "../shape";
+import { Shape, ShapeType } from "../shape";
 import { IShapeData } from "../shape/base/Data";
 import { ToolType } from "../tools/ToolEnum";
 import { EventEnum } from "./EventType";
@@ -46,6 +46,8 @@ export namespace Events {
     [EventEnum.ToolChanged]: IToolChangedDetail;
     [EventEnum.LayerAdded]: Layer;
     [EventEnum.LayerRemoved]: Layer;
+    [EventEnum.ShapesSelected]: Shape[];
+    [EventEnum.ShapesDeselected]: Shape[];
   }
   export interface EventMap extends HTMLElementEventMap {
     [EventEnum.ShapesAdded]: CustomEvent<IFullDetail>;
@@ -56,6 +58,8 @@ export namespace Events {
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;
     [EventEnum.LayerAdded]: CustomEvent<Layer>;
     [EventEnum.LayerRemoved]: CustomEvent<Layer>;
+    [EventEnum.ShapesSelected]: CustomEvent<Shape[]>;
+    [EventEnum.ShapesDeselected]: CustomEvent<Shape[]>;
   } 
 }
 

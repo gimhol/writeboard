@@ -6,22 +6,32 @@ import {
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
+import ColorView from "./ColorView";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
-// const resultWidth = 1000 / 2;
-// const resultHeight = 1618 / 2;
-const resultWidth = 600;
-const resultHeight = 800;
+import { DockableDirection } from "./G/CompoundView/Workspace/DockableDirection";
+import { WorkspaceView } from "./G/CompoundView/Workspace/WorkspaceView";
+import { LayersView } from "./LayersView";
+import { RecorderView } from "./RecorderView";
+import { SnapshotView } from "./SnapshotView";
+import { ToolsView } from "./ToolsView";
+import { ToyView } from "./ToyView";
+import { RGBA } from "./colorPalette/Color";
+
 const factory = Gaia.factory(FactoryEnum.Default)();
-const mainView = View.get(document.body).styles.apply('', {
-  position: 'relative',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundImage: 'url(./kiwihug-zGZYQQVmXw0-unsplash.jpg)',
-  backgroundSize: '100% 100%'
-}).view;
+
+let board: Board
+
+const workspace = new WorkspaceView('body', {
+  rect() {
+    return {
+      x: 0, y: 0,
+      w: document.body.offsetWidth,
+      h: document.body.offsetHeight
+    }
+  },
+  zIndex: 1000,
+});
 
 enum MenuKey {
   SelectAll = 'SelectAll',
@@ -31,8 +41,10 @@ enum MenuKey {
   InsertImage = 'InsertImage',
   ExportResult = 'ExportResult',
 }
+const menu = new Menu(workspace);
 
-const menu = new Menu(mainView).setup([{
+
+menu.setup([{
   label: '工具',
   items: Gaia.listTools().map(v => ({ key: v, label: v }))
 }, {
@@ -62,7 +74,7 @@ const menu = new Menu(mainView).setup([{
   key: MenuKey.ClearUp,
   label: '删除全部',
   danger: true,
-}]);
+}])
 
 menu.addEventListener(Menu.EventType.ItemClick, (e) => {
   switch (e.detail.key) {
@@ -131,49 +143,98 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
         c.getContext('2d')!.drawImage(l, 0, 0, l.width, l.height);
 
         const a = document.createElement('a');
-        a.href = c.toDataURL('image/png');
-        a.download = '' + Date.now() + '.png';
+        a.href = c.toDataURL('image/jpeg', 90);
+        a.download = '' + Date.now() + '.jpg';
         a.click();
       })
+
     }
   }
 });
 
-const blackboard = new View('div').styles.apply('', {
-  boxShadow: '3px 3px 10px 1px #00000011',
-  width: resultWidth + 2,
-  height: resultHeight + 2,
-  boxSizing: 'border-box',
-  borderRadius: 5,
-  overflow: 'hidden',
-  position: 'relative',
-  transformOrigin: '50% 50%',
-  background: 'white'
-}).view;
+const layersView = new LayersView();
+workspace.addChild(layersView);
+layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
+  const layer = factory.newLayer({
+    info: {
+      name: factory.newLayerName(),
+      id: factory.newLayerId()
+    },
+    onscreen: document.createElement('canvas')
+  })
+  layersView.addLayer(layer);
+  board.addLayer(layer);
+})
+layersView.addEventListener(LayersView.EventType.LayerVisibleChanged, e => {
+  const { id, visible } = e.detail;
+  const layer = board.layer(id);
+  if (!layer) { return; }
+  layer.opacity = visible ? 1 : 0;
+})
+layersView.addEventListener(LayersView.EventType.LayerActived, e => {
+  const { id } = e.detail;
+  board.editLayer(id);
+})
 
-mainView.addChild(blackboard);
+const toolsView = new ToolsView;
+workspace.addChild(toolsView)
+toolsView.onToolClick = (btn) => board.setToolType(btn.toolType!)
 
-const board = factory.newWhiteBoard({
-  width: resultWidth,
-  height: resultHeight,
-  element: blackboard.inner,
+const colorView = new ColorView;
+workspace.addChild(colorView)
+colorView.inner.addEventListener(ColorView.EventTypes.LineColorChange, (e) => {
+  const rgba = (e as CustomEvent).detail as RGBA;
+  Gaia.listTools().forEach(toolType => {
+    const shape = Gaia.toolInfo(toolType)?.shape
+    if (!shape) return;
+    const template = board.factory.shapeTemplate(shape);
+    template.strokeStyle = '' + rgba.toHex();
+  })
+})
+colorView.inner.addEventListener(ColorView.EventTypes.FillColorChange, (e) => {
+  const rgba = (e as CustomEvent).detail as RGBA;
+  Gaia.listTools().forEach(toolType => {
+    const shape = Gaia.toolInfo(toolType)?.shape
+    if (!shape) return;
+    const template = board.factory.shapeTemplate(shape);
+    template.fillStyle = '' + rgba.toHex();
+  })
+})
+
+const toyView = new ToyView();
+toyView.board = () => board;
+workspace.addChild(toyView);
+
+const snapshotView = new SnapshotView();
+snapshotView.board = () => board;
+workspace.addChild(snapshotView)
+
+const recorderView = new RecorderView();
+recorderView.board = () => board;
+workspace.addChild(recorderView)
+
+const blackboard = new View('div');
+blackboard.styles.addCls('root', 'blackboard').apply('', {
+  pointerEvents: 'all',
 });
-board.addEventListener(EventEnum.ShapesSelected, e => {
-  console.log('ShapesSelected', e.detail.map(v => v.data.id).join(','))
-})
-board.addEventListener(EventEnum.ShapesDeselected, e => {
-  console.log('ShapesDeselected', e.detail.map(v => v.data.id).join(','))
-})
+workspace.rootDockView.setContent(blackboard);
+
+board = factory.newWhiteBoard({ width: 1024, height: 1024, element: blackboard.inner });
 Object.assign(window, {
-  board, factory, mainView, Gaia, menu
+  board, factory, workspace, FactoryMgr: Gaia
 });
+workspace.dockToRoot(toolsView, DockableDirection.H, 'start');
+workspace.dockToRoot(colorView, DockableDirection.H, 'end')
+workspace.dockAround(toyView, colorView, DockableDirection.V, 'end');
+workspace.dockAround(recorderView, toyView, DockableDirection.V, 'end');
+workspace.dockAround(snapshotView, recorderView, DockableDirection.V, 'end');
+workspace.dockAround(layersView, snapshotView, DockableDirection.V, 'end');
 
 const oncontextmenu = (e: MouseEvent) => {
   menu.move(e.x, e.y).show();
   e.stopPropagation();
   e.preventDefault();
 };
-
 const onkeydown = (e: KeyboardEvent) => {
   if (e.ctrlKey && !e.shiftKey && !e.altKey) {
     const func = ctrlShorcuts.get(e.key);
@@ -187,6 +248,7 @@ const onkeydown = (e: KeyboardEvent) => {
       const toolEnum = toolShortcuts.get(e.key);
       if (toolEnum) {
         board.setToolType(toolEnum);
+        toolsView.setToolType(toolEnum);
         e.stopPropagation();
         e.preventDefault();
         break;
@@ -230,7 +292,9 @@ board.addEventListener(EventEnum.LayerRemoved, e => {
 board.layers.forEach(layer => {
   layer.onscreen.addEventListener('keydown', onkeydown)
   layer.onscreen.addEventListener('contextmenu', oncontextmenu)
+  layersView.addLayer(layer)
 })
+window.addEventListener('resize', () => workspace.clampAllSubwin())
 
 window.addEventListener('keydown', e => {
   if (e.ctrlKey && e.key === 'a') {

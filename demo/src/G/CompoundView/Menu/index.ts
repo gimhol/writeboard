@@ -25,7 +25,7 @@ export class Menu<K extends string | number | symbol> extends View<'div'>{
 
     this._container = container;
     this._zIndex = inits?.zIndex ?? this._zIndex;
-    this.styles.setCls('g_menu');
+    this.styles.addCls('g_menu');
     this.setup(inits?.items ?? []);
     window.addEventListener('pointerdown', e => {
       if (findParent(e.target, ele => !!View.try(ele, Menu))) {

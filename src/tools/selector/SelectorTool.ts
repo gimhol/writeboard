@@ -47,7 +47,15 @@ export class SelectorTool implements ITool {
   start(): void {
   }
   end(): void {
-    this.board?.deselect()
+    this.deselect();
+  }
+  deselect() {
+    const { board } = this;
+    if (!board) { return; }
+    const shapes = board.deselect();
+    if (shapes.length) {
+      board.emitEvent(EventEnum.ShapesDeselected, shapes);
+    }
   }
   pointerDown(dot: IDot): void {
     const { x, y } = dot
@@ -58,23 +66,31 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Invalid:
         this._rectHelper.start(x, y)
         this.updateGeo()
-        let shape = board.hit({ x, y, w: 0, h: 0 });
-        const firstHit = !shape?.selected;
-        if (!shape || !shape.selected)
-          shape = board.selectNear({ x, y, w: 0, h: 0 });
+        const shape = board.hit({ x, y, w: 0, h: 0 });
+        if (!shape) {
+          // 点击的位置无任何图形，则框选图形, 并取消选择以选择的图形
+          this._status = SelectorStatus.Selecting;
+          this._rect.visible = true;
+          this.deselect();
+        } else if (!shape.selected) {
+          // 点击位置存在图形，且图形未被选择，则选择点中的图形。
+          this._status = SelectorStatus.Dragging;
+          this.deselect();
+          board.selects = [shape];
+          board.emitEvent(EventEnum.ShapesSelected, [shape])
 
-        if (shape) {
+        } else {
+          // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
           const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
-          if (direction && !firstHit) {
+          if (direction) {
             this._resizerRect = resizerRect;
             this._status = SelectorStatus.Resizing;
+            this.deselect();
             board.selects = [shape];
+            board.emitEvent(EventEnum.ShapesSelected, [shape])
           } else {
             this._status = SelectorStatus.Dragging;
           }
-        } else {
-          this._status = SelectorStatus.Selecting
-          this._rect.visible = true
         }
         this._shapes = board.selects.map(v => {
           const data = {
@@ -100,8 +116,14 @@ export class SelectorTool implements ITool {
     switch (this._status) {
       case SelectorStatus.Selecting: {
         this._rectHelper.end(dot.x, dot.y)
-        this.updateGeo()
-        board.selectAt(this._rect.data)
+        this.updateGeo();
+        const [newSelecteds, newDeselecteds] = board.selectAt(this._rect.data)
+        if (newSelecteds.length) {
+          board.emitEvent(EventEnum.ShapesSelected, newSelecteds);
+        }
+        if (newDeselecteds.length) {
+          board.emitEvent(EventEnum.ShapesDeselected, newDeselecteds);
+        }
         return
       }
       case SelectorStatus.Dragging: {

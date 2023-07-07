@@ -9,7 +9,7 @@
   user-select: none;
   transition: opacity 200ms;
   overflow: hidden;
-  box-shadow: 5px 10px 20px 20px #00000022;
+  box-shadow: 5px 10px 20px #00000022;
 }
 
 .g_menu_item_divider {

@@ -226,9 +226,9 @@ export class Board implements IShapesMgr {
     if (this._toolType === to) return
     const from = this._toolType
     this._toolType = to
-    this.emitEvent(EventEnum.ToolChanged, { 
-      operator: this._operator, 
-      from, to 
+    this.emitEvent(EventEnum.ToolChanged, {
+      operator: this._operator,
+      from, to
     })
   }
   get selects() {
@@ -273,22 +273,46 @@ export class Board implements IShapesMgr {
     this.remove(...this._selects)
     this._selects = []
   }
-  selectAll() {
-    this.selects = [...this._shapesMgr.shapes()]
+
+  /**
+   * 全选图形
+   *
+   * @return {Shape[]} 新选中的图形
+   * @memberof Board
+   */
+  selectAll(): Shape[] {
+    const list = this._shapesMgr.shapes().filter(v => !v.selected);
+    this.selects = [...this._shapesMgr.shapes()];
+    return list;
   }
-  deselect() {
+
+  /**
+   * 取消选择
+   * 
+   * @return {Shape[]} ？？？
+   * @memberof Board
+   */
+  deselect(): Shape[] {
+    const old = this.selects;
     this.selects = []
+    return old;
   }
-  selectAt(rect: IRect): Shape[] {
-    const ret = this._shapesMgr.hits(rect)
-    this.selects = ret
-    return ret
+
+  /**
+   * 选中指定区域内的图形，指定区域以外的会被取消选择
+   *
+   * @param {IRect} rect
+   * @return {[Shape[], Shape[]]} [新选中的图形的数组, 取消选择的图形的数组]
+   * @memberof Board
+   */
+  selectAt(rect: IRect): [Shape[], Shape[]] {
+    const hits = this._shapesMgr.hits(rect);
+    const selecteds = hits.filter(v => !v.selected);
+    const desecteds = this.selects.filter(a => !hits.find(b => a === b))
+    this.selects = hits;
+    return [selecteds, desecteds]
   }
-  selectNear(rect: IRect): Shape | undefined {
-    const ret = this._shapesMgr.hit(rect)
-    this.selects = ret ? [ret] : []
-    return ret
-  }
+
   getDot(ev: MouseEvent | PointerEvent): IDot {
     const layer = this.layer();
     const ele = layer.onscreen;
