@@ -1309,8 +1309,8 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
 });
 const blackboard = new View_1.View('div').styles.apply('', {
     boxShadow: '3px 3px 10px 1px #00000011',
-    width: resultWidth + 2,
-    height: resultHeight + 2,
+    width: resultWidth,
+    height: resultHeight,
     boxSizing: 'border-box',
     borderRadius: 5,
     overflow: 'hidden',
