@@ -37,10 +37,12 @@ export class EditPanel extends View<'div'> {
       right: 0,
       top: 0,
       bottom: 0,
+      width: 0,
       background: 'white',
+      opacity: 0,
       boxShadow: '0px 0px 10px 1px #00000011',
       zIndex: 1,
-      transition: 'width 200ms',
+      transition: 'width 300ms, opacity 255ms',
       overflow: 'hidden',
     });
 
@@ -86,17 +88,21 @@ export class EditPanel extends View<'div'> {
 
   onStateChange = (e: StateEventTypeEventMap<A>[StateEventType.Change]) => {
     const { needImg, needText, needFill, needStroke } = e.detail.curr;
-
     this[needStroke ? 'addChild' : 'removeChild'](this._editStrokeView);
     this[needFill ? 'addChild' : 'removeChild'](this._editFillView);
     this[needImg ? 'addChild' : 'removeChild'](this._editImgView);
-    this[needImg ? 'addChild' : 'removeChild'](this._editTextView);
-
+    this[needText ? 'addChild' : 'removeChild'](this._editTextView);
 
     if (needImg || needText || needFill || needStroke) {
-      this.styles.apply('', v => ({ ...v, width: 300 }))
+      this.styles.apply('', v => ({
+        ...v, width: 300,
+        opacity: 1
+      }))
     } else {
-      this.styles.apply('', v => ({ ...v, width: 0 }))
+      this.styles.apply('', v => ({
+        ...v, width: 0,
+        opacity: 0
+      }))
     }
   }
 }

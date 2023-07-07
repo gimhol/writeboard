@@ -31,7 +31,7 @@ export class TextTool implements ITool {
       if (!preShape.text) {
         const board = this.board;
         if (!board) return;
-        board.remove(preShape)
+        board.remove(preShape, true)
       }
     }
   }
@@ -134,7 +134,7 @@ export class TextTool implements ITool {
       const newShapeText = board.factory.newShape(ShapeEnum.Text) as ShapeText
       newShapeText.data.layer = board.layer().id;
       newShapeText.move(dot.x, dot.y)
-      board.add(newShapeText)
+      board.add(newShapeText, true)
       shapeText = newShapeText
     }
     this.curShape = shapeText

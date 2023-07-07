@@ -149,7 +149,7 @@ export class LinesTool implements ITool {
       this._curShape = board.factory.newShape(ShapeEnum.Lines) as ShapeLines
       this._curShape.data.layer = board.layer().id;
       this._curShape.data.editing = true
-      board.add(this._curShape);
+      board.add(this._curShape, true);
       this.addDot(dot, 'first');
       this.addDot(dot)
     }

@@ -26,12 +26,12 @@ class EditPanel extends View_1.View {
             this[needStroke ? 'addChild' : 'removeChild'](this._editStrokeView);
             this[needFill ? 'addChild' : 'removeChild'](this._editFillView);
             this[needImg ? 'addChild' : 'removeChild'](this._editImgView);
-            this[needImg ? 'addChild' : 'removeChild'](this._editTextView);
+            this[needText ? 'addChild' : 'removeChild'](this._editTextView);
             if (needImg || needText || needFill || needStroke) {
-                this.styles.apply('', v => (Object.assign(Object.assign({}, v), { width: 300 })));
+                this.styles.apply('', v => (Object.assign(Object.assign({}, v), { width: 300, opacity: 1 })));
             }
             else {
-                this.styles.apply('', v => (Object.assign(Object.assign({}, v), { width: 0 })));
+                this.styles.apply('', v => (Object.assign(Object.assign({}, v), { width: 0, opacity: 0 })));
             }
         };
         this.styles.apply('', {
@@ -40,10 +40,12 @@ class EditPanel extends View_1.View {
             right: 0,
             top: 0,
             bottom: 0,
+            width: 0,
             background: 'white',
+            opacity: 0,
             boxShadow: '0px 0px 10px 1px #00000011',
             zIndex: 1,
-            transition: 'width 200ms',
+            transition: 'width 300ms, opacity 255ms',
             overflow: 'hidden',
         });
         this._state = new State_1.State({
@@ -1246,16 +1248,16 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
             board.setToolType(e.detail.key);
             break;
         case MenuKey.SelectAll:
-            board.selectAll();
+            board.selectAll(true);
             break;
         case MenuKey.Deselect:
-            board.deselect();
+            board.deselect(true);
             break;
         case MenuKey.RemoveSelected:
-            board.removeSelected();
+            board.removeSelected(true);
             break;
         case MenuKey.ClearUp:
-            board.removeAll();
+            board.removeAll(true);
             break;
         case MenuKey.InsertImage: {
             const input = document.createElement('input');
@@ -1282,7 +1284,7 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
                         shape.data.h = img.naturalHeight;
                         shape.data.layer = board.layer().id;
                         shape.data.objectFit = dist_1.ObjectFit.Cover;
-                        board.add(shape);
+                        board.add(shape, true);
                     };
                 }
             };
@@ -1290,7 +1292,7 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
             break;
         }
         case MenuKey.ExportResult: {
-            board.deselect();
+            board.deselect(true);
             requestAnimationFrame(() => {
                 const l = board.layer().onscreen;
                 const c = document.createElement('canvas');
@@ -1406,11 +1408,13 @@ const toolShortcuts = new Map([
     ['l', dist_1.ToolEnum.Lines]
 ]);
 const onekeyShorcuts = new Map([
-    ['Delete', () => board.removeSelected()]
+    ['Delete', () => {
+            board.removeSelected(true);
+        }]
 ]);
 const ctrlShorcuts = new Map([
-    ['a', () => board.selectAll()],
-    ['d', () => board.deselect()],
+    ['a', () => board.selectAll(true)],
+    ['d', () => board.deselect(true)],
 ]);
 board.addEventListener(event_1.EventEnum.LayerAdded, e => {
     e.detail.onscreen.addEventListener('keydown', onkeydown);
@@ -1588,11 +1592,11 @@ class Board {
         };
     }
     fromSnapshot(snapshot) {
-        this.removeAll();
+        this.removeAll(false);
         Array.from(this._layers.keys()).forEach((layerId) => this.removeLayer(layerId));
         this.addLayers(snapshot.l.map(info => ({ info })));
         const shapes = snapshot.s.map((v) => this.factory.newShape(v));
-        this.add(...shapes);
+        this.add(shapes, false);
     }
     toJson() {
         return JSON.stringify(this.toSnapshot());
@@ -1657,12 +1661,8 @@ class Board {
     get selects() {
         return this._selects;
     }
-    set selects(v) {
-        this._selects.forEach(v => v.selected = false);
-        this._selects = v;
-        this._selects.forEach(v => v.selected = true);
-    }
-    add(...shapes) {
+    add(arg0, emit) {
+        const shapes = Array.isArray(arg0) ? arg0 : [arg0];
         if (!shapes.length)
             return 0;
         const ret = this._shapesMgr.add(...shapes);
@@ -1672,13 +1672,15 @@ class Board {
                 this._selects.push(item);
             this.markDirty(item.boundingRect());
         });
-        this.emitEvent(event_1.EventEnum.ShapesAdded, {
-            operator: this._operator,
-            shapeDatas: shapes.map(v => v.data.copy())
-        });
+        if (emit) {
+            this.emitEvent(event_1.EventEnum.ShapesAdded, {
+                shapeDatas: shapes.map(v => v.data.copy())
+            });
+        }
         return ret;
     }
-    remove(...shapes) {
+    remove(arg0, emit) {
+        const shapes = Array.isArray(arg0) ? arg0 : [arg0];
         if (!shapes.length)
             return 0;
         const ret = this._shapesMgr.remove(...shapes);
@@ -1686,56 +1688,63 @@ class Board {
             this.markDirty(item.boundingRect());
             item.board = undefined;
         });
-        this.emitEvent(event_1.EventEnum.ShapesRemoved, {
-            operator: this._operator,
-            shapeDatas: shapes.map(v => v.data.copy())
-        });
+        if (emit) {
+            const datas = shapes.map(v => v.data);
+            const deselecteds = datas.filter(v => v.selected);
+            this.emitEvent(event_1.EventEnum.ShapesDeselected, deselecteds);
+            this.emitEvent(event_1.EventEnum.ShapesRemoved, { shapeDatas: datas });
+        }
         return ret;
     }
-    removeAll() {
-        return this.remove(...this._shapesMgr.shapes());
+    removeAll(emit) {
+        return this.remove(this._shapesMgr.shapes(), emit);
     }
-    removeSelected() {
-        this.remove(...this._selects);
+    removeSelected(emit) {
+        this.remove(this._selects, emit);
         this._selects = [];
     }
     /**
      * 全选图形
      *
+     * @param {true} [emit] 是否发射事件
      * @return {Shape[]} 新选中的图形
      * @memberof Board
      */
-    selectAll() {
-        const list = this._shapesMgr.shapes().filter(v => !v.selected);
-        this.selects = [...this._shapesMgr.shapes()];
-        return list;
+    selectAll(emit) {
+        return this.setSelects(this.shapes(), emit)[0];
     }
     /**
      * 取消选择
      *
+     * @param {true} [emit] 是否发射事件
      * @return {Shape[]} ？？？
      * @memberof Board
      */
-    deselect() {
-        const old = this.selects;
-        this.selects = [];
-        return old;
+    deselect(emit) {
+        return this.setSelects([], emit)[1];
     }
     /**
      * 选中指定区域内的图形，指定区域以外的会被取消选择
      *
      * @param {IRect} rect
      * @return {[Shape[], Shape[]]} [新选中的图形的数组, 取消选择的图形的数组]
+     * @param {true} [emit] 是否发射事件
      * @memberof Board
      */
-    selectAt(rect) {
+    selectAt(rect, emit) {
         const hits = this._shapesMgr.hits(rect);
-        return this.setSelects(hits);
+        return this.setSelects(hits, emit);
     }
-    setSelects(shapes) {
+    setSelects(shapes, emit) {
         const selecteds = shapes.filter(v => !v.selected);
-        const desecteds = this.selects.filter(a => !shapes.find(b => a === b));
-        this.selects = shapes;
+        const desecteds = this._selects.filter(a => !shapes.find(b => a === b));
+        desecteds.forEach(v => v.selected = false);
+        selecteds.forEach(v => v.selected = true);
+        this._selects = shapes;
+        if (emit) {
+            selecteds.length && this.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
+            desecteds.length && this.emitEvent(event_1.EventEnum.ShapesDeselected, desecteds.map(v => v.data));
+        }
         return [selecteds, desecteds];
     }
     getDot(ev) {
@@ -2012,7 +2021,7 @@ class Player {
             case event_1.EventEnum.ShapesAdded: {
                 const detail = e.detail;
                 const shapes = (_a = detail.shapeDatas) === null || _a === void 0 ? void 0 : _a.map(v => actor.factory.newShape(v));
-                shapes && actor.add(...shapes);
+                shapes && actor.add(shapes, false);
                 break;
             }
             case event_1.EventEnum.ShapesMoved:
@@ -2029,7 +2038,7 @@ class Player {
             case event_1.EventEnum.ShapesRemoved: {
                 const detail = e.detail;
                 const shapes = (_b = detail.shapeDatas) === null || _b === void 0 ? void 0 : _b.map(data => actor.find(data.i)).filter(v => v);
-                shapes && actor.remove(...shapes);
+                shapes && actor.remove(shapes, false);
                 break;
             }
         }
@@ -3623,7 +3632,7 @@ class LinesTool {
             this._curShape = board.factory.newShape(ShapeEnum_1.ShapeEnum.Lines);
             this._curShape.data.layer = board.layer().id;
             this._curShape.data.editing = true;
-            board.add(this._curShape);
+            board.add(this._curShape, true);
             this.addDot(dot, 'first');
             this.addDot(dot);
         }
@@ -3997,7 +4006,7 @@ class PenTool {
         this._curShape = board.factory.newShape(ShapeEnum_1.ShapeEnum.Pen);
         this._curShape.data.layer = board.layer().id;
         this._curShape.data.editing = true;
-        board.add(this._curShape);
+        board.add(this._curShape, true);
         this.addDot(dot, 'first');
     }
     pointerDraw(dot) {
@@ -4390,7 +4399,7 @@ class TextTool {
                 const board = this.board;
                 if (!board)
                     return;
-                board.remove(preShape);
+                board.remove(preShape, true);
             }
         }
     }
@@ -4492,7 +4501,7 @@ class TextTool {
             const newShapeText = board.factory.newShape(ShapeEnum_1.ShapeEnum.Text);
             newShapeText.data.layer = board.layer().id;
             newShapeText.move(dot.x, dot.y);
-            board.add(newShapeText);
+            board.add(newShapeText, true);
             shapeText = newShapeText;
         }
         this.curShape = shapeText;
@@ -4729,7 +4738,7 @@ class SimpleTool {
         const shape = this._curShape;
         if (!shape)
             return;
-        board.add(shape);
+        board.add(shape, true);
         this._rect.start(x, y);
         this.updateGeo();
     }
@@ -4870,10 +4879,7 @@ class SelectorTool {
         if (!board) {
             return;
         }
-        const shapes = board.deselect();
-        if (shapes.length) {
-            board.emitEvent(event_1.EventEnum.ShapesDeselected, shapes.map(v => v.data));
-        }
+        board.deselect(true);
     }
     pointerDown(dot) {
         const { x, y } = dot;
@@ -4895,9 +4901,7 @@ class SelectorTool {
                 else if (!shape.selected) {
                     // 点击位置存在图形，且图形未被选择，则选择点中的图形。
                     this._status = SelectorStatus.Dragging;
-                    const [selecteds, deselecteds] = board.setSelects([shape]);
-                    selecteds.length && board.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
-                    deselecteds.length && board.emitEvent(event_1.EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
+                    board.setSelects([shape], true);
                 }
                 else {
                     // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
@@ -4905,9 +4909,7 @@ class SelectorTool {
                     if (direction) {
                         this._resizerRect = resizerRect;
                         this._status = SelectorStatus.Resizing;
-                        const [selecteds, deselecteds] = board.setSelects([shape]);
-                        selecteds.length && board.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
-                        deselecteds.length && board.emitEvent(event_1.EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
+                        board.setSelects([shape], true);
                     }
                     else {
                         this._status = SelectorStatus.Dragging;
@@ -4939,9 +4941,7 @@ class SelectorTool {
             case SelectorStatus.Selecting: {
                 this._rectHelper.end(dot.x, dot.y);
                 this.updateGeo();
-                const [selecteds, deselecteds] = board.selectAt(this._rect.data);
-                selecteds.length && board.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
-                deselecteds.length && board.emitEvent(event_1.EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
+                board.selectAt(this._rect.data, true);
                 return;
             }
             case SelectorStatus.Dragging: {
@@ -4953,11 +4953,6 @@ class SelectorTool {
                 return;
             }
             case SelectorStatus.Resizing: {
-                // TODO: RESIZE SHAPE AND EMIT EVENT HERE -GIM
-                // this._shapes.forEach(v => {
-                //   v.prevData = Events.pickShapePositionData(v.shape.data)
-                //   v.shape.moveBy(diffX, diffY)
-                // })
                 this.emitEvent(false);
                 return;
             }

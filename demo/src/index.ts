@@ -1,16 +1,14 @@
 import {
-  Board, FactoryEnum, Gaia,
+  FactoryEnum, Gaia,
   ObjectFit,
   ShapeEnum,
   ShapeImg,
-  ShapeText,
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
 import { EditPanel } from "./EditPanel";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
-import { State } from "./G/State";
 
 const resultWidth = 600;
 const resultHeight = 800;
@@ -86,16 +84,16 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
       board.setToolType(e.detail.key);
       break;
     case MenuKey.SelectAll:
-      board.selectAll();
+      board.selectAll(true);
       break;
     case MenuKey.Deselect:
-      board.deselect();
+      board.deselect(true);
       break;
     case MenuKey.RemoveSelected:
-      board.removeSelected();
+      board.removeSelected(true);
       break;
     case MenuKey.ClearUp:
-      board.removeAll();
+      board.removeAll(true);
       break;
     case MenuKey.InsertImage: {
       const input = document.createElement('input');
@@ -118,7 +116,7 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
             shape.data.h = img.naturalHeight;
             shape.data.layer = board.layer().id;
             shape.data.objectFit = ObjectFit.Cover;
-            board.add(shape);
+            board.add(shape, true);
           }
         }
       }
@@ -126,7 +124,7 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
       break;
     }
     case MenuKey.ExportResult: {
-      board.deselect();
+      board.deselect(true);
       requestAnimationFrame(() => {
         const l = board.layer().onscreen;
         const c = document.createElement('canvas');
@@ -251,11 +249,13 @@ const toolShortcuts = new Map<string, ToolEnum>([
   ['l', ToolEnum.Lines]
 ])
 const onekeyShorcuts = new Map<string, () => void>([
-  ['Delete', () => board.removeSelected()]
+  ['Delete', () => {
+    board.removeSelected(true)
+  }]
 ])
 const ctrlShorcuts = new Map<string, () => void>([
-  ['a', () => board.selectAll()],
-  ['d', () => board.deselect()],
+  ['a', () => board.selectAll(true)],
+  ['d', () => board.deselect(true)],
 ])
 board.addEventListener(EventEnum.LayerAdded, e => {
   e.detail.onscreen.addEventListener('keydown', onkeydown)

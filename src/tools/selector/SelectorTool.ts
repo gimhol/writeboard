@@ -52,10 +52,7 @@ export class SelectorTool implements ITool {
   deselect() {
     const { board } = this;
     if (!board) { return; }
-    const shapes = board.deselect();
-    if (shapes.length) {
-      board.emitEvent(EventEnum.ShapesDeselected, shapes.map(v => v.data));
-    }
+    board.deselect(true);
   }
   pointerDown(dot: IDot): void {
     const { x, y } = dot
@@ -75,19 +72,14 @@ export class SelectorTool implements ITool {
         } else if (!shape.selected) {
           // 点击位置存在图形，且图形未被选择，则选择点中的图形。
           this._status = SelectorStatus.Dragging;
-          const [selecteds, deselecteds] = board.setSelects([shape])
-          selecteds.length && board.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
-          deselecteds.length && board.emitEvent(EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
-
+          board.setSelects([shape], true)
         } else {
           // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
           const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
           if (direction) {
             this._resizerRect = resizerRect;
             this._status = SelectorStatus.Resizing;
-            const [selecteds, deselecteds] = board.setSelects([shape])
-            selecteds.length && board.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
-            deselecteds.length && board.emitEvent(EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
+            board.setSelects([shape], true)
           } else {
             this._status = SelectorStatus.Dragging;
           }
@@ -117,9 +109,7 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Selecting: {
         this._rectHelper.end(dot.x, dot.y)
         this.updateGeo();
-        const [selecteds, deselecteds] = board.selectAt(this._rect.data)
-        selecteds.length && board.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
-        deselecteds.length && board.emitEvent(EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
+        board.selectAt(this._rect.data, true);
         return
       }
       case SelectorStatus.Dragging: {
@@ -131,11 +121,6 @@ export class SelectorTool implements ITool {
         return
       }
       case SelectorStatus.Resizing: {
-        // TODO: RESIZE SHAPE AND EMIT EVENT HERE -GIM
-        // this._shapes.forEach(v => {
-        //   v.prevData = Events.pickShapePositionData(v.shape.data)
-        //   v.shape.moveBy(diffX, diffY)
-        // })
         this.emitEvent(false)
         return
       }

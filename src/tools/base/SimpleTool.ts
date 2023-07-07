@@ -72,7 +72,7 @@ export class SimpleTool implements ITool {
     this._curShape.data.layer = board.layer().id;
     const shape = this._curShape
     if (!shape) return
-    board.add(shape)
+    board.add(shape, true)
     this._rect.start(x, y)
     this.updateGeo()
   }

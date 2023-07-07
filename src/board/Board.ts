@@ -15,7 +15,7 @@ export interface BoardOptions {
 }
 const Tag = '[Board]'
 
-export class Board implements IShapesMgr {
+export class Board {
   private _factory: IFactory
   private _toolType: ToolType = ToolEnum.Pen
   private _layers = new Map<string, Layer>();
@@ -148,11 +148,11 @@ export class Board implements IShapesMgr {
   }
 
   fromSnapshot(snapshot: ISnapshot) {
-    this.removeAll();
+    this.removeAll(false);
     Array.from(this._layers.keys()).forEach((layerId) => this.removeLayer(layerId))
     this.addLayers(snapshot.l.map(info => ({ info })));
     const shapes = snapshot.s.map((v: IShapeData) => this.factory.newShape(v))
-    this.add(...shapes)
+    this.add(shapes, false);
   }
   toJson(): string {
     return JSON.stringify(this.toSnapshot())
@@ -234,12 +234,11 @@ export class Board implements IShapesMgr {
   get selects() {
     return this._selects
   }
-  set selects(v) {
-    this._selects.forEach(v => v.selected = false)
-    this._selects = v
-    this._selects.forEach(v => v.selected = true)
-  }
-  add(...shapes: Shape[]) {
+
+  add(shape: Shape, emit: boolean): number;
+  add(shapes: Shape[], emit: boolean): number;
+  add(arg0: Shape[] | Shape, emit: boolean): number {
+    const shapes = Array.isArray(arg0) ? arg0 : [arg0];
     if (!shapes.length) return 0
     const ret = this._shapesMgr.add(...shapes)
     shapes.forEach(item => {
@@ -247,55 +246,64 @@ export class Board implements IShapesMgr {
       if (item.selected) this._selects.push(item)
       this.markDirty(item.boundingRect())
     })
-    this.emitEvent(EventEnum.ShapesAdded, {
-      operator: this._operator,
-      shapeDatas: shapes.map(v => v.data.copy())
-    })
+    if (emit) {
+      this.emitEvent(EventEnum.ShapesAdded, {
+        shapeDatas: shapes.map(v => v.data.copy())
+      })
+    }
+
     return ret
   }
-  remove(...shapes: Shape[]) {
+
+  remove(shape: Shape, emit: boolean): number;
+  remove(shapes: Shape[], emit: boolean): number;
+  remove(arg0: Shape[] | Shape, emit: boolean): number {
+    const shapes = Array.isArray(arg0) ? arg0 : [arg0];
     if (!shapes.length) return 0
     const ret = this._shapesMgr.remove(...shapes)
     shapes.forEach(item => {
       this.markDirty(item.boundingRect())
       item.board = undefined
     })
-    this.emitEvent(EventEnum.ShapesRemoved, {
-      operator: this._operator,
-      shapeDatas: shapes.map(v => v.data.copy())
-    })
+
+    if (emit) {
+      const datas = shapes.map(v => v.data);
+      const deselecteds = datas.filter(v => v.selected);
+      this.emitEvent(EventEnum.ShapesDeselected, deselecteds)
+      this.emitEvent(EventEnum.ShapesRemoved, { shapeDatas: datas })
+    }
     return ret
   }
-  removeAll() {
-    return this.remove(...this._shapesMgr.shapes())
+
+  removeAll(emit: boolean) {
+    return this.remove(this._shapesMgr.shapes(), emit)
   }
-  removeSelected() {
-    this.remove(...this._selects)
+
+  removeSelected(emit: boolean) {
+    this.remove(this._selects, emit);
     this._selects = []
   }
 
   /**
    * 全选图形
    *
+   * @param {true} [emit] 是否发射事件
    * @return {Shape[]} 新选中的图形
    * @memberof Board
    */
-  selectAll(): Shape[] {
-    const list = this._shapesMgr.shapes().filter(v => !v.selected);
-    this.selects = [...this._shapesMgr.shapes()];
-    return list;
+  selectAll(emit: boolean): Shape[] {
+    return this.setSelects(this.shapes(), emit)[0];
   }
 
   /**
    * 取消选择
    * 
+   * @param {true} [emit] 是否发射事件
    * @return {Shape[]} ？？？
    * @memberof Board
    */
-  deselect(): Shape[] {
-    const old = this.selects;
-    this.selects = []
-    return old;
+  deselect(emit: boolean): Shape[] {
+    return this.setSelects([], emit)[1];
   }
 
   /**
@@ -303,17 +311,24 @@ export class Board implements IShapesMgr {
    *
    * @param {IRect} rect
    * @return {[Shape[], Shape[]]} [新选中的图形的数组, 取消选择的图形的数组]
+   * @param {true} [emit] 是否发射事件
    * @memberof Board
    */
-  selectAt(rect: IRect): [Shape[], Shape[]] {
+  selectAt(rect: IRect, emit: boolean): [Shape[], Shape[]] {
     const hits = this._shapesMgr.hits(rect);
-    return this.setSelects(hits);
+    return this.setSelects(hits, emit);
   }
 
-  setSelects(shapes: Shape[]): [Shape[], Shape[]] {
+  setSelects(shapes: Shape[], emit: boolean): [Shape[], Shape[]] {
     const selecteds = shapes.filter(v => !v.selected);
-    const desecteds = this.selects.filter(a => !shapes.find(b => a === b))
-    this.selects = shapes;
+    const desecteds = this._selects.filter(a => !shapes.find(b => a === b))
+    desecteds.forEach(v => v.selected = false)
+    selecteds.forEach(v => v.selected = true)
+    this._selects = shapes
+    if (emit) {
+      selecteds.length && this.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
+      desecteds.length && this.emitEvent(EventEnum.ShapesDeselected, desecteds.map(v => v.data));
+    }
     return [selecteds, desecteds]
   }
 

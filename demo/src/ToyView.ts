@@ -48,7 +48,7 @@ export class ToyView extends Subwin {
         randomShapeItem(item);
         items.push(item)
       }
-      board.add(...items)
+      board.add(items, true)
     }))
 
     this.content.addChild(new Button().init({
@@ -63,7 +63,7 @@ export class ToyView extends Subwin {
         randomShapeItem(item);
         items.push(item)
       }
-      board.add(...items)
+      board.add(items, true)
     }))
 
     this.content.addChild(new Button().init({
@@ -87,7 +87,7 @@ export class ToyView extends Subwin {
         randomShapeItem(item);
         items.push(item)
       }
-      board.add(...items)
+      board.add(items, true)
     }))
   }
 }

@@ -60,7 +60,7 @@ export class PenTool implements ITool {
     this._curShape = board.factory.newShape(ShapeEnum.Pen) as ShapePen
     this._curShape.data.layer = board.layer().id;
     this._curShape.data.editing = true
-    board.add(this._curShape)
+    board.add(this._curShape, true)
     this.addDot(dot, 'first')
   }
   pointerDraw(dot: IDot): void {

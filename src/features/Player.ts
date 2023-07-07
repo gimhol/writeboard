@@ -52,7 +52,7 @@ export class Player {
       case EventEnum.ShapesAdded: {
         const detail = e.detail as Events.EventDetailMap[typeof e.type];
         const shapes = detail.shapeDatas?.map(v => actor.factory.newShape(v));
-        shapes && actor.add(...shapes);
+        shapes && actor.add(shapes, false);
         break;
       }
       case EventEnum.ShapesMoved:
@@ -68,7 +68,7 @@ export class Player {
       case EventEnum.ShapesRemoved: {
         const detail = e.detail as Events.EventDetailMap[typeof e.type];
         const shapes = detail.shapeDatas?.map(data => actor.find(data.i)!).filter(v => v);
-        shapes && actor.remove(...shapes);
+        shapes && actor.remove(shapes, false);
         break;
       }
     }
