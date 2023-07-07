@@ -921,10 +921,10 @@ const board = factory.newWhiteBoard({
     element: blackboard.inner,
 });
 board.addEventListener(event_1.EventEnum.ShapesSelected, e => {
-    console.log('ShapesSelected', e.detail.map(v => v.data.id).join(','));
+    console.log('ShapesSelected', e.detail.map(v => v.i).join(','));
 });
 board.addEventListener(event_1.EventEnum.ShapesDeselected, e => {
-    console.log('ShapesDeselected', e.detail.map(v => v.data.id).join(','));
+    console.log('ShapesDeselected', e.detail.map(v => v.i).join(','));
 });
 Object.assign(window, {
     board, factory, mainView, Gaia: dist_1.Gaia, menu
@@ -1298,9 +1298,12 @@ class Board {
      */
     selectAt(rect) {
         const hits = this._shapesMgr.hits(rect);
-        const selecteds = hits.filter(v => !v.selected);
-        const desecteds = this.selects.filter(a => !hits.find(b => a === b));
-        this.selects = hits;
+        return this.setSelects(hits);
+    }
+    setSelects(shapes) {
+        const selecteds = shapes.filter(v => !v.selected);
+        const desecteds = this.selects.filter(a => !shapes.find(b => a === b));
+        this.selects = shapes;
         return [selecteds, desecteds];
     }
     getDot(ev) {
@@ -4414,7 +4417,7 @@ class SelectorTool {
         }
         const shapes = board.deselect();
         if (shapes.length) {
-            board.emitEvent(event_1.EventEnum.ShapesDeselected, shapes);
+            board.emitEvent(event_1.EventEnum.ShapesDeselected, shapes.map(v => v.data));
         }
     }
     pointerDown(dot) {
@@ -4437,9 +4440,9 @@ class SelectorTool {
                 else if (!shape.selected) {
                     // 点击位置存在图形，且图形未被选择，则选择点中的图形。
                     this._status = SelectorStatus.Dragging;
-                    this.deselect();
-                    board.selects = [shape];
-                    board.emitEvent(event_1.EventEnum.ShapesSelected, [shape]);
+                    const [selecteds, deselecteds] = board.setSelects([shape]);
+                    selecteds.length && board.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
+                    deselecteds.length && board.emitEvent(event_1.EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
                 }
                 else {
                     // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
@@ -4447,9 +4450,9 @@ class SelectorTool {
                     if (direction) {
                         this._resizerRect = resizerRect;
                         this._status = SelectorStatus.Resizing;
-                        this.deselect();
-                        board.selects = [shape];
-                        board.emitEvent(event_1.EventEnum.ShapesSelected, [shape]);
+                        const [selecteds, deselecteds] = board.setSelects([shape]);
+                        selecteds.length && board.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
+                        deselecteds.length && board.emitEvent(event_1.EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
                     }
                     else {
                         this._status = SelectorStatus.Dragging;
@@ -4481,13 +4484,9 @@ class SelectorTool {
             case SelectorStatus.Selecting: {
                 this._rectHelper.end(dot.x, dot.y);
                 this.updateGeo();
-                const [newSelecteds, newDeselecteds] = board.selectAt(this._rect.data);
-                if (newSelecteds.length) {
-                    board.emitEvent(event_1.EventEnum.ShapesSelected, newSelecteds);
-                }
-                if (newDeselecteds.length) {
-                    board.emitEvent(event_1.EventEnum.ShapesDeselected, newDeselecteds);
-                }
+                const [selecteds, deselecteds] = board.selectAt(this._rect.data);
+                selecteds.length && board.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
+                deselecteds.length && board.emitEvent(event_1.EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
                 return;
             }
             case SelectorStatus.Dragging: {

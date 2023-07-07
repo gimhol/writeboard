@@ -159,10 +159,10 @@ const board = factory.newWhiteBoard({
   element: blackboard.inner,
 });
 board.addEventListener(EventEnum.ShapesSelected, e => {
-  console.log('ShapesSelected', e.detail.map(v => v.data.id).join(','))
+  console.log('ShapesSelected', e.detail.map(v => v.i).join(','))
 })
 board.addEventListener(EventEnum.ShapesDeselected, e => {
-  console.log('ShapesDeselected', e.detail.map(v => v.data.id).join(','))
+  console.log('ShapesDeselected', e.detail.map(v => v.i).join(','))
 })
 Object.assign(window, {
   board, factory, mainView, Gaia, menu

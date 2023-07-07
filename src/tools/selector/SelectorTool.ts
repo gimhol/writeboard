@@ -54,7 +54,7 @@ export class SelectorTool implements ITool {
     if (!board) { return; }
     const shapes = board.deselect();
     if (shapes.length) {
-      board.emitEvent(EventEnum.ShapesDeselected, shapes);
+      board.emitEvent(EventEnum.ShapesDeselected, shapes.map(v => v.data));
     }
   }
   pointerDown(dot: IDot): void {
@@ -75,9 +75,9 @@ export class SelectorTool implements ITool {
         } else if (!shape.selected) {
           // 点击位置存在图形，且图形未被选择，则选择点中的图形。
           this._status = SelectorStatus.Dragging;
-          this.deselect();
-          board.selects = [shape];
-          board.emitEvent(EventEnum.ShapesSelected, [shape])
+          const [selecteds, deselecteds] = board.setSelects([shape])
+          selecteds.length && board.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
+          deselecteds.length && board.emitEvent(EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
 
         } else {
           // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
@@ -85,9 +85,9 @@ export class SelectorTool implements ITool {
           if (direction) {
             this._resizerRect = resizerRect;
             this._status = SelectorStatus.Resizing;
-            this.deselect();
-            board.selects = [shape];
-            board.emitEvent(EventEnum.ShapesSelected, [shape])
+            const [selecteds, deselecteds] = board.setSelects([shape])
+            selecteds.length && board.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
+            deselecteds.length && board.emitEvent(EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
           } else {
             this._status = SelectorStatus.Dragging;
           }
@@ -117,13 +117,9 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Selecting: {
         this._rectHelper.end(dot.x, dot.y)
         this.updateGeo();
-        const [newSelecteds, newDeselecteds] = board.selectAt(this._rect.data)
-        if (newSelecteds.length) {
-          board.emitEvent(EventEnum.ShapesSelected, newSelecteds);
-        }
-        if (newDeselecteds.length) {
-          board.emitEvent(EventEnum.ShapesDeselected, newDeselecteds);
-        }
+        const [selecteds, deselecteds] = board.selectAt(this._rect.data)
+        selecteds.length && board.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
+        deselecteds.length && board.emitEvent(EventEnum.ShapesDeselected, deselecteds.map(v => v.data));
         return
       }
       case SelectorStatus.Dragging: {

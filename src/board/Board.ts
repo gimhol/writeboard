@@ -307,9 +307,13 @@ export class Board implements IShapesMgr {
    */
   selectAt(rect: IRect): [Shape[], Shape[]] {
     const hits = this._shapesMgr.hits(rect);
-    const selecteds = hits.filter(v => !v.selected);
-    const desecteds = this.selects.filter(a => !hits.find(b => a === b))
-    this.selects = hits;
+    return this.setSelects(hits);
+  }
+
+  setSelects(shapes: Shape[]): [Shape[], Shape[]] {
+    const selecteds = shapes.filter(v => !v.selected);
+    const desecteds = this.selects.filter(a => !shapes.find(b => a === b))
+    this.selects = shapes;
     return [selecteds, desecteds]
   }
 

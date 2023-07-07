@@ -46,8 +46,8 @@ export namespace Events {
     [EventEnum.ToolChanged]: IToolChangedDetail;
     [EventEnum.LayerAdded]: Layer;
     [EventEnum.LayerRemoved]: Layer;
-    [EventEnum.ShapesSelected]: Shape[];
-    [EventEnum.ShapesDeselected]: Shape[];
+    [EventEnum.ShapesSelected]: IShapeData[];
+    [EventEnum.ShapesDeselected]: IShapeData[];
   }
   export interface EventMap extends HTMLElementEventMap {
     [EventEnum.ShapesAdded]: CustomEvent<IFullDetail>;
@@ -58,8 +58,8 @@ export namespace Events {
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;
     [EventEnum.LayerAdded]: CustomEvent<Layer>;
     [EventEnum.LayerRemoved]: CustomEvent<Layer>;
-    [EventEnum.ShapesSelected]: CustomEvent<Shape[]>;
-    [EventEnum.ShapesDeselected]: CustomEvent<Shape[]>;
+    [EventEnum.ShapesSelected]: CustomEvent<IShapeData[]>;
+    [EventEnum.ShapesDeselected]: CustomEvent<IShapeData[]>;
   } 
 }
 
