@@ -3,6 +3,8 @@ import {
   ObjectFit,
   ShapeEnum,
   ShapeImg,
+  ShapeText,
+  TextData,
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
@@ -181,17 +183,62 @@ const updateEditPanel = () => {
   let needStroke = false;
   let needText = false;
   let needImg = false;
+  let lineWidth: number | undefined | null = null;
+  let fontSize: number | undefined | null = null;
 
   board.selects.forEach(shape => {
     needFill = needFill || shape.data.needFill;
     needStroke = needStroke || shape.data.needStroke;
     needText = needText || shape.data.type === ShapeEnum.Text;
     needImg = needImg || shape.data.type === ShapeEnum.Img;
+    if (shape.data.needStroke) {
+      const temp = shape.data.lineWidth;
+      if (lineWidth === null) {
+        lineWidth = temp;
+      } else if (lineWidth !== temp) {
+        lineWidth = undefined;
+      }
+    }
+    if (shape.data.type === ShapeEnum.Text) {
+      const temp = (shape.data as TextData).font_size;
+      if (fontSize === null) {
+        fontSize = temp;
+      } else if (fontSize !== temp) {
+        fontSize = undefined;
+      }
+    }
   })
+
+  editPanel.fontSizeInput.addEventListener('input', () => {
+    board.selects.forEach(shape => {
+      if (!(shape instanceof ShapeText)) {
+        return;
+      }
+      const next = shape.data.copy();
+      next.font_size = editPanel.fontSizeInput.num;
+      shape.merge(next)
+    })
+  })
+
+  editPanel.lineWidthInput.addEventListener('input', () => {
+    board.selects.forEach(shape => {
+      if (!shape.data.needStroke) {
+        return;
+      }
+      const next = shape.data.copy();
+      next.lineWidth = editPanel.lineWidthInput.num;
+      shape.merge(next)
+    })
+  })
+
   editPanel.state.value.needFill = needFill;
   editPanel.state.value.needStroke = needStroke;
   editPanel.state.value.needText = needText;
   editPanel.state.value.needImg = needImg;
+  editPanel.state.value.lineWidth = lineWidth ?? undefined;
+  editPanel.state.value.fontSize = fontSize ?? undefined;
+
+  console.log(editPanel.state.value)
 }
 
 board.addEventListener(EventEnum.ShapesSelected, e => {

@@ -29,6 +29,7 @@ export class ShapeText extends Shape<TextData> {
     this._calculateSectionRects()
   }
   override merge(data: Partial<TextData>) {
+    this.markDirty()
     this.data.merge(data)
     this._calculateLines()
     this._calculateSectionRects()
