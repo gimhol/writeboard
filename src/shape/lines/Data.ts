@@ -3,6 +3,9 @@ import { ShapeData } from "../base"
 
 export class LinesData extends ShapeData {
   coords: number[] = []
+  override get needFill(): boolean {
+    return false;
+  }
   constructor() {
     super()
     this.type = ShapeEnum.Lines;

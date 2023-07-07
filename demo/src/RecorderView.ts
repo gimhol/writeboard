@@ -39,7 +39,6 @@ export class RecorderView extends Subwin {
     this.content.addChild(this._btnDemo0);
     this.content.addChild(this._btnDemo1);
     this.content.addChild(this._textarea);
-
     this._textarea.styles.apply('', { resize: 'vertical' })
 
     this.btnStartRecord.addEventListener('click', () => this.startRecord());
@@ -85,5 +84,4 @@ export class RecorderView extends Subwin {
     this._player = new Player()
     this._player.start(board, JSON.parse(str))
   }
-
 }

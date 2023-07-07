@@ -1,4 +1,25 @@
-
+export enum CssAlignSelf {
+  Auto = 'auto',
+  Normal = 'normal',
+  Center = 'center',
+  Start = 'start',
+  End = 'end',
+  SelfStart = 'self-start',
+  SelfEnd = 'self-end',
+  FlexStart = 'flex-start',
+  FlexEnd = 'flex-end',
+  Baseline = 'baseline',
+  FirstBaseline = 'first baseline',
+  LastBaseline = 'last baseline',
+  Stretch = 'stretch',
+  SafeCenter = 'safe center',
+  UnsafeCenter = 'unsafe center',
+  Inherit = 'inherit',
+  Initial = 'initial',
+  Revert = 'revert',
+  RevertLayer = 'revert-layer',
+  Unset = 'unset',
+}
 export enum CssObjectFit {
   Fill = 'fill',
   Contain = 'contain',
@@ -93,7 +114,8 @@ type OverrideKeys = 'length' | 'parentRule' |
   'opacity' |
   'zIndex' |
   'flexDirection' |
-  'cursor'
+  'cursor' |
+  'alignSelf'
 
 export enum CssDisplay {
   Block = 'block',
@@ -157,7 +179,8 @@ export interface Style extends Partial<Omit<CSSStyleDeclaration, OverrideKeys>> 
   'cell' | 'crosshair' | 'text' | 'vertical-text' | 'alias' | 'copy' | 'move' | 'no-drop' | 'not-allowed' | 'grab' |
   'grabbing' | 'all-scroll' | 'col-resize' | 'row-resize' | 'n-resize' | 'e-resize' | 's-resize' | 'w-resize' |
   'ne-resize' | 'nw-resize' | 'se-resize' | 'sw-resize' | 'ew-resize' | 'ns-resize' | 'nesw-resize' | 'nwse-resize' |
-  'zoom-in' | 'zoom-out'
+  'zoom-in' | 'zoom-out',
+  alignSelf?: CssAlignSelf | string;
 };
 
 export const autoPxKeys = new Set<keyof Style>([

@@ -3,25 +3,31 @@ import {
   ObjectFit,
   ShapeEnum,
   ShapeImg,
+  ShapeText,
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
+import { EditPanel } from "./EditPanel";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
-// const resultWidth = 1000 / 2;
-// const resultHeight = 1618 / 2;
+import { State } from "./G/State";
+
 const resultWidth = 600;
 const resultHeight = 800;
 const factory = Gaia.factory(FactoryEnum.Default)();
+
 const mainView = View.get(document.body).styles.apply('', {
   position: 'relative',
   display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
+  flexDirection: 'row',
+  alignItems: 'stretch',
+  justifyContent: 'space-between',
   backgroundImage: 'url(./kiwihug-zGZYQQVmXw0-unsplash.jpg)',
   backgroundSize: '100% 100%'
+
 }).view;
+
+const editPanel = new EditPanel();
 
 enum MenuKey {
   SelectAll = 'SelectAll',
@@ -146,23 +152,58 @@ const blackboard = new View('div').styles.apply('', {
   boxSizing: 'border-box',
   borderRadius: 5,
   overflow: 'hidden',
-  position: 'relative',
+  position: 'absolute',
   transformOrigin: '50% 50%',
-  background: 'white'
+  left: 0,
+  right: 0,
+  top: 0,
+  bottom: 0,
+  margin: 'auto',
+  background: 'white',
 }).view;
 
-mainView.addChild(blackboard);
+const contentZone = new View('div');
+contentZone.styles.apply('', {
+  position: 'relative',
+  flex: 1,
+  overflow: 'hidden',
+})
+contentZone.addChild(blackboard);
+
+mainView.addChild(contentZone, editPanel);
 
 const board = factory.newWhiteBoard({
   width: resultWidth,
   height: resultHeight,
   element: blackboard.inner,
 });
+
+const updateEditPanel = () => {
+  let needFill = false;
+  let needStroke = false;
+  let needText = false;
+  let needImg = false;
+
+  let lastText: ShapeText | undefined;
+  let lastImg: ShapeText | undefined;
+  
+  board.selects.forEach(shape => {
+    needFill = needFill || shape.data.needFill;
+    needStroke = needStroke || shape.data.needStroke;
+    needText = needText || shape.data.type === ShapeEnum.Text;
+    needImg = needImg || shape.data.type === ShapeEnum.Img;
+  })
+  editPanel.state.value.needFill = needFill;
+  editPanel.state.value.needStroke = needStroke;
+  editPanel.state.value.needText = needText;
+  editPanel.state.value.needImg = needImg;
+}
+
 board.addEventListener(EventEnum.ShapesSelected, e => {
-  console.log('ShapesSelected', e.detail.map(v => v.i).join(','))
+  updateEditPanel();
 })
 board.addEventListener(EventEnum.ShapesDeselected, e => {
-  console.log('ShapesDeselected', e.detail.map(v => v.i).join(','))
+  updateEditPanel();
 })
 Object.assign(window, {
   board, factory, mainView, Gaia, menu

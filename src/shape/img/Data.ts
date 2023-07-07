@@ -10,7 +10,7 @@ export class ImgData extends ShapeData {
   // src: string = 'http://download.niushibang.com/tvzwLPPzgRqnab818f2c19e1b1aefa67e9682fec5a77.jpg';
   s: string = 'http://download.niushibang.com/niubo/wx/message/93482af6-597e-4d96-b91d-498222adcfaa/1686551265158.png';
   f?: ObjectFit;
-  
+
   get src() {
     return this.s;
   }
@@ -27,6 +27,14 @@ export class ImgData extends ShapeData {
     this.f = v;
   }
 
+  override get needFill(): boolean {
+    return false;
+  }
+
+  override get needStroke(): boolean {
+    return false;
+  }
+  
   constructor() {
     super()
     this.type = ShapeEnum.Img;

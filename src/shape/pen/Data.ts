@@ -8,7 +8,9 @@ export enum DotsType {
 export class PenData extends ShapeData {
   dotsType: DotsType = DotsType.All
   coords: number[] = []
-
+  override get needFill(): boolean {
+    return false;
+  }
   constructor() {
     super()
     this.type = ShapeEnum.Pen

@@ -49,16 +49,16 @@ export interface IShapeStatus {
   e?: number
 }
 export interface IShapeData {
-  t: ShapeType
-  i: string
-  x: number
-  y: number
-  w: number
-  h: number
-  z: number
-  l: string
-  style?: IShapeStyle
-  status?: IShapeStatus
+  t: ShapeType;
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  z: number;
+  l: string;
+  style?: IShapeStyle;
+  status?: IShapeStatus;
 }
 export class ShapeData implements IShapeData {
   t: ShapeType = ShapeEnum.Invalid
@@ -145,6 +145,10 @@ export class ShapeData implements IShapeData {
   }
   get layer() { return this.l }
   set layer(v) { this.l = v }
+  
+  get needFill() { return true; }
+  get needStroke() { return true; }
+
   merge(other: Partial<IShapeData>) {
     this.copyFrom(other)
     return this
