@@ -4,17 +4,44 @@ import { View } from "./View";
 
 export class Styles<T extends string = string, V extends View<keyof HTMLElementTagNameMap> = View<keyof HTMLElementTagNameMap>>{
   static csses = new Map<string, HTMLLinkElement>();
+  static pendings = new Map<string, Promise<HTMLLinkElement>>;
 
-  static css(href: string): HTMLLinkElement {
-    let link = this.csses.get(href);
-    if (link) { return link; }
+  static css(...hrefs: string[]): Promise<HTMLLinkElement[]> {
+    const ls: Promise<HTMLLinkElement>[] = [];
+    for (let i = 0; i < hrefs.length; ++i) {
+      const href = hrefs[i]!;
+      const l = this.csses.get(href);
+      if (l) {
+        ls.push(Promise.resolve(l));
+        continue;
+      }
 
-    link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
-    this.csses.set(href, link);
-    return link;
+      const p = this.pendings.get(href);
+      if (p) {
+        ls.push(p);
+        continue;
+      }
+
+      const n = new Promise<HTMLLinkElement>((resolve, reject) => {
+        const l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = href;
+        l.onload = () => {
+          this.csses.set(href, l);
+          this.pendings.delete(href);
+          resolve(l)
+        };
+        l.onerror = (e) => {
+          this.csses.set(href, l);
+          this.pendings.delete(href);
+          resolve(l)
+        };
+        document.head.appendChild(l);
+      })
+      this.pendings.set(href, n);
+      ls.push(n);
+    }
+    return Promise.all(ls);
   }
 
   private _view?: V;

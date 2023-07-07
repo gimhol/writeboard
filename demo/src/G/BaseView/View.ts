@@ -59,9 +59,9 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   public get prevSibling() { return View.get(this.inner.previousElementSibling) }
 
 
-  public constructor(element: HTMLElementTagNameMap[T]);
-  public constructor(tagName: T);
-  public constructor(arg0: any) {
+  public constructor(element: HTMLElementTagNameMap[T], innerText?: string);
+  public constructor(tagName: T, innerText?: string);
+  public constructor(arg0: any, innerText?: string) {
     if (arg0 === 'body') {
       this._inner = <any>document.body ?? document.createElement('body');
     } else if (arg0 === 'head') {
@@ -72,6 +72,10 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
       this._inner = arg0;
     }
     (this.inner as any)[View.RAW_KEY_IN_ELEMENT] = this;
+
+    if (innerText !== undefined) {
+      this.inner.innerText = innerText;
+    }
   }
 
   public onHover(hover: boolean) { }
@@ -178,5 +182,10 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
       child.inner.dispatchEvent(new Event(ViewEventType.Added));
       child.onAdded();
     });
+  }
+
+  setAttribute(qualifiedName: string, value: string) {
+    this.inner.setAttribute(qualifiedName, value);
+    return this;
   }
 }

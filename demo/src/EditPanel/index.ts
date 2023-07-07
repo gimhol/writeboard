@@ -1,8 +1,9 @@
-import { NumberInput } from "./G/BaseView/NumberInput";
-import { CssAlignSelf } from "./G/BaseView/StyleType";
-import { View } from "./G/BaseView/View";
-import { IconButton } from "./G/CompoundView/IconButton";
-import { State, StateEventType, StateEventTypeEventMap } from "./G/State";
+import { NumberInput } from "../G/BaseView/NumberInput";
+import { CssAlignSelf } from "../G/BaseView/StyleType";
+import { Styles } from "../G/BaseView/Styles";
+import { View } from "../G/BaseView/View";
+import { IconButton } from "../G/CompoundView/IconButton";
+import { State, StateEventType, StateEventTypeEventMap } from "../G/State";
 
 interface A {
   needFill: boolean,
@@ -16,10 +17,7 @@ interface A {
 export class SectionTitle extends View<'div'>{
   constructor(text: string) {
     super('div');
-    this.styles.apply('', {
-      padding: 5,
-      fontSize: 16,
-    })
+    this.styles.addCls('section_title')
     this.inner.innerText = text;
   }
 }
@@ -38,20 +36,7 @@ export class EditPanel extends View<'div'> {
 
   constructor() {
     super('div');
-    this.styles.apply('', {
-      position: 'absolute',
-      alignSelf: CssAlignSelf.Stretch,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      width: 0,
-      background: 'white',
-      opacity: 0,
-      boxShadow: '0px 0px 10px 1px #00000011',
-      zIndex: 1,
-      transition: 'width 300ms, opacity 255ms',
-      overflow: 'hidden',
-    });
+    this.styles.addCls('g_cp_edit_panel');
 
     this._state = new State<A>({
       needFill: false,

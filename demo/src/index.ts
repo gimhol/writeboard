@@ -11,8 +11,24 @@ import { EventEnum } from "../../dist/event";
 import { EditPanel } from "./EditPanel";
 import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
+import { Styles } from "./G/BaseView/Styles";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
+import { Shiftable } from "./Shiftable";
+
+Styles.css(
+  './calendar_phrases/styles/index.css',
+  './calendar_phrases/styles/edit_panel.css'
+);
+
+View.get(document.head).addChild(
+  new View('title', '每日一句'),
+  new View('link')
+    .setAttribute('rel', 'icon')
+    .setAttribute('sizes', '16x16')
+    .setAttribute('href', './calendar_phrases/logo.png')
+);
+
 
 const resultWidth = 600;
 const resultHeight = 600;
@@ -20,16 +36,7 @@ const headerPicWidth = 600;
 const headerPicHeight = resultHeight * 0.5;
 const factory = Gaia.factory(FactoryEnum.Default)();
 
-const mainView = View.get(document.body).styles.apply('', {
-  position: 'relative',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'stretch',
-  justifyContent: 'space-between',
-  backgroundImage: 'url(./kiwihug-zGZYQQVmXw0-unsplash.jpg)',
-  backgroundSize: '100% 100%'
-
-}).view;
+const mainView = View.get(document.body).styles.addCls('g_cp_main_view').view;
 
 const editPanel = new EditPanel();
 
@@ -136,35 +143,24 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
   }
 });
 
-const blackboard = new View('div').styles.apply('', {
-  boxShadow: '3px 3px 10px 1px #00000011',
-  width: resultWidth,
-  height: resultHeight,
-  boxSizing: 'border-box',
-  borderRadius: 5,
-  overflow: 'hidden',
-  position: 'absolute',
-  left: '50%',
-  top: '40%',
-  background: 'white',
-}).view;
+const blackboard = new View('div').styles
+  .addCls('g_cp_blackboard')
+  .apply('size', {
+    width: resultWidth,
+    height: resultHeight,
+  }).view;
 
 const resize = () => {
   const { width } = mainView.inner.getBoundingClientRect();
-  blackboard.styles.apply('', v => ({
-    ...v,
+  blackboard.styles.apply('transform', {
     transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})`
-  }))
+  })
 }
 window.addEventListener('resize', resize)
 resize();
 
 const contentZone = new View('div');
-contentZone.styles.apply('', {
-  position: 'relative',
-  flex: 1,
-  overflow: 'hidden',
-})
+contentZone.styles.addCls('g_cp_content_zone')
 contentZone.addChild(blackboard);
 
 mainView.addChild(contentZone, editPanel);
@@ -321,10 +317,11 @@ window.addEventListener('keydown', e => {
 })
 
 const init = (ttt: TTT) => {
+  board.removeAll(false);
   const img_header = (board.find('img_header') ?? board.factory.newShape(ShapeEnum.Img)) as ShapeImg;
   const imgd_header = img_header.data.copy();
   imgd_header.id = 'img_header';
-  imgd_header.src = ttt.header.src;
+  imgd_header.src = ttt.main_pic.src;
   imgd_header.x = 0;
   imgd_header.y = 0;
   imgd_header.w = headerPicWidth;
@@ -337,11 +334,11 @@ const init = (ttt: TTT) => {
   const img_logo = (board.find('img_logo') ?? board.factory.newShape(ShapeEnum.Img)) as ShapeImg;
   const imgd_logo = img_logo.data.copy();
   imgd_logo.id = 'img_logo';
-  imgd_logo.src = ttt.logo.src;
-  imgd_logo.w = ttt.logo.w;
-  imgd_logo.h = ttt.logo.h;
-  imgd_logo.x = resultWidth - ttt.logo.w - 15;
-  imgd_logo.y = resultHeight - ttt.logo.h - 15;
+  imgd_logo.src = ttt.logo_img.src;
+  imgd_logo.w = ttt.logo_img.w;
+  imgd_logo.h = ttt.logo_img.h;
+  imgd_logo.x = resultWidth - ttt.logo_img.w - 15;
+  imgd_logo.y = resultHeight - ttt.logo_img.h - 15;
   imgd_logo.layer = board.layer().id;
   imgd_logo.objectFit = ObjectFit.Cover;
   img_logo.merge(imgd_logo);
@@ -355,9 +352,8 @@ const init = (ttt: TTT) => {
   txtd_main.y = headerPicHeight + txt_main_offset_y;
   txtd_main.layer = board.layer().id;
   txtd_main.fillStyle = '#000000';
-  txtd_main.font_size = ttt.main.font_size;
-  txtd_main.font_family = ttt.main.font_family;
-  txtd_main.text = ttt.main.text
+  txtd_main.font_size = 32;
+  txtd_main.text = ttt.main_txt.text
   txt_main.merge(txtd_main);
   txt_main.board || board.add(txt_main, true);
 
@@ -369,9 +365,7 @@ const init = (ttt: TTT) => {
   txtd_date.x = 20;
   txtd_date.y = resultHeight - 48 - 40;
   txtd_date.layer = board.layer().id;
-  txtd_date.fillStyle = '#000000';
   txtd_date.font_size = 48;
-  txtd_date.font_family = ttt.main.font_family;
   txtd_date.text = '' + now.getDate() + '.' + (now.getMonth() + 1);
   txt_date.merge(txtd_date);
   txt_date.merge(txtd_date);
@@ -385,9 +379,7 @@ const init = (ttt: TTT) => {
   txtd_week_and_year.x = 20;
   txtd_week_and_year.y = resultHeight - 12 - 20;
   txtd_week_and_year.layer = board.layer().id;
-  txtd_week_and_year.fillStyle = '#000000';
   txtd_week_and_year.font_size = 12;
-  txtd_week_and_year.font_family = ttt.main.font_family;
   txtd_week_and_year.text = weekDay[now.getDay()] + '. ' + now.getFullYear();
   txt_week_and_year.merge(txtd_week_and_year);
   txt_week_and_year.merge(txtd_week_and_year);
@@ -395,75 +387,66 @@ const init = (ttt: TTT) => {
 }
 
 interface TTT {
-  header: Img;
-  main: Txt;
-  logo: Logo;
+  main_pic: Img;
+  main_txt: Txt;
+  logo_img: Logo;
 }
-interface Txt {
-  font_family: string;
-  font_size: number;
-  text: string;
-}
-interface Img {
-  src: string;
-}
+interface Txt { text: string; }
+interface Img { src: string; }
 interface Logo {
   src: string;
   w: number,
   h: number,
 }
-const list: TTT[] = [{
-  logo: { src: './logo.png', w: 100, h: 100 },
-  header: { src: './brian-kernighan.jpg' },
-  main: {
-    font_size: 48,
-    text: '"hello, world"',
-    font_family: 'PingFang SC,Microsoft Yahei'
-  }
-}, {
-  logo: { src: './logo.png', w: 100, h: 100 },
-  header: { src: './header_0.jpg' },
-  main: {
-    font_size: 32,
-    text: '垂死病中惊坐起，笑问客从何处来',
-    font_family: 'PingFang SC,Microsoft Yahei'
-  }
-}, {
-  logo: { src: './logo.png', w: 100, h: 100 },
-  header: { src: './header_1.jpg' },
-  main: {
-    font_size: 32,
-    text: '少壮不努力，自挂东南枝叶',
-    font_family: 'PingFang SC,Microsoft Yahei'
-  }
-}, {
-  logo: { src: './logo.png', w: 100, h: 100 },
-  header: { src: './header_2.jpg' },
-  main: {
-    font_size: 32,
-    text: '长亭外，古道边，一行白鹭上青天',
-    font_family: 'PingFang SC,Microsoft Yahei'
-  }
-}]
 
+const templateText = board.factory.shapeTemplate(ShapeEnum.Text) as TextData;
+templateText.font_family = 'PingFang SC, Microsoft Yahei';
+templateText.fillStyle = '#000000'
 
-const btnChange = new Button().init({ content: ' 换一个 ', size: SizeType.Large });
-btnChange.styles.apply('', { left: 10, bottom: 10, position: 'absolute' })
-let i = 0;
-btnChange.addEventListener('click', () => {
-  board.removeAll(false);
-  init(list[(++i) % list.length]!);
+const main_pics = new Shiftable([
+  './calendar_phrases/main_pics/header_0.jpg',
+  './calendar_phrases/main_pics/header_1.jpg',
+  './calendar_phrases/main_pics/header_2.jpg',
+  './calendar_phrases/main_pics/header_3.jpg',
+])
+const main_txts = new Shiftable([
+  '垂死病中惊坐起，笑问客从何处来',
+  '少壮不努力，自挂东南枝叶',
+  '长亭外，古道边，一行白鹭上青天',
+  '"hello, world"',
+]);
+
+const builtins = new Shiftable([{
+  logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+  main_pic: { src: main_pics.next()! },
+  main_txt: { text: main_txts.next()! }
+}, {
+  logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+  main_pic: { src: main_pics.next()! },
+  main_txt: { text: main_txts.next()! }
+}, {
+  logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+  main_pic: { src: main_pics.next()! },
+  main_txt: { text: main_txts.next()! }
+}, {
+  logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+  main_pic: { src: main_pics.next()! },
+  main_txt: { text: main_txts.next()! }
+}])
+
+const btnNext = new Button().init({ content: '符号', size: SizeType.Large });
+btnNext.addEventListener('click', () => {
+  init(builtins.next()!);
 })
-btnChange.inner.click();
-mainView.addChild(btnChange);
+btnNext.inner.click();
 
 const btnExport = new Button().init({ content: '下载', size: SizeType.Large });
-btnExport.styles.apply('', { left: 100, bottom: 10, position: 'absolute' })
-btnExport.addEventListener('click', () => {
-  download();
-})
-btnExport.inner.click();
-mainView.addChild(btnExport);
+btnExport.addEventListener('click', () => download())
+
+const bottomRow = new View('div');
+bottomRow.styles.addCls('g_cp_content_bottom_row')
+bottomRow.addChild(btnNext, btnExport)
+mainView.addChild(bottomRow);
 
 const download = () => {
   board.deselect(true);
@@ -475,7 +458,6 @@ const download = () => {
     c.getContext('2d')!.fillStyle = 'white';
     c.getContext('2d')!.fillRect(0, 0, l.width, l.height)
     c.getContext('2d')!.drawImage(l, 0, 0, l.width, l.height);
-
     const a = document.createElement('a');
     a.href = c.toDataURL('image/png');
     a.download = '' + Date.now() + '.png';

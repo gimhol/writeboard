@@ -2,18 +2,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EditPanel = exports.SectionTitle = void 0;
-const NumberInput_1 = require("./G/BaseView/NumberInput");
-const StyleType_1 = require("./G/BaseView/StyleType");
-const View_1 = require("./G/BaseView/View");
-const IconButton_1 = require("./G/CompoundView/IconButton");
-const State_1 = require("./G/State");
+const NumberInput_1 = require("../G/BaseView/NumberInput");
+const View_1 = require("../G/BaseView/View");
+const IconButton_1 = require("../G/CompoundView/IconButton");
+const State_1 = require("../G/State");
 class SectionTitle extends View_1.View {
     constructor(text) {
         super('div');
-        this.styles.apply('', {
-            padding: 5,
-            fontSize: 16,
-        });
+        this.styles.addCls('section_title');
         this.inner.innerText = text;
     }
 }
@@ -49,20 +45,7 @@ class EditPanel extends View_1.View {
                 this.styles.apply('', v => (Object.assign(Object.assign({}, v), { width: 0, opacity: 0 })));
             }
         };
-        this.styles.apply('', {
-            position: 'absolute',
-            alignSelf: StyleType_1.CssAlignSelf.Stretch,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 0,
-            background: 'white',
-            opacity: 0,
-            boxShadow: '0px 0px 10px 1px #00000011',
-            zIndex: 1,
-            transition: 'width 300ms, opacity 255ms',
-            overflow: 'hidden',
-        });
+        this.styles.addCls('g_cp_edit_panel');
         this._state = new State_1.State({
             needFill: false,
             needStroke: false,
@@ -104,7 +87,7 @@ class EditPanel extends View_1.View {
 }
 exports.EditPanel = EditPanel;
 
-},{"./G/BaseView/NumberInput":4,"./G/BaseView/StyleType":6,"./G/BaseView/View":9,"./G/CompoundView/IconButton":10,"./G/State":17}],2:[function(require,module,exports){
+},{"../G/BaseView/NumberInput":4,"../G/BaseView/View":9,"../G/CompoundView/IconButton":10,"../G/State":17}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Button = exports.ButtonState = void 0;
@@ -458,17 +441,40 @@ exports.Styles = void 0;
 const StyleType_1 = require("./StyleType");
 const utils_1 = require("../utils");
 class Styles {
-    static css(href) {
-        let link = this.csses.get(href);
-        if (link) {
-            return link;
+    static css(...hrefs) {
+        const ls = [];
+        for (let i = 0; i < hrefs.length; ++i) {
+            const href = hrefs[i];
+            const l = this.csses.get(href);
+            if (l) {
+                ls.push(Promise.resolve(l));
+                continue;
+            }
+            const p = this.pendings.get(href);
+            if (p) {
+                ls.push(p);
+                continue;
+            }
+            const n = new Promise((resolve, reject) => {
+                const l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = href;
+                l.onload = () => {
+                    this.csses.set(href, l);
+                    this.pendings.delete(href);
+                    resolve(l);
+                };
+                l.onerror = (e) => {
+                    this.csses.set(href, l);
+                    this.pendings.delete(href);
+                    resolve(l);
+                };
+                document.head.appendChild(l);
+            });
+            this.pendings.set(href, n);
+            ls.push(n);
         }
-        link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        document.head.appendChild(link);
-        this.csses.set(href, link);
-        return link;
+        return Promise.all(ls);
     }
     get view() { return this._view; }
     get pool() {
@@ -589,6 +595,7 @@ class Styles {
 }
 exports.Styles = Styles;
 Styles.csses = new Map();
+Styles.pendings = new Map;
 
 },{"../utils":18,"./StyleType":6}],8:[function(require,module,exports){
 "use strict";
@@ -716,7 +723,7 @@ class View {
     set draggable(v) { this.inner.draggable = v; }
     get nextSibling() { return View.get(this.inner.nextElementSibling); }
     get prevSibling() { return View.get(this.inner.previousElementSibling); }
-    constructor(arg0) {
+    constructor(arg0, innerText) {
         var _a, _b;
         if (arg0 === 'body') {
             this._inner = (_a = document.body) !== null && _a !== void 0 ? _a : document.createElement('body');
@@ -731,6 +738,9 @@ class View {
             this._inner = arg0;
         }
         this.inner[View.RAW_KEY_IN_ELEMENT] = this;
+        if (innerText !== undefined) {
+            this.inner.innerText = innerText;
+        }
     }
     onHover(hover) { }
     onFocus(focused) { }
@@ -848,6 +858,10 @@ class View {
             child.inner.dispatchEvent(new Event(EventType_1.ViewEventType.Added));
             child.onAdded();
         });
+    }
+    setAttribute(qualifiedName, value) {
+        this.inner.setAttribute(qualifiedName, value);
+        return this;
     }
 }
 exports.View = View;
@@ -1291,27 +1305,46 @@ exports.findParent = findParent;
 },{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Shiftable = void 0;
+class Shiftable {
+    constructor(list) {
+        this._i = -1;
+        this._list = list;
+    }
+    set(list) {
+        this._list = list;
+        return this;
+    }
+    next() {
+        this._i = (this._i + 1) % this._list.length;
+        return this._list[this._i];
+    }
+}
+exports.Shiftable = Shiftable;
+
+},{}],20:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
 const event_1 = require("../../dist/event");
 const EditPanel_1 = require("./EditPanel");
 const Button_1 = require("./G/BaseView/Button");
 const SizeType_1 = require("./G/BaseView/SizeType");
+const Styles_1 = require("./G/BaseView/Styles");
 const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
+const Shiftable_1 = require("./Shiftable");
+Styles_1.Styles.css('./calendar_phrases/styles/index.css', './calendar_phrases/styles/edit_panel.css');
+View_1.View.get(document.head).addChild(new View_1.View('title', '每日一句'), new View_1.View('link')
+    .setAttribute('rel', 'icon')
+    .setAttribute('sizes', '16x16')
+    .setAttribute('href', './calendar_phrases/logo.png'));
 const resultWidth = 600;
 const resultHeight = 600;
 const headerPicWidth = 600;
 const headerPicHeight = resultHeight * 0.5;
 const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
-const mainView = View_1.View.get(document.body).styles.apply('', {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    justifyContent: 'space-between',
-    backgroundImage: 'url(./kiwihug-zGZYQQVmXw0-unsplash.jpg)',
-    backgroundSize: '100% 100%'
-}).view;
+const mainView = View_1.View.get(document.body).styles.addCls('g_cp_main_view').view;
 const editPanel = new EditPanel_1.EditPanel();
 var MenuKey;
 (function (MenuKey) {
@@ -1418,30 +1451,22 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
         }
     }
 });
-const blackboard = new View_1.View('div').styles.apply('', {
-    boxShadow: '3px 3px 10px 1px #00000011',
+const blackboard = new View_1.View('div').styles
+    .addCls('g_cp_blackboard')
+    .apply('size', {
     width: resultWidth,
     height: resultHeight,
-    boxSizing: 'border-box',
-    borderRadius: 5,
-    overflow: 'hidden',
-    position: 'absolute',
-    left: '50%',
-    top: '40%',
-    background: 'white',
 }).view;
 const resize = () => {
     const { width } = mainView.inner.getBoundingClientRect();
-    blackboard.styles.apply('', v => (Object.assign(Object.assign({}, v), { transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})` })));
+    blackboard.styles.apply('transform', {
+        transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})`
+    });
 };
 window.addEventListener('resize', resize);
 resize();
 const contentZone = new View_1.View('div');
-contentZone.styles.apply('', {
-    position: 'relative',
-    flex: 1,
-    overflow: 'hidden',
-});
+contentZone.styles.addCls('g_cp_content_zone');
 contentZone.addChild(blackboard);
 mainView.addChild(contentZone, editPanel);
 const board = factory.newWhiteBoard({
@@ -1589,10 +1614,11 @@ window.addEventListener('keydown', e => {
 });
 const init = (ttt) => {
     var _a, _b, _c, _d, _e;
+    board.removeAll(false);
     const img_header = ((_a = board.find('img_header')) !== null && _a !== void 0 ? _a : board.factory.newShape(dist_1.ShapeEnum.Img));
     const imgd_header = img_header.data.copy();
     imgd_header.id = 'img_header';
-    imgd_header.src = ttt.header.src;
+    imgd_header.src = ttt.main_pic.src;
     imgd_header.x = 0;
     imgd_header.y = 0;
     imgd_header.w = headerPicWidth;
@@ -1604,11 +1630,11 @@ const init = (ttt) => {
     const img_logo = ((_b = board.find('img_logo')) !== null && _b !== void 0 ? _b : board.factory.newShape(dist_1.ShapeEnum.Img));
     const imgd_logo = img_logo.data.copy();
     imgd_logo.id = 'img_logo';
-    imgd_logo.src = ttt.logo.src;
-    imgd_logo.w = ttt.logo.w;
-    imgd_logo.h = ttt.logo.h;
-    imgd_logo.x = resultWidth - ttt.logo.w - 15;
-    imgd_logo.y = resultHeight - ttt.logo.h - 15;
+    imgd_logo.src = ttt.logo_img.src;
+    imgd_logo.w = ttt.logo_img.w;
+    imgd_logo.h = ttt.logo_img.h;
+    imgd_logo.x = resultWidth - ttt.logo_img.w - 15;
+    imgd_logo.y = resultHeight - ttt.logo_img.h - 15;
     imgd_logo.layer = board.layer().id;
     imgd_logo.objectFit = dist_1.ObjectFit.Cover;
     img_logo.merge(imgd_logo);
@@ -1621,9 +1647,8 @@ const init = (ttt) => {
     txtd_main.y = headerPicHeight + txt_main_offset_y;
     txtd_main.layer = board.layer().id;
     txtd_main.fillStyle = '#000000';
-    txtd_main.font_size = ttt.main.font_size;
-    txtd_main.font_family = ttt.main.font_family;
-    txtd_main.text = ttt.main.text;
+    txtd_main.font_size = 32;
+    txtd_main.text = ttt.main_txt.text;
     txt_main.merge(txtd_main);
     txt_main.board || board.add(txt_main, true);
     const now = new Date();
@@ -1633,9 +1658,7 @@ const init = (ttt) => {
     txtd_date.x = 20;
     txtd_date.y = resultHeight - 48 - 40;
     txtd_date.layer = board.layer().id;
-    txtd_date.fillStyle = '#000000';
     txtd_date.font_size = 48;
-    txtd_date.font_family = ttt.main.font_family;
     txtd_date.text = '' + now.getDate() + '.' + (now.getMonth() + 1);
     txt_date.merge(txtd_date);
     txt_date.merge(txtd_date);
@@ -1647,63 +1670,55 @@ const init = (ttt) => {
     txtd_week_and_year.x = 20;
     txtd_week_and_year.y = resultHeight - 12 - 20;
     txtd_week_and_year.layer = board.layer().id;
-    txtd_week_and_year.fillStyle = '#000000';
     txtd_week_and_year.font_size = 12;
-    txtd_week_and_year.font_family = ttt.main.font_family;
     txtd_week_and_year.text = weekDay[now.getDay()] + '. ' + now.getFullYear();
     txt_week_and_year.merge(txtd_week_and_year);
     txt_week_and_year.merge(txtd_week_and_year);
     txt_week_and_year.board || board.add(txt_week_and_year, true);
 };
-const list = [{
-        logo: { src: './logo.png', w: 100, h: 100 },
-        header: { src: './brian-kernighan.jpg' },
-        main: {
-            font_size: 48,
-            text: '"hello, world"',
-            font_family: 'PingFang SC,Microsoft Yahei'
-        }
+const templateText = board.factory.shapeTemplate(dist_1.ShapeEnum.Text);
+templateText.font_family = 'PingFang SC, Microsoft Yahei';
+templateText.fillStyle = '#000000';
+const main_pics = new Shiftable_1.Shiftable([
+    './calendar_phrases/main_pics/header_0.jpg',
+    './calendar_phrases/main_pics/header_1.jpg',
+    './calendar_phrases/main_pics/header_2.jpg',
+    './calendar_phrases/main_pics/header_3.jpg',
+]);
+const main_txts = new Shiftable_1.Shiftable([
+    '垂死病中惊坐起，笑问客从何处来',
+    '少壮不努力，自挂东南枝叶',
+    '长亭外，古道边，一行白鹭上青天',
+    '"hello, world"',
+]);
+const builtins = new Shiftable_1.Shiftable([{
+        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+        main_pic: { src: main_pics.next() },
+        main_txt: { text: main_txts.next() }
     }, {
-        logo: { src: './logo.png', w: 100, h: 100 },
-        header: { src: './header_0.jpg' },
-        main: {
-            font_size: 32,
-            text: '垂死病中惊坐起，笑问客从何处来',
-            font_family: 'PingFang SC,Microsoft Yahei'
-        }
+        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+        main_pic: { src: main_pics.next() },
+        main_txt: { text: main_txts.next() }
     }, {
-        logo: { src: './logo.png', w: 100, h: 100 },
-        header: { src: './header_1.jpg' },
-        main: {
-            font_size: 32,
-            text: '少壮不努力，自挂东南枝叶',
-            font_family: 'PingFang SC,Microsoft Yahei'
-        }
+        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+        main_pic: { src: main_pics.next() },
+        main_txt: { text: main_txts.next() }
     }, {
-        logo: { src: './logo.png', w: 100, h: 100 },
-        header: { src: './header_2.jpg' },
-        main: {
-            font_size: 32,
-            text: '长亭外，古道边，一行白鹭上青天',
-            font_family: 'PingFang SC,Microsoft Yahei'
-        }
-    }];
-const btnChange = new Button_1.Button().init({ content: ' 换一个 ', size: SizeType_1.SizeType.Large });
-btnChange.styles.apply('', { left: 10, bottom: 10, position: 'absolute' });
-let i = 0;
-btnChange.addEventListener('click', () => {
-    board.removeAll(false);
-    init(list[(++i) % list.length]);
+        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+        main_pic: { src: main_pics.next() },
+        main_txt: { text: main_txts.next() }
+    }]);
+const btnNext = new Button_1.Button().init({ content: '符号', size: SizeType_1.SizeType.Large });
+btnNext.addEventListener('click', () => {
+    init(builtins.next());
 });
-btnChange.inner.click();
-mainView.addChild(btnChange);
+btnNext.inner.click();
 const btnExport = new Button_1.Button().init({ content: '下载', size: SizeType_1.SizeType.Large });
-btnExport.styles.apply('', { left: 100, bottom: 10, position: 'absolute' });
-btnExport.addEventListener('click', () => {
-    download();
-});
-btnExport.inner.click();
-mainView.addChild(btnExport);
+btnExport.addEventListener('click', () => download());
+const bottomRow = new View_1.View('div');
+bottomRow.styles.addCls('g_cp_content_bottom_row');
+bottomRow.addChild(btnNext, btnExport);
+mainView.addChild(bottomRow);
 const download = () => {
     board.deselect(true);
     requestAnimationFrame(() => {
@@ -1722,7 +1737,7 @@ const download = () => {
 };
 board.setToolType(dist_1.ToolEnum.Selector);
 
-},{"../../dist":30,"../../dist/event":25,"./EditPanel":1,"./G/BaseView/Button":2,"./G/BaseView/SizeType":5,"./G/BaseView/View":9,"./G/CompoundView/Menu":13}],20:[function(require,module,exports){
+},{"../../dist":31,"../../dist/event":26,"./EditPanel":1,"./G/BaseView/Button":2,"./G/BaseView/SizeType":5,"./G/BaseView/Styles":7,"./G/BaseView/View":9,"./G/CompoundView/Menu":13,"./Shiftable":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
@@ -2092,7 +2107,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":25,"../tools":88,"../utils":99,"./Layer":21}],21:[function(require,module,exports){
+},{"../event":26,"../tools":89,"../utils":100,"./Layer":22}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2164,7 +2179,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2184,7 +2199,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Layer"), exports);
 __exportStar(require("./Board"), exports);
 
-},{"./Board":20,"./Layer":21}],23:[function(require,module,exports){
+},{"./Board":21,"./Layer":22}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventEnum = void 0;
@@ -2203,7 +2218,7 @@ var EventEnum;
     EventEnum["ShapesDeselected"] = "SHAPES_DESELECTED";
 })(EventEnum = exports.EventEnum || (exports.EventEnum = {}));
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Events = void 0;
@@ -2230,7 +2245,7 @@ var Events;
     Events.pickShapeGeoData = pickShapeGeoData;
 })(Events = exports.Events || (exports.Events = {}));
 
-},{"./EventType":23}],25:[function(require,module,exports){
+},{"./EventType":24}],26:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2250,7 +2265,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Events"), exports);
 __exportStar(require("./EventType"), exports);
 
-},{"./EventType":23,"./Events":24}],26:[function(require,module,exports){
+},{"./EventType":24,"./Events":25}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
@@ -2333,7 +2348,7 @@ class Player {
 }
 exports.Player = Player;
 
-},{"../event":25}],27:[function(require,module,exports){
+},{"../event":26}],28:[function(require,module,exports){
 "use strict";
 /******************************************************************
  * Copyright @ 2023 朱剑豪. All rights reserverd.
@@ -2415,11 +2430,11 @@ class Recorder {
 }
 exports.Recorder = Recorder;
 
-},{"../event":25}],28:[function(require,module,exports){
+},{"../event":26}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2440,7 +2455,7 @@ __exportStar(require("./Player"), exports);
 __exportStar(require("./Recorder"), exports);
 __exportStar(require("./Screenplay"), exports);
 
-},{"./Player":26,"./Recorder":27,"./Screenplay":28}],30:[function(require,module,exports){
+},{"./Player":27,"./Recorder":28,"./Screenplay":29}],31:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2465,7 +2480,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":22,"./features":29,"./mgr":35,"./shape":53,"./tools":88,"./utils":99}],31:[function(require,module,exports){
+},{"./board":23,"./features":30,"./mgr":36,"./shape":54,"./tools":89,"./utils":100}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultFactory = void 0;
@@ -2556,7 +2571,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":22,"../shape/base/Data":37,"../shape/base/Shape":38,"../tools/base/InvalidTool":84,"./FactoryEnum":32,"./Gaia":33,"./ShapesMgr":34}],32:[function(require,module,exports){
+},{"../board":23,"../shape/base/Data":38,"../shape/base/Shape":39,"../tools/base/InvalidTool":85,"./FactoryEnum":33,"./Gaia":34,"./ShapesMgr":35}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -2574,7 +2589,7 @@ function getFactoryName(type) {
 }
 exports.getFactoryName = getFactoryName;
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gaia = void 0;
@@ -2661,7 +2676,7 @@ Gaia._shapeInfos = new Map();
 Gaia._factorys = new Map();
 Gaia._factoryInfos = new Map();
 
-},{"../shape/ShapeEnum":36,"../tools/ToolEnum":83}],34:[function(require,module,exports){
+},{"../shape/ShapeEnum":37,"../tools/ToolEnum":84}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultShapesMgr = void 0;
@@ -2737,7 +2752,7 @@ class DefaultShapesMgr {
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/Rect":96}],35:[function(require,module,exports){
+},{"../utils/Rect":97}],36:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2759,7 +2774,7 @@ __exportStar(require("./FactoryEnum"), exports);
 __exportStar(require("./Gaia"), exports);
 __exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":31,"./FactoryEnum":32,"./Gaia":33,"./ShapesMgr":34}],36:[function(require,module,exports){
+},{"./Factory":32,"./FactoryEnum":33,"./Gaia":34,"./ShapesMgr":35}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -2795,7 +2810,7 @@ function getShapeName(type) {
 }
 exports.getShapeName = getShapeName;
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
@@ -2982,7 +2997,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":36}],38:[function(require,module,exports){
+},{"../ShapeEnum":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
@@ -3199,7 +3214,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":96}],39:[function(require,module,exports){
+},{"../../utils/Rect":97}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -3237,7 +3252,7 @@ class ShapeNeedPath extends Shape_1.Shape {
 }
 exports.ShapeNeedPath = ShapeNeedPath;
 
-},{"./Shape":38}],40:[function(require,module,exports){
+},{"./Shape":39}],41:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3258,7 +3273,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./ShapeNeedPath"), exports);
 
-},{"./Data":37,"./Shape":38,"./ShapeNeedPath":39}],41:[function(require,module,exports){
+},{"./Data":38,"./Shape":39,"./ShapeNeedPath":40}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossData = void 0;
@@ -3280,7 +3295,7 @@ class CrossData extends base_1.ShapeData {
 }
 exports.CrossData = CrossData;
 
-},{"../ShapeEnum":36,"../base":40}],42:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeCross = void 0;
@@ -3305,7 +3320,7 @@ class ShapeCross extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeCross = ShapeCross;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Cross, () => new Data_1.CrossData, d => new ShapeCross(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base/ShapeNeedPath":39,"./Data":41}],43:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base/ShapeNeedPath":40,"./Data":42}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossTool = void 0;
@@ -3316,7 +3331,7 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "CrossTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
 
-},{"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../../tools/base/SimpleTool":85,"../ShapeEnum":36}],44:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],45:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3337,7 +3352,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":41,"./Shape":42,"./Tool":43}],45:[function(require,module,exports){
+},{"./Data":42,"./Shape":43,"./Tool":44}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickData = void 0;
@@ -3359,7 +3374,7 @@ class HalfTickData extends base_1.ShapeData {
 }
 exports.HalfTickData = HalfTickData;
 
-},{"../ShapeEnum":36,"../base":40}],46:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeHalfTick = void 0;
@@ -3386,7 +3401,7 @@ class ShapeHalfTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeHalfTick = ShapeHalfTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.HalfTick, () => new Data_1.HalfTickData, d => new ShapeHalfTick(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base/ShapeNeedPath":39,"./Data":45}],47:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base/ShapeNeedPath":40,"./Data":46}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickTool = void 0;
@@ -3397,9 +3412,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "HalfTickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
 
-},{"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../../tools/base/SimpleTool":85,"../ShapeEnum":36}],48:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":45,"./Shape":46,"./Tool":47,"dup":44}],49:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],49:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":46,"./Shape":47,"./Tool":48,"dup":45}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImgData = exports.ObjectFit = void 0;
@@ -3451,7 +3466,7 @@ class ImgData extends base_1.ShapeData {
 }
 exports.ImgData = ImgData;
 
-},{"../ShapeEnum":36,"../base":40}],50:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -3564,7 +3579,7 @@ class ShapeImg extends base_1.Shape {
 exports.ShapeImg = ShapeImg;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Img, () => new Data_1.ImgData, d => new ShapeImg(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base":40,"./Data":49}],51:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base":41,"./Data":50}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -3575,9 +3590,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Img, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Img, ShapeEnum_1.ShapeEnum.Img), { name: 'Img', desc: 'Img drawer', shape: ShapeEnum_1.ShapeEnum.Img });
 
-},{"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../../tools/base/SimpleTool":85,"../ShapeEnum":36}],52:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":49,"./Shape":50,"./Tool":51,"dup":44}],53:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],53:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":50,"./Shape":51,"./Tool":52,"dup":45}],54:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3607,7 +3622,7 @@ __exportStar(require("./halftick"), exports);
 __exportStar(require("./lines"), exports);
 __exportStar(require("./img"), exports);
 
-},{"./ShapeEnum":36,"./base":40,"./cross":44,"./halftick":48,"./img":52,"./lines":57,"./oval":61,"./pen":65,"./polygon":69,"./rect":73,"./text":78,"./tick":82}],54:[function(require,module,exports){
+},{"./ShapeEnum":37,"./base":41,"./cross":45,"./halftick":49,"./img":53,"./lines":58,"./oval":62,"./pen":66,"./polygon":70,"./rect":74,"./text":79,"./tick":83}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesData = void 0;
@@ -3645,7 +3660,7 @@ class LinesData extends base_1.ShapeData {
 }
 exports.LinesData = LinesData;
 
-},{"../ShapeEnum":36,"../base":40}],55:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeLines = void 0;
@@ -3759,7 +3774,7 @@ class ShapeLines extends base_1.Shape {
 exports.ShapeLines = ShapeLines;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeLines(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base":40,"./Data":54}],56:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base":41,"./Data":55}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesTool = void 0;
@@ -3944,9 +3959,9 @@ class LinesTool {
 exports.LinesTool = LinesTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
 
-},{"../../event":25,"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../ShapeEnum":36}],57:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":54,"./Shape":55,"./Tool":56,"dup":44}],58:[function(require,module,exports){
+},{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../ShapeEnum":37}],58:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":55,"./Shape":56,"./Tool":57,"dup":45}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalData = void 0;
@@ -3966,7 +3981,7 @@ class OvalData extends base_1.ShapeData {
 }
 exports.OvalData = OvalData;
 
-},{"../ShapeEnum":36,"../base":40}],59:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeOval = void 0;
@@ -3990,7 +4005,7 @@ class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeOval = ShapeOval;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base/ShapeNeedPath":39,"./Data":58}],60:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base/ShapeNeedPath":40,"./Data":59}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
@@ -4032,9 +4047,9 @@ class OvalTool extends SimpleTool_1.SimpleTool {
 exports.OvalTool = OvalTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../../tools/base/SimpleTool":85,"../ShapeEnum":36}],61:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":58,"./Shape":59,"./Tool":60,"dup":44}],62:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],62:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":59,"./Shape":60,"./Tool":61,"dup":45}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenData = exports.DotsType = void 0;
@@ -4084,7 +4099,7 @@ class PenData extends base_1.ShapeData {
 }
 exports.PenData = PenData;
 
-},{"../ShapeEnum":36,"../base":40}],63:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePen = void 0;
@@ -4230,7 +4245,7 @@ class ShapePen extends base_1.Shape {
 exports.ShapePen = ShapePen;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base":40,"./Data":62}],64:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base":41,"./Data":63}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
@@ -4310,9 +4325,9 @@ class PenTool {
 exports.PenTool = PenTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event":25,"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../ShapeEnum":36,"./Data":62}],65:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":62,"./Shape":63,"./Tool":64,"dup":44}],66:[function(require,module,exports){
+},{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../ShapeEnum":37,"./Data":63}],66:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":63,"./Shape":64,"./Tool":65,"dup":45}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonData = void 0;
@@ -4339,7 +4354,7 @@ class PolygonData extends base_1.ShapeData {
 }
 exports.PolygonData = PolygonData;
 
-},{"../ShapeEnum":36,"../base":40}],67:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePolygon = void 0;
@@ -4358,7 +4373,7 @@ class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapePolygon = ShapePolygon;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base/ShapeNeedPath":39,"./Data":66}],68:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base/ShapeNeedPath":40,"./Data":67}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonTool = void 0;
@@ -4372,9 +4387,9 @@ const desc = {
 };
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
 
-},{"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../../tools/base/SimpleTool":85,"../ShapeEnum":36}],69:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":66,"./Shape":67,"./Tool":68,"dup":44}],70:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],70:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":67,"./Shape":68,"./Tool":69,"dup":45}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectData = void 0;
@@ -4393,7 +4408,7 @@ class RectData extends base_1.ShapeData {
 }
 exports.RectData = RectData;
 
-},{"../ShapeEnum":36,"../base":40}],71:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRect = void 0;
@@ -4412,7 +4427,7 @@ class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeRect = ShapeRect;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base/ShapeNeedPath":39,"./Data":70}],72:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base/ShapeNeedPath":40,"./Data":71}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -4423,9 +4438,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../../tools/base/SimpleTool":85,"../ShapeEnum":36}],73:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":70,"./Shape":71,"./Tool":72,"dup":44}],74:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],74:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":71,"./Shape":72,"./Tool":73,"dup":45}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextData = void 0;
@@ -4483,7 +4498,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../ShapeEnum":36,"../base":40}],75:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -4640,7 +4655,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/Gaia":33,"../../utils/Rect":96,"../ShapeEnum":36,"../base":40,"./Data":74,"./TextSelection":76}],76:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../utils/Rect":97,"../ShapeEnum":37,"../base":41,"./Data":75,"./TextSelection":77}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -4657,7 +4672,7 @@ class TextSelection {
 }
 exports.TextSelection = TextSelection;
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
@@ -4801,7 +4816,7 @@ class TextTool {
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":25,"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../ShapeEnum":36}],78:[function(require,module,exports){
+},{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../ShapeEnum":37}],79:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4823,7 +4838,7 @@ __exportStar(require("./Shape"), exports);
 __exportStar(require("./TextSelection"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":74,"./Shape":75,"./TextSelection":76,"./Tool":77}],79:[function(require,module,exports){
+},{"./Data":75,"./Shape":76,"./TextSelection":77,"./Tool":78}],80:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickData = void 0;
@@ -4845,7 +4860,7 @@ class TickData extends base_1.ShapeData {
 }
 exports.TickData = TickData;
 
-},{"../ShapeEnum":36,"../base":40}],80:[function(require,module,exports){
+},{"../ShapeEnum":37,"../base":41}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeTick = void 0;
@@ -4868,7 +4883,7 @@ class ShapeTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeTick = ShapeTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Tick, () => new Data_1.TickData, d => new ShapeTick(d));
 
-},{"../../mgr/Gaia":33,"../ShapeEnum":36,"../base/ShapeNeedPath":39,"./Data":79}],81:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../ShapeEnum":37,"../base/ShapeNeedPath":40,"./Data":80}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickTool = void 0;
@@ -4879,9 +4894,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "TickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
 
-},{"../../mgr/Gaia":33,"../../tools/ToolEnum":83,"../../tools/base/SimpleTool":85,"../ShapeEnum":36}],82:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./Data":79,"./Shape":80,"./Tool":81,"dup":44}],83:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],83:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./Data":80,"./Shape":81,"./Tool":82,"dup":45}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToolName = exports.ToolEnum = void 0;
@@ -4918,7 +4933,7 @@ function getToolName(type) {
 }
 exports.getToolName = getToolName;
 
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidTool = void 0;
@@ -4956,7 +4971,7 @@ class InvalidTool {
 }
 exports.InvalidTool = InvalidTool;
 
-},{"../ToolEnum":83}],85:[function(require,module,exports){
+},{"../ToolEnum":84}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
@@ -5070,11 +5085,11 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":25,"../../utils/RectHelper":97}],86:[function(require,module,exports){
+},{"../../event":26,"../../utils/RectHelper":98}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5095,7 +5110,7 @@ __exportStar(require("./InvalidTool"), exports);
 __exportStar(require("./SimpleTool"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./InvalidTool":84,"./SimpleTool":85,"./Tool":86}],88:[function(require,module,exports){
+},{"./InvalidTool":85,"./SimpleTool":86,"./Tool":87}],89:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5116,7 +5131,7 @@ __exportStar(require("./base"), exports);
 __exportStar(require("./selector"), exports);
 __exportStar(require("./ToolEnum"), exports);
 
-},{"./ToolEnum":83,"./base":87,"./selector":90}],89:[function(require,module,exports){
+},{"./ToolEnum":84,"./base":88,"./selector":91}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
@@ -5280,7 +5295,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'selector'
 });
 
-},{"../../event":25,"../../event/Events":24,"../../mgr/Gaia":33,"../../shape/base/Data":37,"../../shape/rect/Shape":71,"../../utils/RectHelper":97,"../ToolEnum":83}],90:[function(require,module,exports){
+},{"../../event":26,"../../event/Events":25,"../../mgr/Gaia":34,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils/RectHelper":98,"../ToolEnum":84}],91:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5299,7 +5314,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./SelectorTool"), exports);
 
-},{"./SelectorTool":89}],91:[function(require,module,exports){
+},{"./SelectorTool":90}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
@@ -5321,7 +5336,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],92:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -5478,15 +5493,15 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":91}],93:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
-},{}],94:[function(require,module,exports){
+},{"./BinaryRange":92}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
 },{}],95:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -5717,7 +5732,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":96}],96:[function(require,module,exports){
+},{"./Rect":97}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -5792,7 +5807,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],97:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -5897,7 +5912,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":98}],98:[function(require,module,exports){
+},{"./Vector":99}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -5924,7 +5939,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],99:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5954,4 +5969,4 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 
-},{"./BinaryRange":91,"./BinaryTree":92,"./Dot":93,"./ITree":94,"./QuadTree":95,"./Rect":96,"./Vector":98}]},{},[19]);
+},{"./BinaryRange":92,"./BinaryTree":93,"./Dot":94,"./ITree":95,"./QuadTree":96,"./Rect":97,"./Vector":99}]},{},[20]);
