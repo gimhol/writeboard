@@ -4,6 +4,7 @@ import { Resizable, Shape } from "../base";
 import { ImgData, ObjectFit } from "./Data";
 
 export class ShapeImg extends Shape<ImgData> {
+  private _src?: string;
   private _img?: HTMLImageElement;
   private _loaded: boolean = false;
   private _error: string = '';
@@ -15,13 +16,14 @@ export class ShapeImg extends Shape<ImgData> {
 
   get img() {
     const d = this.data;
-    if (this._img?.src === d.src) {
-      return this._img
+    if (this._src === d.src) {
+      return this._img!
     };
     if (this._img) {
       this._img.removeEventListener('load', this.onLoad)
       this._img.removeEventListener('error', this.onError)
     }
+    this._src = d.src;
     this._loaded = false;
     this._error = '';
     this._img = new Image();

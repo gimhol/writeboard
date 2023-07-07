@@ -1294,10 +1294,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
 const event_1 = require("../../dist/event");
 const EditPanel_1 = require("./EditPanel");
+const Button_1 = require("./G/BaseView/Button");
 const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
 const resultWidth = 600;
-const resultHeight = 800;
+const resultHeight = 600;
+const headerPicWidth = 600;
+const headerPicHeight = resultHeight * 0.5;
 const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
 const mainView = View_1.View.get(document.body).styles.apply('', {
     position: 'relative',
@@ -1409,20 +1412,8 @@ menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
             break;
         }
         case MenuKey.ExportResult: {
-            board.deselect(true);
-            requestAnimationFrame(() => {
-                const l = board.layer().onscreen;
-                const c = document.createElement('canvas');
-                c.width = l.width;
-                c.height = l.height;
-                c.getContext('2d').fillStyle = 'white';
-                c.getContext('2d').fillRect(0, 0, l.width, l.height);
-                c.getContext('2d').drawImage(l, 0, 0, l.width, l.height);
-                const a = document.createElement('a');
-                a.href = c.toDataURL('image/png');
-                a.download = '' + Date.now() + '.png';
-                a.click();
-            });
+            download();
+            break;
         }
     }
 });
@@ -1593,8 +1584,138 @@ window.addEventListener('keydown', e => {
         e.stopPropagation();
     }
 });
+const init = (ttt) => {
+    var _a, _b, _c, _d, _e;
+    const img_header = ((_a = board.find('img_header')) !== null && _a !== void 0 ? _a : board.factory.newShape(dist_1.ShapeEnum.Img));
+    const imgd_header = img_header.data.copy();
+    imgd_header.id = 'img_header';
+    imgd_header.src = ttt.header.src;
+    imgd_header.x = 0;
+    imgd_header.y = 0;
+    imgd_header.w = headerPicWidth;
+    imgd_header.h = headerPicHeight;
+    imgd_header.layer = board.layer().id;
+    imgd_header.objectFit = dist_1.ObjectFit.Cover;
+    img_header.merge(imgd_header);
+    img_header.board || board.add(img_header, true);
+    const img_logo = ((_b = board.find('img_logo')) !== null && _b !== void 0 ? _b : board.factory.newShape(dist_1.ShapeEnum.Img));
+    const imgd_logo = img_logo.data.copy();
+    imgd_logo.id = 'img_logo';
+    imgd_logo.src = ttt.logo.src;
+    imgd_logo.w = ttt.logo.w;
+    imgd_logo.h = ttt.logo.h;
+    imgd_logo.x = resultWidth - ttt.logo.w - 15;
+    imgd_logo.y = resultHeight - ttt.logo.h - 15;
+    imgd_logo.layer = board.layer().id;
+    imgd_logo.objectFit = dist_1.ObjectFit.Cover;
+    img_logo.merge(imgd_logo);
+    img_logo.board || board.add(img_logo, true);
+    const txt_main_offset_y = 40;
+    const txt_main = ((_c = board.find('txt_content')) !== null && _c !== void 0 ? _c : board.factory.newShape(dist_1.ShapeEnum.Text));
+    const txtd_main = txt_main.data.copy();
+    txtd_main.id = 'txt_content';
+    txtd_main.x = 20;
+    txtd_main.y = headerPicHeight + txt_main_offset_y;
+    txtd_main.layer = board.layer().id;
+    txtd_main.fillStyle = '#000000';
+    txtd_main.font_size = ttt.main.font_size;
+    txtd_main.font_family = ttt.main.font_family;
+    txtd_main.text = ttt.main.text;
+    txt_main.merge(txtd_main);
+    txt_main.board || board.add(txt_main, true);
+    const now = new Date();
+    const txt_date = ((_d = board.find('txt_date')) !== null && _d !== void 0 ? _d : board.factory.newShape(dist_1.ShapeEnum.Text));
+    const txtd_date = txt_date.data.copy();
+    txtd_date.id = 'txt_date';
+    txtd_date.x = 20;
+    txtd_date.y = resultHeight - 48 - 40;
+    txtd_date.layer = board.layer().id;
+    txtd_date.fillStyle = '#000000';
+    txtd_date.font_size = 48;
+    txtd_date.font_family = ttt.main.font_family;
+    txtd_date.text = '' + now.getDate() + '.' + (now.getMonth() + 1);
+    txt_date.merge(txtd_date);
+    txt_date.merge(txtd_date);
+    txt_date.board || board.add(txt_date, true);
+    const weekDay = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const txt_week_and_year = ((_e = board.find('txt_week_and_year')) !== null && _e !== void 0 ? _e : board.factory.newShape(dist_1.ShapeEnum.Text));
+    const txtd_week_and_year = txt_week_and_year.data.copy();
+    txtd_week_and_year.id = 'txt_week_and_year';
+    txtd_week_and_year.x = 20;
+    txtd_week_and_year.y = resultHeight - 12 - 20;
+    txtd_week_and_year.layer = board.layer().id;
+    txtd_week_and_year.fillStyle = '#000000';
+    txtd_week_and_year.font_size = 12;
+    txtd_week_and_year.font_family = ttt.main.font_family;
+    txtd_week_and_year.text = weekDay[now.getDay()] + '. ' + now.getFullYear();
+    txt_week_and_year.merge(txtd_week_and_year);
+    txt_week_and_year.merge(txtd_week_and_year);
+    txt_week_and_year.board || board.add(txt_week_and_year, true);
+};
+const list = [{
+        logo: { src: './logo.png', w: 100, h: 100 },
+        header: { src: './brian-kernighan.jpg' },
+        main: {
+            font_size: 48,
+            text: '"hello, world"',
+            font_family: 'PingFang SC,Microsoft Yahei'
+        }
+    }, {
+        logo: { src: './logo.png', w: 100, h: 100 },
+        header: { src: './header_0.jpg' },
+        main: {
+            font_size: 32,
+            text: '垂死病中惊坐起，笑问客从何处来',
+            font_family: 'PingFang SC,Microsoft Yahei'
+        }
+    }, {
+        logo: { src: './logo.png', w: 100, h: 100 },
+        header: { src: './header_1.jpg' },
+        main: {
+            font_size: 32,
+            text: '少壮不努力，自挂东南枝叶',
+            font_family: 'PingFang SC,Microsoft Yahei'
+        }
+    }, {
+        logo: { src: './logo.png', w: 100, h: 100 },
+        header: { src: './header_2.jpg' },
+        main: {
+            font_size: 32,
+            text: '长亭外，古道边，一行白鹭上青天',
+            font_family: 'PingFang SC,Microsoft Yahei'
+        }
+    }];
+const btnChange = new Button_1.Button().init({ content: ' ↻ ' });
+let i = 0;
+btnChange.addEventListener('click', () => {
+    init(list[(++i) % list.length]);
+});
+btnChange.inner.click();
+mainView.addChild(btnChange);
+const btnExport = new Button_1.Button().init({ content: ' ↓ ' });
+btnExport.addEventListener('click', () => {
+    download();
+});
+btnExport.inner.click();
+mainView.addChild(btnExport);
+const download = () => {
+    board.deselect(true);
+    requestAnimationFrame(() => {
+        const l = board.layer().onscreen;
+        const c = document.createElement('canvas');
+        c.width = l.width;
+        c.height = l.height;
+        c.getContext('2d').fillStyle = 'white';
+        c.getContext('2d').fillRect(0, 0, l.width, l.height);
+        c.getContext('2d').drawImage(l, 0, 0, l.width, l.height);
+        const a = document.createElement('a');
+        a.href = c.toDataURL('image/png');
+        a.download = '' + Date.now() + '.png';
+        a.click();
+    });
+};
 
-},{"../../dist":30,"../../dist/event":25,"./EditPanel":1,"./G/BaseView/View":9,"./G/CompoundView/Menu":13}],20:[function(require,module,exports){
+},{"../../dist":30,"../../dist/event":25,"./EditPanel":1,"./G/BaseView/Button":2,"./G/BaseView/View":9,"./G/CompoundView/Menu":13}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
@@ -3347,9 +3468,8 @@ class ShapeImg extends base_1.Shape {
         this._resizable = base_1.Resizable.All;
     }
     get img() {
-        var _a;
         const d = this.data;
-        if (((_a = this._img) === null || _a === void 0 ? void 0 : _a.src) === d.src) {
+        if (this._src === d.src) {
             return this._img;
         }
         ;
@@ -3357,6 +3477,7 @@ class ShapeImg extends base_1.Shape {
             this._img.removeEventListener('load', this.onLoad);
             this._img.removeEventListener('error', this.onError);
         }
+        this._src = d.src;
         this._loaded = false;
         this._error = '';
         this._img = new Image();
