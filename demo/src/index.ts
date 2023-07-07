@@ -10,6 +10,7 @@ import {
 import { EventEnum } from "../../dist/event";
 import { EditPanel } from "./EditPanel";
 import { Button } from "./G/BaseView/Button";
+import { SizeType } from "./G/BaseView/SizeType";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 
@@ -143,14 +144,20 @@ const blackboard = new View('div').styles.apply('', {
   borderRadius: 5,
   overflow: 'hidden',
   position: 'absolute',
-  transformOrigin: '50% 50%',
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  margin: 'auto',
+  left: '50%',
+  top: '40%',
   background: 'white',
 }).view;
+
+const resize = () => {
+  const { width } = mainView.inner.getBoundingClientRect();
+  blackboard.styles.apply('', v => ({
+    ...v,
+    transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})`
+  }))
+}
+window.addEventListener('resize', resize)
+resize();
 
 const contentZone = new View('div');
 contentZone.styles.apply('', {
@@ -440,7 +447,8 @@ const list: TTT[] = [{
 }]
 
 
-const btnChange = new Button().init({ content: ' ↻ ' });
+const btnChange = new Button().init({ content: ' 换一个 ', size: SizeType.Large });
+btnChange.styles.apply('', { left: 10, bottom: 10, position: 'absolute' })
 let i = 0;
 btnChange.addEventListener('click', () => {
   board.removeAll(false);
@@ -449,7 +457,8 @@ btnChange.addEventListener('click', () => {
 btnChange.inner.click();
 mainView.addChild(btnChange);
 
-const btnExport = new Button().init({ content: ' ↓ ' });
+const btnExport = new Button().init({ content: '下载', size: SizeType.Large });
+btnExport.styles.apply('', { left: 100, bottom: 10, position: 'absolute' })
 btnExport.addEventListener('click', () => {
   download();
 })
@@ -473,3 +482,5 @@ const download = () => {
     a.click();
   })
 }
+
+board.setToolType(ToolEnum.Selector);

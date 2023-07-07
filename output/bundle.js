@@ -1295,6 +1295,7 @@ const dist_1 = require("../../dist");
 const event_1 = require("../../dist/event");
 const EditPanel_1 = require("./EditPanel");
 const Button_1 = require("./G/BaseView/Button");
+const SizeType_1 = require("./G/BaseView/SizeType");
 const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
 const resultWidth = 600;
@@ -1425,14 +1426,16 @@ const blackboard = new View_1.View('div').styles.apply('', {
     borderRadius: 5,
     overflow: 'hidden',
     position: 'absolute',
-    transformOrigin: '50% 50%',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    margin: 'auto',
+    left: '50%',
+    top: '40%',
     background: 'white',
 }).view;
+const resize = () => {
+    const { width } = mainView.inner.getBoundingClientRect();
+    blackboard.styles.apply('', v => (Object.assign(Object.assign({}, v), { transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})` })));
+};
+window.addEventListener('resize', resize);
+resize();
 const contentZone = new View_1.View('div');
 contentZone.styles.apply('', {
     position: 'relative',
@@ -1685,7 +1688,8 @@ const list = [{
             font_family: 'PingFang SC,Microsoft Yahei'
         }
     }];
-const btnChange = new Button_1.Button().init({ content: ' ↻ ' });
+const btnChange = new Button_1.Button().init({ content: ' 换一个 ', size: SizeType_1.SizeType.Large });
+btnChange.styles.apply('', { left: 10, bottom: 10, position: 'absolute' });
 let i = 0;
 btnChange.addEventListener('click', () => {
     board.removeAll(false);
@@ -1693,7 +1697,8 @@ btnChange.addEventListener('click', () => {
 });
 btnChange.inner.click();
 mainView.addChild(btnChange);
-const btnExport = new Button_1.Button().init({ content: ' ↓ ' });
+const btnExport = new Button_1.Button().init({ content: '下载', size: SizeType_1.SizeType.Large });
+btnExport.styles.apply('', { left: 100, bottom: 10, position: 'absolute' });
 btnExport.addEventListener('click', () => {
     download();
 });
@@ -1715,8 +1720,9 @@ const download = () => {
         a.click();
     });
 };
+board.setToolType(dist_1.ToolEnum.Selector);
 
-},{"../../dist":30,"../../dist/event":25,"./EditPanel":1,"./G/BaseView/Button":2,"./G/BaseView/View":9,"./G/CompoundView/Menu":13}],20:[function(require,module,exports){
+},{"../../dist":30,"../../dist/event":25,"./EditPanel":1,"./G/BaseView/Button":2,"./G/BaseView/SizeType":5,"./G/BaseView/View":9,"./G/CompoundView/Menu":13}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
