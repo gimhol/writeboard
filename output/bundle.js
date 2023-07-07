@@ -8,9 +8,8 @@ const IconButton_1 = require("../G/CompoundView/IconButton");
 const State_1 = require("../G/State");
 class SectionTitle extends View_1.View {
     constructor(text) {
-        super('div');
+        super('div', text);
         this.styles.addCls('section_title');
-        this.inner.innerText = text;
     }
 }
 exports.SectionTitle = SectionTitle;

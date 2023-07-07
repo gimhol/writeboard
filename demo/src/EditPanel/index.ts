@@ -11,14 +11,13 @@ interface A {
   needText: boolean,
   needImg: boolean,
   lineWidth?: number,
-  fontSize?: number
+  fontSize?: number,
 }
 
 export class SectionTitle extends View<'div'>{
   constructor(text: string) {
-    super('div');
-    this.styles.addCls('section_title')
-    this.inner.innerText = text;
+    super('div', text);
+    this.styles.addCls('section_title');
   }
 }
 
