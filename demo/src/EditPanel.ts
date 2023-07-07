@@ -1,3 +1,4 @@
+import { NumberInput } from "./G/BaseView/NumberInput";
 import { CssAlignSelf } from "./G/BaseView/StyleType";
 import { View } from "./G/BaseView/View";
 import { IconButton } from "./G/CompoundView/IconButton";
@@ -8,6 +9,8 @@ interface A {
   needStroke: boolean,
   needText: boolean,
   needImg: boolean,
+  lineWidth?: number,
+  fontSize?: number
 }
 
 export class SectionTitle extends View<'div'>{
@@ -27,6 +30,10 @@ export class EditPanel extends View<'div'> {
   private _editImgView: View<"div">;
   private _editStrokeView: View<"div">;
   private _editFillView: View<"div">;
+  private _lineWidthInput: NumberInput;
+  private _fontSizeInput: NumberInput;
+  get lineWidthInput() { return this._lineWidthInput; }
+  get fontSizeInput() { return this._fontSizeInput; }
   get state() { return this._state; }
 
   constructor() {
@@ -62,10 +69,16 @@ export class EditPanel extends View<'div'> {
     this._editTextView = new View('div');
     this._editTextView.addChild(new SectionTitle('Text'));
     this._editTextView.styles.apply('', { borderBottom: '1px solid #eaeaea' })
+    this._fontSizeInput = new NumberInput();
+    this._fontSizeInput.min = 0;
+    this._editTextView.addChild(this._fontSizeInput)
 
     this._editStrokeView = new View('div');
     this._editStrokeView.addChild(new SectionTitle('Stroke'));
     this._editStrokeView.styles.apply('', { borderBottom: '1px solid #eaeaea' })
+    this._lineWidthInput = new NumberInput();
+    this._lineWidthInput.min = 0;
+    this._editStrokeView.addChild(this._lineWidthInput)
 
     this._editFillView = new View('div');
     this._editFillView.addChild(new SectionTitle('Fill'));
@@ -87,11 +100,23 @@ export class EditPanel extends View<'div'> {
 
 
   onStateChange = (e: StateEventTypeEventMap<A>[StateEventType.Change]) => {
-    const { needImg, needText, needFill, needStroke } = e.detail.curr;
+    const { needImg, needText, needFill, needStroke, lineWidth, fontSize } = e.detail.curr;
     this[needStroke ? 'addChild' : 'removeChild'](this._editStrokeView);
     this[needFill ? 'addChild' : 'removeChild'](this._editFillView);
     this[needImg ? 'addChild' : 'removeChild'](this._editImgView);
     this[needText ? 'addChild' : 'removeChild'](this._editTextView);
+
+    if (typeof lineWidth === 'number') {
+      this._lineWidthInput.num = lineWidth;
+    } else {
+      this._lineWidthInput.value = '';
+    }
+
+    if (typeof fontSize === 'number') {
+      this._fontSizeInput.num = fontSize;
+    } else {
+      this._fontSizeInput.value = '';
+    }
 
     if (needImg || needText || needFill || needStroke) {
       this.styles.apply('', v => ({

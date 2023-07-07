@@ -260,18 +260,19 @@ export class Board {
   remove(arg0: Shape[] | Shape, emit: boolean): number {
     const shapes = Array.isArray(arg0) ? arg0 : [arg0];
     if (!shapes.length) return 0
+    this.setSelects(this.selects.filter(a => !shapes.find(b => a === b)), emit);
+
+    if (emit) {
+      const removeds = shapes.map(v => v.data);
+      removeds.length && this.emitEvent(EventEnum.ShapesRemoved, { shapeDatas: removeds })
+    }
+
     const ret = this._shapesMgr.remove(...shapes)
     shapes.forEach(item => {
       this.markDirty(item.boundingRect())
       item.board = undefined
     })
 
-    if (emit) {
-      const datas = shapes.map(v => v.data);
-      const deselecteds = datas.filter(v => v.selected);
-      this.emitEvent(EventEnum.ShapesDeselected, deselecteds)
-      this.emitEvent(EventEnum.ShapesRemoved, { shapeDatas: datas })
-    }
     return ret
   }
 
