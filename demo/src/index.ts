@@ -147,8 +147,8 @@ menu.addEventListener(Menu.EventType.ItemClick, (e) => {
 
 const blackboard = new View('div').styles.apply('', {
   boxShadow: '3px 3px 10px 1px #00000011',
-  width: resultWidth + 2,
-  height: resultHeight + 2,
+  width: resultWidth,
+  height: resultHeight,
   boxSizing: 'border-box',
   borderRadius: 5,
   overflow: 'hidden',
@@ -184,9 +184,6 @@ const updateEditPanel = () => {
   let needText = false;
   let needImg = false;
 
-  let lastText: ShapeText | undefined;
-  let lastImg: ShapeText | undefined;
-  
   board.selects.forEach(shape => {
     needFill = needFill || shape.data.needFill;
     needStroke = needStroke || shape.data.needStroke;
