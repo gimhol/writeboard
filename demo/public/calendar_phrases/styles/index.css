@@ -29,14 +29,19 @@
 
 .g_cp_main_view .g_cp_content_bottom_row {
   position: absolute;
-  left: 50%;
-  bottom: 10%;
-  display: flex;
-  transform: translate(-50%, 0%);
+  left: 0;
+  right: 0;
+  margin: auto;
+  align-items: center;
+  justify-content: center;
+  bottom: 32px;
+  display: grid;
+  grid-template-columns: 48px 48px 48px 48px 48px 48px;
+  grid-template-rows: 48px 48px;
+  gap: 10px;
 }
 
 .g_cp_main_view .g_cp_content_bottom_row button {
-  margin-left: 10px;
   padding: 5px;
 }
 .g_cp_main_view .g_cp_content_bottom_row button:first-child {
