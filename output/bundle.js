@@ -1636,18 +1636,19 @@ function main() {
     const init = (ttt) => {
         var _a, _b, _c, _d, _e;
         board.removeAll(false);
-        const img_header = ((_a = board.find('img_header')) !== null && _a !== void 0 ? _a : board.factory.newShape(dist_1.ShapeEnum.Img));
-        const imgd_header = img_header.data.copy();
-        imgd_header.id = 'img_header';
-        imgd_header.src = ttt.main_pic.src;
-        imgd_header.x = 0;
-        imgd_header.y = 0;
-        imgd_header.w = resultWidth;
-        imgd_header.h = resultHeight;
-        imgd_header.layer = board.layer().id;
-        imgd_header.objectFit = dist_1.ObjectFit.Cover;
-        img_header.merge(imgd_header);
-        img_header.board || board.add(img_header, true);
+        const img_main = ((_a = board.find('img_header')) !== null && _a !== void 0 ? _a : board.factory.newShape(dist_1.ShapeEnum.Img));
+        const imgd_main = img_main.data.copy();
+        imgd_main.id = 'img_header';
+        imgd_main.src = ttt.main_pic.src;
+        imgd_main.locked = true;
+        imgd_main.x = 0;
+        imgd_main.y = 0;
+        imgd_main.w = resultWidth;
+        imgd_main.h = resultHeight;
+        imgd_main.layer = board.layer().id;
+        imgd_main.objectFit = dist_1.ObjectFit.Cover;
+        img_main.merge(imgd_main);
+        img_main.board || board.add(img_main, true);
         const img_logo = ((_b = board.find('img_logo')) !== null && _b !== void 0 ? _b : board.factory.newShape(dist_1.ShapeEnum.Img));
         const imgd_logo = img_logo.data.copy();
         imgd_logo.id = 'img_logo';
@@ -2767,7 +2768,7 @@ class DefaultShapesMgr {
         const ret = [];
         for (let idx = count - 1; idx >= 0; --idx) {
             const v = this._items[idx];
-            if (Rect_1.Rect.hit(v.data, rect))
+            if (!v.ghost && Rect_1.Rect.hit(v.data, rect))
                 ret.push(v);
         }
         return ret;
@@ -2776,7 +2777,7 @@ class DefaultShapesMgr {
         const count = this._items.length;
         for (let idx = count - 1; idx >= 0; --idx) {
             const v = this._items[idx];
-            if (Rect_1.Rect.hit(v.data, rect))
+            if (!v.ghost && Rect_1.Rect.hit(v.data, rect))
                 return v;
         }
         return null;
@@ -2858,7 +2859,7 @@ class ShapeData {
         this.z = -0;
         this.l = '';
         this.style = {};
-        this.status = {};
+        this.status = { v: 1 };
     }
     get type() { return this.t; }
     set type(v) { this.t = v; }
@@ -2936,14 +2937,12 @@ class ShapeData {
         else
             delete this.style.h;
     }
-    get visible() { var _a; return ((_a = this.status) === null || _a === void 0 ? void 0 : _a.v) !== 0; }
+    get visible() { var _a; return !!((_a = this.status) === null || _a === void 0 ? void 0 : _a.v); }
     set visible(v) {
         if (!this.status)
             this.status = {};
         if (v)
             this.status.v = 1;
-        else if (v === false)
-            this.status.v = 0;
         else
             delete this.status.v;
     }
@@ -2965,32 +2964,50 @@ class ShapeData {
         else
             delete this.status.e;
     }
+    get locked() { var _a; return !!((_a = this.status) === null || _a === void 0 ? void 0 : _a.f); }
+    set locked(v) {
+        if (!this.status)
+            this.status = {};
+        if (v)
+            this.status.f = 1;
+        else
+            delete this.status.f;
+    }
+    get ghost() { var _a; return !!((_a = this.status) === null || _a === void 0 ? void 0 : _a.g); }
+    set ghost(v) {
+        if (!this.status)
+            this.status = {};
+        if (v)
+            this.status.g = 1;
+        else
+            delete this.status.g;
+    }
     get layer() { return this.l; }
     set layer(v) { this.l = v; }
     get needFill() { return true; }
     get needStroke() { return true; }
-    merge(other) {
-        this.copyFrom(other);
+    merge(o) {
+        this.copyFrom(o);
         return this;
     }
-    copyFrom(other) {
-        if (typeof other.t === 'string' || typeof other.t === 'number')
-            this.t = other.t;
-        if (typeof other.i === 'string')
-            this.i = other.i;
-        if (typeof other.x === 'number')
-            this.x = other.x;
-        if (typeof other.y === 'number')
-            this.y = other.y;
-        if (typeof other.z === 'number')
-            this.z = other.z;
-        if (typeof other.w === 'number')
-            this.w = other.w;
-        if (typeof other.h === 'number')
-            this.h = other.h;
-        if (typeof other.l === 'string')
-            this.l = other.l;
-        const { style, status } = other;
+    copyFrom(o) {
+        if (typeof o.t === 'string' || typeof o.t === 'number')
+            this.t = o.t;
+        if (typeof o.i === 'string')
+            this.i = o.i;
+        if (typeof o.x === 'number')
+            this.x = o.x;
+        if (typeof o.y === 'number')
+            this.y = o.y;
+        if (typeof o.z === 'number')
+            this.z = o.z;
+        if (typeof o.w === 'number')
+            this.w = o.w;
+        if (typeof o.h === 'number')
+            this.h = o.h;
+        if (typeof o.l === 'string')
+            this.l = o.l;
+        const { style, status } = o;
         if (style) {
             if (!this.style)
                 this.style = {};
@@ -3020,6 +3037,10 @@ class ShapeData {
                 this.status.s = status.s;
             if (typeof status.e === 'number')
                 this.status.e = status.e;
+            if (typeof status.f === 'number')
+                this.status.f = status.f;
+            if (typeof status.g === 'number')
+                this.status.g = status.g;
         }
         return this;
     }
@@ -3067,19 +3088,33 @@ class Shape {
     }
     get editing() { return !!this._data.editing; }
     set editing(v) {
-        if (!!this._data.editing === v)
+        if (this._data.editing === v)
             return;
         this._data.editing = v;
         this.markDirty();
     }
     get selected() { return !!this._data.selected; }
     set selected(v) {
-        if (!!this._data.selected === v)
+        if (this._data.selected === v)
             return;
         this._data.selected = v;
         this.markDirty();
     }
     get resizable() { return this._resizable; }
+    get locked() { return this._data.locked; }
+    set locked(v) {
+        if (this._data.locked === v)
+            return;
+        this._data.locked = v;
+        this.markDirty();
+    }
+    get ghost() { return this._data.ghost; }
+    set ghost(v) {
+        if (this._data.ghost === v)
+            return;
+        this._data.ghost = v;
+        this.markDirty();
+    }
     merge(data) {
         this.markDirty();
         this.data.merge(data);
@@ -3145,22 +3180,23 @@ class Shape {
     render(ctx) {
         if (!this.visible)
             return;
-        if (this.selected) {
+        const { ghost, locked } = this;
+        if (this.selected && !ghost) {
             // 虚线其实相当损耗性能
-            const lineWidth = 1;
+            const lineWidth = locked ? 2 : 1;
             const halfLineW = lineWidth / 2;
             ctx.lineWidth = lineWidth;
             const { x, y, w, h } = this.boundingRect();
             ctx.beginPath();
             ctx.rect(x + halfLineW, y + halfLineW, w - lineWidth, h - lineWidth);
             ctx.closePath();
-            ctx.strokeStyle = 'white';
+            ctx.strokeStyle = locked ? '#ffffff88' : '#ffffff';
             ctx.setLineDash([]);
             ctx.stroke();
-            ctx.strokeStyle = 'black';
-            ctx.setLineDash([lineWidth * 4]);
+            ctx.strokeStyle = locked ? '#00000088' : '#000000';
+            ctx.setLineDash(locked ? [lineWidth * 8] : [lineWidth * 4]);
             ctx.stroke();
-            if (this._resizable === Resizable.All) {
+            if (!locked && this._resizable === Resizable.All) {
                 ctx.fillStyle = 'white';
                 ctx.setLineDash([]);
                 const s = 5;
@@ -3212,7 +3248,7 @@ class Shape {
         };
     }
     resizeDirection(pointerX, pointerY) {
-        if (!this.selected || !this._resizable) {
+        if (!this.selected || !this._resizable || this.ghost || this.locked) {
             return [ResizeDirection.None, undefined];
         }
         const lineWidth = 1;
@@ -4547,6 +4583,10 @@ class ShapeText extends base_1.Shape {
     get selection() { return this._selection; }
     set selection(v) { this.setSelection(v); }
     get selectionRects() { return this._selectionRects; }
+    get offscreen() {
+        this._offscreen = this._offscreen || document.createElement('canvas');
+        return this._offscreen;
+    }
     constructor(data) {
         super(data);
         this._selection = new TextSelection_1.TextSelection;
@@ -4666,20 +4706,29 @@ class ShapeText extends base_1.Shape {
         }
         if (needStroke || needFill) {
             const { x, y } = this.data;
-            this._applyStyle(ctx);
+            const { w, h } = this.boundingRect();
+            const { offscreen } = this;
+            offscreen.width = w;
+            offscreen.height = h;
+            const octx = offscreen.getContext('2d');
+            this._applyStyle(octx);
+            octx.globalCompositeOperation = 'source-over';
             for (let i = 0; i < this._lines.length; ++i) {
                 const line = this._lines[i];
-                needFill && ctx.fillText(line.str, x + line.x, y + line.bl);
-                needStroke && ctx.strokeText(line.str, x + line.x, y + line.bl);
+                needFill && octx.fillText(line.str, line.x, line.bl);
+                needStroke && octx.strokeText(line.str, line.x, line.bl);
             }
             if (this._cursorVisible && this.editing) {
-                ctx.globalCompositeOperation = 'xor';
+                octx.globalCompositeOperation = 'xor';
+                octx.fillStyle = '#2f71ff';
                 for (let i = 0; i < this._selectionRects.length; ++i) {
                     const rect = this._selectionRects[i];
+                    ctx.fillStyle = 'white';
                     ctx.fillRect(x + rect.x, y + rect.y, rect.w, rect.h);
+                    octx.fillRect(rect.x, rect.y, rect.w, rect.h);
                 }
-                ctx.globalCompositeOperation = 'source-over';
             }
+            ctx.drawImage(offscreen, x, y);
         }
         return super.render(ctx);
     }
@@ -5267,7 +5316,7 @@ class SelectorTool {
         this._prevPos.y += diffY;
         this._shapes.forEach(v => {
             v.prevData = Events_1.Events.pickShapePositionData(v.shape.data);
-            v.shape.moveBy(diffX, diffY);
+            !v.shape.locked && v.shape.moveBy(diffX, diffY);
         });
         return this;
     }
@@ -5279,9 +5328,16 @@ class SelectorTool {
         const { x, y } = dot;
         this._rectHelper.start(x, y);
         this.updateGeo();
-        const shape = board.hit({ x, y, w: 0, h: 0 });
-        if (!shape) {
-            // 点击的位置无任何图形，则框选图形, 并取消选择以选择的图形
+        const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
+        let shape;
+        for (let i = shapes.length - 1; i >= 0; --i) { // 找到距离用户最近的未锁定图形
+            if (!shapes[i].locked) {
+                shape = shapes[i];
+                break;
+            }
+        }
+        if (!shape || shape.locked) {
+            // 点击的位置无任何未锁定图形，则框选图形, 并取消选择以选择的图形
             this._status = SelectorStatus.ReadyForSelecting;
             this._rect.visible = true;
             this.deselect();

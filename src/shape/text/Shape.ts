@@ -13,15 +13,22 @@ export interface ILineInfo extends TextMetrics {
   str: string
 }
 export class ShapeText extends Shape<TextData> {
-  private _selection = new TextSelection
-  private _lines: ILineInfo[] = []
-  private _selectionRects: IRect[] = []
+  private _selection = new TextSelection;
+  private _lines: ILineInfo[] = [];
+  private _selectionRects: IRect[] = [];
+  private _offscreen?: HTMLCanvasElement;
 
   get text() { return this.data.text }
   set text(v) { this.setText(v) }
   get selection() { return this._selection }
   set selection(v) { this.setSelection(v) }
   get selectionRects() { return this._selectionRects }
+
+  private get offscreen(): HTMLCanvasElement {
+    this._offscreen = this._offscreen || document.createElement('canvas');
+    return this._offscreen;
+  }
+
 
   constructor(data: TextData) {
     super(data)
@@ -142,21 +149,32 @@ export class ShapeText extends Shape<TextData> {
     }
 
     if (needStroke || needFill) {
-      const { x, y } = this.data
-      this._applyStyle(ctx)
+      const { x, y } = this.data;
+
+      const { w, h } = this.boundingRect();
+      const { offscreen } = this;
+      offscreen.width = w;
+      offscreen.height = h;
+      const octx = offscreen.getContext('2d')!;
+      this._applyStyle(octx)
+      octx.globalCompositeOperation = 'source-over'
       for (let i = 0; i < this._lines.length; ++i) {
         const line = this._lines[i]
-        needFill && ctx.fillText(line.str, x + line.x, y + line.bl)
-        needStroke && ctx.strokeText(line.str, x + line.x, y + line.bl)
+        needFill && octx.fillText(line.str, line.x, line.bl)
+        needStroke && octx.strokeText(line.str, line.x, line.bl)
       }
+
       if (this._cursorVisible && this.editing) {
-        ctx.globalCompositeOperation = 'xor'
+        octx.globalCompositeOperation = 'xor'
+        octx.fillStyle = '#2f71ff'
         for (let i = 0; i < this._selectionRects.length; ++i) {
           const rect = this._selectionRects[i]
+          ctx.fillStyle = 'white'
           ctx.fillRect(x + rect.x, y + rect.y, rect.w, rect.h)
+          octx.fillRect(rect.x, rect.y, rect.w, rect.h)
         }
-        ctx.globalCompositeOperation = 'source-over'
       }
+      ctx.drawImage(offscreen, x, y);
     }
     return super.render(ctx)
   }

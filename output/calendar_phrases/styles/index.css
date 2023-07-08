@@ -17,6 +17,7 @@
   left: 50%;
   top: 40%;
   background: white;
+  touch-action: none;
 }
 
 .g_cp_main_view .g_cp_content_zone {

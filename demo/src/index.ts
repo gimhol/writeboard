@@ -331,18 +331,19 @@ function main() {
 
   const init = (ttt: TTT) => {
     board.removeAll(false);
-    const img_header = (board.find('img_header') ?? board.factory.newShape(ShapeEnum.Img)) as ShapeImg;
-    const imgd_header = img_header.data.copy();
-    imgd_header.id = 'img_header';
-    imgd_header.src = ttt.main_pic.src;
-    imgd_header.x = 0;
-    imgd_header.y = 0;
-    imgd_header.w = resultWidth;
-    imgd_header.h = resultHeight;
-    imgd_header.layer = board.layer().id;
-    imgd_header.objectFit = ObjectFit.Cover;
-    img_header.merge(imgd_header);
-    img_header.board || board.add(img_header, true);
+    const img_main = (board.find('img_header') ?? board.factory.newShape(ShapeEnum.Img)) as ShapeImg;
+    const imgd_main = img_main.data.copy();
+    imgd_main.id = 'img_header';
+    imgd_main.src = ttt.main_pic.src;
+    imgd_main.locked = true;
+    imgd_main.x = 0;
+    imgd_main.y = 0;
+    imgd_main.w = resultWidth;
+    imgd_main.h = resultHeight;
+    imgd_main.layer = board.layer().id;
+    imgd_main.objectFit = ObjectFit.Cover;
+    img_main.merge(imgd_main);
+    img_main.board || board.add(img_main, true);
 
     const img_logo = (board.find('img_logo') ?? board.factory.newShape(ShapeEnum.Img)) as ShapeImg;
     const imgd_logo = img_logo.data.copy();

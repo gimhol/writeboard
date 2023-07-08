@@ -38,15 +38,23 @@ export interface IShapeStatus {
   /**
    * visible
    */
-  v?: number
+  v?: 1;
   /**
    * selected
    */
-  s?: number
+  s?: 1;
   /**
    * editing
    */
-  e?: number
+  e?: 1;
+  /**
+   * locked
+   */
+  f?: 1;
+  /**
+   * ghost
+   */
+  g?: 1;
 }
 export interface IShapeData {
   t: ShapeType;
@@ -70,7 +78,7 @@ export class ShapeData implements IShapeData {
   z = -0
   l = ''
   style?: Partial<IShapeStyle> = {}
-  status?: Partial<IShapeStatus> = {}
+  status?: Partial<IShapeStatus> = { v: 1 }
 
   get type() { return this.t }
   set type(v) { this.t = v }
@@ -124,46 +132,59 @@ export class ShapeData implements IShapeData {
     if (v) this.style.h = v
     else delete this.style.h
   }
-  get visible() { return this.status?.v !== 0 }
-  set visible(v) {
-    if (!this.status) this.status = {}
-    if (v) this.status.v = 1
-    else if (v === false) this.status.v = 0
-    else delete this.status.v
+  get visible(): boolean { return !!this.status?.v }
+  set visible(v: boolean) {
+    if (!this.status) this.status = {};
+    if (v) this.status.v = 1;
+    else delete this.status.v;
   }
-  get selected() { return !!this.status?.s }
-  set selected(v) {
-    if (!this.status) this.status = {}
-    if (v) this.status.s = 1
-    else delete this.status.s
+  get selected(): boolean { return !!this.status?.s }
+  set selected(v: boolean) {
+    if (!this.status) this.status = {};
+    if (v) this.status.s = 1;
+    else delete this.status.s;
   }
-  get editing() { return !!this.status?.e }
-  set editing(v) {
+  get editing(): boolean { return !!this.status?.e }
+  set editing(v: boolean) {
     if (!this.status) this.status = {}
     if (v) this.status.e = 1
     else delete this.status.e
   }
+  get locked(): boolean { return !!this.status?.f }
+  set locked(v: boolean) {
+    if (!this.status) this.status = {}
+    if (v) this.status.f = 1
+    else delete this.status.f
+  }
+
+  get ghost(): boolean { return !!this.status?.g }
+  set ghost(v: boolean) {
+    if (!this.status) this.status = {}
+    if (v) this.status.g = 1
+    else delete this.status.g
+  }
+
   get layer() { return this.l }
   set layer(v) { this.l = v }
-  
+
   get needFill() { return true; }
   get needStroke() { return true; }
 
-  merge(other: Partial<IShapeData>) {
-    this.copyFrom(other)
+  merge(o: Partial<IShapeData>) {
+    this.copyFrom(o)
     return this
   }
-  copyFrom(other: Partial<IShapeData>) {
-    if (typeof other.t === 'string' || typeof other.t === 'number') this.t = other.t
-    if (typeof other.i === 'string') this.i = other.i
-    if (typeof other.x === 'number') this.x = other.x
-    if (typeof other.y === 'number') this.y = other.y
-    if (typeof other.z === 'number') this.z = other.z
-    if (typeof other.w === 'number') this.w = other.w
-    if (typeof other.h === 'number') this.h = other.h
-    if (typeof other.l === 'string') this.l = other.l
+  copyFrom(o: Partial<IShapeData>) {
+    if (typeof o.t === 'string' || typeof o.t === 'number') this.t = o.t
+    if (typeof o.i === 'string') this.i = o.i
+    if (typeof o.x === 'number') this.x = o.x
+    if (typeof o.y === 'number') this.y = o.y
+    if (typeof o.z === 'number') this.z = o.z
+    if (typeof o.w === 'number') this.w = o.w
+    if (typeof o.h === 'number') this.h = o.h
+    if (typeof o.l === 'string') this.l = o.l
 
-    const { style, status } = other
+    const { style, status } = o
     if (style) {
       if (!this.style) this.style = {}
       if (style.a) this.style.a = style.a
@@ -180,6 +201,8 @@ export class ShapeData implements IShapeData {
       if (typeof status.v === 'number') this.status.v = status.v
       if (typeof status.s === 'number') this.status.s = status.s
       if (typeof status.e === 'number') this.status.e = status.e
+      if (typeof status.f === 'number') this.status.f = status.f
+      if (typeof status.g === 'number') this.status.g = status.g
     }
     return this
   }

@@ -94,7 +94,7 @@ export class SelectorTool implements ITool {
     this._prevPos.y += diffY;
     this._shapes.forEach(v => {
       v.prevData = Events.pickShapePositionData(v.shape.data)
-      v.shape.moveBy(diffX, diffY)
+      !v.shape.locked && v.shape.moveBy(diffX, diffY)
     })
     return this;
   }
@@ -108,9 +108,17 @@ export class SelectorTool implements ITool {
     const { x, y } = dot
     this._rectHelper.start(x, y)
     this.updateGeo()
-    const shape = board.hit({ x, y, w: 0, h: 0 });
-    if (!shape) {
-      // 点击的位置无任何图形，则框选图形, 并取消选择以选择的图形
+    const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
+    let shape: Shape | undefined;
+    for (let i = shapes.length - 1; i >= 0; --i) { // 找到距离用户最近的未锁定图形
+      if (!shapes[i].locked) {
+        shape = shapes[i];
+        break;
+      }
+    }
+
+    if (!shape || shape.locked) {
+      // 点击的位置无任何未锁定图形，则框选图形, 并取消选择以选择的图形
       this._status = SelectorStatus.ReadyForSelecting;
       this._rect.visible = true;
       this.deselect();
@@ -161,7 +169,7 @@ export class SelectorTool implements ITool {
       }
     }
   }
-  
+
   pointerUp(): void {
     if (this._status === SelectorStatus.ReadyForDragging) {
       // 双击判定

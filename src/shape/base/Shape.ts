@@ -35,18 +35,31 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   get editing(): boolean { return !!this._data.editing }
   set editing(v: boolean) {
-    if (!!this._data.editing === v) return
+    if (this._data.editing === v) return
     this._data.editing = v
     this.markDirty()
   }
   get selected(): boolean { return !!this._data.selected }
   set selected(v: boolean) {
-    if (!!this._data.selected === v) return
+    if (this._data.selected === v) return
     this._data.selected = v
     this.markDirty()
   }
 
   get resizable(): Resizable { return this._resizable; }
+
+  get locked(): boolean { return this._data.locked }
+  set locked(v: boolean) {
+    if (this._data.locked === v) return
+    this._data.locked = v
+    this.markDirty()
+  }
+  get ghost(): boolean { return this._data.ghost }
+  set ghost(v: boolean) {
+    if (this._data.ghost === v) return
+    this._data.ghost = v
+    this.markDirty()
+  }
 
   merge(data: Partial<ShapeData>): void {
     this.markDirty()
@@ -125,23 +138,25 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible) return
-    if (this.selected) {
+    const { ghost, locked } = this;
+    if (this.selected && !ghost) {
       // 虚线其实相当损耗性能
-      const lineWidth = 1
+      const lineWidth = locked ? 2 : 1
       const halfLineW = lineWidth / 2
       ctx.lineWidth = lineWidth
       const { x, y, w, h } = this.boundingRect()
       ctx.beginPath()
       ctx.rect(x + halfLineW, y + halfLineW, w - lineWidth, h - lineWidth)
       ctx.closePath()
-      ctx.strokeStyle = 'white'
+
+      ctx.strokeStyle = locked ? '#ffffff88' : '#ffffff'
       ctx.setLineDash([])
       ctx.stroke()
-      ctx.strokeStyle = 'black'
-      ctx.setLineDash([lineWidth * 4])
+      ctx.strokeStyle = locked ? '#00000088' : '#000000'
+      ctx.setLineDash(locked ? [lineWidth * 8] : [lineWidth * 4])
       ctx.stroke()
 
-      if (this._resizable === Resizable.All) {
+      if (!locked && this._resizable === Resizable.All) {
         ctx.fillStyle = 'white'
         ctx.setLineDash([]);
         const s = 5;
@@ -200,7 +215,7 @@ export class Shape<D extends ShapeData = ShapeData> {
   }
 
   resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
-    if (!this.selected || !this._resizable) {
+    if (!this.selected || !this._resizable || this.ghost || this.locked) {
       return [ResizeDirection.None, undefined];
     }
     const lineWidth = 1

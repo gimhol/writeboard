@@ -26,7 +26,7 @@ export interface IShapesMgr {
   exists(...items: Shape[]): number
 
   hit(rect: IRect): Shape | null
-  
+
   hits(rect: IRect): Shape[]
 }
 
@@ -81,7 +81,7 @@ export class DefaultShapesMgr implements IShapesMgr {
     const ret: Shape[] = []
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]
-      if (Rect.hit(v.data, rect))
+      if (!v.ghost && Rect.hit(v.data, rect))
         ret.push(v)
     }
     return ret
@@ -91,9 +91,8 @@ export class DefaultShapesMgr implements IShapesMgr {
     const count = this._items.length
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]
-      if (Rect.hit(v.data, rect))
+      if (!v.ghost && Rect.hit(v.data, rect))
         return v
-
     }
     return null
   }
