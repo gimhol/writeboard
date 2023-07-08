@@ -201,7 +201,7 @@ function main() {
         }
       }
     })
-
+    
     editPanel.fontSizeInput.addEventListener('input', () => {
       board.selects.forEach(shape => {
         if (!(shape instanceof ShapeText)) {
