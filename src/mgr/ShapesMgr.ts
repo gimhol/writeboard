@@ -1,32 +1,46 @@
 import { Shape } from "../shape/base/Shape"
 import { IRect, Rect } from "../utils/Rect"
 export interface IShapesMgr {
-  finds(id: string[]): Shape[]
-  find(id: string): Shape | undefined
+  /**
+   * 查找指定ID的图形
+   *
+   * @param {string} id 指定ID
+   * @return {(Shape | null)} 存在时，返回图形，否则返回undefined
+   * @memberof IShapesMgr
+   */
+  find(id: string): Shape | null
+
+  /**
+   * 获取全部图形
+   *
+   * @return {Shape[]} 全部图形
+   * @memberof IShapesMgr
+   */
   shapes(): Shape[]
+
+
   add(...items: Shape[]): number
+
   remove(...items: Shape[]): number
+
   exists(...items: Shape[]): number
-  hit(rect: IRect): Shape | undefined
+
+  hit(rect: IRect): Shape | null
+  
   hits(rect: IRect): Shape[]
 }
 
 const Tag = '[DefaultShapesMgr]'
 export class DefaultShapesMgr implements IShapesMgr {
-  finds(ids: string[]): Shape[] {
-    const ret: Shape[] = []
-    ids.forEach(id => {
-      const shape = this._kvs[id]
-      shape && ret.push(shape)
-    })
-    return ret
-  }
-  find(id: string) {
-    return this._kvs[id]
-  }
-  private _items: Shape[] = []
+  private _items: Shape[] = [];
   private _kvs: { [id in string]?: Shape } = {}
+
+  find(id: string) {
+    return this._kvs[id] || null
+  }
+
   shapes(): Shape[] { return this._items }
+
   exists(...items: Shape[]): number {
     let ret = 0
     items.forEach(v => {
@@ -35,6 +49,7 @@ export class DefaultShapesMgr implements IShapesMgr {
     })
     return ret
   }
+
   add(...items: Shape[]): number {
     let ret = 0
     items.forEach(item => {
@@ -71,7 +86,8 @@ export class DefaultShapesMgr implements IShapesMgr {
     }
     return ret
   }
-  hit(rect: IRect): Shape | undefined {
+
+  hit(rect: IRect): Shape | null {
     const count = this._items.length
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]
@@ -79,5 +95,6 @@ export class DefaultShapesMgr implements IShapesMgr {
         return v
 
     }
+    return null
   }
 }

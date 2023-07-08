@@ -1,5 +1,6 @@
 import { EventEnum, Events } from "../event"
 import { IFactory, IShapesMgr } from "../mgr"
+import { TextTool } from "../shape"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Rect } from "../utils"
@@ -54,9 +55,6 @@ export class Board {
       layer.width = this.width;
       layer.height = this.height;
       layer.onscreen.style.pointerEvents = 'none';
-      layer.onscreen.addEventListener('pointerdown', this.pointerdown);
-      layer.onscreen.addEventListener('pointermove', this.pointermove);
-      layer.onscreen.addEventListener('pointerup', this.pointerup);
       this._element.appendChild(layer.onscreen);
       this._layers.set(layer.info.id, layer);
       this.dispatchEvent(new CustomEvent(EventEnum.LayerAdded, { detail: layer }));
@@ -74,9 +72,6 @@ export class Board {
       return false;
     }
     this._layers.delete(layerId);
-    layer.onscreen.removeEventListener('pointerdown', this.pointerdown);
-    layer.onscreen.removeEventListener('pointermove', this.pointermove);
-    layer.onscreen.removeEventListener('pointerup', this.pointerup);
     this._element.removeChild(layer.onscreen);
     this.dispatchEvent(new CustomEvent(EventEnum.LayerRemoved, { detail: layer }));
     return true;
@@ -125,16 +120,18 @@ export class Board {
       })
     }
     this.addLayers(layers);
+
+    this._element.addEventListener('pointerdown', this.pointerdown);
+    this._element.tabIndex = 0;
+    this._element.style.outline = 'none';
     window.addEventListener('pointermove', this.pointermove);
     window.addEventListener('pointerup', this.pointerup);
   }
 
-  finds(ids: string[]): Shape[] {
-    return this._shapesMgr.finds(ids)
-  }
-  find(id: string): Shape | undefined {
+  find(id: string): Shape | null {
     return this._shapesMgr.find(id)
   }
+
   toSnapshot(): ISnapshot {
     return {
       v: 0,
@@ -166,7 +163,7 @@ export class Board {
   exists(...items: Shape<ShapeData>[]): number {
     return this._shapesMgr.exists(...items)
   }
-  hit(rect: IRect): Shape<ShapeData> | undefined {
+  hit(rect: IRect): Shape<ShapeData> | null {
     return this._shapesMgr.hit(rect)
   }
   hits(rect: IRect): Shape<ShapeData>[] {
@@ -223,13 +220,36 @@ export class Board {
   get toolType() { return this._toolType }
   set toolType(v) { this.setToolType(v) }
   setToolType(to: ToolType) {
-    if (this._toolType === to) return
+    if (this._toolType === to) {
+      /* 
+      Note：
+        使用选择器工具，双击文本编辑文本时，会切换至文本工具。
+        这种情况下，文本编辑框失去焦点时，切回选择器工具。
+        为了避免使用者在这种状态下，主动选择文本工具后，被切回选择器工具。
+        这里将相关回调移除。
+      */
+      if (this._tool instanceof TextTool && this._tool.selectorCallback) {
+        this._tool.editor.removeEventListener('blur', this._tool.selectorCallback);
+      }
+      return
+    }
     const from = this._toolType
     this._toolType = to
     this.emitEvent(EventEnum.ToolChanged, {
       operator: this._operator,
       from, to
     })
+
+    this._tool?.end()
+    this._tool = this._factory.newTool(to)
+    if (!this._tool) {
+      console.error('toolType not supported. got ', to)
+      return;
+    }
+    this._tool.board = this
+    this._tools[to] = this._tool
+    this._tool.start()
+
   }
   get selects() {
     return this._selects
@@ -293,7 +313,7 @@ export class Board {
    * @memberof Board
    */
   selectAll(emit: boolean): Shape[] {
-    return this.setSelects(this.shapes(), emit)[0];
+    return this.setSelects([...this.shapes()], emit)[0];
   }
 
   /**
@@ -347,19 +367,7 @@ export class Board {
     }
   }
   get tools() { return this._tools }
-  get tool() {
-    const toolType = this._toolType
-    if (!this._tool || this._tool.type !== toolType) {
-      this._tool?.end()
-      this._tool = this._factory.newTool(toolType)
-      if (this._tool) {
-        this._tool.board = this
-        this._tools[toolType] = this._tool
-        this._tool.start()
-      }
-    }
-    return this._tool
-  }
+  get tool() { return this._tool }
 
   pointerdown = (e: PointerEvent) => {
     if (e.button !== 0) {
@@ -373,6 +381,7 @@ export class Board {
   }
 
   pointermove = (e: PointerEvent) => {
+    if (!this._mousedown) { return; }
     if (this._mousedown) {
       this.tool?.pointerDraw(this.getDot(e));
     } else {
@@ -380,7 +389,10 @@ export class Board {
     }
     e.stopPropagation();
   }
+
   pointerup = (e: PointerEvent) => {
+    if (!this._mousedown) { return; }
+
     this._mousedown = false
     this.tool?.pointerUp(this.getDot(e))
     e.stopPropagation();

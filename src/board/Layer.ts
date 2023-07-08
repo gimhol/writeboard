@@ -1,15 +1,33 @@
+import { Css } from "../utils/Css";
+Css.add(`
+// whiteboard STYLES
+.g_whiteboard_layer {
+  position: absolute;
+  touchAction: none;
+  userSelect: none;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  transition: opacity 200ms;
+  outline: none;
+}`)
+
 export interface ILayerInfoInit {
   readonly id: string;
   readonly name: string;
 }
+
 export interface ILayerInits {
   readonly info: ILayerInfoInit;
   readonly onscreen?: HTMLCanvasElement;
 }
+
 export interface ILayerInfo {
   id: string;
   name: string;
 }
+
 export interface ILayer {
   readonly name: string;
   readonly info: ILayerInfo;
@@ -19,6 +37,7 @@ export interface ILayer {
   readonly octx: CanvasRenderingContext2D;
   opacity: number;
 }
+
 export class LayerInfo implements ILayerInfo {
   id: string;
   name: string;
@@ -27,6 +46,7 @@ export class LayerInfo implements ILayerInfo {
     this.name = inits.name;
   }
 }
+
 export class Layer implements ILayer {
   protected _info: ILayerInfo;
   protected _onscreen: HTMLCanvasElement;
@@ -49,21 +69,11 @@ export class Layer implements ILayer {
     this._onscreen = inits.onscreen ?? document.createElement('canvas');
     this._onscreen.setAttribute('layer_id', this.id);
     this._onscreen.setAttribute('layer_name', this.name);
-    this._onscreen.tabIndex = 0;
+
     this._onscreen.draggable = false;
-    this._onscreen.style.position = 'absolute';
-    this._onscreen.style.touchAction = 'none';
-    this._onscreen.style.userSelect = 'none';
-    this._onscreen.style.left = '0px';
-    this._onscreen.style.right = '0px';
-    this._onscreen.style.top = '0px';
-    this._onscreen.style.bottom = '0px';
-    this._onscreen.style.transition = 'opacity 200ms';
-    this._onscreen.style.outline = 'none';
-    this._onscreen.addEventListener('pointerdown', () => {
-      this._onscreen.focus();
-    }, { passive: true })
+    this._onscreen.classList.add('g_whiteboard_layer');
     this._ctx = this._onscreen.getContext('2d')!
+
     this._offscreen = document.createElement('canvas')
     this._offscreen.width = this._onscreen.width;
     this._offscreen.height = this._onscreen.height;

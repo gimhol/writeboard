@@ -1333,429 +1333,440 @@ const Styles_1 = require("./G/BaseView/Styles");
 const View_1 = require("./G/BaseView/View");
 const Menu_1 = require("./G/CompoundView/Menu");
 const Shiftable_1 = require("./Shiftable");
-Styles_1.Styles.css('./calendar_phrases/styles/index.css', './calendar_phrases/styles/edit_panel.css');
 View_1.View.get(document.head).addChild(new View_1.View('title', '每日一句'), new View_1.View('link')
     .setAttribute('rel', 'icon')
     .setAttribute('sizes', '16x16')
     .setAttribute('href', './calendar_phrases/logo.png'));
-const resultWidth = 600;
-const resultHeight = 600;
-const headerPicWidth = 600;
-const headerPicHeight = resultHeight * 0.5;
-const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
-const mainView = View_1.View.get(document.body).styles.addCls('g_cp_main_view').view;
-const editPanel = new EditPanel_1.EditPanel();
-var MenuKey;
-(function (MenuKey) {
-    MenuKey["SelectAll"] = "SelectAll";
-    MenuKey["RemoveSelected"] = "RemoveSelected";
-    MenuKey["Deselect"] = "Deselect";
-    MenuKey["ClearUp"] = "ClearUp";
-    MenuKey["InsertImage"] = "InsertImage";
-    MenuKey["ExportResult"] = "ExportResult";
-})(MenuKey || (MenuKey = {}));
-const menu = new Menu_1.Menu(mainView).setup([{
-        label: '工具',
-        items: dist_1.Gaia.listTools().map(v => ({ key: v, label: v }))
-    }, {
-        divider: true
-    }, {
-        key: MenuKey.InsertImage,
-        label: '插入图片'
-    }, {
-        divider: true
-    }, {
-        key: MenuKey.ExportResult,
-        label: '生成图片'
-    }, {
-        divider: true
-    }, {
-        key: MenuKey.SelectAll,
-        label: '全选'
-    }, {
-        key: MenuKey.Deselect,
-        label: '取消选择'
-    }, {
-        key: MenuKey.RemoveSelected,
-        label: '删除选择'
-    }, {
-        divider: true
-    }, {
-        key: MenuKey.ClearUp,
-        label: '删除全部',
-        danger: true,
-    }]);
-menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
-    switch (e.detail.key) {
-        case dist_1.ToolEnum.Rect:
-        case dist_1.ToolEnum.Oval:
-        case dist_1.ToolEnum.Pen:
-        case dist_1.ToolEnum.Polygon:
-        case dist_1.ToolEnum.Text:
-        case dist_1.ToolEnum.Selector:
-        case dist_1.ToolEnum.Tick:
-        case dist_1.ToolEnum.Cross:
-        case dist_1.ToolEnum.HalfTick:
-        case dist_1.ToolEnum.Lines:
-        case dist_1.ToolEnum.Img:
-            board.setToolType(e.detail.key);
-            break;
-        case MenuKey.SelectAll:
-            board.selectAll(true);
-            break;
-        case MenuKey.Deselect:
-            board.deselect(true);
-            break;
-        case MenuKey.RemoveSelected:
-            board.removeSelected(true);
-            break;
-        case MenuKey.ClearUp:
-            board.removeAll(true);
-            break;
-        case MenuKey.InsertImage: {
-            const input = document.createElement('input');
-            input.accept = '.png,.jpeg,.jpg';
-            input.type = 'file';
-            input.multiple = true;
-            input.title = '选择图片';
-            input.onchange = () => {
-                const { files } = input;
-                if (!files) {
+Styles_1.Styles.css('./calendar_phrases/styles/index.css', './calendar_phrases/styles/edit_panel.css').then(() => main());
+function main() {
+    const resultWidth = 600;
+    const resultHeight = 600;
+    const headerPicWidth = 600;
+    const headerPicHeight = resultHeight * 0.5;
+    const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
+    const mainView = View_1.View.get(document.body).styles.addCls('g_cp_main_view').view;
+    const editPanel = new EditPanel_1.EditPanel();
+    let MenuKey;
+    (function (MenuKey) {
+        MenuKey["SelectAll"] = "SelectAll";
+        MenuKey["RemoveSelected"] = "RemoveSelected";
+        MenuKey["Deselect"] = "Deselect";
+        MenuKey["ClearUp"] = "ClearUp";
+        MenuKey["InsertImage"] = "InsertImage";
+        MenuKey["ExportResult"] = "ExportResult";
+    })(MenuKey || (MenuKey = {}));
+    const menu = new Menu_1.Menu(mainView).setup([{
+            label: '工具',
+            items: dist_1.Gaia.listTools().map(v => ({ key: v, label: v }))
+        }, {
+            divider: true
+        }, {
+            key: MenuKey.InsertImage,
+            label: '插入图片'
+        }, {
+            divider: true
+        }, {
+            key: MenuKey.ExportResult,
+            label: '生成图片'
+        }, {
+            divider: true
+        }, {
+            key: MenuKey.SelectAll,
+            label: '全选'
+        }, {
+            key: MenuKey.Deselect,
+            label: '取消选择'
+        }, {
+            key: MenuKey.RemoveSelected,
+            label: '删除选择'
+        }, {
+            divider: true
+        }, {
+            key: MenuKey.ClearUp,
+            label: '删除全部',
+            danger: true,
+        }]);
+    menu.addEventListener(Menu_1.Menu.EventType.ItemClick, (e) => {
+        switch (e.detail.key) {
+            case dist_1.ToolEnum.Rect:
+            case dist_1.ToolEnum.Oval:
+            case dist_1.ToolEnum.Pen:
+            case dist_1.ToolEnum.Polygon:
+            case dist_1.ToolEnum.Text:
+            case dist_1.ToolEnum.Selector:
+            case dist_1.ToolEnum.Tick:
+            case dist_1.ToolEnum.Cross:
+            case dist_1.ToolEnum.HalfTick:
+            case dist_1.ToolEnum.Lines:
+            case dist_1.ToolEnum.Img:
+                board.setToolType(e.detail.key);
+                break;
+            case MenuKey.SelectAll:
+                board.selectAll(true);
+                break;
+            case MenuKey.Deselect:
+                board.deselect(true);
+                break;
+            case MenuKey.RemoveSelected:
+                board.removeSelected(true);
+                break;
+            case MenuKey.ClearUp:
+                board.removeAll(true);
+                break;
+            case MenuKey.InsertImage: {
+                const input = document.createElement('input');
+                input.accept = '.png,.jpeg,.jpg';
+                input.type = 'file';
+                input.multiple = true;
+                input.title = '选择图片';
+                input.onchange = () => {
+                    const { files } = input;
+                    if (!files) {
+                        return;
+                    }
+                    for (let i = 0; i < files.length; ++i) {
+                        const file = files.item(i);
+                        if (!file) {
+                            continue;
+                        }
+                        const img = new Image();
+                        img.src = URL.createObjectURL(file);
+                        img.onload = () => {
+                            const shape = board.factory.newShape(dist_1.ShapeEnum.Img);
+                            shape.data.src = img.src;
+                            shape.data.w = img.naturalWidth;
+                            shape.data.h = img.naturalHeight;
+                            shape.data.layer = board.layer().id;
+                            shape.data.objectFit = dist_1.ObjectFit.Cover;
+                            board.add(shape, true);
+                        };
+                    }
+                };
+                input.click();
+                break;
+            }
+            case MenuKey.ExportResult: {
+                download();
+                break;
+            }
+        }
+    });
+    const blackboard = new View_1.View('div').styles
+        .addCls('g_cp_blackboard')
+        .apply('size', {
+        width: resultWidth,
+        height: resultHeight,
+    }).view;
+    const resize = () => {
+        const { width } = mainView.inner.getBoundingClientRect();
+        blackboard.styles.apply('transform', {
+            transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})`
+        });
+    };
+    window.addEventListener('resize', resize);
+    resize();
+    const contentZone = new View_1.View('div');
+    contentZone.styles.addCls('g_cp_content_zone');
+    contentZone.addChild(blackboard);
+    mainView.addChild(contentZone, editPanel);
+    const board = factory.newWhiteBoard({
+        width: resultWidth,
+        height: resultHeight,
+        element: blackboard.inner,
+    });
+    const updateEditPanel = () => {
+        let needFill = false;
+        let needStroke = false;
+        let needText = false;
+        let needImg = false;
+        let lineWidth = null;
+        let fontSize = null;
+        board.selects.forEach(shape => {
+            needFill = needFill || shape.data.needFill;
+            needStroke = needStroke || shape.data.needStroke;
+            needText = needText || shape.data.type === dist_1.ShapeEnum.Text;
+            needImg = needImg || shape.data.type === dist_1.ShapeEnum.Img;
+            if (shape.data.needStroke) {
+                const temp = shape.data.lineWidth;
+                if (lineWidth === null) {
+                    lineWidth = temp;
+                }
+                else if (lineWidth !== temp) {
+                    lineWidth = undefined;
+                }
+            }
+            if (shape.data.type === dist_1.ShapeEnum.Text) {
+                const temp = shape.data.font_size;
+                if (fontSize === null) {
+                    fontSize = temp;
+                }
+                else if (fontSize !== temp) {
+                    fontSize = undefined;
+                }
+            }
+        });
+        editPanel.fontSizeInput.addEventListener('input', () => {
+            board.selects.forEach(shape => {
+                if (!(shape instanceof dist_1.ShapeText)) {
                     return;
                 }
-                for (let i = 0; i < files.length; ++i) {
-                    const file = files.item(i);
-                    if (!file) {
-                        continue;
-                    }
-                    const img = new Image();
-                    img.src = URL.createObjectURL(file);
-                    img.onload = () => {
-                        const shape = board.factory.newShape(dist_1.ShapeEnum.Img);
-                        shape.data.src = img.src;
-                        shape.data.w = img.naturalWidth;
-                        shape.data.h = img.naturalHeight;
-                        shape.data.layer = board.layer().id;
-                        shape.data.objectFit = dist_1.ObjectFit.Cover;
-                        board.add(shape, true);
-                    };
+                const next = shape.data.copy();
+                next.font_size = editPanel.fontSizeInput.num;
+                shape.merge(next);
+            });
+        });
+        editPanel.lineWidthInput.addEventListener('input', () => {
+            board.selects.forEach(shape => {
+                if (!shape.data.needStroke) {
+                    return;
                 }
-            };
-            input.click();
-            break;
-        }
-        case MenuKey.ExportResult: {
-            download();
-            break;
-        }
-    }
-});
-const blackboard = new View_1.View('div').styles
-    .addCls('g_cp_blackboard')
-    .apply('size', {
-    width: resultWidth,
-    height: resultHeight,
-}).view;
-const resize = () => {
-    const { width } = mainView.inner.getBoundingClientRect();
-    blackboard.styles.apply('transform', {
-        transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})`
-    });
-};
-window.addEventListener('resize', resize);
-resize();
-const contentZone = new View_1.View('div');
-contentZone.styles.addCls('g_cp_content_zone');
-contentZone.addChild(blackboard);
-mainView.addChild(contentZone, editPanel);
-const board = factory.newWhiteBoard({
-    width: resultWidth,
-    height: resultHeight,
-    element: blackboard.inner,
-});
-const updateEditPanel = () => {
-    let needFill = false;
-    let needStroke = false;
-    let needText = false;
-    let needImg = false;
-    let lineWidth = null;
-    let fontSize = null;
-    board.selects.forEach(shape => {
-        needFill = needFill || shape.data.needFill;
-        needStroke = needStroke || shape.data.needStroke;
-        needText = needText || shape.data.type === dist_1.ShapeEnum.Text;
-        needImg = needImg || shape.data.type === dist_1.ShapeEnum.Img;
-        if (shape.data.needStroke) {
-            const temp = shape.data.lineWidth;
-            if (lineWidth === null) {
-                lineWidth = temp;
-            }
-            else if (lineWidth !== temp) {
-                lineWidth = undefined;
-            }
-        }
-        if (shape.data.type === dist_1.ShapeEnum.Text) {
-            const temp = shape.data.font_size;
-            if (fontSize === null) {
-                fontSize = temp;
-            }
-            else if (fontSize !== temp) {
-                fontSize = undefined;
-            }
-        }
-    });
-    editPanel.fontSizeInput.addEventListener('input', () => {
-        board.selects.forEach(shape => {
-            if (!(shape instanceof dist_1.ShapeText)) {
-                return;
-            }
-            const next = shape.data.copy();
-            next.font_size = editPanel.fontSizeInput.num;
-            shape.merge(next);
+                const next = shape.data.copy();
+                next.lineWidth = editPanel.lineWidthInput.num;
+                shape.merge(next);
+            });
         });
-    });
-    editPanel.lineWidthInput.addEventListener('input', () => {
-        board.selects.forEach(shape => {
-            if (!shape.data.needStroke) {
-                return;
-            }
-            const next = shape.data.copy();
-            next.lineWidth = editPanel.lineWidthInput.num;
-            shape.merge(next);
-        });
-    });
-    editPanel.state.value.needFill = needFill;
-    editPanel.state.value.needStroke = needStroke;
-    editPanel.state.value.needText = needText;
-    editPanel.state.value.needImg = needImg;
-    editPanel.state.value.lineWidth = lineWidth !== null && lineWidth !== void 0 ? lineWidth : undefined;
-    editPanel.state.value.fontSize = fontSize !== null && fontSize !== void 0 ? fontSize : undefined;
-    console.log(editPanel.state.value);
-};
-board.addEventListener(event_1.EventEnum.ShapesSelected, e => {
-    const { tool, selects } = board;
-    if (tool instanceof dist_1.SelectorTool &&
-        !tool.rect.ok &&
-        !isNaN(tool.rect.from.x) &&
-        selects.length === 1 &&
-        selects[0] instanceof dist_1.ShapeText) {
-        board.setToolType(dist_1.ToolEnum.Text);
-        const textTool = board.tool;
-        textTool.connectShapeText(selects[0]);
-        textTool.editor.addEventListener('blur', () => {
-            board.setToolType(dist_1.ToolEnum.Selector);
-        }, { once: true });
-    }
-    else {
-        updateEditPanel();
-    }
-});
-board.addEventListener(event_1.EventEnum.ShapesDeselected, e => {
-    updateEditPanel();
-});
-Object.assign(window, {
-    board, factory, mainView, Gaia: dist_1.Gaia, menu
-});
-const oncontextmenu = (e) => {
-    menu.move(e.x, e.y).show();
-    e.stopPropagation();
-    e.preventDefault();
-};
-const onkeydown = (e) => {
-    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-        const func = ctrlShorcuts.get(e.key);
-        if (func) {
-            func();
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    }
-    else if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
-        do {
-            const toolEnum = toolShortcuts.get(e.key);
-            if (toolEnum) {
-                board.setToolType(toolEnum);
-                e.stopPropagation();
-                e.preventDefault();
-                break;
-            }
-            const func = onekeyShorcuts.get(e.key);
-            if (func) {
-                func();
-                e.stopPropagation();
-                e.preventDefault();
-                break;
-            }
-        } while (false);
-    }
-};
-const toolShortcuts = new Map([
-    ['s', dist_1.ToolEnum.Selector],
-    ['p', dist_1.ToolEnum.Pen],
-    ['r', dist_1.ToolEnum.Rect],
-    ['o', dist_1.ToolEnum.Oval],
-    ['t', dist_1.ToolEnum.Text],
-    ['z', dist_1.ToolEnum.Tick],
-    ['c', dist_1.ToolEnum.Cross],
-    ['x', dist_1.ToolEnum.HalfTick],
-    ['l', dist_1.ToolEnum.Lines]
-]);
-const onekeyShorcuts = new Map([
-    ['Delete', () => {
-            board.removeSelected(true);
-        }]
-]);
-const ctrlShorcuts = new Map([
-    ['a', () => board.selectAll(true)],
-    ['d', () => board.deselect(true)],
-]);
-board.addEventListener(event_1.EventEnum.LayerAdded, e => {
-    e.detail.onscreen.addEventListener('keydown', onkeydown);
-    e.detail.onscreen.addEventListener('contextmenu', oncontextmenu);
-});
-board.addEventListener(event_1.EventEnum.LayerRemoved, e => {
-    e.detail.onscreen.removeEventListener('keydown', onkeydown);
-    e.detail.onscreen.removeEventListener('contextmenu', oncontextmenu);
-});
-board.layers.forEach(layer => {
-    layer.onscreen.addEventListener('keydown', onkeydown);
-    layer.onscreen.addEventListener('contextmenu', oncontextmenu);
-});
-window.addEventListener('keydown', e => {
-    if (e.ctrlKey && e.key === 'a') {
+        editPanel.state.value.needFill = needFill;
+        editPanel.state.value.needStroke = needStroke;
+        editPanel.state.value.needText = needText;
+        editPanel.state.value.needImg = needImg;
+        editPanel.state.value.lineWidth = lineWidth !== null && lineWidth !== void 0 ? lineWidth : undefined;
+        editPanel.state.value.fontSize = fontSize !== null && fontSize !== void 0 ? fontSize : undefined;
+    };
+    board.addEventListener(event_1.EventEnum.ShapesSelected, e => updateEditPanel());
+    board.addEventListener(event_1.EventEnum.ShapesDeselected, e => updateEditPanel());
+    Object.assign(window, { board, factory, mainView, Gaia: dist_1.Gaia, menu });
+    const oncontextmenu = (e) => {
+        menu.move(e.x, e.y).show();
         e.stopPropagation();
-    }
-});
-const init = (ttt) => {
-    var _a, _b, _c, _d, _e;
-    board.removeAll(false);
-    const img_header = ((_a = board.find('img_header')) !== null && _a !== void 0 ? _a : board.factory.newShape(dist_1.ShapeEnum.Img));
-    const imgd_header = img_header.data.copy();
-    imgd_header.id = 'img_header';
-    imgd_header.src = ttt.main_pic.src;
-    imgd_header.x = 0;
-    imgd_header.y = 0;
-    imgd_header.w = headerPicWidth;
-    imgd_header.h = headerPicHeight;
-    imgd_header.layer = board.layer().id;
-    imgd_header.objectFit = dist_1.ObjectFit.Cover;
-    img_header.merge(imgd_header);
-    img_header.board || board.add(img_header, true);
-    const img_logo = ((_b = board.find('img_logo')) !== null && _b !== void 0 ? _b : board.factory.newShape(dist_1.ShapeEnum.Img));
-    const imgd_logo = img_logo.data.copy();
-    imgd_logo.id = 'img_logo';
-    imgd_logo.src = ttt.logo_img.src;
-    imgd_logo.w = ttt.logo_img.w;
-    imgd_logo.h = ttt.logo_img.h;
-    imgd_logo.x = resultWidth - ttt.logo_img.w - 15;
-    imgd_logo.y = resultHeight - ttt.logo_img.h - 15;
-    imgd_logo.layer = board.layer().id;
-    imgd_logo.objectFit = dist_1.ObjectFit.Cover;
-    img_logo.merge(imgd_logo);
-    img_logo.board || board.add(img_logo, true);
-    const txt_main_offset_y = 40;
-    const txt_main = ((_c = board.find('txt_content')) !== null && _c !== void 0 ? _c : board.factory.newShape(dist_1.ShapeEnum.Text));
-    const txtd_main = txt_main.data.copy();
-    txtd_main.id = 'txt_content';
-    txtd_main.x = 20;
-    txtd_main.y = headerPicHeight + txt_main_offset_y;
-    txtd_main.layer = board.layer().id;
-    txtd_main.fillStyle = '#000000';
-    txtd_main.font_size = 32;
-    txtd_main.text = ttt.main_txt.text;
-    txt_main.merge(txtd_main);
-    txt_main.board || board.add(txt_main, true);
-    const now = new Date();
-    const txt_date = ((_d = board.find('txt_date')) !== null && _d !== void 0 ? _d : board.factory.newShape(dist_1.ShapeEnum.Text));
-    const txtd_date = txt_date.data.copy();
-    txtd_date.id = 'txt_date';
-    txtd_date.x = 20;
-    txtd_date.y = resultHeight - 48 - 40;
-    txtd_date.layer = board.layer().id;
-    txtd_date.font_size = 48;
-    txtd_date.text = '' + now.getDate() + '.' + (now.getMonth() + 1);
-    txt_date.merge(txtd_date);
-    txt_date.merge(txtd_date);
-    txt_date.board || board.add(txt_date, true);
-    const weekDay = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-    const txt_week_and_year = ((_e = board.find('txt_week_and_year')) !== null && _e !== void 0 ? _e : board.factory.newShape(dist_1.ShapeEnum.Text));
-    const txtd_week_and_year = txt_week_and_year.data.copy();
-    txtd_week_and_year.id = 'txt_week_and_year';
-    txtd_week_and_year.x = 20;
-    txtd_week_and_year.y = resultHeight - 12 - 20;
-    txtd_week_and_year.layer = board.layer().id;
-    txtd_week_and_year.font_size = 12;
-    txtd_week_and_year.text = weekDay[now.getDay()] + '. ' + now.getFullYear();
-    txt_week_and_year.merge(txtd_week_and_year);
-    txt_week_and_year.merge(txtd_week_and_year);
-    txt_week_and_year.board || board.add(txt_week_and_year, true);
-};
-const templateText = board.factory.shapeTemplate(dist_1.ShapeEnum.Text);
-templateText.font_family = 'PingFang SC, Microsoft Yahei';
-templateText.fillStyle = '#000000';
-const main_pics = new Shiftable_1.Shiftable([
-    './calendar_phrases/main_pics/header_0.jpg',
-    './calendar_phrases/main_pics/header_1.jpg',
-    './calendar_phrases/main_pics/header_2.jpg',
-    './calendar_phrases/main_pics/header_3.jpg',
-]);
-const main_txts = new Shiftable_1.Shiftable([
-    '垂死病中惊坐起，笑问客从何处来',
-    '少壮不努力，自挂东南枝叶',
-    '长亭外，古道边，一行白鹭上青天',
-    '"hello, world"',
-]);
-const builtins = new Shiftable_1.Shiftable([{
-        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
-        main_pic: { src: main_pics.next() },
-        main_txt: { text: main_txts.next() }
-    }, {
-        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
-        main_pic: { src: main_pics.next() },
-        main_txt: { text: main_txts.next() }
-    }, {
-        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
-        main_pic: { src: main_pics.next() },
-        main_txt: { text: main_txts.next() }
-    }, {
-        logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
-        main_pic: { src: main_pics.next() },
-        main_txt: { text: main_txts.next() }
-    }]);
-const btnNext = new Button_1.Button().init({ content: '符号', size: SizeType_1.SizeType.Large });
-btnNext.addEventListener('click', () => {
-    init(builtins.next());
-});
-btnNext.inner.click();
-const btnExport = new Button_1.Button().init({ content: '下载', size: SizeType_1.SizeType.Large });
-btnExport.addEventListener('click', () => download());
-const bottomRow = new View_1.View('div');
-bottomRow.styles.addCls('g_cp_content_bottom_row');
-bottomRow.addChild(btnNext, btnExport);
-mainView.addChild(bottomRow);
-const download = () => {
-    board.deselect(true);
-    requestAnimationFrame(() => {
-        const l = board.layer().onscreen;
-        const c = document.createElement('canvas');
-        c.width = l.width;
-        c.height = l.height;
-        c.getContext('2d').fillStyle = 'white';
-        c.getContext('2d').fillRect(0, 0, l.width, l.height);
-        c.getContext('2d').drawImage(l, 0, 0, l.width, l.height);
-        const a = document.createElement('a');
-        a.href = c.toDataURL('image/png');
-        a.download = '' + Date.now() + '.png';
-        a.click();
+        e.preventDefault();
+    };
+    const onkeydown = (e) => {
+        let type;
+        if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+            type = 'ctrl'; // 快捷键： ctrl + key
+        }
+        else if (!e.ctrlKey && e.shiftKey && !e.altKey) {
+            type = 'shift'; // 快捷键： alt + key
+        }
+        else if (!e.ctrlKey && !e.shiftKey && e.altKey) {
+            type = 'alt'; // 快捷键： alt + key
+        }
+        else {
+            type = 'single'; // 快捷键： key
+        }
+        const func = shortcuts[type].get(e.key);
+        if (!func || func(e) === true) {
+            return;
+        } // func返回true时，意味着不要拦截默认事件。
+        e.stopPropagation();
+        e.preventDefault();
+    };
+    const moveShapes = (e) => {
+        const { selects, toolType } = board;
+        if (!selects) {
+            return true;
+        }
+        if (toolType !== dist_1.ToolEnum.Selector) {
+            board.toolType = dist_1.ToolEnum.Selector;
+        }
+        ;
+        let diffX = 0;
+        let diffY = 0;
+        /*
+        按着shift移动50像素
+        按着alt移动1像素
+        否则移动4像素
+        */
+        let diff = e.shiftKey ? 50 : e.altKey ? 1 : 5;
+        switch (e.key) {
+            case 'ArrowUp':
+                diffY = -diff;
+                break;
+            case 'ArrowDown':
+                diffY = diff;
+                break;
+            case 'ArrowLeft':
+                diffX = -diff;
+                break;
+            case 'ArrowRight':
+                diffX = diff;
+                break;
+            default: return true;
+        }
+        const selector = board.tool;
+        selector.connect(selects).moveBy(diffX, diffY).emitMovedEvent(true);
+        board.toolType = toolType;
+        board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形
+        return false;
+    };
+    const shortcuts = {
+        ctrl: new Map([
+            ['a', () => { board.selectAll(true); }],
+            ['d', () => { board.deselect(true); }],
+        ]),
+        shift: new Map([
+            ['ArrowUp', e => moveShapes(e)],
+            ['ArrowDown', e => moveShapes(e)],
+            ['ArrowLeft', e => moveShapes(e)],
+            ['ArrowRight', e => moveShapes(e)],
+        ]),
+        alt: new Map([
+            ['ArrowUp', e => moveShapes(e)],
+            ['ArrowDown', e => moveShapes(e)],
+            ['ArrowLeft', e => moveShapes(e)],
+            ['ArrowRight', e => moveShapes(e)],
+        ]),
+        single: new Map([
+            ['Delete', () => board.removeSelected(true)],
+            ['s', () => board.setToolType(dist_1.ToolEnum.Selector)],
+            ['p', () => board.setToolType(dist_1.ToolEnum.Pen)],
+            ['r', () => board.setToolType(dist_1.ToolEnum.Rect)],
+            ['o', () => board.setToolType(dist_1.ToolEnum.Oval)],
+            ['t', () => board.setToolType(dist_1.ToolEnum.Text)],
+            ['z', () => board.setToolType(dist_1.ToolEnum.Tick)],
+            ['c', () => board.setToolType(dist_1.ToolEnum.Cross)],
+            ['x', () => board.setToolType(dist_1.ToolEnum.HalfTick)],
+            ['l', () => board.setToolType(dist_1.ToolEnum.Lines)],
+            ['ArrowUp', e => moveShapes(e)],
+            ['ArrowDown', e => moveShapes(e)],
+            ['ArrowLeft', e => moveShapes(e)],
+            ['ArrowRight', e => moveShapes(e)],
+        ]),
+    };
+    blackboard.addEventListener('keydown', onkeydown);
+    blackboard.addEventListener('contextmenu', oncontextmenu);
+    const init = (ttt) => {
+        var _a, _b, _c, _d, _e;
+        board.removeAll(false);
+        const img_header = ((_a = board.find('img_header')) !== null && _a !== void 0 ? _a : board.factory.newShape(dist_1.ShapeEnum.Img));
+        const imgd_header = img_header.data.copy();
+        imgd_header.id = 'img_header';
+        imgd_header.src = ttt.main_pic.src;
+        imgd_header.x = 0;
+        imgd_header.y = 0;
+        imgd_header.w = headerPicWidth;
+        imgd_header.h = headerPicHeight;
+        imgd_header.layer = board.layer().id;
+        imgd_header.objectFit = dist_1.ObjectFit.Cover;
+        img_header.merge(imgd_header);
+        img_header.board || board.add(img_header, true);
+        const img_logo = ((_b = board.find('img_logo')) !== null && _b !== void 0 ? _b : board.factory.newShape(dist_1.ShapeEnum.Img));
+        const imgd_logo = img_logo.data.copy();
+        imgd_logo.id = 'img_logo';
+        imgd_logo.src = ttt.logo_img.src;
+        imgd_logo.w = ttt.logo_img.w;
+        imgd_logo.h = ttt.logo_img.h;
+        imgd_logo.x = resultWidth - ttt.logo_img.w - 15;
+        imgd_logo.y = resultHeight - ttt.logo_img.h - 15;
+        imgd_logo.layer = board.layer().id;
+        imgd_logo.objectFit = dist_1.ObjectFit.Cover;
+        img_logo.merge(imgd_logo);
+        img_logo.board || board.add(img_logo, true);
+        const txt_main_offset_y = 40;
+        const txt_main = ((_c = board.find('txt_content')) !== null && _c !== void 0 ? _c : board.factory.newShape(dist_1.ShapeEnum.Text));
+        const txtd_main = txt_main.data.copy();
+        txtd_main.id = 'txt_content';
+        txtd_main.x = 20;
+        txtd_main.y = headerPicHeight + txt_main_offset_y;
+        txtd_main.layer = board.layer().id;
+        txtd_main.fillStyle = '#000000';
+        txtd_main.font_size = 32;
+        txtd_main.text = ttt.main_txt.text;
+        txt_main.merge(txtd_main);
+        txt_main.board || board.add(txt_main, true);
+        const now = new Date();
+        const txt_date = ((_d = board.find('txt_date')) !== null && _d !== void 0 ? _d : board.factory.newShape(dist_1.ShapeEnum.Text));
+        const txtd_date = txt_date.data.copy();
+        txtd_date.id = 'txt_date';
+        txtd_date.x = 20;
+        txtd_date.y = resultHeight - 48 - 40;
+        txtd_date.layer = board.layer().id;
+        txtd_date.font_size = 48;
+        txtd_date.text = '' + now.getDate() + '.' + (now.getMonth() + 1);
+        txt_date.merge(txtd_date);
+        txt_date.merge(txtd_date);
+        txt_date.board || board.add(txt_date, true);
+        const weekDay = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+        const txt_week_and_year = ((_e = board.find('txt_week_and_year')) !== null && _e !== void 0 ? _e : board.factory.newShape(dist_1.ShapeEnum.Text));
+        const txtd_week_and_year = txt_week_and_year.data.copy();
+        txtd_week_and_year.id = 'txt_week_and_year';
+        txtd_week_and_year.x = 20;
+        txtd_week_and_year.y = resultHeight - 12 - 20;
+        txtd_week_and_year.layer = board.layer().id;
+        txtd_week_and_year.font_size = 12;
+        txtd_week_and_year.text = weekDay[now.getDay()] + '. ' + now.getFullYear();
+        txt_week_and_year.merge(txtd_week_and_year);
+        txt_week_and_year.merge(txtd_week_and_year);
+        txt_week_and_year.board || board.add(txt_week_and_year, true);
+    };
+    const templateText = board.factory.shapeTemplate(dist_1.ShapeEnum.Text);
+    templateText.font_family = 'PingFang SC, Microsoft Yahei';
+    templateText.fillStyle = '#000000';
+    const main_pics = new Shiftable_1.Shiftable([
+        './calendar_phrases/main_pics/header_0.jpg',
+        './calendar_phrases/main_pics/header_1.jpg',
+        './calendar_phrases/main_pics/header_2.jpg',
+        './calendar_phrases/main_pics/header_3.jpg',
+    ]);
+    const main_txts = new Shiftable_1.Shiftable([
+        '垂死病中惊坐起，笑问客从何处来',
+        '少壮不努力，自挂东南枝叶',
+        '长亭外，古道边，一行白鹭上青天',
+        '"hello, world"',
+    ]);
+    const builtins = new Shiftable_1.Shiftable([{
+            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            main_pic: { src: main_pics.next() },
+            main_txt: { text: main_txts.next() }
+        }, {
+            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            main_pic: { src: main_pics.next() },
+            main_txt: { text: main_txts.next() }
+        }, {
+            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            main_pic: { src: main_pics.next() },
+            main_txt: { text: main_txts.next() }
+        }, {
+            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            main_pic: { src: main_pics.next() },
+            main_txt: { text: main_txts.next() }
+        }]);
+    const btnNext = new Button_1.Button().init({ content: '符号', size: SizeType_1.SizeType.Large });
+    btnNext.addEventListener('click', () => {
+        init(builtins.next());
     });
-};
-board.setToolType(dist_1.ToolEnum.Selector);
+    btnNext.inner.click();
+    const btnExport = new Button_1.Button().init({ content: '下载', size: SizeType_1.SizeType.Large });
+    btnExport.addEventListener('click', () => download());
+    const bottomRow = new View_1.View('div');
+    bottomRow.styles.addCls('g_cp_content_bottom_row');
+    bottomRow.addChild(btnNext, btnExport);
+    mainView.addChild(bottomRow);
+    const download = () => {
+        board.deselect(true);
+        requestAnimationFrame(() => {
+            const l = board.layer().onscreen;
+            const c = document.createElement('canvas');
+            c.width = l.width;
+            c.height = l.height;
+            c.getContext('2d').fillStyle = 'white';
+            c.getContext('2d').fillRect(0, 0, l.width, l.height);
+            c.getContext('2d').drawImage(l, 0, 0, l.width, l.height);
+            const a = document.createElement('a');
+            a.href = c.toDataURL('image/png');
+            a.download = '' + Date.now() + '.png';
+            a.click();
+        });
+    };
+    board.setToolType(dist_1.ToolEnum.Selector);
+}
 
 },{"../../dist":31,"../../dist/event":26,"./EditPanel":1,"./G/BaseView/Button":2,"./G/BaseView/SizeType":5,"./G/BaseView/Styles":7,"./G/BaseView/View":9,"./G/CompoundView/Menu":13,"./Shiftable":19}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
 const event_1 = require("../event");
+const shape_1 = require("../shape");
 const tools_1 = require("../tools");
 const utils_1 = require("../utils");
 const Layer_1 = require("./Layer");
@@ -1784,9 +1795,6 @@ class Board {
             layer.width = this.width;
             layer.height = this.height;
             layer.onscreen.style.pointerEvents = 'none';
-            layer.onscreen.addEventListener('pointerdown', this.pointerdown);
-            layer.onscreen.addEventListener('pointermove', this.pointermove);
-            layer.onscreen.addEventListener('pointerup', this.pointerup);
             this._element.appendChild(layer.onscreen);
             this._layers.set(layer.info.id, layer);
             this.dispatchEvent(new CustomEvent(event_1.EventEnum.LayerAdded, { detail: layer }));
@@ -1805,9 +1813,6 @@ class Board {
             return false;
         }
         this._layers.delete(layerId);
-        layer.onscreen.removeEventListener('pointerdown', this.pointerdown);
-        layer.onscreen.removeEventListener('pointermove', this.pointermove);
-        layer.onscreen.removeEventListener('pointerup', this.pointerup);
         this._element.removeChild(layer.onscreen);
         this.dispatchEvent(new CustomEvent(event_1.EventEnum.LayerRemoved, { detail: layer }));
         return true;
@@ -1858,6 +1863,9 @@ class Board {
         };
         this.pointermove = (e) => {
             var _a, _b;
+            if (!this._mousedown) {
+                return;
+            }
             if (this._mousedown) {
                 (_a = this.tool) === null || _a === void 0 ? void 0 : _a.pointerDraw(this.getDot(e));
             }
@@ -1868,6 +1876,9 @@ class Board {
         };
         this.pointerup = (e) => {
             var _a;
+            if (!this._mousedown) {
+                return;
+            }
             this._mousedown = false;
             (_a = this.tool) === null || _a === void 0 ? void 0 : _a.pointerUp(this.getDot(e));
             e.stopPropagation();
@@ -1888,11 +1899,11 @@ class Board {
             });
         }
         this.addLayers(layers);
+        this._element.addEventListener('pointerdown', this.pointerdown);
+        this._element.tabIndex = 0;
+        this._element.style.outline = 'none';
         window.addEventListener('pointermove', this.pointermove);
         window.addEventListener('pointerup', this.pointerup);
-    }
-    finds(ids) {
-        return this._shapesMgr.finds(ids);
     }
     find(id) {
         return this._shapesMgr.find(id);
@@ -1966,14 +1977,35 @@ class Board {
     get toolType() { return this._toolType; }
     set toolType(v) { this.setToolType(v); }
     setToolType(to) {
-        if (this._toolType === to)
+        var _a;
+        if (this._toolType === to) {
+            /*
+            Note：
+              使用选择器工具，双击文本编辑文本时，会切换至文本工具。
+              这种情况下，文本编辑框失去焦点时，切回选择器工具。
+              为了避免使用者在这种状态下，主动选择文本工具后，被切回选择器工具。
+              这里将相关回调移除。
+            */
+            if (this._tool instanceof shape_1.TextTool && this._tool.selectorCallback) {
+                this._tool.editor.removeEventListener('blur', this._tool.selectorCallback);
+            }
             return;
+        }
         const from = this._toolType;
         this._toolType = to;
         this.emitEvent(event_1.EventEnum.ToolChanged, {
             operator: this._operator,
             from, to
         });
+        (_a = this._tool) === null || _a === void 0 ? void 0 : _a.end();
+        this._tool = this._factory.newTool(to);
+        if (!this._tool) {
+            console.error('toolType not supported. got ', to);
+            return;
+        }
+        this._tool.board = this;
+        this._tools[to] = this._tool;
+        this._tool.start();
     }
     get selects() {
         return this._selects;
@@ -2027,7 +2059,7 @@ class Board {
      * @memberof Board
      */
     selectAll(emit) {
-        return this.setSelects(this.shapes(), emit)[0];
+        return this.setSelects([...this.shapes()], emit)[0];
     }
     /**
      * 取消选择
@@ -2077,20 +2109,7 @@ class Board {
         };
     }
     get tools() { return this._tools; }
-    get tool() {
-        var _a;
-        const toolType = this._toolType;
-        if (!this._tool || this._tool.type !== toolType) {
-            (_a = this._tool) === null || _a === void 0 ? void 0 : _a.end();
-            this._tool = this._factory.newTool(toolType);
-            if (this._tool) {
-                this._tool.board = this;
-                this._tools[toolType] = this._tool;
-                this._tool.start();
-            }
-        }
-        return this._tool;
-    }
+    get tool() { return this._tool; }
     markDirty(rect) {
         const requestRender = !this._dirty;
         this._dirty = this._dirty ? utils_1.Rect.bounds(this._dirty, rect) : rect;
@@ -2121,10 +2140,24 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":26,"../tools":89,"../utils":100,"./Layer":22}],22:[function(require,module,exports){
+},{"../event":26,"../shape":54,"../tools":89,"../utils":101,"./Layer":22}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
+const Css_1 = require("../utils/Css");
+Css_1.Css.add(`
+// whiteboard STYLES
+.g_whiteboard_layer {
+  position: absolute;
+  touchAction: none;
+  userSelect: none;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  transition: opacity 200ms;
+  outline: none;
+}`);
 class LayerInfo {
     constructor(inits) {
         this.id = inits.id;
@@ -2156,20 +2189,8 @@ class Layer {
         this._onscreen = (_a = inits.onscreen) !== null && _a !== void 0 ? _a : document.createElement('canvas');
         this._onscreen.setAttribute('layer_id', this.id);
         this._onscreen.setAttribute('layer_name', this.name);
-        this._onscreen.tabIndex = 0;
         this._onscreen.draggable = false;
-        this._onscreen.style.position = 'absolute';
-        this._onscreen.style.touchAction = 'none';
-        this._onscreen.style.userSelect = 'none';
-        this._onscreen.style.left = '0px';
-        this._onscreen.style.right = '0px';
-        this._onscreen.style.top = '0px';
-        this._onscreen.style.bottom = '0px';
-        this._onscreen.style.transition = 'opacity 200ms';
-        this._onscreen.style.outline = 'none';
-        this._onscreen.addEventListener('pointerdown', () => {
-            this._onscreen.focus();
-        }, { passive: true });
+        this._onscreen.classList.add('g_whiteboard_layer');
         this._ctx = this._onscreen.getContext('2d');
         this._offscreen = document.createElement('canvas');
         this._offscreen.width = this._onscreen.width;
@@ -2193,7 +2214,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{}],23:[function(require,module,exports){
+},{"../utils/Css":94}],23:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2494,7 +2515,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":23,"./features":30,"./mgr":36,"./shape":54,"./tools":89,"./utils":100}],32:[function(require,module,exports){
+},{"./board":23,"./features":30,"./mgr":36,"./shape":54,"./tools":89,"./utils":101}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultFactory = void 0;
@@ -2701,16 +2722,8 @@ class DefaultShapesMgr {
         this._items = [];
         this._kvs = {};
     }
-    finds(ids) {
-        const ret = [];
-        ids.forEach(id => {
-            const shape = this._kvs[id];
-            shape && ret.push(shape);
-        });
-        return ret;
-    }
     find(id) {
-        return this._kvs[id];
+        return this._kvs[id] || null;
     }
     shapes() { return this._items; }
     exists(...items) {
@@ -2762,11 +2775,12 @@ class DefaultShapesMgr {
             if (Rect_1.Rect.hit(v.data, rect))
                 return v;
         }
+        return null;
     }
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/Rect":97}],36:[function(require,module,exports){
+},{"../utils/Rect":98}],36:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3228,7 +3242,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":97}],40:[function(require,module,exports){
+},{"../../utils/Rect":98}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -4669,7 +4683,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/Gaia":34,"../../utils/Rect":97,"../ShapeEnum":37,"../base":41,"./Data":75,"./TextSelection":77}],77:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../utils/Rect":98,"../ShapeEnum":37,"../base":41,"./Data":75,"./TextSelection":77}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -4690,11 +4704,26 @@ exports.TextSelection = TextSelection;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
-const Gaia_1 = require("../../mgr/Gaia");
-const ShapeEnum_1 = require("../ShapeEnum");
-const ToolEnum_1 = require("../../tools/ToolEnum");
 const event_1 = require("../../event");
-const Tag = '[TextTool]';
+const Gaia_1 = require("../../mgr/Gaia");
+const ToolEnum_1 = require("../../tools/ToolEnum");
+const Css_1 = require("../../utils/Css");
+const ShapeEnum_1 = require("../ShapeEnum");
+Css_1.Css.add(`
+.g_whiteboard_text_editor {
+  display: none;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  boxSizing: border-box;
+  outline: none;
+  border: none;
+  resize: none;
+  padding: 0px;
+  margin: 0px;
+  transition: none;
+  opacity: 0%;
+}`);
 class TextTool {
     set curShape(shape) {
         const preShape = this._curShape;
@@ -4753,6 +4782,9 @@ class TextTool {
                 shapeDatas: [[curr, prev]]
             });
         };
+        this._docPointerdown = (e) => {
+            this.curShape = undefined;
+        };
         this._keydown = (e) => {
             if (e.ctrlKey && e.key === 'Enter') {
                 this.curShape = undefined;
@@ -4760,30 +4792,22 @@ class TextTool {
             else if (e.key === 'Escape') {
                 this.curShape = undefined;
             }
+            e.stopPropagation();
         };
         this._editor.wrap = 'off';
-        this._editor.style.display = 'none';
-        this._editor.style.position = 'absolute';
-        this._editor.style.left = '0px';
-        this._editor.style.top = '0px';
-        this._editor.style.boxSizing = 'border-box';
-        this._editor.style.outline = 'none';
-        this._editor.style.border = 'none';
-        this._editor.style.resize = 'none';
-        this._editor.style.padding = '0px';
-        this._editor.style.margin = '0px';
-        this._editor.style.transition = 'none';
-        this._editor.style.opacity = '0%';
+        this._editor.classList.add('g_whiteboard_text_editor');
     }
     start() {
         this._editor.addEventListener('keydown', this._keydown);
         this._editor.addEventListener('input', this._updateShapeText);
         document.addEventListener('selectionchange', this._updateShapeText);
+        document.addEventListener('pointerdown', this._docPointerdown);
     }
     end() {
         this._editor.removeEventListener('keydown', this._keydown);
         this._editor.removeEventListener('input', this._updateShapeText);
         document.removeEventListener('selectionchange', this._updateShapeText);
+        document.removeEventListener('pointerdown', this._docPointerdown);
         this.curShape = undefined;
     }
     get type() { return ToolEnum_1.ToolEnum.Text; }
@@ -4823,11 +4847,11 @@ class TextTool {
             board.add(newShapeText, true);
             shapeText = newShapeText;
         }
-        this.connectShapeText(shapeText);
+        this.connect(shapeText);
     }
     pointerDraw(dot) { }
     pointerUp(dot) { }
-    connectShapeText(shapeText) {
+    connect(shapeText) {
         const { board } = this;
         if (!board) {
             return;
@@ -4839,7 +4863,7 @@ class TextTool {
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../ShapeEnum":37}],79:[function(require,module,exports){
+},{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../utils/Css":94,"../ShapeEnum":37}],79:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5108,7 +5132,7 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":26,"../../utils/RectHelper":98}],87:[function(require,module,exports){
+},{"../../event":26,"../../utils/RectHelper":99}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -5163,14 +5187,19 @@ const Data_1 = require("../../shape/base/Data");
 const Gaia_1 = require("../../mgr/Gaia");
 const Shape_1 = require("../../shape/rect/Shape");
 const ToolEnum_1 = require("../ToolEnum");
+const Vector_1 = require("../../utils/Vector");
 const Events_1 = require("../../event/Events");
 const event_1 = require("../../event");
+const shape_1 = require("../../shape");
 var SelectorStatus;
 (function (SelectorStatus) {
     SelectorStatus[SelectorStatus["Invalid"] = 0] = "Invalid";
-    SelectorStatus[SelectorStatus["Dragging"] = 1] = "Dragging";
-    SelectorStatus[SelectorStatus["Selecting"] = 2] = "Selecting";
-    SelectorStatus[SelectorStatus["Resizing"] = 3] = "Resizing";
+    SelectorStatus[SelectorStatus["ReadyForDragging"] = 1] = "ReadyForDragging";
+    SelectorStatus[SelectorStatus["Dragging"] = 2] = "Dragging";
+    SelectorStatus[SelectorStatus["ReadyForSelecting"] = 3] = "ReadyForSelecting";
+    SelectorStatus[SelectorStatus["Selecting"] = 4] = "Selecting";
+    SelectorStatus[SelectorStatus["ReadyForResizing"] = 5] = "ReadyForResizing";
+    SelectorStatus[SelectorStatus["Resizing"] = 6] = "Resizing";
 })(SelectorStatus = exports.SelectorStatus || (exports.SelectorStatus = {}));
 const Tag = '[SelectorTool]';
 class SelectorTool {
@@ -5179,6 +5208,7 @@ class SelectorTool {
     set board(v) { this._rect.board = v; }
     get rect() { return this._rectHelper; }
     constructor() {
+        this._doubleClickTimer = 0;
         this._rect = new Shape_1.ShapeRect(new Data_1.ShapeData);
         this._rectHelper = new RectHelper_1.RectHelper();
         this._status = SelectorStatus.Invalid;
@@ -5204,88 +5234,144 @@ class SelectorTool {
         }
         board.deselect(true);
     }
+    connect(shapes, startX, startY) {
+        let x = startX;
+        let y = startY;
+        this._shapes = shapes.map(v => {
+            const data = {
+                i: v.data.i,
+                x: v.data.x,
+                y: v.data.y
+            };
+            if (startX === undefined) {
+                x = x === undefined ? v.data.x : Math.min(x, v.data.x);
+                y = y === undefined ? v.data.y : Math.min(y, v.data.y);
+            }
+            return {
+                shape: v,
+                prevData: data
+            };
+        });
+        this._prevPos = { x: x, y: y };
+        return this;
+    }
+    move(curX, curY) {
+        return this.moveBy(curX - this._prevPos.x, curY - this._prevPos.y);
+    }
+    moveBy(diffX, diffY) {
+        this._prevPos.x += diffX;
+        this._prevPos.y += diffY;
+        this._shapes.forEach(v => {
+            v.prevData = Events_1.Events.pickShapePositionData(v.shape.data);
+            v.shape.moveBy(diffX, diffY);
+        });
+        return this;
+    }
     pointerDown(dot) {
-        const { x, y } = dot;
-        this._prevPos = { x, y };
-        const board = this.board;
-        if (!board)
+        const { board, _status } = this;
+        if (!board || _status !== SelectorStatus.Invalid) {
             return;
-        switch (this._status) {
-            case SelectorStatus.Invalid:
-                this._rectHelper.start(x, y);
-                this.updateGeo();
-                const shape = board.hit({ x, y, w: 0, h: 0 });
-                if (!shape) {
-                    // 点击的位置无任何图形，则框选图形, 并取消选择以选择的图形
-                    this._status = SelectorStatus.Selecting;
-                    this._rect.visible = true;
-                    this.deselect();
-                }
-                else if (!shape.selected) {
-                    // 点击位置存在图形，且图形未被选择，则选择点中的图形。
-                    this._status = SelectorStatus.Dragging;
-                    board.setSelects([shape], true);
-                }
-                else {
-                    // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
-                    const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
-                    if (direction) {
-                        this._resizerRect = resizerRect;
-                        this._status = SelectorStatus.Resizing;
-                        board.setSelects([shape], true);
-                    }
-                    else {
-                        this._status = SelectorStatus.Dragging;
-                    }
-                }
-                this._shapes = board.selects.map(v => {
-                    const data = {
-                        i: v.data.i,
-                        x: v.data.x,
-                        y: v.data.y
-                    };
-                    return {
-                        shape: v,
-                        prevData: data
-                    };
-                });
-                return;
         }
+        const { x, y } = dot;
+        this._rectHelper.start(x, y);
+        this.updateGeo();
+        const shape = board.hit({ x, y, w: 0, h: 0 });
+        if (!shape) {
+            // 点击的位置无任何图形，则框选图形, 并取消选择以选择的图形
+            this._status = SelectorStatus.ReadyForSelecting;
+            this._rect.visible = true;
+            this.deselect();
+        }
+        else if (!shape.selected) {
+            // 点击位置存在图形，且图形未被选择，则选择点中的图形。
+            this._status = SelectorStatus.ReadyForDragging;
+            board.setSelects([shape], true);
+        }
+        else {
+            // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
+            const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
+            if (direction) {
+                this._resizerRect = resizerRect;
+                this._status = SelectorStatus.ReadyForResizing;
+                board.setSelects([shape], true);
+            }
+            else {
+                this._status = SelectorStatus.ReadyForDragging;
+            }
+        }
+        this.connect(board.selects, x, y);
     }
     pointerMove() { }
     pointerDraw(dot) {
-        const diffX = dot.x - this._prevPos.x;
-        const diffY = dot.y - this._prevPos.y;
-        this._prevPos = dot;
         const board = this.board;
         if (!board)
             return;
         switch (this._status) {
+            case SelectorStatus.ReadyForSelecting: // let it fall-through
+                if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
+                    return;
+                }
             case SelectorStatus.Selecting: {
+                this._status = SelectorStatus.Selecting;
                 this._rectHelper.end(dot.x, dot.y);
                 this.updateGeo();
                 board.selectAt(this._rect.data, true);
                 return;
             }
+            case SelectorStatus.ReadyForDragging: // let it fall-through
+                if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
+                    return;
+                }
             case SelectorStatus.Dragging: {
-                this._shapes.forEach(v => {
-                    v.prevData = Events_1.Events.pickShapePositionData(v.shape.data);
-                    v.shape.moveBy(diffX, diffY);
-                });
-                this.emitMovedEvent(false);
+                this._status = SelectorStatus.Dragging;
+                this.move(dot.x, dot.y).emitMovedEvent(false);
                 return;
             }
+            case SelectorStatus.ReadyForResizing: // let it fall-through
+                if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
+                    return;
+                }
             case SelectorStatus.Resizing: {
+                this._status = SelectorStatus.Resizing;
                 this.emitMovedEvent(false);
                 return;
             }
         }
     }
     pointerUp() {
-        this._status = SelectorStatus.Invalid;
+        if (this._status === SelectorStatus.ReadyForDragging) {
+            // 双击判定
+            if (!this._doubleClickTimer) {
+                this._doubleClickTimer = setTimeout(() => this._doubleClickTimer = 0, 500);
+            }
+            else {
+                clearTimeout(this._doubleClickTimer);
+                this._doubleClickTimer = 0;
+                this.doubleClick();
+            }
+        }
+        if (this._status === SelectorStatus.Dragging) {
+            this.emitMovedEvent(true);
+        }
         this._rect.visible = false;
         this._rectHelper.clear();
-        this.emitMovedEvent(true);
+        this._status = SelectorStatus.Invalid;
+    }
+    doubleClick() {
+        const { board } = this;
+        if (!board) {
+            return;
+        }
+        ;
+        console.log(this._shapes.length);
+        // 双击某个文本时，切换到文本编辑工具，编辑此文本，当文本编辑框失去焦点时，回到选择器工具；
+        if (this._shapes.length && this._shapes[0].shape instanceof shape_1.ShapeText) {
+            board.setToolType(ToolEnum_1.ToolEnum.Text);
+            const textTool = board.tool;
+            textTool.selectorCallback = () => board.setToolType(ToolEnum_1.ToolEnum.Selector);
+            textTool.editor.addEventListener('blur', textTool.selectorCallback, { once: true });
+            textTool.connect(this._shapes[0].shape);
+        }
     }
     emitMovedEvent(immediately) {
         if (this._waiting && !immediately)
@@ -5315,7 +5401,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'selector'
 });
 
-},{"../../event":26,"../../event/Events":25,"../../mgr/Gaia":34,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils/RectHelper":98,"../ToolEnum":84}],91:[function(require,module,exports){
+},{"../../event":26,"../../event/Events":25,"../../mgr/Gaia":34,"../../shape":54,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils/RectHelper":99,"../../utils/Vector":100,"../ToolEnum":84}],91:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5516,12 +5602,31 @@ exports.BinaryTree = BinaryTree;
 },{"./BinaryRange":92}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Css = void 0;
+const style_element_id = 'g_whiteboard_styles';
+var Css;
+(function (Css) {
+    function add(style) {
+        let ele = document.getElementById(style_element_id);
+        if (!ele || ele.tagName !== 'STYLE') {
+            ele = document.createElement('style');
+            ele.id = style_element_id;
+            document.head.append(ele);
+        }
+        ele.innerHTML += style;
+    }
+    Css.add = add;
+})(Css = exports.Css || (exports.Css = {}));
 
 },{}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
 },{}],96:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -5752,7 +5857,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":97}],97:[function(require,module,exports){
+},{"./Rect":98}],98:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -5827,7 +5932,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],98:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -5879,7 +5984,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":99}],99:[function(require,module,exports){
+},{"./Vector":100}],100:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -5903,10 +6008,13 @@ class Vector {
         return Math.sqrt(Math.pow(v0.x - v1.x, 2) +
             Math.pow(v0.y - v1.y, 2));
     }
+    static manhattan(v0, v1) {
+        return Math.abs(v0.x - v1.x) + Math.abs(v0.y - v1.y);
+    }
 }
 exports.Vector = Vector;
 
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5936,4 +6044,4 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 
-},{"./BinaryRange":92,"./BinaryTree":93,"./Dot":94,"./ITree":95,"./QuadTree":96,"./Rect":97,"./Vector":99}]},{},[20]);
+},{"./BinaryRange":92,"./BinaryTree":93,"./Dot":95,"./ITree":96,"./QuadTree":97,"./Rect":98,"./Vector":100}]},{},[20]);

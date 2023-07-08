@@ -23,4 +23,7 @@ export class Vector implements IVector {
       Math.pow(v0.y - v1.y, 2)
     )
   }
+  static manhattan(v0: IVector, v1: IVector): number {
+    return Math.abs(v0.x - v1.x) + Math.abs(v0.y - v1.y);
+  }
 }

@@ -1,17 +1,34 @@
-import { Gaia } from "../../mgr/Gaia"
-import { ShapeEnum } from "../ShapeEnum"
-import { ToolEnum } from "../../tools/ToolEnum"
 import { Board } from "../../board"
-import { ShapeText } from "./Shape"
+import { EventEnum } from "../../event"
+import { Gaia } from "../../mgr/Gaia"
+import { ToolEnum } from "../../tools/ToolEnum"
 import { ITool } from "../../tools/base/Tool"
+import { Css } from "../../utils/Css"
 import { IDot } from "../../utils/Dot"
-import { EventEnum, Events } from "../../event"
-const Tag = '[TextTool]'
+import { ShapeEnum } from "../ShapeEnum"
+import { ShapeText } from "./Shape"
+
+Css.add(`
+.g_whiteboard_text_editor {
+  display: none;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  boxSizing: border-box;
+  outline: none;
+  border: none;
+  resize: none;
+  padding: 0px;
+  margin: 0px;
+  transition: none;
+  opacity: 0%;
+}`)
 
 export class TextTool implements ITool {
   private _board: Board | undefined
   private _curShape: ShapeText | undefined
   private _editor = document.createElement('textarea')
+  selectorCallback?: (this: HTMLTextAreaElement, ev: FocusEvent) => void
   private set curShape(shape: ShapeText | undefined) {
     const preShape = this._curShape;
     if (preShape === shape) return;
@@ -69,30 +86,24 @@ export class TextTool implements ITool {
   }
 
   constructor() {
-    this._editor.wrap = 'off'
-    this._editor.style.display = 'none'
-    this._editor.style.position = 'absolute'
-    this._editor.style.left = '0px'
-    this._editor.style.top = '0px'
-    this._editor.style.boxSizing = 'border-box'
-    this._editor.style.outline = 'none'
-    this._editor.style.border = 'none'
-    this._editor.style.resize = 'none'
-    this._editor.style.padding = '0px'
-    this._editor.style.margin = '0px'
-    this._editor.style.transition = 'none'
-    this._editor.style.opacity = '0%'
+    this._editor.wrap = 'off';
+    this._editor.classList.add('g_whiteboard_text_editor');
   }
 
   start(): void {
     this._editor.addEventListener('keydown', this._keydown)
     this._editor.addEventListener('input', this._updateShapeText)
     document.addEventListener('selectionchange', this._updateShapeText)
+    document.addEventListener('pointerdown', this._docPointerdown)
   }
   end(): void {
     this._editor.removeEventListener('keydown', this._keydown)
     this._editor.removeEventListener('input', this._updateShapeText)
     document.removeEventListener('selectionchange', this._updateShapeText)
+    document.removeEventListener('pointerdown', this._docPointerdown)
+    this.curShape = undefined;
+  }
+  private _docPointerdown = (e: PointerEvent) => {
     this.curShape = undefined;
   }
   private _keydown = (e: KeyboardEvent) => {
@@ -101,6 +112,7 @@ export class TextTool implements ITool {
     } else if (e.key === 'Escape') {
       this.curShape = undefined;
     }
+    e.stopPropagation()
   }
   get type() { return ToolEnum.Text }
   get board(): Board | undefined {
@@ -136,12 +148,12 @@ export class TextTool implements ITool {
       board.add(newShapeText, true)
       shapeText = newShapeText
     }
-    this.connectShapeText(shapeText);
+    this.connect(shapeText);
   }
   pointerDraw(dot: IDot): void { }
   pointerUp(dot: IDot): void { }
 
-  connectShapeText(shapeText: ShapeText): void {
+  connect(shapeText: ShapeText): void {
     const { board } = this;
     if (!board) { return; }
     this.curShape = shapeText
