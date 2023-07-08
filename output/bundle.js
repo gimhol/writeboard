@@ -303,14 +303,15 @@ exports.autoPxKeys = new Set([
 },{}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Styles = void 0;
+exports.Styles = exports.flag = void 0;
 const StyleType_1 = require("./StyleType");
 const utils_1 = require("../utils");
+exports.flag = 2;
 class Styles {
     static css(...hrefs) {
         const ls = [];
         for (let i = 0; i < hrefs.length; ++i) {
-            const href = hrefs[i];
+            const href = hrefs[i] + '?t=' + exports.flag;
             const l = this.csses.get(href);
             if (l) {
                 ls.push(Promise.resolve(l));

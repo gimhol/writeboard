@@ -1,7 +1,7 @@
 import { Style, autoPxKeys } from "./StyleType";
 import { ReValue, reValue } from "../utils";
 import { View } from "./View";
-
+export const flag = 2;
 export class Styles<T extends string = string, V extends View<keyof HTMLElementTagNameMap> = View<keyof HTMLElementTagNameMap>>{
   static csses = new Map<string, HTMLLinkElement>();
   static pendings = new Map<string, Promise<HTMLLinkElement>>;
@@ -9,7 +9,7 @@ export class Styles<T extends string = string, V extends View<keyof HTMLElementT
   static css(...hrefs: string[]): Promise<HTMLLinkElement[]> {
     const ls: Promise<HTMLLinkElement>[] = [];
     for (let i = 0; i < hrefs.length; ++i) {
-      const href = hrefs[i]!;
+      const href = hrefs[i]! + '?t=' + flag;
       const l = this.csses.get(href);
       if (l) {
         ls.push(Promise.resolve(l));
