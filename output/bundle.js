@@ -1341,8 +1341,6 @@ Styles_1.Styles.css('./calendar_phrases/styles/index.css', './calendar_phrases/s
 function main() {
     const resultWidth = 600;
     const resultHeight = 600;
-    const headerPicWidth = 600;
-    const headerPicHeight = resultHeight * 0.5;
     const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
     const mainView = View_1.View.get(document.body).styles.addCls('g_cp_main_view').view;
     const editPanel = new EditPanel_1.EditPanel();
@@ -1644,8 +1642,8 @@ function main() {
         imgd_header.src = ttt.main_pic.src;
         imgd_header.x = 0;
         imgd_header.y = 0;
-        imgd_header.w = headerPicWidth;
-        imgd_header.h = headerPicHeight;
+        imgd_header.w = resultWidth;
+        imgd_header.h = resultHeight;
         imgd_header.layer = board.layer().id;
         imgd_header.objectFit = dist_1.ObjectFit.Cover;
         img_header.merge(imgd_header);
@@ -1662,26 +1660,29 @@ function main() {
         imgd_logo.objectFit = dist_1.ObjectFit.Cover;
         img_logo.merge(imgd_logo);
         img_logo.board || board.add(img_logo, true);
-        const txt_main_offset_y = 40;
+        const txt_main_font_size = 48;
+        const txt_main_offset_y = 15;
         const txt_main = ((_c = board.find('txt_content')) !== null && _c !== void 0 ? _c : board.factory.newShape(dist_1.ShapeEnum.Text));
         const txtd_main = txt_main.data.copy();
         txtd_main.id = 'txt_content';
         txtd_main.x = 20;
-        txtd_main.y = headerPicHeight + txt_main_offset_y;
+        txtd_main.y = txt_main_offset_y;
         txtd_main.layer = board.layer().id;
-        txtd_main.fillStyle = '#000000';
-        txtd_main.font_size = 32;
+        txtd_main.font_size = txt_main_font_size;
         txtd_main.text = ttt.main_txt.text;
         txt_main.merge(txtd_main);
         txt_main.board || board.add(txt_main, true);
+        const txt_week_and_year_bottom = 30;
+        const txt_week_and_year_fontsize = 32;
+        const txt_date_fontsize = 128;
         const now = new Date();
         const txt_date = ((_d = board.find('txt_date')) !== null && _d !== void 0 ? _d : board.factory.newShape(dist_1.ShapeEnum.Text));
         const txtd_date = txt_date.data.copy();
         txtd_date.id = 'txt_date';
         txtd_date.x = 20;
-        txtd_date.y = resultHeight - 48 - 40;
+        txtd_date.y = resultHeight - txt_date_fontsize - txt_week_and_year_fontsize - txt_week_and_year_bottom - 8;
         txtd_date.layer = board.layer().id;
-        txtd_date.font_size = 48;
+        txtd_date.font_size = txt_date_fontsize;
         txtd_date.text = '' + now.getDate() + '.' + (now.getMonth() + 1);
         txt_date.merge(txtd_date);
         txt_date.merge(txtd_date);
@@ -1691,9 +1692,9 @@ function main() {
         const txtd_week_and_year = txt_week_and_year.data.copy();
         txtd_week_and_year.id = 'txt_week_and_year';
         txtd_week_and_year.x = 20;
-        txtd_week_and_year.y = resultHeight - 12 - 20;
+        txtd_week_and_year.y = resultHeight - txt_week_and_year_fontsize - txt_week_and_year_bottom;
         txtd_week_and_year.layer = board.layer().id;
-        txtd_week_and_year.font_size = 12;
+        txtd_week_and_year.font_size = txt_week_and_year_fontsize;
         txtd_week_and_year.text = weekDay[now.getDay()] + '. ' + now.getFullYear();
         txt_week_and_year.merge(txtd_week_and_year);
         txt_week_and_year.merge(txtd_week_and_year);
@@ -1701,7 +1702,10 @@ function main() {
     };
     const templateText = board.factory.shapeTemplate(dist_1.ShapeEnum.Text);
     templateText.font_family = 'PingFang SC, Microsoft Yahei';
-    templateText.fillStyle = '#000000';
+    templateText.fillStyle = '#ffffff';
+    templateText.strokeStyle = '#000000';
+    templateText.font_weight = 'bold';
+    templateText.lineWidth = 1;
     const main_pics = new Shiftable_1.Shiftable([
         './calendar_phrases/main_pics/header_0.jpg',
         './calendar_phrases/main_pics/header_1.jpg',
@@ -1709,34 +1713,34 @@ function main() {
         './calendar_phrases/main_pics/header_3.jpg',
     ]);
     const main_txts = new Shiftable_1.Shiftable([
-        '垂死病中惊坐起，笑问客从何处来',
-        '少壮不努力，自挂东南枝叶',
-        '长亭外，古道边，一行白鹭上青天',
-        '"hello, world"',
+        '垂死病中惊坐起\n　　　　笑问客从何处来',
+        '少壮不努力\n　　　　自挂东南枝叶',
+        '长亭外　古道边\n　　　　一行白鹭上青天',
+        'hello world',
     ]);
     const builtins = new Shiftable_1.Shiftable([{
-            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
             main_pic: { src: main_pics.next() },
             main_txt: { text: main_txts.next() }
         }, {
-            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
             main_pic: { src: main_pics.next() },
             main_txt: { text: main_txts.next() }
         }, {
-            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
             main_pic: { src: main_pics.next() },
             main_txt: { text: main_txts.next() }
         }, {
-            logo_img: { src: './calendar_phrases/logo.png', w: 100, h: 100 },
+            logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
             main_pic: { src: main_pics.next() },
             main_txt: { text: main_txts.next() }
         }]);
-    const btnNext = new Button_1.Button().init({ content: '符号', size: SizeType_1.SizeType.Large });
+    const btnNext = new Button_1.Button().init({ content: '换一个', size: SizeType_1.SizeType.Large, title: '下载' });
     btnNext.addEventListener('click', () => {
         init(builtins.next());
     });
     btnNext.inner.click();
-    const btnExport = new Button_1.Button().init({ content: '下载', size: SizeType_1.SizeType.Large });
+    const btnExport = new Button_1.Button().init({ content: '下载', size: SizeType_1.SizeType.Large, title: '下载' });
     btnExport.addEventListener('click', () => download());
     const bottomRow = new View_1.View('div');
     bottomRow.styles.addCls('g_cp_content_bottom_row');

@@ -26,9 +26,17 @@
 }
 
 .g_cp_main_view .g_cp_content_bottom_row {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
   display: flex;
+  transform: translate(-50%, 0%);
 }
 
 .g_cp_main_view .g_cp_content_bottom_row button {
+  margin-left: 10px;
   padding: 5px;
+}
+.g_cp_main_view .g_cp_content_bottom_row button:first-child {
+  margin-left: 0px;
 }
