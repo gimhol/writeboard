@@ -47,9 +47,23 @@ function main() {
     ExportResult = 'ExportResult',
   }
 
+
+  Gaia.editToolInfo(ToolEnum.Cross, v => ({ ...v, name: '打叉' }));
+  Gaia.editToolInfo(ToolEnum.HalfTick, v => ({ ...v, name: '半对' }));
+  Gaia.editToolInfo(ToolEnum.Img, v => ({ ...v, name: '图片' }));
+  Gaia.editToolInfo(ToolEnum.Lines, v => ({ ...v, name: '直线' }));
+  Gaia.editToolInfo(ToolEnum.Oval, v => ({ ...v, name: '椭圆' }));
+  Gaia.editToolInfo(ToolEnum.Pen, v => ({ ...v, name: '笔' }));
+  Gaia.editToolInfo(ToolEnum.Polygon, v => ({ ...v, name: '多边形' }));
+  Gaia.editToolInfo(ToolEnum.Rect, v => ({ ...v, name: '矩形' }));
+  Gaia.editToolInfo(ToolEnum.Selector, v => ({ ...v, name: '选择器' }));
+  Gaia.editToolInfo(ToolEnum.Text, v => ({ ...v, name: '文本' }));
+  Gaia.editToolInfo(ToolEnum.Tick, v => ({ ...v, name: '打钩' }));
   const menu = new Menu(mainView).setup([{
     label: '工具',
-    items: Gaia.listTools().map(v => ({ key: v, label: v }))
+    items: Gaia.listTools()
+      .filter(v => v !== ToolEnum.Img && v !== ToolEnum.Polygon)
+      .map(v => ({ key: v, label: Gaia.toolInfo(v)?.name ?? v }))
   }, {
     divider: true
   }, {
@@ -290,11 +304,20 @@ function main() {
 
     return false;
   }
+  const toggleShapeLocks = () => {
+    const { selects } = board;
+    if (!selects) { return true; }
+
+    const locked = !selects.find(v => !v.locked); // 存在未锁定的，视为全部未锁定
+    selects.forEach(v => v.locked = !locked);
+    return false;
+  }
 
   const shortcuts = {
     ctrl: new Map<string, (e: KeyboardEvent) => (void | boolean)>([
       ['a', () => { board.selectAll(true) }],
       ['d', () => { board.deselect(true) }],
+      ['l', () => { toggleShapeLocks() }],
     ]),
     shift: new Map<string, (e: KeyboardEvent) => (void | boolean)>([
       ['ArrowUp', e => moveShapes(e)],
@@ -358,7 +381,7 @@ function main() {
     img_logo.merge(imgd_logo);
     img_logo.board || board.add(img_logo, true);
 
-    
+
     const txt_main_font_size = 48
     const txt_main_offset_y = 15
     const txt_main = (board.find('txt_content') ?? board.factory.newShape(ShapeEnum.Text)) as ShapeText;

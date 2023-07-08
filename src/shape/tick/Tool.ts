@@ -6,4 +6,4 @@ export { TickTool }
 
 Gaia.registerTool(ToolEnum.Tick,
   () => new TickTool(ToolEnum.Tick, ShapeEnum.Tick),
-  { name: 'tick', desc: 'tick drawer', shape: ShapeEnum.Tick })
+  { name: 'Tick', desc: 'tick drawer', shape: ShapeEnum.Tick })

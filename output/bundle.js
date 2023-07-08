@@ -45,6 +45,7 @@ class EditPanel extends View_1.View {
             }
         };
         this.styles.addCls('g_cp_edit_panel');
+        this.inner.addEventListener('pointerdown', e => e.stopPropagation());
         this._state = new State_1.State({
             needFill: false,
             needStroke: false,
@@ -1353,9 +1354,22 @@ function main() {
         MenuKey["InsertImage"] = "InsertImage";
         MenuKey["ExportResult"] = "ExportResult";
     })(MenuKey || (MenuKey = {}));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Cross, v => (Object.assign(Object.assign({}, v), { name: '打叉' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.HalfTick, v => (Object.assign(Object.assign({}, v), { name: '半对' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Img, v => (Object.assign(Object.assign({}, v), { name: '图片' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Lines, v => (Object.assign(Object.assign({}, v), { name: '直线' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Oval, v => (Object.assign(Object.assign({}, v), { name: '椭圆' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Pen, v => (Object.assign(Object.assign({}, v), { name: '笔' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Polygon, v => (Object.assign(Object.assign({}, v), { name: '多边形' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Rect, v => (Object.assign(Object.assign({}, v), { name: '矩形' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Selector, v => (Object.assign(Object.assign({}, v), { name: '选择器' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Text, v => (Object.assign(Object.assign({}, v), { name: '文本' })));
+    dist_1.Gaia.editToolInfo(dist_1.ToolEnum.Tick, v => (Object.assign(Object.assign({}, v), { name: '打钩' })));
     const menu = new Menu_1.Menu(mainView).setup([{
             label: '工具',
-            items: dist_1.Gaia.listTools().map(v => ({ key: v, label: v }))
+            items: dist_1.Gaia.listTools()
+                .filter(v => v !== dist_1.ToolEnum.Img && v !== dist_1.ToolEnum.Polygon)
+                .map(v => { var _a, _b; return ({ key: v, label: (_b = (_a = dist_1.Gaia.toolInfo(v)) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : v }); })
         }, {
             divider: true
         }, {
@@ -1597,10 +1611,20 @@ function main() {
         board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形
         return false;
     };
+    const toggleShapeLocks = () => {
+        const { selects } = board;
+        if (!selects) {
+            return true;
+        }
+        const locked = !selects.find(v => !v.locked); // 存在未锁定的，视为全部未锁定
+        selects.forEach(v => v.locked = !locked);
+        return false;
+    };
     const shortcuts = {
         ctrl: new Map([
             ['a', () => { board.selectAll(true); }],
             ['d', () => { board.deselect(true); }],
+            ['l', () => { toggleShapeLocks(); }],
         ]),
         shift: new Map([
             ['ArrowUp', e => moveShapes(e)],
@@ -2676,6 +2700,14 @@ class Gaia {
     static toolInfo(type) {
         return this._toolInfos.get(type);
     }
+    static editToolInfo(type, func) {
+        let info = this._toolInfos.get(type);
+        if (!info) {
+            return;
+        }
+        info = func(info);
+        this._toolInfos.set(type, info);
+    }
     static registerShape(type, dataCreator, shapeCreator, info) {
         if (this._shapeInfos.has(type)) {
             console.warn(Tag, `registerShape(), shape info '${type}' already exists!`);
@@ -3397,7 +3429,7 @@ const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "CrossTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'Cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
 
 },{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],45:[function(require,module,exports){
 "use strict";
@@ -3478,7 +3510,7 @@ const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "HalfTickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'Half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
 
 },{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],49:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
@@ -3656,7 +3688,7 @@ const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Img, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Img, ShapeEnum_1.ShapeEnum.Img), { name: 'Img', desc: 'Img drawer', shape: ShapeEnum_1.ShapeEnum.Img });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Img, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Img, ShapeEnum_1.ShapeEnum.Img), { name: 'Image', desc: 'Image drawer', shape: ShapeEnum_1.ShapeEnum.Img });
 
 },{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],53:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
@@ -4025,7 +4057,7 @@ class LinesTool {
     }
 }
 exports.LinesTool = LinesTool;
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'Lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
 
 },{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../ShapeEnum":37}],58:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
@@ -4113,7 +4145,7 @@ class OvalTool extends SimpleTool_1.SimpleTool {
     }
 }
 exports.OvalTool = OvalTool;
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'Oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
 },{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],62:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
@@ -4391,7 +4423,7 @@ class PenTool {
     }
 }
 exports.PenTool = PenTool;
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'Pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
 },{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../ShapeEnum":37,"./Data":63}],66:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
@@ -4504,7 +4536,7 @@ const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'rect', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'Rectangle', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
 },{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],74:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
@@ -4914,7 +4946,7 @@ class TextTool {
     }
 }
 exports.TextTool = TextTool;
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'Text', desc: 'enter some text', shape: ShapeEnum_1.ShapeEnum.Text });
 
 },{"../../event":26,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../utils/Css":94,"../ShapeEnum":37}],79:[function(require,module,exports){
 "use strict";
@@ -4992,7 +5024,7 @@ const ShapeEnum_1 = require("../ShapeEnum");
 const ToolEnum_1 = require("../../tools/ToolEnum");
 const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "TickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
-Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
+Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'Tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
 
 },{"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../tools/base/SimpleTool":86,"../ShapeEnum":37}],83:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
@@ -5266,6 +5298,7 @@ class SelectorTool {
         this._rectHelper = new RectHelper_1.RectHelper();
         this._status = SelectorStatus.Invalid;
         this._prevPos = { x: 0, y: 0 };
+        this._windowPointerDown = () => this.deselect();
         this._shapes = [];
         this._waiting = false;
         this._rect.data.lineWidth = 2;
@@ -5276,8 +5309,10 @@ class SelectorTool {
         this._rect.render(ctx);
     }
     start() {
+        document.addEventListener('pointerdown', this._windowPointerDown);
     }
     end() {
+        document.removeEventListener('pointerdown', this._windowPointerDown);
         this.deselect();
     }
     deselect() {
@@ -5457,8 +5492,8 @@ class SelectorTool {
 }
 exports.SelectorTool = SelectorTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
-    name: 'selector',
-    desc: 'selector'
+    name: 'Selector',
+    desc: 'pick shapes'
 });
 
 },{"../../event":26,"../../event/Events":25,"../../mgr/Gaia":34,"../../shape":54,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils/RectHelper":99,"../../utils/Vector":100,"../ToolEnum":84}],91:[function(require,module,exports){

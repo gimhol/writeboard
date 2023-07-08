@@ -174,4 +174,4 @@ export class LinesTool implements ITool {
 
 Gaia.registerTool(ToolEnum.Lines,
   () => new LinesTool(),
-  { name: 'lines', desc: 'lines', shape: ShapeEnum.Lines })
+  { name: 'Lines', desc: 'lines', shape: ShapeEnum.Lines })

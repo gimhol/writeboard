@@ -80,4 +80,4 @@ export class PenTool implements ITool {
 
 Gaia.registerTool(ToolEnum.Pen,
   () => new PenTool(),
-  { name: 'pen', desc: 'simple pen', shape: ShapeEnum.Pen })
+  { name: 'Pen', desc: 'simple pen', shape: ShapeEnum.Pen })

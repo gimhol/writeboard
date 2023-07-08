@@ -6,4 +6,4 @@ export { HalfTickTool }
 
 Gaia.registerTool(ToolEnum.HalfTick,
   () => new HalfTickTool(ToolEnum.HalfTick, ShapeEnum.HalfTick),
-  { name: 'half tick', desc: 'half tick drawer', shape: ShapeEnum.HalfTick })
+  { name: 'Half tick', desc: 'half tick drawer', shape: ShapeEnum.HalfTick })

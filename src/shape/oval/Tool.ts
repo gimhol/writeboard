@@ -33,4 +33,4 @@ export class OvalTool extends SimpleTool {
 
 Gaia.registerTool(ToolEnum.Oval,
   () => new OvalTool(),
-  { name: 'oval', desc: 'oval drawer', shape: ShapeEnum.Oval })
+  { name: 'Oval', desc: 'oval drawer', shape: ShapeEnum.Oval })

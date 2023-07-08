@@ -162,4 +162,4 @@ export class TextTool implements ITool {
 }
 Gaia.registerTool(ToolEnum.Text,
   () => new TextTool,
-  { name: 'text', desc: 'text drawer', shape: ShapeEnum.Text })
+  { name: 'Text', desc: 'enter some text', shape: ShapeEnum.Text })

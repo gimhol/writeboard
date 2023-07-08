@@ -30,6 +30,7 @@ export class SelectorTool implements ITool {
   private _status = SelectorStatus.Invalid
   private _prevPos: IVector = { x: 0, y: 0 }
   private _resizerRect?: Rect;
+  private _windowPointerDown = () => this.deselect();
 
   private _shapes: {
     shape: Shape,
@@ -48,8 +49,10 @@ export class SelectorTool implements ITool {
     this._rect.render(ctx)
   }
   start(): void {
+    document.addEventListener('pointerdown', this._windowPointerDown)
   }
   end(): void {
+    document.removeEventListener('pointerdown', this._windowPointerDown)
     this.deselect();
   }
   deselect() {
@@ -227,6 +230,6 @@ export class SelectorTool implements ITool {
 }
 
 Gaia.registerTool(ToolEnum.Selector, () => new SelectorTool, {
-  name: 'selector',
-  desc: 'selector'
+  name: 'Selector',
+  desc: 'pick shapes'
 })

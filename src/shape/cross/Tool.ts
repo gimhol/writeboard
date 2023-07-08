@@ -6,4 +6,4 @@ export { CrossTool }
 
 Gaia.registerTool(ToolEnum.Cross,
   () => new CrossTool(ToolEnum.Cross, ShapeEnum.Cross),
-  { name: 'cross', desc: 'cross drawer', shape: ShapeEnum.Cross })
+  { name: 'Cross', desc: 'cross drawer', shape: ShapeEnum.Cross })

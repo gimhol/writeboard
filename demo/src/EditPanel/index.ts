@@ -1,6 +1,4 @@
 import { NumberInput } from "../G/BaseView/NumberInput";
-import { CssAlignSelf } from "../G/BaseView/StyleType";
-import { Styles } from "../G/BaseView/Styles";
 import { View } from "../G/BaseView/View";
 import { IconButton } from "../G/CompoundView/IconButton";
 import { State, StateEventType, StateEventTypeEventMap } from "../G/State";
@@ -36,6 +34,7 @@ export class EditPanel extends View<'div'> {
   constructor() {
     super('div');
     this.styles.addCls('g_cp_edit_panel');
+    this.inner.addEventListener('pointerdown', e => e.stopPropagation())
 
     this._state = new State<A>({
       needFill: false,

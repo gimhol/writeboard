@@ -84,6 +84,14 @@ export class Gaia {
   static toolInfo(type: ToolType): IToolInfomation | undefined {
     return this._toolInfos.get(type);
   }
+  static editToolInfo<K extends keyof ToolEnumToolInfoMap>(type: K, func: (i: ToolEnumToolInfoMap[K]) => ToolEnumToolInfoMap[K]): void;
+  static editToolInfo(type: ToolType, func: (i: IToolInfomation) => IToolInfomation): void;
+  static editToolInfo(type: ToolType, func: (i: IToolInfomation) => IToolInfomation): void {
+    let info = this._toolInfos.get(type);
+    if (!info) { return; }
+    info = func(info);
+    this._toolInfos.set(type, info);
+  }
 
   static registerShape<D extends ShapeData>(
     type: ShapeType,

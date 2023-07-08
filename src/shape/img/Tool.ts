@@ -6,4 +6,4 @@ export { RectTool }
 
 Gaia.registerTool(ToolEnum.Img,
   () => new RectTool(ToolEnum.Img, ShapeEnum.Img),
-  { name: 'Img', desc: 'Img drawer', shape: ShapeEnum.Img })
+  { name: 'Image', desc: 'Image drawer', shape: ShapeEnum.Img })
