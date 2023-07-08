@@ -110,7 +110,7 @@ export class SelectorTool implements ITool {
     this.updateGeo()
     const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
     let shape: Shape | undefined;
-    for (let i = 0; i <= shapes.length; ++i) { // 找到距离用户最近的未锁定图形
+    for (let i = 0; i < shapes.length; ++i) { // 找到距离用户最近的未锁定图形
       if (!shapes[i].locked) {
         shape = shapes[i];
         break;

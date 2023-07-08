@@ -166,7 +166,7 @@ export class ShapeText extends Shape<TextData> {
 
       if (this._cursorVisible && this.editing) {
         octx.globalCompositeOperation = 'xor'
-        octx.fillStyle = '#2f71ff'
+        octx.fillStyle = this._cursorFlashingTimer ? this.data.fillStyle : '#2f71ff'
         for (let i = 0; i < this._selectionRects.length; ++i) {
           const rect = this._selectionRects[i]
           ctx.fillStyle = 'white'

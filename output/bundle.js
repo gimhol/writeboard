@@ -4720,7 +4720,7 @@ class ShapeText extends base_1.Shape {
             }
             if (this._cursorVisible && this.editing) {
                 octx.globalCompositeOperation = 'xor';
-                octx.fillStyle = '#2f71ff';
+                octx.fillStyle = this._cursorFlashingTimer ? this.data.fillStyle : '#2f71ff';
                 for (let i = 0; i < this._selectionRects.length; ++i) {
                     const rect = this._selectionRects[i];
                     ctx.fillStyle = 'white';
@@ -5330,7 +5330,7 @@ class SelectorTool {
         this.updateGeo();
         const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
         let shape;
-        for (let i = shapes.length - 1; i >= 0; --i) { // 找到距离用户最近的未锁定图形
+        for (let i = 0; i < shapes.length; ++i) { // 找到距离用户最近的未锁定图形
             if (!shapes[i].locked) {
                 shape = shapes[i];
                 break;
