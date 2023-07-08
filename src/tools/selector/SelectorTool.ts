@@ -10,7 +10,7 @@ import { ITool } from "../base/Tool"
 import { Board } from "../../board"
 import { Events } from "../../event/Events"
 import { EventEnum } from "../../event"
-import { Rect } from "../../utils/Rect"
+import { IRect, Rect } from "../../utils/Rect"
 export enum SelectorStatus {
   Invalid = 0,
   Dragging = 1,
@@ -30,12 +30,10 @@ export class SelectorTool implements ITool {
     shape: Shape,
     prevData: Events.IShapePositionData
   }[] = []
-  get board(): Board | undefined {
-    return this._rect.board
-  }
-  set board(v: Board | undefined) {
-    this._rect.board = v
-  }
+  
+  get board(): Board | undefined { return this._rect.board; }
+  set board(v: Board | undefined) { this._rect.board = v; }
+  get rect(): RectHelper { return this._rectHelper }
   constructor() {
     this._rect.data.lineWidth = 2
     this._rect.data.strokeStyle = '#003388FF'
@@ -117,17 +115,23 @@ export class SelectorTool implements ITool {
           v.prevData = Events.pickShapePositionData(v.shape.data)
           v.shape.moveBy(diffX, diffY)
         })
-        this.emitEvent(false)
+        this.emitMovedEvent(false)
         return
       }
       case SelectorStatus.Resizing: {
-        this.emitEvent(false)
+        this.emitMovedEvent(false)
         return
       }
     }
   }
+  pointerUp(): void {
+    this._status = SelectorStatus.Invalid
+    this._rect.visible = false
+    this._rectHelper.clear()
+    this.emitMovedEvent(true)
+  }
   private _waiting = false
-  private emitEvent(immediately: boolean): void {
+  private emitMovedEvent(immediately: boolean): void {
     if (this._waiting && !immediately)
       return
     this._waiting = true
@@ -142,12 +146,6 @@ export class SelectorTool implements ITool {
       })
     });
     setTimeout(() => { this._waiting = false }, 1000 / 30)
-  }
-  pointerUp(): void {
-    this._status = SelectorStatus.Invalid
-    this._rect.visible = false
-    this._rectHelper.clear()
-    this.emitEvent(true)
   }
   private updateGeo() {
     const { x, y, w, h } = this._rectHelper.gen()

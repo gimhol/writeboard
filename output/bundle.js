@@ -1533,7 +1533,22 @@ const updateEditPanel = () => {
     console.log(editPanel.state.value);
 };
 board.addEventListener(event_1.EventEnum.ShapesSelected, e => {
-    updateEditPanel();
+    const { tool, selects } = board;
+    if (tool instanceof dist_1.SelectorTool &&
+        !tool.rect.ok &&
+        !isNaN(tool.rect.from.x) &&
+        selects.length === 1 &&
+        selects[0] instanceof dist_1.ShapeText) {
+        board.setToolType(dist_1.ToolEnum.Text);
+        const textTool = board.tool;
+        textTool.connectShapeText(selects[0]);
+        textTool.editor.addEventListener('blur', () => {
+            board.setToolType(dist_1.ToolEnum.Selector);
+        }, { once: true });
+    }
+    else {
+        updateEditPanel();
+    }
 });
 board.addEventListener(event_1.EventEnum.ShapesDeselected, e => {
     updateEditPanel();
@@ -4020,8 +4035,8 @@ class OvalTool extends SimpleTool_1.SimpleTool {
         var _a;
         if (this.holdingKey('Shift', 'Alt')) {
             // 从圆心开始绘制正圆
-            const f = this._rect.from();
-            const t = this._rect.to();
+            const f = this._rect.from;
+            const t = this._rect.to;
             const r = Math.sqrt(Math.pow(f.y - t.y, 2) + Math.pow(f.x - t.x, 2));
             const x = f.x - r;
             const y = f.y - r;
@@ -4772,7 +4787,6 @@ class TextTool {
         this.curShape = undefined;
     }
     get type() { return ToolEnum_1.ToolEnum.Text; }
-    render() { }
     get board() {
         return this._board;
     }
@@ -4781,11 +4795,14 @@ class TextTool {
         this._board = v;
         (_c = (_b = (_a = this._board) === null || _a === void 0 ? void 0 : _a.onscreen()) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.appendChild(this._editor);
     }
+    get editor() { return this._editor; }
+    render() { }
     pointerMove(dot) { }
     pointerDown(dot) {
-        const board = this.board;
-        if (!board)
+        const { board } = this;
+        if (!board) {
             return;
+        }
         let shapeText;
         const shapes = board.hits(Object.assign(Object.assign({}, dot), { w: 0, h: 0 }));
         for (let i = 0; i < shapes.length; ++i) {
@@ -4806,11 +4823,18 @@ class TextTool {
             board.add(newShapeText, true);
             shapeText = newShapeText;
         }
-        this.curShape = shapeText;
-        setTimeout(() => this._editor.focus(), 10);
+        this.connectShapeText(shapeText);
     }
     pointerDraw(dot) { }
     pointerUp(dot) { }
+    connectShapeText(shapeText) {
+        const { board } = this;
+        if (!board) {
+            return;
+        }
+        this.curShape = shapeText;
+        setTimeout(() => this._editor.focus(), 10);
+    }
 }
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'text', desc: 'text drawer', shape: ShapeEnum_1.ShapeEnum.Text });
@@ -5151,12 +5175,9 @@ var SelectorStatus;
 const Tag = '[SelectorTool]';
 class SelectorTool {
     get type() { return ToolEnum_1.ToolEnum.Selector; }
-    get board() {
-        return this._rect.board;
-    }
-    set board(v) {
-        this._rect.board = v;
-    }
+    get board() { return this._rect.board; }
+    set board(v) { this._rect.board = v; }
+    get rect() { return this._rectHelper; }
     constructor() {
         this._rect = new Shape_1.ShapeRect(new Data_1.ShapeData);
         this._rectHelper = new RectHelper_1.RectHelper();
@@ -5251,16 +5272,22 @@ class SelectorTool {
                     v.prevData = Events_1.Events.pickShapePositionData(v.shape.data);
                     v.shape.moveBy(diffX, diffY);
                 });
-                this.emitEvent(false);
+                this.emitMovedEvent(false);
                 return;
             }
             case SelectorStatus.Resizing: {
-                this.emitEvent(false);
+                this.emitMovedEvent(false);
                 return;
             }
         }
     }
-    emitEvent(immediately) {
+    pointerUp() {
+        this._status = SelectorStatus.Invalid;
+        this._rect.visible = false;
+        this._rectHelper.clear();
+        this.emitMovedEvent(true);
+    }
+    emitMovedEvent(immediately) {
         if (this._waiting && !immediately)
             return;
         this._waiting = true;
@@ -5276,12 +5303,6 @@ class SelectorTool {
             })
         });
         setTimeout(() => { this._waiting = false; }, 1000 / 30);
-    }
-    pointerUp() {
-        this._status = SelectorStatus.Invalid;
-        this._rect.visible = false;
-        this._rectHelper.clear();
-        this.emitEvent(true);
     }
     updateGeo() {
         const { x, y, w, h } = this._rectHelper.gen();
@@ -5824,15 +5845,12 @@ var LockMode;
 })(LockMode = exports.LockMode || (exports.LockMode = {}));
 class RectHelper {
     constructor() {
-        this._from = Vector_1.Vector.pure(-999, -999);
-        this._to = Vector_1.Vector.pure(-999, -999);
+        this._from = Vector_1.Vector.pure(NaN, NaN);
+        this._to = Vector_1.Vector.pure(NaN, NaN);
     }
-    from() {
-        return this._from;
-    }
-    to() {
-        return this._to;
-    }
+    get ok() { return isNaN(this._from.x) || isNaN(this._to.x); }
+    get from() { return this._from; }
+    get to() { return this._to; }
     start(x, y) {
         this._from.x = x;
         this._from.y = y;
@@ -5844,69 +5862,19 @@ class RectHelper {
         this._to.y = y;
     }
     clear() {
-        this._from = Vector_1.Vector.pure(-999, -999);
-        this._to = Vector_1.Vector.pure(-999, -999);
+        this._from = Vector_1.Vector.pure(NaN, NaN);
+        this._to = Vector_1.Vector.pure(NaN, NaN);
     }
-    gen(options) {
-        // PREF: IMPROVE ME
-        const lockMode = (options === null || options === void 0 ? void 0 : options.lockMode) || LockMode.Default;
-        const genMode = (options === null || options === void 0 ? void 0 : options.genMode) || GenMode.FromCorner;
-        let { x: x0, y: y0 } = this._from;
-        let { x: x1, y: y1 } = this._to;
-        switch (lockMode) {
-            case LockMode.Square:
-                if (genMode === GenMode.FromCenter) {
-                    const d = Math.max(Math.abs(x0 - x1), Math.abs(y0 - y1));
-                    x1 = x0 + d;
-                    y1 = y0 + d;
-                }
-                else if (genMode === GenMode.FromCorner) {
-                    const k = (y0 - y1) / (x0 - x1) > 0 ? 1 : -1;
-                    const b = y1 + k * x1;
-                    x1 = (b - y0 + k * x0) / (2 * k);
-                    y1 = -k * x1 + b;
-                }
-                break;
-            case LockMode.Circle:
-                if (genMode === GenMode.FromCenter) {
-                    const r = Math.sqrt(Math.pow(Math.abs(x0 - x1), 2) + Math.pow(Math.abs(y0 - y1), 2));
-                    x1 = x0 + r;
-                    y1 = y0 + r;
-                }
-                else if (genMode === GenMode.FromCorner) {
-                    const d = Math.sqrt(Math.pow(Math.abs(x0 - x1), 2) + Math.pow(Math.abs(y0 - y1), 2));
-                    const xo = (x0 + x1) / 2;
-                    const yo = (y0 + y1) / 2;
-                    return {
-                        x: xo - d / 2,
-                        y: yo - d / 2,
-                        w: d,
-                        h: d,
-                    };
-                }
-                break;
-        }
-        switch (genMode) {
-            case GenMode.FromCenter: {
-                const halfW = Math.abs(x0 - x1);
-                const halfH = Math.abs(y0 - y1);
-                return {
-                    x: x0 - halfW,
-                    y: y0 - halfH,
-                    w: 2 * halfW,
-                    h: 2 * halfH,
-                };
-            }
-            default: {
-                const x = Math.min(x0, x1);
-                const y = Math.min(y0, y1);
-                return {
-                    x, y,
-                    w: Math.max(x0, x1) - x,
-                    h: Math.max(y0, y1) - y
-                };
-            }
-        }
+    gen() {
+        const { x: x0, y: y0 } = this._from;
+        const { x: x1, y: y1 } = this._to;
+        const x = Math.min(x0, x1);
+        const y = Math.min(y0, y1);
+        return {
+            x, y,
+            w: Math.max(x0, x1) - x,
+            h: Math.max(y0, y1) - y
+        };
     }
 }
 exports.RectHelper = RectHelper;

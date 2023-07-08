@@ -1,10 +1,12 @@
 import {
   FactoryEnum, Gaia,
   ObjectFit,
+  SelectorTool,
   ShapeEnum,
   ShapeImg,
   ShapeText,
   TextData,
+  TextTool,
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
@@ -235,7 +237,23 @@ const updateEditPanel = () => {
 }
 
 board.addEventListener(EventEnum.ShapesSelected, e => {
-  updateEditPanel();
+  const { tool, selects } = board
+  if (
+    tool instanceof SelectorTool &&
+    !tool.rect.ok &&
+    !isNaN(tool.rect.from.x) &&
+    selects.length === 1 &&
+    selects[0] instanceof ShapeText
+  ) {
+    board.setToolType(ToolEnum.Text);
+    const textTool = board.tool as TextTool;
+    textTool.connectShapeText(selects[0]);
+    textTool.editor.addEventListener('blur', () => {
+      board.setToolType(ToolEnum.Selector);
+    }, { once: true })
+  } else {
+    updateEditPanel();
+  }
 })
 board.addEventListener(EventEnum.ShapesDeselected, e => {
   updateEditPanel();

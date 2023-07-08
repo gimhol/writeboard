@@ -10,8 +10,8 @@ export class OvalTool extends SimpleTool {
   protected applyRect() {
     if (this.holdingKey('Shift', 'Alt')) {
       // 从圆心开始绘制正圆
-      const f = this._rect.from();
-      const t = this._rect.to();
+      const f = this._rect.from;
+      const t = this._rect.to;
       const r = Math.sqrt(Math.pow(f.y - t.y, 2) + Math.pow(f.x - t.x, 2));
       const x = f.x - r;
       const y = f.y - r;

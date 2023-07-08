@@ -103,8 +103,6 @@ export class TextTool implements ITool {
     }
   }
   get type() { return ToolEnum.Text }
-
-  render(): void { }
   get board(): Board | undefined {
     return this._board
   }
@@ -112,11 +110,12 @@ export class TextTool implements ITool {
     this._board = v;
     this._board?.onscreen()?.parentElement?.appendChild(this._editor)
   }
+  get editor() { return this._editor; }
+  render(): void { }
   pointerMove(dot: IDot): void { }
   pointerDown(dot: IDot): void {
-    const board = this.board
-    if (!board)
-      return
+    const { board } = this
+    if (!board) { return; }
     let shapeText: ShapeText | undefined
     const shapes = board.hits({ ...dot, w: 0, h: 0 })
     for (let i = 0; i < shapes.length; ++i) {
@@ -137,11 +136,17 @@ export class TextTool implements ITool {
       board.add(newShapeText, true)
       shapeText = newShapeText
     }
-    this.curShape = shapeText
-    setTimeout(() => this._editor.focus(), 10)
+    this.connectShapeText(shapeText);
   }
   pointerDraw(dot: IDot): void { }
   pointerUp(dot: IDot): void { }
+
+  connectShapeText(shapeText: ShapeText): void {
+    const { board } = this;
+    if (!board) { return; }
+    this.curShape = shapeText
+    setTimeout(() => this._editor.focus(), 10)
+  }
 }
 Gaia.registerTool(ToolEnum.Text,
   () => new TextTool,
