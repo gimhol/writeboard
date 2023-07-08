@@ -61,6 +61,14 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
+  get lineWidth(): number { return this._data.lineWidth }
+  set lineWidth(v: number) {
+    if (!this._data.needStroke) { return; }
+    this.markDirty()
+    this._data.lineWidth = Math.max(0, v);
+    this.markDirty()
+  }
+
   merge(data: Partial<ShapeData>): void {
     this.markDirty()
     this.data.merge(data)
@@ -247,4 +255,3 @@ export class Shape<D extends ShapeData = ShapeData> {
     return [ResizeDirection.None, undefined]
   }
 }
-

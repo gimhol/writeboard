@@ -9,12 +9,12 @@ import {
   ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
-import { EditPanel } from "./EditPanel";
 import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
 import { Styles } from "./G/BaseView/Styles";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
+import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Shiftable } from "./Shiftable";
 
 View.get(document.head).addChild(
@@ -36,7 +36,7 @@ function main() {
   const factory = Gaia.factory(FactoryEnum.Default)();
 
   const mainView = View.get(document.body).styles.addCls('g_cp_main_view').view;
-  const editPanel = new EditPanel();
+
 
   enum MenuKey {
     SelectAll = 'SelectAll',
@@ -174,8 +174,8 @@ function main() {
   const contentZone = new View('div');
   contentZone.styles.addCls('g_cp_content_zone')
   contentZone.addChild(blackboard);
+  mainView.addChild(contentZone);
 
-  mainView.addChild(contentZone, editPanel);
 
   const board = factory.newWhiteBoard({
     width: resultWidth,
@@ -212,36 +212,12 @@ function main() {
           fontSize = undefined;
         }
       }
-    })
+    });
 
-    editPanel.fontSizeInput.addEventListener('input', () => {
-      board.selects.forEach(shape => {
-        if (!(shape instanceof ShapeText)) {
-          return;
-        }
-        const next = shape.data.copy();
-        next.font_size = editPanel.fontSizeInput.num;
-        shape.merge(next)
-      })
-    })
-
-    editPanel.lineWidthInput.addEventListener('input', () => {
-      board.selects.forEach(shape => {
-        if (!shape.data.needStroke) {
-          return;
-        }
-        const next = shape.data.copy();
-        next.lineWidth = editPanel.lineWidthInput.num;
-        shape.merge(next)
-      })
-    })
-
-    editPanel.state.value.needFill = needFill;
-    editPanel.state.value.needStroke = needStroke;
-    editPanel.state.value.needText = needText;
-    editPanel.state.value.needImg = needImg;
-    editPanel.state.value.lineWidth = lineWidth ?? undefined;
-    editPanel.state.value.fontSize = fontSize ?? undefined;
+    btnFontSizeDown.disabled = !needText
+    btnFontSizeUp.disabled = !needText
+    btnLineWidthDown.disabled = !needStroke
+    btnLineWidthUp.disabled = !needStroke
   }
 
   board.addEventListener(EventEnum.ShapesSelected, e => updateEditPanel());
@@ -269,7 +245,7 @@ function main() {
 
     const func = shortcuts[type].get(e.key);
     if (!func || func(e) === true) { return; } // func返回true时，意味着不要拦截默认事件。
-
+    console.log('shortcut hit!', type, e.key)
     e.stopPropagation();
     e.preventDefault();
   }
@@ -407,7 +383,7 @@ function main() {
     txtd_date.y = resultHeight - txt_date_fontsize - txt_week_and_year_fontsize - txt_week_and_year_bottom - 8;
     txtd_date.layer = board.layer().id;
     txtd_date.font_size = txt_date_fontsize;
-    txtd_date.text = '' + now.getDate() + '.' + (now.getMonth() + 1);
+    txtd_date.text = '' + (now.getMonth() + 1) + '.' + now.getDate();
     txt_date.merge(txtd_date);
     txt_date.merge(txtd_date);
     txt_date.board || board.add(txt_date, true);
@@ -441,7 +417,7 @@ function main() {
   }
 
   const templateText = board.factory.shapeTemplate(ShapeEnum.Text) as TextData;
-  templateText.font_family = 'PingFang SC, Microsoft Yahei';
+  templateText.font_family = '"Microsoft YaHei", Arial, Helvetica, sans-serif';
   templateText.fillStyle = '#ffffff'
   templateText.strokeStyle = '#000000'
   templateText.font_weight = 'bold'
@@ -477,19 +453,95 @@ function main() {
     main_pic: { src: main_pics.next()! },
     main_txt: { text: main_txts.next()! }
   }])
-
-  const btnNext = new Button().init({ content: '换一个', size: SizeType.Large, title: '下载' });
+  const btnNext = new Button().init({ content: '😒', size: SizeType.Large, title: '换一个' });
   btnNext.addEventListener('click', () => {
     init(builtins.next()!);
   })
   btnNext.inner.click();
 
-  const btnExport = new Button().init({ content: '下载', size: SizeType.Large, title: '下载' });
+  const btnExport = new Button().init({ content: '💾', size: SizeType.Large, title: '下载' });
   btnExport.addEventListener('click', () => download())
+
+  const btnFontSizeUp = new Button().init({ content: 'A➕', size: SizeType.Large, title: 'A↑' });
+  btnFontSizeUp.disabled = true
+  btnFontSizeUp.addEventListener('click', () => {
+    board.selects.forEach(shape => {
+      if (shape instanceof ShapeText) {
+        shape.fontSize = shape.fontSize + 1;
+      }
+    })
+  })
+
+  const btnFontSizeDown = new Button().init({ content: 'A➖', size: SizeType.Large, title: 'A↓' });
+  btnFontSizeDown.disabled = true
+  btnFontSizeDown.addEventListener('click', () => {
+    board.selects.forEach(shape => {
+      if (shape instanceof ShapeText) {
+        shape.fontSize = Math.max(12, shape.fontSize - 1);
+      }
+    })
+  })
+
+  const btnLineWidthUp = new Button().init({ content: 'L➕', size: SizeType.Large, title: 'A↑' });
+  btnLineWidthUp.disabled = true
+  btnLineWidthUp.addEventListener('click', () => {
+    board.selects.forEach(shape => {
+      if (shape.data.needStroke) {
+        shape.lineWidth = shape.lineWidth + 1;
+      }
+    })
+  })
+
+  const btnRemove = new Button().init({ content: '🗑️', size: SizeType.Large, title: '移除' });
+  btnRemove.addEventListener('click', () => { board.removeSelected(true) })
+
+  const btnToolPen = new Button().init({ content: '✒️', size: SizeType.Large, title: '工具：笔' });
+  btnToolPen.addEventListener('click', () => { board.setToolType(ToolEnum.Pen) })
+
+  const btnToolTxt = new Button().init({ content: '💬', size: SizeType.Large, title: '工具：文本' });
+  btnToolTxt.addEventListener('click', () => { board.setToolType(ToolEnum.Text) })
+
+  const btnToolRect = new Button().init({ content: '⬜', size: SizeType.Large, title: '工具：矩形' });
+  btnToolRect.addEventListener('click', () => { board.setToolType(ToolEnum.Rect) })
+
+  const btnToolOval = new Button().init({ content: '⚪', size: SizeType.Large, title: '工具：椭圆' });
+  btnToolOval.addEventListener('click', () => { board.setToolType(ToolEnum.Oval) })
+
+  const btnToolSelector = new Button().init({ content: '🖱️', size: SizeType.Large, title: '工具：选择器' });
+  btnToolSelector.addEventListener('click', () => { board.setToolType(ToolEnum.Selector) })
+
+  new ButtonGroup({
+    buttons: [btnToolPen, btnToolTxt, btnToolRect, btnToolOval, btnToolSelector]
+  })
+
+  const btnLineWidthDown = new Button().init({ content: 'L➖', size: SizeType.Large, title: 'A↓' });
+  btnLineWidthDown.disabled = true
+  btnLineWidthDown.addEventListener('click', () => {
+    board.selects.forEach(shape => {
+      if (shape.data.needStroke) {
+        shape.lineWidth = shape.lineWidth - 1;
+      }
+    })
+  })
 
   const bottomRow = new View('div');
   bottomRow.styles.addCls('g_cp_content_bottom_row')
-  bottomRow.addChild(btnNext, btnExport)
+  bottomRow.addChild(
+    btnRemove,
+    btnToolPen,
+    btnToolTxt,
+    btnToolRect,
+    btnToolOval,
+    btnToolSelector,
+    btnFontSizeUp,
+    btnFontSizeDown,
+    btnLineWidthUp,
+    btnLineWidthDown,
+    btnNext,
+    btnExport,
+  )
+
+  bottomRow.addEventListener('pointerdown', e => e.stopPropagation())
   mainView.addChild(bottomRow);
 
   const download = () => {

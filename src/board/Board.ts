@@ -301,10 +301,10 @@ export class Board {
   }
 
   removeSelected(emit: boolean) {
-    this.remove(this._selects, emit);
+    this.remove(this._selects.filter(v => !v.locked), emit);
     this._selects = []
   }
-
+  
   /**
    * 全选图形
    *

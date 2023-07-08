@@ -29,12 +29,22 @@ export class ShapeText extends Shape<TextData> {
     return this._offscreen;
   }
 
-
   constructor(data: TextData) {
     super(data)
     this._calculateLines()
     this._calculateSectionRects()
   }
+
+  get fontSize(): number { return this.data.font_size }
+
+  set fontSize(v) {
+    this.markDirty()
+    this.data.font_size = v;
+    this._calculateLines()
+    this._calculateSectionRects()
+    this.markDirty()
+  }
+
   override merge(data: Partial<TextData>) {
     this.markDirty()
     this.data.merge(data)

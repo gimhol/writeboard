@@ -90,9 +90,8 @@ export class Gaia {
     let info = this._toolInfos.get(type);
     if (!info) { return; }
     info = func(info);
-    this._toolInfos.set(type, info);
+    this._toolInfos.set(type, info); 
   }
-
   static registerShape<D extends ShapeData>(
     type: ShapeType,
     dataCreator: IShapeDataCreater<D>,
