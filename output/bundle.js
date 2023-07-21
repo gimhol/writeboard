@@ -4151,7 +4151,6 @@ class ShapePen extends base_1.Shape {
                     this.updatePath(x, y);
             }
         }
-        this.data.dotsType = Data_1.DotsType.All;
         this.markDirty();
     }
     /**

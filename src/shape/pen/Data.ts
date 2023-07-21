@@ -28,6 +28,7 @@ export class PenData extends ShapeData {
   }
   override merge(other: Partial<PenData>) {
     super.copyFrom(other)
+
     if (!Array.isArray(other.coords)) {
       return this
     }

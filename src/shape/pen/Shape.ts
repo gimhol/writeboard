@@ -47,7 +47,6 @@ export class ShapePen extends Shape<PenData> {
           this.updatePath(x, y)
       }
     }
-    this.data.dotsType = DotsType.All
     this.markDirty()
   }
 
