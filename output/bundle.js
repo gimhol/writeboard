@@ -2124,7 +2124,7 @@ class Player {
         let timeStamp = event.timestamp;
         if (!this.firstEventTime && timeStamp)
             this.firstEventTime = timeStamp;
-        this.applyEvent(event);
+        this._applyEvent(event);
         ++this.eventIdx;
         const next = screenplay.events[this.eventIdx];
         if (!next)
@@ -2133,37 +2133,63 @@ class Player {
         const diff = Math.max(1, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
         this.timer = setTimeout(() => this.tick(), diff);
     }
-    applyEvent(e) {
-        var _a, _b;
-        const actor = this.actor;
-        if (!actor) {
-            return;
-        }
+    _applyEvent(e) {
         switch (e.type) {
             case event_1.EventEnum.ShapesAdded: {
-                const detail = e.detail;
-                const shapes = (_a = detail.shapeDatas) === null || _a === void 0 ? void 0 : _a.map(v => actor.factory.newShape(v));
-                shapes && actor.add(shapes, false);
+                const { shapeDatas } = e.detail;
+                this._addShape(shapeDatas);
                 break;
             }
             case event_1.EventEnum.ShapesMoved:
             case event_1.EventEnum.ShapesResized:
             case event_1.EventEnum.ShapesChanged: {
-                const detail = e.detail;
-                detail.shapeDatas.forEach(([curr]) => {
-                    var _a;
-                    const id = curr.i;
-                    id && ((_a = actor.find(id)) === null || _a === void 0 ? void 0 : _a.merge(curr));
-                });
+                const { shapeDatas } = e.detail;
+                this._changeShapes(shapeDatas, 0);
                 break;
             }
             case event_1.EventEnum.ShapesRemoved: {
-                const detail = e.detail;
-                const shapes = (_b = detail.shapeDatas) === null || _b === void 0 ? void 0 : _b.map(data => actor.find(data.i)).filter(v => v);
-                shapes && actor.remove(shapes, false);
+                const { shapeDatas } = e.detail;
+                this._removeShape(shapeDatas);
                 break;
             }
         }
+    }
+    _undoEvent(e) {
+        switch (e.type) {
+            case event_1.EventEnum.ShapesAdded: {
+                const { shapeDatas } = e.detail;
+                this._removeShape(shapeDatas);
+                break;
+            }
+            case event_1.EventEnum.ShapesMoved:
+            case event_1.EventEnum.ShapesResized:
+            case event_1.EventEnum.ShapesChanged: {
+                const { shapeDatas } = e.detail;
+                this._changeShapes(shapeDatas, 1);
+                break;
+            }
+            case event_1.EventEnum.ShapesRemoved: {
+                const { shapeDatas } = e.detail;
+                this._addShape(shapeDatas);
+                break;
+            }
+        }
+    }
+    _addShape(shapeDatas) {
+        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(v => this.actor.factory.newShape(v));
+        shapes && this.actor.add(shapes, false);
+    }
+    _removeShape(shapeDatas) {
+        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(data => this.actor.find(data.i)).filter(v => v);
+        shapes && this.actor.remove(shapes, false);
+    }
+    _changeShapes(shapeDatas, which) {
+        shapeDatas.forEach((currAndPrev) => {
+            var _a;
+            const data = currAndPrev[which];
+            const id = data.i;
+            id && ((_a = this.actor.find(id)) === null || _a === void 0 ? void 0 : _a.merge(data));
+        });
     }
 }
 exports.Player = Player;

@@ -8,19 +8,19 @@
 
 import { Board } from "../board";
 import { EventEnum } from "../event";
-import { Screenplay } from "./Screenplay";
+import { IScreenplay } from "./Screenplay";
 
 export class Recorder {
   private _actor?: Board;
   private _cancellers: (() => void)[] = []
-  private _screenplay?: Screenplay;
+  private _screenplay?: IScreenplay;
   private _running = false;
 
   constructor() {
     console.log('[Recorder] constructor()')
   }
 
-  getScreenplay(): Screenplay | null {
+  getScreenplay(): IScreenplay | null {
     return this._screenplay || null
   }
 
@@ -66,7 +66,7 @@ export class Recorder {
     this._cancellers = [];
 
     const startTime = new CustomEvent('').timeStamp;
-    const screenplay: Screenplay = {
+    const screenplay: IScreenplay = {
       startTime,
       snapshot: actor.toSnapshot(),
       events: []

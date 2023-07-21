@@ -1,12 +1,16 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { ShapeData } from "../base"
+import { IShapeData, ShapeData } from "../base"
 export enum DotsType {
   Invalid = 0,
   All = 1,
   Append = 2,
   Subtract = 3,
 }
-export class PenData extends ShapeData {
+export interface IPenData extends IShapeData {
+  dotsType: DotsType;
+  coords: number[];
+}
+export class PenData extends ShapeData implements IPenData {
   dotsType: DotsType = DotsType.All
   coords: number[] = []
   override get needFill(): boolean {

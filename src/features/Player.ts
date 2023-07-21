@@ -1,14 +1,18 @@
 import { Board } from "../board";
 import { EventEnum, Events } from "../event";
-import { PureCustomEvent, Screenplay } from "./Screenplay";
+import type { IShapeData } from "../shape";
+import { IPureCustomEvent, IScreenplay } from "./Screenplay";
+
+type EMap = Events.EventDetailMap;
+
 export class Player {
-  private screenplay: Screenplay | undefined;
+  private screenplay: IScreenplay | undefined;
   private eventIdx = 0;
   private actor: Board | undefined;
   private firstEventTime: number = 0;
   private startTime: number = 0;
   private timer: number = 0
-  start(actor: Board, screenplay: Partial<Screenplay>) {
+  start(actor: Board, screenplay: Partial<IScreenplay>) {
     this.actor = actor;
     this.screenplay = {
       startTime: screenplay.startTime || 0,
@@ -36,7 +40,7 @@ export class Player {
     if (!this.firstEventTime && timeStamp)
       this.firstEventTime = timeStamp;
 
-    this.applyEvent(event);
+    this._applyEvent(event);
     ++this.eventIdx;
     const next = screenplay.events[this.eventIdx];
     if (!next)
@@ -45,32 +49,62 @@ export class Player {
     const diff = Math.max(1, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
     this.timer = setTimeout(() => this.tick(), diff);
   }
-  applyEvent(e: PureCustomEvent<any>) {
-    const actor = this.actor;
-    if (!actor) { return; }
+
+  private _applyEvent(e: IPureCustomEvent<any>) {
     switch (e.type) {
       case EventEnum.ShapesAdded: {
-        const detail = e.detail as Events.EventDetailMap[typeof e.type];
-        const shapes = detail.shapeDatas?.map(v => actor.factory.newShape(v));
-        shapes && actor.add(shapes, false);
+        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        this._addShape(shapeDatas)
         break;
       }
       case EventEnum.ShapesMoved:
       case EventEnum.ShapesResized:
       case EventEnum.ShapesChanged: {
-        const detail = e.detail as Events.EventDetailMap[typeof e.type];
-        detail.shapeDatas.forEach(([curr]) => {
-          const id = curr.i;
-          id && actor.find(id)?.merge(curr);
-        });
+        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        this._changeShapes(shapeDatas, 0);
         break;
       }
       case EventEnum.ShapesRemoved: {
-        const detail = e.detail as Events.EventDetailMap[typeof e.type];
-        const shapes = detail.shapeDatas?.map(data => actor.find(data.i)!).filter(v => v);
-        shapes && actor.remove(shapes, false);
+        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        this._removeShape(shapeDatas);
         break;
       }
     }
+  }
+  private _undoEvent(e: IPureCustomEvent<any>) {
+    switch (e.type) {
+      case EventEnum.ShapesAdded: {
+        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        this._removeShape(shapeDatas)
+        break;
+      }
+      case EventEnum.ShapesMoved:
+      case EventEnum.ShapesResized:
+      case EventEnum.ShapesChanged: {
+        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        this._changeShapes(shapeDatas, 1);
+        break;
+      }
+      case EventEnum.ShapesRemoved: {
+        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        this._addShape(shapeDatas)
+        break;
+      }
+    }
+  }
+  private _addShape(shapeDatas?: IShapeData[]) {
+    const shapes = shapeDatas?.map(v => this.actor!.factory.newShape(v));
+    shapes && this.actor!.add(shapes, false);
+  }
+  private _removeShape(shapeDatas?: IShapeData[]) {
+    const shapes = shapeDatas?.map(data => this.actor!.find(data.i)!).filter(v => v);
+    shapes && this.actor!.remove(shapes, false);
+  }
+  private _changeShapes(shapeDatas: [Partial<IShapeData>, Partial<IShapeData>][], which: 0 | 1) {
+    shapeDatas.forEach((currAndPrev) => {
+      const data = currAndPrev[which];
+      const id = data.i;
+      id && this.actor!.find(id)?.merge(data);
+    });
   }
 }
