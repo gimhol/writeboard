@@ -9,7 +9,7 @@ var ButtonState;
 (function (ButtonState) {
     ButtonState[ButtonState["Normal"] = 0] = "Normal";
     ButtonState[ButtonState["Checked"] = 1] = "Checked";
-})(ButtonState = exports.ButtonState || (exports.ButtonState = {}));
+})(ButtonState || (exports.ButtonState = ButtonState = {}));
 class Button extends View_1.View {
     get title() { return this.titles.get(ButtonState.Normal); }
     set title(v) {
@@ -157,7 +157,7 @@ var SizeType;
     SizeType["Small"] = "s";
     SizeType["Middle"] = "m";
     SizeType["Large"] = "l";
-})(SizeType = exports.SizeType || (exports.SizeType = {}));
+})(SizeType || (exports.SizeType = SizeType = {}));
 
 },{}],3:[function(require,module,exports){
 "use strict";
@@ -185,7 +185,7 @@ var CssAlignSelf;
     CssAlignSelf["Revert"] = "revert";
     CssAlignSelf["RevertLayer"] = "revert-layer";
     CssAlignSelf["Unset"] = "unset";
-})(CssAlignSelf = exports.CssAlignSelf || (exports.CssAlignSelf = {}));
+})(CssAlignSelf || (exports.CssAlignSelf = CssAlignSelf = {}));
 var CssObjectFit;
 (function (CssObjectFit) {
     CssObjectFit["Fill"] = "fill";
@@ -193,7 +193,7 @@ var CssObjectFit;
     CssObjectFit["Cover"] = "cover";
     CssObjectFit["None"] = "none";
     CssObjectFit["scaleDown"] = "scale-down";
-})(CssObjectFit = exports.CssObjectFit || (exports.CssObjectFit = {}));
+})(CssObjectFit || (exports.CssObjectFit = CssObjectFit = {}));
 var CssPosition;
 (function (CssPosition) {
     CssPosition["Static"] = "static";
@@ -201,14 +201,14 @@ var CssPosition;
     CssPosition["Absolute"] = "absolute";
     CssPosition["Fixed"] = "fixed";
     CssPosition["Sticky"] = "sticky";
-})(CssPosition = exports.CssPosition || (exports.CssPosition = {}));
+})(CssPosition || (exports.CssPosition = CssPosition = {}));
 var CssFlexDirection;
 (function (CssFlexDirection) {
     CssFlexDirection["row"] = "row";
     CssFlexDirection["rowReverse"] = "row-reverse";
     CssFlexDirection["column"] = "column";
     CssFlexDirection["columnReverse"] = "column-reverse";
-})(CssFlexDirection = exports.CssFlexDirection || (exports.CssFlexDirection = {}));
+})(CssFlexDirection || (exports.CssFlexDirection = CssFlexDirection = {}));
 var CssCursor;
 (function (CssCursor) {
     CssCursor["Auto"] = "auto";
@@ -247,7 +247,7 @@ var CssCursor;
     CssCursor["ResizeNWSE"] = "nwse-resize";
     CssCursor["ZoomIn"] = "zoom-in";
     CssCursor["ZoomOut"] = "zoom-out";
-})(CssCursor = exports.CssCursor || (exports.CssCursor = {}));
+})(CssCursor || (exports.CssCursor = CssCursor = {}));
 var CssDisplay;
 (function (CssDisplay) {
     CssDisplay["Block"] = "block";
@@ -268,7 +268,7 @@ var CssDisplay;
     CssDisplay["Revert"] = "revert";
     CssDisplay["RevertLayer"] = "revert-layer";
     CssDisplay["Unset"] = "unset";
-})(CssDisplay = exports.CssDisplay || (exports.CssDisplay = {}));
+})(CssDisplay || (exports.CssDisplay = CssDisplay = {}));
 ;
 exports.autoPxKeys = new Set([
     'width',
@@ -668,7 +668,7 @@ exports.MenuEventType = void 0;
 var MenuEventType;
 (function (MenuEventType) {
     MenuEventType["ItemClick"] = "onItemClick";
-})(MenuEventType = exports.MenuEventType || (exports.MenuEventType = {}));
+})(MenuEventType || (exports.MenuEventType = MenuEventType = {}));
 
 },{}],7:[function(require,module,exports){
 "use strict";
@@ -833,17 +833,17 @@ var EventType;
     EventType["ViewDragStart"] = "viewdragstart";
     EventType["ViewDragging"] = "viewdrag";
     EventType["ViewDragEnd"] = "viewdragend";
-})(EventType = exports.EventType || (exports.EventType = {}));
+})(EventType || (exports.EventType = EventType = {}));
 var ViewEventType;
 (function (ViewEventType) {
     ViewEventType["Added"] = "viewadded";
     ViewEventType["Removed"] = "viewremoved";
-})(ViewEventType = exports.ViewEventType || (exports.ViewEventType = {}));
+})(ViewEventType || (exports.ViewEventType = ViewEventType = {}));
 var DockableEventType;
 (function (DockableEventType) {
     DockableEventType["Docked"] = "docked";
     DockableEventType["Undocked"] = "undocked";
-})(DockableEventType = exports.DockableEventType || (exports.DockableEventType = {}));
+})(DockableEventType || (exports.DockableEventType = DockableEventType = {}));
 
 },{}],10:[function(require,module,exports){
 "use strict";
@@ -854,7 +854,7 @@ var ButtonGroupMode;
     ButtonGroupMode[ButtonGroupMode["None"] = 0] = "None";
     ButtonGroupMode[ButtonGroupMode["Single"] = 1] = "Single";
     ButtonGroupMode[ButtonGroupMode["Multipy"] = 2] = "Multipy";
-})(ButtonGroupMode = exports.ButtonGroupMode || (exports.ButtonGroupMode = {}));
+})(ButtonGroupMode || (exports.ButtonGroupMode = ButtonGroupMode = {}));
 class ButtonGroup {
     set onClick(v) { this._onClick = v; }
     constructor(inits) {
@@ -1067,6 +1067,8 @@ function main() {
     const resultWidth = 600;
     const resultHeight = 600;
     const factory = dist_1.Gaia.factory(dist_1.FactoryEnum.Default)();
+    const ffn = factory.fontFamilies().map(ff => ff + ' = ' + factory.fontName(ff));
+    console.log('可用字体：', ffn);
     const mainView = View_1.View.get(document.body).styles.addCls('g_cp_main_view').view;
     let MenuKey;
     (function (MenuKey) {
@@ -1544,7 +1546,7 @@ function main() {
     board.setToolType(dist_1.ToolEnum.Selector);
 }
 
-},{"../../dist":26,"../../dist/event":21,"./G/BaseView/Button":1,"./G/BaseView/SizeType":2,"./G/BaseView/Styles":4,"./G/BaseView/View":5,"./G/CompoundView/Menu":8,"./G/Helper/ButtonGroup":10,"./Shiftable":14}],16:[function(require,module,exports){
+},{"../../dist":28,"../../dist/event":21,"./G/BaseView/Button":1,"./G/BaseView/SizeType":2,"./G/BaseView/Styles":4,"./G/BaseView/View":5,"./G/CompoundView/Menu":8,"./G/Helper/ButtonGroup":10,"./Shiftable":14}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
@@ -1923,7 +1925,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":21,"../shape":49,"../tools":84,"../utils":96,"./Layer":17}],17:[function(require,module,exports){
+},{"../event":21,"../shape":51,"../tools":86,"../utils":98,"./Layer":17}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -1997,7 +1999,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{"../utils/Css":89}],18:[function(require,module,exports){
+},{"../utils/Css":91}],18:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2034,7 +2036,7 @@ var EventEnum;
     EventEnum["LayerRemoved"] = "LAYER_REMOVED";
     EventEnum["ShapesSelected"] = "SHAPES_SELECTED";
     EventEnum["ShapesDeselected"] = "SHAPES_DESELECTED";
-})(EventEnum = exports.EventEnum || (exports.EventEnum = {}));
+})(EventEnum || (exports.EventEnum = EventEnum = {}));
 
 },{}],20:[function(require,module,exports){
 "use strict";
@@ -2061,7 +2063,7 @@ var Events;
         };
     }
     Events.pickShapeGeoData = pickShapeGeoData;
-})(Events = exports.Events || (exports.Events = {}));
+})(Events || (exports.Events = Events = {}));
 
 },{"./EventType":19}],21:[function(require,module,exports){
 "use strict";
@@ -2275,6 +2277,128 @@ __exportStar(require("./Screenplay"), exports);
 
 },{"./Player":22,"./Recorder":23,"./Screenplay":24}],26:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.builtInFontNames = exports.builtInFontFamilies = void 0;
+exports.builtInFontFamilies = [
+    "SimSun",
+    "SimHei",
+    "Microsoft Yahei",
+    "Microsoft JhengHei",
+    "KaiTi",
+    "NSimSun",
+    "FangSong",
+    "PingFang SC",
+    "STHeiti",
+    "STKaiti",
+    "STSong",
+    "STFangsong",
+    "STZhongsong",
+    "STHupo",
+    "STXinwei",
+    "STLiti",
+    "STXingkai",
+    "Hiragino Sans GB",
+    "Lantinghei SC",
+    "Hanzipen SC",
+    "Hannotate SC",
+    "Songti SC",
+    "Wawati SC",
+    "Weibei SC",
+    "Xingkai SC",
+    "Yapi SC",
+    "Yuanti SC",
+    "YouYuan",
+    "LiSu",
+    "STXihei",
+    "STKaiti",
+    "STSong",
+    "STFangsong",
+    "STZhongsong",
+    "STCaiyun",
+    "STHupo",
+    "STXinwei",
+    "STLiti",
+    "STXingkai",
+    "FZShuTi",
+    "FZYaoti",
+];
+exports.builtInFontNames = {
+    "SimSun": "宋体",
+    "SimHei": "黑体",
+    "Microsoft Yahei": "微软雅黑",
+    "Microsoft JhengHei": "微软正黑体",
+    "KaiTi": "楷体",
+    "NSimSun": "新宋体",
+    "FangSong": "仿宋",
+    "PingFang SC": "苹方",
+    "STHeiti": "华文黑体",
+    "STKaiti": "华文楷体",
+    "STSong": "华文宋体",
+    "STFangsong": "华文仿宋",
+    "STZhongsong": "华文中宋",
+    "STHupo": "华文琥珀",
+    "STXinwei": "华文新魏",
+    "STLiti": "华文隶书",
+    "STXingkai": "华文行楷",
+    "Hiragino Sans GB": "冬青黑体简",
+    "Lantinghei SC": "兰亭黑-简",
+    "Hanzipen SC": "翩翩体-简",
+    "Hannotate SC": "手札体-简",
+    "Songti SC": "宋体-简",
+    "Wawati SC": "娃娃体-简",
+    "Weibei SC": "魏碑-简",
+    "Xingkai SC": "行楷-简",
+    "Yapi SC": "雅痞-简",
+    "Yuanti SC": "圆体-简",
+    "YouYuan": "幼圆",
+    "LiSu": "隶书",
+    "STXihei": "华文细黑",
+    "STCaiyun": "华文彩云",
+    "FZShuTi": "方正舒体",
+    "FZYaoti": "方正姚体"
+};
+
+},{}],27:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FontFamilysChecker = void 0;
+var FontFamilysChecker;
+(function (FontFamilysChecker) {
+    function check(fontFamilys) {
+        const w = 64;
+        const h = 64;
+        const txt = "a啊";
+        const fontSize = 64;
+        const arial = "arial";
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        canvas.width = w;
+        canvas.height = h;
+        ctx.textAlign = "center";
+        ctx.fillStyle = "black";
+        ctx.textBaseline = "middle";
+        const _drawTxt = function (fontFamily) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.font = fontSize + "px " + fontFamily + ", " + arial;
+            ctx.fillText(txt, w / 2, h / 2);
+            return ctx.getImageData(0, 0, w, h).data.filter(v => v != 0).join("");
+        };
+        return fontFamilys.filter(fontFamily => {
+            if (typeof fontFamily !== "string") {
+                return false;
+            }
+            if (fontFamily.toLowerCase() === arial.toLowerCase()) {
+                return true;
+            }
+            return _drawTxt(arial) !== _drawTxt(fontFamily);
+        });
+    }
+    FontFamilysChecker.check = check;
+    ;
+})(FontFamilysChecker || (exports.FontFamilysChecker = FontFamilysChecker = {}));
+
+},{}],28:[function(require,module,exports){
+"use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -2298,7 +2422,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":18,"./features":25,"./mgr":31,"./shape":49,"./tools":84,"./utils":96}],27:[function(require,module,exports){
+},{"./board":18,"./features":25,"./mgr":33,"./shape":51,"./tools":86,"./utils":98}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultFactory = void 0;
@@ -2309,6 +2433,8 @@ const InvalidTool_1 = require("../tools/base/InvalidTool");
 const FactoryEnum_1 = require("./FactoryEnum");
 const Gaia_1 = require("./Gaia");
 const board_1 = require("../board");
+const checker_1 = require("../fonts/checker");
+const builtInFontFamilies_1 = require("../fonts/builtInFontFamilies");
 const Tag = '[DefaultFactory]';
 class DefaultFactory {
     constructor() {
@@ -2385,11 +2511,18 @@ class DefaultFactory {
     newLayer(inits) {
         return new board_1.Layer(inits);
     }
+    fontFamilies() {
+        return checker_1.FontFamilysChecker.check(builtInFontFamilies_1.builtInFontFamilies);
+    }
+    fontName(fontFamily) {
+        var _a;
+        return (_a = builtInFontFamilies_1.builtInFontNames[fontFamily]) !== null && _a !== void 0 ? _a : fontFamily;
+    }
 }
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":18,"../shape/base/Data":33,"../shape/base/Shape":34,"../tools/base/InvalidTool":80,"./FactoryEnum":28,"./Gaia":29,"./ShapesMgr":30}],28:[function(require,module,exports){
+},{"../board":18,"../fonts/builtInFontFamilies":26,"../fonts/checker":27,"../shape/base/Data":35,"../shape/base/Shape":36,"../tools/base/InvalidTool":82,"./FactoryEnum":30,"./Gaia":31,"./ShapesMgr":32}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -2397,7 +2530,7 @@ var FactoryEnum;
 (function (FactoryEnum) {
     FactoryEnum[FactoryEnum["Invalid"] = 0] = "Invalid";
     FactoryEnum[FactoryEnum["Default"] = 1] = "Default";
-})(FactoryEnum = exports.FactoryEnum || (exports.FactoryEnum = {}));
+})(FactoryEnum || (exports.FactoryEnum = FactoryEnum = {}));
 function getFactoryName(type) {
     switch (type) {
         case FactoryEnum.Invalid: return 'FactoryEnum.Invalid';
@@ -2407,7 +2540,7 @@ function getFactoryName(type) {
 }
 exports.getFactoryName = getFactoryName;
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gaia = void 0;
@@ -2502,7 +2635,7 @@ Gaia._shapeInfos = new Map();
 Gaia._factorys = new Map();
 Gaia._factoryInfos = new Map();
 
-},{"../shape/ShapeEnum":32,"../tools/ToolEnum":79}],30:[function(require,module,exports){
+},{"../shape/ShapeEnum":34,"../tools/ToolEnum":81}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultShapesMgr = void 0;
@@ -2571,7 +2704,7 @@ class DefaultShapesMgr {
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/Rect":93}],31:[function(require,module,exports){
+},{"../utils/Rect":95}],33:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2593,7 +2726,7 @@ __exportStar(require("./FactoryEnum"), exports);
 __exportStar(require("./Gaia"), exports);
 __exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":27,"./FactoryEnum":28,"./Gaia":29,"./ShapesMgr":30}],32:[function(require,module,exports){
+},{"./Factory":29,"./FactoryEnum":30,"./Gaia":31,"./ShapesMgr":32}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -2610,7 +2743,7 @@ var ShapeEnum;
     ShapeEnum[ShapeEnum["HalfTick"] = 8] = "HalfTick";
     ShapeEnum[ShapeEnum["Lines"] = 9] = "Lines";
     ShapeEnum[ShapeEnum["Img"] = 10] = "Img";
-})(ShapeEnum = exports.ShapeEnum || (exports.ShapeEnum = {}));
+})(ShapeEnum || (exports.ShapeEnum = ShapeEnum = {}));
 function getShapeName(type) {
     switch (type) {
         case ShapeEnum.Invalid: return 'ShapeEnum.Invalid';
@@ -2629,7 +2762,7 @@ function getShapeName(type) {
 }
 exports.getShapeName = getShapeName;
 
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
@@ -2836,7 +2969,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":32}],34:[function(require,module,exports){
+},{"../ShapeEnum":34}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
@@ -2848,12 +2981,12 @@ var ResizeDirection;
     ResizeDirection[ResizeDirection["TopRight"] = 2] = "TopRight";
     ResizeDirection[ResizeDirection["BottomLeft"] = 3] = "BottomLeft";
     ResizeDirection[ResizeDirection["BottomRight"] = 4] = "BottomRight";
-})(ResizeDirection = exports.ResizeDirection || (exports.ResizeDirection = {}));
+})(ResizeDirection || (exports.ResizeDirection = ResizeDirection = {}));
 var Resizable;
 (function (Resizable) {
     Resizable[Resizable["None"] = 0] = "None";
     Resizable[Resizable["All"] = 1] = "All";
-})(Resizable = exports.Resizable || (exports.Resizable = {}));
+})(Resizable || (exports.Resizable = Resizable = {}));
 class Shape {
     constructor(data) {
         this._resizable = Resizable.None;
@@ -3077,7 +3210,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":93}],35:[function(require,module,exports){
+},{"../../utils/Rect":95}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -3115,7 +3248,7 @@ class ShapeNeedPath extends Shape_1.Shape {
 }
 exports.ShapeNeedPath = ShapeNeedPath;
 
-},{"./Shape":34}],36:[function(require,module,exports){
+},{"./Shape":36}],38:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3136,7 +3269,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./ShapeNeedPath"), exports);
 
-},{"./Data":33,"./Shape":34,"./ShapeNeedPath":35}],37:[function(require,module,exports){
+},{"./Data":35,"./Shape":36,"./ShapeNeedPath":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossData = void 0;
@@ -3158,7 +3291,7 @@ class CrossData extends base_1.ShapeData {
 }
 exports.CrossData = CrossData;
 
-},{"../ShapeEnum":32,"../base":36}],38:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeCross = void 0;
@@ -3183,7 +3316,7 @@ class ShapeCross extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeCross = ShapeCross;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Cross, () => new Data_1.CrossData, d => new ShapeCross(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":37}],39:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":39}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossTool = void 0;
@@ -3194,7 +3327,7 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "CrossTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'Cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],40:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],42:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3215,7 +3348,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":37,"./Shape":38,"./Tool":39}],41:[function(require,module,exports){
+},{"./Data":39,"./Shape":40,"./Tool":41}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickData = void 0;
@@ -3237,7 +3370,7 @@ class HalfTickData extends base_1.ShapeData {
 }
 exports.HalfTickData = HalfTickData;
 
-},{"../ShapeEnum":32,"../base":36}],42:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeHalfTick = void 0;
@@ -3264,7 +3397,7 @@ class ShapeHalfTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeHalfTick = ShapeHalfTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.HalfTick, () => new Data_1.HalfTickData, d => new ShapeHalfTick(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":41}],43:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":43}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickTool = void 0;
@@ -3275,9 +3408,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "HalfTickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'Half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],44:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":41,"./Shape":42,"./Tool":43,"dup":40}],45:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],46:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":43,"./Shape":44,"./Tool":45,"dup":42}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImgData = exports.ObjectFit = void 0;
@@ -3288,7 +3421,7 @@ var ObjectFit;
     ObjectFit[ObjectFit["Fill"] = 0] = "Fill";
     ObjectFit[ObjectFit["Contain"] = 1] = "Contain";
     ObjectFit[ObjectFit["Cover"] = 2] = "Cover";
-})(ObjectFit = exports.ObjectFit || (exports.ObjectFit = {}));
+})(ObjectFit || (exports.ObjectFit = ObjectFit = {}));
 class ImgData extends base_1.ShapeData {
     get src() {
         return this.s;
@@ -3329,7 +3462,7 @@ class ImgData extends base_1.ShapeData {
 }
 exports.ImgData = ImgData;
 
-},{"../ShapeEnum":32,"../base":36}],46:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -3442,7 +3575,7 @@ class ShapeImg extends base_1.Shape {
 exports.ShapeImg = ShapeImg;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Img, () => new Data_1.ImgData, d => new ShapeImg(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base":36,"./Data":45}],47:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base":38,"./Data":47}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -3453,9 +3586,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Img, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Img, ShapeEnum_1.ShapeEnum.Img), { name: 'Image', desc: 'Image drawer', shape: ShapeEnum_1.ShapeEnum.Img });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],48:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":45,"./Shape":46,"./Tool":47,"dup":40}],49:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],50:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":47,"./Shape":48,"./Tool":49,"dup":42}],51:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3485,7 +3618,7 @@ __exportStar(require("./halftick"), exports);
 __exportStar(require("./lines"), exports);
 __exportStar(require("./img"), exports);
 
-},{"./ShapeEnum":32,"./base":36,"./cross":40,"./halftick":44,"./img":48,"./lines":53,"./oval":57,"./pen":61,"./polygon":65,"./rect":69,"./text":74,"./tick":78}],50:[function(require,module,exports){
+},{"./ShapeEnum":34,"./base":38,"./cross":42,"./halftick":46,"./img":50,"./lines":55,"./oval":59,"./pen":63,"./polygon":67,"./rect":71,"./text":76,"./tick":80}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesData = void 0;
@@ -3523,7 +3656,7 @@ class LinesData extends base_1.ShapeData {
 }
 exports.LinesData = LinesData;
 
-},{"../ShapeEnum":32,"../base":36}],51:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeLines = void 0;
@@ -3637,7 +3770,7 @@ class ShapeLines extends base_1.Shape {
 exports.ShapeLines = ShapeLines;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeLines(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base":36,"./Data":50}],52:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base":38,"./Data":52}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesTool = void 0;
@@ -3822,9 +3955,9 @@ class LinesTool {
 exports.LinesTool = LinesTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'Lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
 
-},{"../../event":21,"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../ShapeEnum":32}],53:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":50,"./Shape":51,"./Tool":52,"dup":40}],54:[function(require,module,exports){
+},{"../../event":21,"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../ShapeEnum":34}],55:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":52,"./Shape":53,"./Tool":54,"dup":42}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalData = void 0;
@@ -3844,7 +3977,7 @@ class OvalData extends base_1.ShapeData {
 }
 exports.OvalData = OvalData;
 
-},{"../ShapeEnum":32,"../base":36}],55:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeOval = void 0;
@@ -3868,7 +4001,7 @@ class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeOval = ShapeOval;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":54}],56:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":56}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
@@ -3910,9 +4043,9 @@ class OvalTool extends SimpleTool_1.SimpleTool {
 exports.OvalTool = OvalTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'Oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],57:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":54,"./Shape":55,"./Tool":56,"dup":40}],58:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],59:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":56,"./Shape":57,"./Tool":58,"dup":42}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenData = exports.DotsType = void 0;
@@ -3923,7 +4056,7 @@ var DotsType;
     DotsType[DotsType["Invalid"] = 0] = "Invalid";
     DotsType[DotsType["All"] = 1] = "All";
     DotsType[DotsType["Append"] = 2] = "Append";
-})(DotsType = exports.DotsType || (exports.DotsType = {}));
+})(DotsType || (exports.DotsType = DotsType = {}));
 class PenData extends base_1.ShapeData {
     get needFill() {
         return false;
@@ -3962,7 +4095,7 @@ class PenData extends base_1.ShapeData {
 }
 exports.PenData = PenData;
 
-},{"../ShapeEnum":32,"../base":36}],59:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePen = void 0;
@@ -4108,7 +4241,7 @@ class ShapePen extends base_1.Shape {
 exports.ShapePen = ShapePen;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base":36,"./Data":58}],60:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base":38,"./Data":60}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
@@ -4188,9 +4321,9 @@ class PenTool {
 exports.PenTool = PenTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'Pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event":21,"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../ShapeEnum":32,"./Data":58}],61:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":58,"./Shape":59,"./Tool":60,"dup":40}],62:[function(require,module,exports){
+},{"../../event":21,"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../ShapeEnum":34,"./Data":60}],63:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":60,"./Shape":61,"./Tool":62,"dup":42}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonData = void 0;
@@ -4217,7 +4350,7 @@ class PolygonData extends base_1.ShapeData {
 }
 exports.PolygonData = PolygonData;
 
-},{"../ShapeEnum":32,"../base":36}],63:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePolygon = void 0;
@@ -4236,7 +4369,7 @@ class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapePolygon = ShapePolygon;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":62}],64:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":64}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonTool = void 0;
@@ -4250,9 +4383,9 @@ const desc = {
 };
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],65:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":62,"./Shape":63,"./Tool":64,"dup":40}],66:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],67:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":64,"./Shape":65,"./Tool":66,"dup":42}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectData = void 0;
@@ -4271,7 +4404,7 @@ class RectData extends base_1.ShapeData {
 }
 exports.RectData = RectData;
 
-},{"../ShapeEnum":32,"../base":36}],67:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRect = void 0;
@@ -4290,7 +4423,7 @@ class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeRect = ShapeRect;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":66}],68:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":68}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -4301,9 +4434,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'Rectangle', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],69:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":66,"./Shape":67,"./Tool":68,"dup":40}],70:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],71:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":68,"./Shape":69,"./Tool":70,"dup":42}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextData = void 0;
@@ -4361,7 +4494,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../ShapeEnum":32,"../base":36}],71:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -4539,7 +4672,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/Gaia":29,"../../utils/Rect":93,"../ShapeEnum":32,"../base":36,"./Data":70,"./TextSelection":72}],72:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../utils/Rect":95,"../ShapeEnum":34,"../base":38,"./Data":72,"./TextSelection":74}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -4556,7 +4689,7 @@ class TextSelection {
 }
 exports.TextSelection = TextSelection;
 
-},{}],73:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
@@ -4719,7 +4852,7 @@ class TextTool {
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'Text', desc: 'enter some text', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":21,"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../utils/Css":89,"../ShapeEnum":32}],74:[function(require,module,exports){
+},{"../../event":21,"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../utils/Css":91,"../ShapeEnum":34}],76:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4741,7 +4874,7 @@ __exportStar(require("./Shape"), exports);
 __exportStar(require("./TextSelection"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":70,"./Shape":71,"./TextSelection":72,"./Tool":73}],75:[function(require,module,exports){
+},{"./Data":72,"./Shape":73,"./TextSelection":74,"./Tool":75}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickData = void 0;
@@ -4763,7 +4896,7 @@ class TickData extends base_1.ShapeData {
 }
 exports.TickData = TickData;
 
-},{"../ShapeEnum":32,"../base":36}],76:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeTick = void 0;
@@ -4786,7 +4919,7 @@ class ShapeTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeTick = ShapeTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Tick, () => new Data_1.TickData, d => new ShapeTick(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":75}],77:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":77}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickTool = void 0;
@@ -4797,9 +4930,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "TickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'Tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],78:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":75,"./Shape":76,"./Tool":77,"dup":40}],79:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],80:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":77,"./Shape":78,"./Tool":79,"dup":42}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToolName = exports.ToolEnum = void 0;
@@ -4817,7 +4950,7 @@ var ToolEnum;
     ToolEnum["HalfTick"] = "TOOL_HALFTICK";
     ToolEnum["Lines"] = "TOOL_Lines";
     ToolEnum["Img"] = "TOOL_Img";
-})(ToolEnum = exports.ToolEnum || (exports.ToolEnum = {}));
+})(ToolEnum || (exports.ToolEnum = ToolEnum = {}));
 function getToolName(type) {
     switch (type) {
         case ToolEnum.Invalid: return 'ToolEnum.Invalid';
@@ -4836,7 +4969,7 @@ function getToolName(type) {
 }
 exports.getToolName = getToolName;
 
-},{}],80:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidTool = void 0;
@@ -4874,7 +5007,7 @@ class InvalidTool {
 }
 exports.InvalidTool = InvalidTool;
 
-},{"../ToolEnum":79}],81:[function(require,module,exports){
+},{"../ToolEnum":81}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
@@ -4988,11 +5121,11 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":21,"../../utils/RectHelper":94}],82:[function(require,module,exports){
+},{"../../event":21,"../../utils/RectHelper":96}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],83:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5013,7 +5146,7 @@ __exportStar(require("./InvalidTool"), exports);
 __exportStar(require("./SimpleTool"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./InvalidTool":80,"./SimpleTool":81,"./Tool":82}],84:[function(require,module,exports){
+},{"./InvalidTool":82,"./SimpleTool":83,"./Tool":84}],86:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5034,7 +5167,7 @@ __exportStar(require("./base"), exports);
 __exportStar(require("./selector"), exports);
 __exportStar(require("./ToolEnum"), exports);
 
-},{"./ToolEnum":79,"./base":83,"./selector":86}],85:[function(require,module,exports){
+},{"./ToolEnum":81,"./base":85,"./selector":88}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
@@ -5056,7 +5189,7 @@ var SelectorStatus;
     SelectorStatus[SelectorStatus["Selecting"] = 4] = "Selecting";
     SelectorStatus[SelectorStatus["ReadyForResizing"] = 5] = "ReadyForResizing";
     SelectorStatus[SelectorStatus["Resizing"] = 6] = "Resizing";
-})(SelectorStatus = exports.SelectorStatus || (exports.SelectorStatus = {}));
+})(SelectorStatus || (exports.SelectorStatus = SelectorStatus = {}));
 const Tag = '[SelectorTool]';
 class SelectorTool {
     get type() { return ToolEnum_1.ToolEnum.Selector; }
@@ -5267,7 +5400,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":21,"../../event/Events":20,"../../mgr/Gaia":29,"../../shape":49,"../../shape/base/Data":33,"../../shape/rect/Shape":67,"../../utils/RectHelper":94,"../../utils/Vector":95,"../ToolEnum":79}],86:[function(require,module,exports){
+},{"../../event":21,"../../event/Events":20,"../../mgr/Gaia":31,"../../shape":51,"../../shape/base/Data":35,"../../shape/rect/Shape":69,"../../utils/RectHelper":96,"../../utils/Vector":97,"../ToolEnum":81}],88:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5286,7 +5419,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./SelectorTool"), exports);
 
-},{"./SelectorTool":85}],87:[function(require,module,exports){
+},{"./SelectorTool":87}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
@@ -5308,7 +5441,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],88:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -5465,7 +5598,7 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":87}],89:[function(require,module,exports){
+},{"./BinaryRange":89}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Css = void 0;
@@ -5482,17 +5615,17 @@ var Css;
         ele.innerHTML += style;
     }
     Css.add = add;
-})(Css = exports.Css || (exports.Css = {}));
-
-},{}],90:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
-},{}],91:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+})(Css || (exports.Css = Css = {}));
 
 },{}],92:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],93:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -5723,7 +5856,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":93}],93:[function(require,module,exports){
+},{"./Rect":95}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -5798,7 +5931,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],94:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -5807,13 +5940,13 @@ var GenMode;
 (function (GenMode) {
     GenMode[GenMode["FromCorner"] = 0] = "FromCorner";
     GenMode[GenMode["FromCenter"] = 1] = "FromCenter";
-})(GenMode = exports.GenMode || (exports.GenMode = {}));
+})(GenMode || (exports.GenMode = GenMode = {}));
 var LockMode;
 (function (LockMode) {
     LockMode[LockMode["Default"] = 0] = "Default";
     LockMode[LockMode["Square"] = 1] = "Square";
     LockMode[LockMode["Circle"] = 2] = "Circle";
-})(LockMode = exports.LockMode || (exports.LockMode = {}));
+})(LockMode || (exports.LockMode = LockMode = {}));
 class RectHelper {
     constructor() {
         this._from = Vector_1.Vector.pure(NaN, NaN);
@@ -5850,7 +5983,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":95}],95:[function(require,module,exports){
+},{"./Vector":97}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -5880,7 +6013,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],96:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5910,4 +6043,4 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 
-},{"./BinaryRange":87,"./BinaryTree":88,"./Dot":90,"./ITree":91,"./QuadTree":92,"./Rect":93,"./Vector":95}]},{},[15]);
+},{"./BinaryRange":89,"./BinaryTree":90,"./Dot":92,"./ITree":93,"./QuadTree":94,"./Rect":95,"./Vector":97}]},{},[15]);

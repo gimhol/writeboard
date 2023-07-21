@@ -9,6 +9,8 @@ import { Board, ILayerInits, Layer } from "../board";
 import { BoardOptions } from "../board/Board";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { ToolType } from "../tools/ToolEnum";
+import { FontFamilysChecker } from "../fonts/checker";
+import { builtInFontFamilies, builtInFontNames } from "../fonts/builtInFontFamilies";
 
 export interface IFactory {
   get type(): FactoryType;
@@ -25,6 +27,8 @@ export interface IFactory {
   newLayerId(): string;
   newLayerName(): string;
   newLayer(inits: ILayerInits): Layer;
+  fontFamilies(): string[];
+  fontName(fontFamily: string): string;
 }
 
 const Tag = '[DefaultFactory]';
@@ -101,6 +105,12 @@ export class DefaultFactory implements IFactory {
   }
   newLayer(inits: ILayerInits): Layer {
     return new Layer(inits);
+  }
+  fontFamilies(): string[] {
+    return FontFamilysChecker.check(builtInFontFamilies)
+  }
+  fontName(fontFamily: string): string {
+    return builtInFontNames[fontFamily] ?? fontFamily;
   }
 }
 

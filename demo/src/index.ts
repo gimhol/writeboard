@@ -35,6 +35,9 @@ function main() {
   const resultHeight = 600;
   const factory = Gaia.factory(FactoryEnum.Default)();
 
+  const ffn = factory.fontFamilies().map(ff => ff + ' = ' + factory.fontName(ff))
+  console.log('可用字体：', ffn)
+
   const mainView = View.get(document.body).styles.addCls('g_cp_main_view').view;
 
 
