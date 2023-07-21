@@ -4056,6 +4056,7 @@ var DotsType;
     DotsType[DotsType["Invalid"] = 0] = "Invalid";
     DotsType[DotsType["All"] = 1] = "All";
     DotsType[DotsType["Append"] = 2] = "Append";
+    DotsType[DotsType["Subtract"] = 3] = "Subtract";
 })(DotsType || (exports.DotsType = DotsType = {}));
 class PenData extends base_1.ShapeData {
     get needFill() {
@@ -4081,11 +4082,19 @@ class PenData extends base_1.ShapeData {
     }
     merge(other) {
         super.copyFrom(other);
-        if (Array.isArray(other.coords)) {
-            if (other.dotsType === DotsType.Append)
+        if (!Array.isArray(other.coords)) {
+            return this;
+        }
+        switch (other.dotsType) {
+            case DotsType.Subtract:
+                this.coords = this.coords.slice(0, -other.coords.length);
+                break;
+            case DotsType.Append:
                 this.coords.push(...other.coords);
-            else
+                break;
+            default:
                 this.coords = [...other.coords];
+                break;
         }
         return this;
     }

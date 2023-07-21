@@ -3,7 +3,8 @@ import { ShapeData } from "../base"
 export enum DotsType {
   Invalid = 0,
   All = 1,
-  Append = 2
+  Append = 2,
+  Subtract = 3,
 }
 export class PenData extends ShapeData {
   dotsType: DotsType = DotsType.All
@@ -27,12 +28,21 @@ export class PenData extends ShapeData {
   }
   override merge(other: Partial<PenData>) {
     super.copyFrom(other)
-    if (Array.isArray(other.coords)) {
-      if (other.dotsType === DotsType.Append)
-        this.coords.push(...other.coords)
-      else
-        this.coords = [...other.coords]
+    if (!Array.isArray(other.coords)) {
+      return this
     }
+    switch (other.dotsType) {
+      case DotsType.Subtract:
+        this.coords = this.coords.slice(0, -other.coords.length);
+        break;
+      case DotsType.Append:
+        this.coords.push(...other.coords);
+        break;
+      default:
+        this.coords = [...other.coords];
+        break;
+    }
+
     return this
   }
   override copy() {
