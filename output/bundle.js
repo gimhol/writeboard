@@ -2102,7 +2102,6 @@ class Player {
     constructor() {
         this.eventIdx = 0;
         this.startTime = 0;
-        // private timer: number = 0
         this._backwarding = false;
         this._requestId = 0;
     }
@@ -2127,7 +2126,6 @@ class Player {
             cancelAnimationFrame(this._requestId);
             this._requestId = 0;
         }
-        // clearTimeout(this.timer)
     }
     tick(time) {
         const { screenplay } = this;
