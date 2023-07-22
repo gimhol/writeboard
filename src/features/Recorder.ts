@@ -65,7 +65,7 @@ export class Recorder {
     this._cancellers.forEach(v => v())
     this._cancellers = [];
 
-    const startTime = new CustomEvent('').timeStamp;
+    const startTime = performance.now();
     const screenplay: IScreenplay = {
       startTime,
       snapshot: actor.toSnapshot(),
@@ -73,13 +73,11 @@ export class Recorder {
     }
     for (const key in EventEnum) {
       const v = (EventEnum as any)[key]
-      const func = (e: CustomEvent) => {
-        screenplay.events.push({
-          timestamp: e.timeStamp - startTime,
-          type: e.type,
-          detail: e.detail
-        })
-      };
+      const func = (e: CustomEvent) => screenplay.events.push({
+        timestamp: e.timeStamp - startTime,
+        type: e.type,
+        detail: e.detail
+      });
       this._screenplay = screenplay;
       actor.addEventListener(v, func);
       const canceller = () => actor.removeEventListener(v, func);

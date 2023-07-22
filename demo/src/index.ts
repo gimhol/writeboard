@@ -578,7 +578,7 @@ function main() {
       play: () => {
         rec.stop();
         const sp = rec.getScreenplay();
-        sp && sc.start(board, sp);
+        sp && sc.play(board, sp);
       },
       stop: () => sc.stop()
     }

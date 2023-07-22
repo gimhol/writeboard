@@ -9,49 +9,46 @@ export class Player {
   private screenplay: IScreenplay | undefined;
   private eventIdx = 0;
   private actor: Board | undefined;
-  private firstEventTime: number = 0;
   private startTime: number = 0;
-  private timer: number = 0
   private _backwarding: boolean = false;
+  private _requestId: number = 0;
 
-  start(actor: Board, screenplay: Partial<IScreenplay>) {
+  play(actor: Board, screenplay: Partial<IScreenplay>) {
+    console.log('[Player]play()', screenplay)
+    this.eventIdx = 0;
     this.actor = actor;
     this.screenplay = {
       startTime: screenplay.startTime || 0,
       snapshot: screenplay.snapshot,
       events: screenplay.events || [],
     };
-    this.startTime = Date.now();
-    this.firstEventTime = 0;
     if (screenplay.snapshot) {
       actor.fromSnapshot(screenplay.snapshot);
     }
-    this.tick();
+    this.startTime = performance.now();
+    this.tick(this.startTime)
   }
   stop() {
-    clearTimeout(this.timer)
+    console.log('[Player]stop()')
+    if (!this._requestId) {
+      cancelAnimationFrame(this._requestId);
+      this._requestId = 0;
+    }
   }
-  tick() {
-    const screenplay = this.screenplay;
+  tick(time: number) {
+    const { screenplay } = this;
     if (!screenplay) { return this.stop() };
-    const event = screenplay.events[this.eventIdx];
-    if (!event) { return this.stop() };
-    let timeStamp = event.timestamp
-    if (!this.firstEventTime && timeStamp)
-      this.firstEventTime = timeStamp;
 
-    if (this._backwarding) {
-      this._undoEvent(event);
-      --this.eventIdx;
-    } else {
+    const playerTime = time - this.startTime;
+    while (true) {
+      const event = screenplay.events[this.eventIdx];
+      if (!event) { return this.stop() };
+      const eventTime = event.timestamp;
+      if (eventTime > playerTime) { break; }
       this._applyEvent(event);
       ++this.eventIdx;
     }
-    const next = screenplay.events[this.eventIdx];
-    if (!next) { return this.stop(); }
-    timeStamp = next.timestamp;
-    const diff = Math.max(0, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
-    this.timer = setTimeout(() => this.tick(), diff);
+    this._requestId = requestAnimationFrame(time => this.tick(time))
   }
   backward(): this {
     this._backwarding = true;

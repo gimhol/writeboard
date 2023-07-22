@@ -82,6 +82,6 @@ export class RecorderView extends Subwin {
     const str = this.textarea.inner.value;
     this._player?.stop();
     this._player = new Player()
-    this._player.start(board, JSON.parse(str))
+    this._player.play(board, JSON.parse(str))
   }
 }
