@@ -1,6 +1,8 @@
 import {
   FactoryEnum, Gaia,
   ObjectFit,
+  Player,
+  Recorder,
   SelectorTool,
   ShapeEnum,
   ShapeImg,
@@ -225,8 +227,6 @@ function main() {
 
   board.addEventListener(EventEnum.ShapesSelected, e => updateEditPanel());
   board.addEventListener(EventEnum.ShapesDeselected, e => updateEditPanel());
-
-  Object.assign(window, { board, factory, mainView, Gaia, menu });
 
   const oncontextmenu = (e: MouseEvent) => {
     menu.move(e.x, e.y).show();
@@ -565,4 +565,22 @@ function main() {
   }
 
   board.setToolType(ToolEnum.Selector);
+
+  const rec = new Recorder().setActor(board);
+  const sc = new Player()
+  Object.assign(window, {
+    board, factory, mainView, Gaia, menu,
+    record: {
+      start: () => rec.stop().start(),
+      stop: () => rec.stop()
+    },
+    player: {
+      play: () => {
+        rec.stop();
+        const sp = rec.getScreenplay();
+        sp && sc.start(board, sp);
+      },
+      stop: () => sc.stop()
+    }
+  });
 }

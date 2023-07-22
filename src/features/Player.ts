@@ -12,6 +12,8 @@ export class Player {
   private firstEventTime: number = 0;
   private startTime: number = 0;
   private timer: number = 0
+  private _backwarding: boolean = false;
+
   start(actor: Board, screenplay: Partial<IScreenplay>) {
     this.actor = actor;
     this.screenplay = {
@@ -31,23 +33,33 @@ export class Player {
   }
   tick() {
     const screenplay = this.screenplay;
-    if (!screenplay)
-      return this.stop();
+    if (!screenplay) { return this.stop() };
     const event = screenplay.events[this.eventIdx];
-    if (!event)
-      return this.stop();
+    if (!event) { return this.stop() };
     let timeStamp = event.timestamp
     if (!this.firstEventTime && timeStamp)
       this.firstEventTime = timeStamp;
 
-    this._applyEvent(event);
-    ++this.eventIdx;
+    if (this._backwarding) {
+      this._undoEvent(event);
+      --this.eventIdx;
+    } else {
+      this._applyEvent(event);
+      ++this.eventIdx;
+    }
     const next = screenplay.events[this.eventIdx];
-    if (!next)
-      return this.stop();
+    if (!next) { return this.stop(); }
     timeStamp = next.timestamp;
-    const diff = Math.max(1, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
+    const diff = Math.max(0, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
     this.timer = setTimeout(() => this.tick(), diff);
+  }
+  backward(): this {
+    this._backwarding = true;
+    return this
+  }
+  forward(): this {
+    this._backwarding = false;
+    return this
   }
 
   private _applyEvent(e: IPureCustomEvent<any>) {

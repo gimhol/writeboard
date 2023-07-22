@@ -1249,7 +1249,6 @@ function main() {
     };
     board.addEventListener(event_1.EventEnum.ShapesSelected, e => updateEditPanel());
     board.addEventListener(event_1.EventEnum.ShapesDeselected, e => updateEditPanel());
-    Object.assign(window, { board, factory, mainView, Gaia: dist_1.Gaia, menu });
     const oncontextmenu = (e) => {
         menu.move(e.x, e.y).show();
         e.stopPropagation();
@@ -1544,6 +1543,23 @@ function main() {
         });
     };
     board.setToolType(dist_1.ToolEnum.Selector);
+    const rec = new dist_1.Recorder().setActor(board);
+    const sc = new dist_1.Player();
+    Object.assign(window, {
+        board, factory, mainView, Gaia: dist_1.Gaia, menu,
+        record: {
+            start: () => rec.stop().start(),
+            stop: () => rec.stop()
+        },
+        player: {
+            play: () => {
+                rec.stop();
+                const sp = rec.getScreenplay();
+                sp && sc.start(board, sp);
+            },
+            stop: () => sc.stop()
+        }
+    });
 }
 
 },{"../../dist":28,"../../dist/event":21,"./G/BaseView/Button":1,"./G/BaseView/SizeType":2,"./G/BaseView/Styles":4,"./G/BaseView/View":5,"./G/CompoundView/Menu":8,"./G/Helper/ButtonGroup":10,"./Shiftable":14}],16:[function(require,module,exports){
@@ -2096,6 +2112,7 @@ class Player {
         this.firstEventTime = 0;
         this.startTime = 0;
         this.timer = 0;
+        this._backwarding = false;
     }
     start(actor, screenplay) {
         this.actor = actor;
@@ -2116,22 +2133,41 @@ class Player {
     }
     tick() {
         const screenplay = this.screenplay;
-        if (!screenplay)
+        if (!screenplay) {
             return this.stop();
+        }
+        ;
         const event = screenplay.events[this.eventIdx];
-        if (!event)
+        if (!event) {
             return this.stop();
+        }
+        ;
         let timeStamp = event.timestamp;
         if (!this.firstEventTime && timeStamp)
             this.firstEventTime = timeStamp;
-        this._applyEvent(event);
-        ++this.eventIdx;
+        if (this._backwarding) {
+            this._undoEvent(event);
+            --this.eventIdx;
+        }
+        else {
+            this._applyEvent(event);
+            ++this.eventIdx;
+        }
         const next = screenplay.events[this.eventIdx];
-        if (!next)
+        if (!next) {
             return this.stop();
+        }
         timeStamp = next.timestamp;
-        const diff = Math.max(1, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
+        const diff = Math.max(0, (timeStamp - screenplay.startTime) - (this.firstEventTime - screenplay.startTime) - (Date.now() - this.startTime));
         this.timer = setTimeout(() => this.tick(), diff);
+    }
+    backward() {
+        this._backwarding = true;
+        return this;
+    }
+    forward() {
+        this._backwarding = false;
+        return this;
     }
     _applyEvent(e) {
         switch (e.type) {
