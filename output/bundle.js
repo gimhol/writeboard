@@ -2044,6 +2044,7 @@ var EventEnum;
     EventEnum["Invalid"] = "";
     EventEnum["ShapesAdded"] = "SHAPES_ADDED";
     EventEnum["ShapesRemoved"] = "SHAPES_REMOVED";
+    EventEnum["ShapesChanging"] = "SHAPES_CHANGING";
     EventEnum["ShapesChanged"] = "SHAPES_CHANGED";
     EventEnum["ShapesGeoChanging"] = "SHAPES_GEO_CHANGING";
     EventEnum["ShapesGeoChanged"] = "SHAPES_GEO_CHANGED";
@@ -2173,7 +2174,7 @@ class Player {
                 break;
             }
             case event_1.EventEnum.ShapesGeoChanging:
-            case event_1.EventEnum.ShapesChanged: {
+            case event_1.EventEnum.ShapesChanging: {
                 const { shapeDatas } = e.detail;
                 this._changeShapes(shapeDatas, 0);
                 break;
@@ -2193,7 +2194,7 @@ class Player {
                 break;
             }
             case event_1.EventEnum.ShapesGeoChanging:
-            case event_1.EventEnum.ShapesChanged: {
+            case event_1.EventEnum.ShapesChanging: {
                 const { shapeDatas } = e.detail;
                 this._changeShapes(shapeDatas, 1);
                 break;
@@ -3889,7 +3890,7 @@ class LinesTool {
                 return;
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
-            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+            board.emitEvent(event_1.EventEnum.ShapesChanging, {
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -3953,7 +3954,7 @@ class LinesTool {
                 return;
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
-            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+            board.emitEvent(event_1.EventEnum.ShapesChanging, {
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4341,7 +4342,7 @@ class PenTool {
             const curr = shape.data.copy();
             curr.dotsType = Data_1.DotsType.Append;
             curr.coords.splice(0, prev.coords.length);
-            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+            board.emitEvent(event_1.EventEnum.ShapesChanging, {
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4828,7 +4829,7 @@ class TextTool {
             if (!board)
                 return;
             const curr = shape.data.copy();
-            board.emitEvent(event_1.EventEnum.ShapesChanged, {
+            board.emitEvent(event_1.EventEnum.ShapesChanging, {
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });

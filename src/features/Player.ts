@@ -67,7 +67,7 @@ export class Player {
         break;
       }
       case EventEnum.ShapesGeoChanging:
-      case EventEnum.ShapesChanged: {
+      case EventEnum.ShapesChanging: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._changeShapes(shapeDatas, 0);
         break;
@@ -87,7 +87,7 @@ export class Player {
         break;
       }
       case EventEnum.ShapesGeoChanging:
-      case EventEnum.ShapesChanged: {
+      case EventEnum.ShapesChanging: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._changeShapes(shapeDatas, 1);
         break;

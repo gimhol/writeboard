@@ -45,7 +45,7 @@ export namespace Events {
   export interface EventDetailMap {
     [EventEnum.ShapesAdded]: IFullDetail;
     [EventEnum.ShapesRemoved]: IFullDetail;
-    [EventEnum.ShapesChanged]: IPartDetail<IShapeData>;
+    [EventEnum.ShapesChanging]: IPartDetail<IShapeData>;
     [EventEnum.ShapesGeoChanging]: IPartDetail<IShapeGeoData>;
     [EventEnum.ShapesGeoChanged]: IPartDetail<IShapeGeoData>;
     [EventEnum.ToolChanged]: IToolChangedDetail;
@@ -57,7 +57,7 @@ export namespace Events {
   export interface EventMap extends HTMLElementEventMap {
     [EventEnum.ShapesAdded]: CustomEvent<IFullDetail>;
     [EventEnum.ShapesRemoved]: CustomEvent<IFullDetail>;
-    [EventEnum.ShapesChanged]: CustomEvent<IPartDetail<IShapeData>>;
+    [EventEnum.ShapesChanging]: CustomEvent<IPartDetail<IShapeData>>;
     [EventEnum.ShapesGeoChanging]: CustomEvent<IPartDetail<IShapeGeoData>>;
     [EventEnum.ShapesGeoChanged]: CustomEvent<IPartDetail<IShapeGeoData>>;
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;

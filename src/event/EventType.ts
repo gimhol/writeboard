@@ -2,6 +2,7 @@ export enum EventEnum {
   Invalid = '',
   ShapesAdded = 'SHAPES_ADDED',
   ShapesRemoved = 'SHAPES_REMOVED',
+  ShapesChanging = 'SHAPES_CHANGING',
   ShapesChanged = 'SHAPES_CHANGED',
   ShapesGeoChanging = 'SHAPES_GEO_CHANGING',
   ShapesGeoChanged = 'SHAPES_GEO_CHANGED',
