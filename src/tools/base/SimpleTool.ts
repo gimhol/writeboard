@@ -123,7 +123,7 @@ export class SimpleTool implements ITool {
           isAction: false, shapeDatas: [[curr, this._startData!]]
         })
         board.emitEvent(EventEnum.ShapesDone, {
-          isAction: false, shapeDatas: [shape.data.copy()]
+          isAction: true, shapeDatas: [shape.data.copy()]
         })
         this._prevData = curr;
         break;
