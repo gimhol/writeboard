@@ -5,13 +5,15 @@ import { ToolType } from "../tools/ToolEnum";
 import { EventEnum } from "./EventType";
 
 export namespace Events {
-  export interface IFullDetail {
+  export interface IShapesDetail {
     operator?: string;
-    shapeDatas?: IShapeData[];
+    isAction: boolean;
+    shapeDatas: IShapeData[];
   }
-  export interface IPartDetail<T extends Partial<IShapeData>> {
+  export interface IShagesChangedDetail<T extends Partial<IShapeData>> {
     shapeType?: ShapeType;
     operator?: string;
+    isAction: boolean;
     shapeDatas: [T, T][];
   }
   export interface IShapeGeoData {
@@ -43,11 +45,11 @@ export namespace Events {
     to: ToolType;
   }
   export interface EventDetailMap {
-    [EventEnum.ShapesAdded]: IFullDetail;
-    [EventEnum.ShapesRemoved]: IFullDetail;
-    [EventEnum.ShapesChanging]: IPartDetail<IShapeData>;
-    [EventEnum.ShapesGeoChanging]: IPartDetail<IShapeGeoData>;
-    [EventEnum.ShapesGeoChanged]: IPartDetail<IShapeGeoData>;
+    [EventEnum.ShapesAdded]: IShapesDetail;
+    [EventEnum.ShapesRemoved]: IShapesDetail;
+    [EventEnum.ShapesChanging]: IShagesChangedDetail<IShapeData>;
+    [EventEnum.ShapesGeoChanging]: IShagesChangedDetail<IShapeGeoData>;
+    [EventEnum.ShapesGeoChanged]: IShagesChangedDetail<IShapeGeoData>;
     [EventEnum.ToolChanged]: IToolChangedDetail;
     [EventEnum.LayerAdded]: Layer;
     [EventEnum.LayerRemoved]: Layer;
@@ -55,11 +57,11 @@ export namespace Events {
     [EventEnum.ShapesDeselected]: IShapeData[];
   }
   export interface EventMap extends HTMLElementEventMap {
-    [EventEnum.ShapesAdded]: CustomEvent<IFullDetail>;
-    [EventEnum.ShapesRemoved]: CustomEvent<IFullDetail>;
-    [EventEnum.ShapesChanging]: CustomEvent<IPartDetail<IShapeData>>;
-    [EventEnum.ShapesGeoChanging]: CustomEvent<IPartDetail<IShapeGeoData>>;
-    [EventEnum.ShapesGeoChanged]: CustomEvent<IPartDetail<IShapeGeoData>>;
+    [EventEnum.ShapesAdded]: CustomEvent<IShapesDetail>;
+    [EventEnum.ShapesRemoved]: CustomEvent<IShapesDetail>;
+    [EventEnum.ShapesChanging]: CustomEvent<IShagesChangedDetail<IShapeData>>;
+    [EventEnum.ShapesGeoChanging]: CustomEvent<IShagesChangedDetail<IShapeGeoData>>;
+    [EventEnum.ShapesGeoChanged]: CustomEvent<IShagesChangedDetail<IShapeGeoData>>;
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;
     [EventEnum.LayerAdded]: CustomEvent<Layer>;
     [EventEnum.LayerRemoved]: CustomEvent<Layer>;

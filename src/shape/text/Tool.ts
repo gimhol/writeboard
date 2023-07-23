@@ -6,6 +6,7 @@ import { ITool } from "../../tools/base/Tool"
 import { Css } from "../../utils/Css"
 import { IDot } from "../../utils/Dot"
 import { ShapeEnum } from "../ShapeEnum"
+import { TextData } from "./Data"
 import { ShapeText } from "./Shape"
 
 Css.add(`
@@ -25,9 +26,10 @@ Css.add(`
 }`)
 
 export class TextTool implements ITool {
-  private _board: Board | undefined
-  private _curShape: ShapeText | undefined
-  private _editor = document.createElement('textarea')
+  private _board: Board | undefined;
+  private _curShape: ShapeText | undefined;
+  private _editor = document.createElement('textarea');
+  private _prevData: TextData | undefined;
   selectorCallback?: (this: HTMLTextAreaElement, ev: FocusEvent) => void
   private set curShape(shape: ShapeText | undefined) {
     const preShape = this._curShape;
@@ -48,9 +50,13 @@ export class TextTool implements ITool {
       if (!preShape.text) {
         const board = this.board;
         if (!board) return;
+
+        preShape.merge(this._prevData!)
         board.remove(preShape, true)
       }
     }
+
+    this._prevData = shape?.data.copy();
   }
   private _updateEditorStyle = (shape: ShapeText) => {
     this._editor.style.font = shape.data.font
@@ -80,6 +86,7 @@ export class TextTool implements ITool {
 
     const curr = shape.data.copy()
     board.emitEvent(EventEnum.ShapesChanging, {
+      isAction: false,
       shapeType: this.type,
       shapeDatas: [[curr, prev]]
     })

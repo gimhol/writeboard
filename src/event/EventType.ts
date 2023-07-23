@@ -4,6 +4,7 @@ export enum EventEnum {
   ShapesRemoved = 'SHAPES_REMOVED',
   ShapesChanging = 'SHAPES_CHANGING',
   ShapesChanged = 'SHAPES_CHANGED',
+  ShapesDone = 'SHAPES_DONE',
   ShapesGeoChanging = 'SHAPES_GEO_CHANGING',
   ShapesGeoChanged = 'SHAPES_GEO_CHANGED',
   ToolChanged = 'TOOL_CHANGED',

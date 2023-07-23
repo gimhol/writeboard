@@ -62,6 +62,7 @@ export class LinesTool implements ITool {
       const curr = shape.data.copy()
       curr.coords.splice(0, prev.coords.length)
       board.emitEvent(EventEnum.ShapesChanging, {
+        isAction: false,
         shapeType: this.type,
         shapeDatas: [[curr, prev]]
       });
@@ -121,6 +122,7 @@ export class LinesTool implements ITool {
       const curr = shape.data.copy()
       curr.coords.splice(0, prev.coords.length)
       board.emitEvent(EventEnum.ShapesChanging, {
+        isAction: false,
         shapeType: this.type,
         shapeDatas: [[curr, prev]]
       })

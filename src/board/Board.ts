@@ -268,6 +268,7 @@ export class Board {
     })
     if (emit) {
       this.emitEvent(EventEnum.ShapesAdded, {
+        isAction: true,
         shapeDatas: shapes.map(v => v.data.copy())
       })
     }
@@ -284,7 +285,9 @@ export class Board {
 
     if (emit) {
       const removeds = shapes.map(v => v.data);
-      removeds.length && this.emitEvent(EventEnum.ShapesRemoved, { shapeDatas: removeds })
+      removeds.length && this.emitEvent(EventEnum.ShapesRemoved, {
+        isAction: true, shapeDatas: removeds
+      })
     }
 
     const ret = this._shapesMgr.remove(...shapes)
@@ -304,7 +307,7 @@ export class Board {
     this.remove(this._selects.filter(v => !v.locked), emit);
     this._selects = []
   }
-  
+
   /**
    * 全选图形
    *

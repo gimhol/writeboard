@@ -8,7 +8,8 @@ import {
   ShapeImg,
   ShapeText,
   TextData,
-  ToolEnum
+  ToolEnum,
+  ActionQueue
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
 import { Button } from "./G/BaseView/Button";
@@ -566,21 +567,30 @@ function main() {
 
   board.setToolType(ToolEnum.Selector);
 
+
+  const aq = new ActionQueue().setActor(board);
   const rec = new Recorder().setActor(board);
   const sc = new Player()
   Object.assign(window, {
     board, factory, mainView, Gaia, menu,
     record: {
+      who: rec,
       start: () => rec.stop().start(),
       stop: () => rec.stop()
     },
     player: {
+      who: sc,
       play: () => {
         rec.stop();
         const sp = rec.getScreenplay();
         sp && sc.play(board, sp);
       },
       stop: () => sc.stop()
+    },
+    actions: {
+      who: aq,
+      undo: () => aq.undo(),
+      redo: () => aq.redo(),
     }
   });
 }

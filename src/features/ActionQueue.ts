@@ -16,18 +16,23 @@ export class ActionQueue {
     }
     this._cancellers.forEach(v => v())
     this._cancellers = [];
-    for (const key in EventEnum) {
-      const v = (EventEnum as any)[key]
-      const func = (e: CustomEvent) => {
-        if (this._actionsIdx < this._actions.length - 1) {
-          this._actions = this._actions.slice(0, this._actionsIdx);
-        }
-        this._actions.push(e);
-      };
-      v.addEventListener(v, func);
-      const canceller = () => v.removeEventListener(v, func);
-      this._cancellers.push(canceller);
+
+    if (actor) {
+      this._supportEvents.forEach(v => {
+        const func: any = (e: CustomEvent) => {
+          if (!e.detail.isAction) { return }
+          if (this._actionsIdx < this._actions.length - 1) {
+            this._actions = this._actions.slice(0, this._actionsIdx);
+          }
+          this._actions.push(e);
+          this._actionsIdx = this._actions.length - 1;
+        };
+        actor.addEventListener(v, func);
+        const canceller = () => actor.removeEventListener(v, func);
+        this._cancellers.push(canceller);
+      })
     }
+
     this._actor = actor;
     return this;
   }
@@ -41,10 +46,10 @@ export class ActionQueue {
   }
 
   redo(): this {
-    if (this._actionsIdx >= this._actions.length) { return this; }
+    if (this._actionsIdx >= this._actions.length - 1) { return this; }
+    ++this._actionsIdx;
     const action = this._actions[this._actionsIdx];
     this._redoAction(action);
-    ++this._actionsIdx;
     return this;
   }
   private _maxLen: number | undefined;
@@ -52,6 +57,11 @@ export class ActionQueue {
   private _actions: CustomEvent<any>[] = [];
   private _cancellers: (() => void)[] = []
   private _actor: Board | undefined;
+  private _supportEvents = [
+    EventEnum.ShapesAdded,
+    EventEnum.ShapesGeoChanged,
+    EventEnum.ShapesRemoved
+  ]
   private _redoAction(e: CustomEvent<any>) {
     switch (e.type) {
       case EventEnum.ShapesAdded: {
@@ -59,8 +69,7 @@ export class ActionQueue {
         this._addShape(shapeDatas)
         break;
       }
-      case EventEnum.ShapesGeoChanged:
-      case EventEnum.ShapesChanging: {
+      case EventEnum.ShapesGeoChanged: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._changeShapes(shapeDatas, 0);
         break;
@@ -80,8 +89,7 @@ export class ActionQueue {
         this._removeShape(shapeDatas)
         break;
       }
-      case EventEnum.ShapesGeoChanged:
-      case EventEnum.ShapesChanging: {
+      case EventEnum.ShapesGeoChanged: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._changeShapes(shapeDatas, 1);
         break;
