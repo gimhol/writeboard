@@ -164,6 +164,10 @@ export class LinesTool implements ITool {
     if (!shape) { return; }
     if (!this._pressingShift) {
       shape.data.editing = false;
+      this._board?.emitEvent(EventEnum.ShapesDone, {
+        isAction: true,
+        shapeDatas: [shape.data.copy()]
+      })
       delete this._curShape;
     } else {
       this.addDot(dot)

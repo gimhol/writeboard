@@ -268,7 +268,7 @@ export class Board {
     })
     if (emit) {
       this.emitEvent(EventEnum.ShapesAdded, {
-        isAction: true,
+        isAction: false,
         shapeDatas: shapes.map(v => v.data.copy())
       })
     }

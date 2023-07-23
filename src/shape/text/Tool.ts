@@ -31,6 +31,7 @@ export class TextTool implements ITool {
   private _editor = document.createElement('textarea');
   private _prevData: TextData | undefined;
   selectorCallback?: (this: HTMLTextAreaElement, ev: FocusEvent) => void
+  private _newTxt: boolean = false
   private set curShape(shape: ShapeText | undefined) {
     const preShape = this._curShape;
     if (preShape === shape) return;
@@ -47,12 +48,17 @@ export class TextTool implements ITool {
 
     if (preShape) {
       preShape.editing = false;
-      if (!preShape.text) {
+      if (!preShape.text && !this._newTxt) {
         const board = this.board;
         if (!board) return;
-
-        preShape.merge(this._prevData!)
-        board.remove(preShape, true)
+        preShape.merge(this._prevData!);
+        board.remove(preShape, true);
+      } else if(this._newTxt){
+        this._newTxt = false;
+        this._board?.emitEvent(EventEnum.ShapesDone, {
+          isAction: true,
+          shapeDatas: [shape!.data.copy()]
+        })
       }
     }
 
@@ -149,9 +155,10 @@ export class TextTool implements ITool {
       this.curShape = undefined;
       return
     } else if (!shapeText) {
-      const newShapeText = board.factory.newShape(ShapeEnum.Text) as ShapeText
+      this._newTxt = true;
+      const newShapeText = board.factory.newShape(ShapeEnum.Text) as ShapeText;
       newShapeText.data.layer = board.layer().id;
-      newShapeText.move(dot.x, dot.y)
+      newShapeText.move(dot.x, dot.y);
       board.add(newShapeText, true)
       shapeText = newShapeText
     }

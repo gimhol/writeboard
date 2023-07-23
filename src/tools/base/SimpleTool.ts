@@ -122,6 +122,9 @@ export class SimpleTool implements ITool {
         board.emitEvent(EventEnum.ShapesGeoChanged, {
           isAction: false, shapeDatas: [[curr, this._startData!]]
         })
+        board.emitEvent(EventEnum.ShapesDone, {
+          isAction: false, shapeDatas: [shape.data.copy()]
+        })
         this._prevData = curr;
         break;
       }

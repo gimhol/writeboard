@@ -58,13 +58,13 @@ export class ActionQueue {
   private _cancellers: (() => void)[] = []
   private _actor: Board | undefined;
   private _supportEvents = [
-    EventEnum.ShapesAdded,
+    EventEnum.ShapesDone,
     EventEnum.ShapesGeoChanged,
     EventEnum.ShapesRemoved
   ]
   private _redoAction(e: CustomEvent<any>) {
     switch (e.type) {
-      case EventEnum.ShapesAdded: {
+      case EventEnum.ShapesDone: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._addShape(shapeDatas)
         break;
@@ -84,7 +84,7 @@ export class ActionQueue {
 
   private _undoAction(e: CustomEvent<any>) {
     switch (e.type) {
-      case EventEnum.ShapesAdded: {
+      case EventEnum.ShapesDone: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._removeShape(shapeDatas)
         break;

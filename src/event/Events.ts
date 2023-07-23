@@ -49,7 +49,7 @@ export namespace Events {
     [EventEnum.ShapesRemoved]: IShapesDetail;
     [EventEnum.ShapesChanging]: IShagesChangedDetail<IShapeData>;
     [EventEnum.ShapesChanged]: IShagesChangedDetail<IShapeData>;
-    [EventEnum.ShapesDone]: IShagesChangedDetail<IShapeData>;
+    [EventEnum.ShapesDone]: IShapesDetail;
     [EventEnum.ShapesGeoChanging]: IShagesChangedDetail<IShapeGeoData>;
     [EventEnum.ShapesGeoChanged]: IShagesChangedDetail<IShapeGeoData>;
     [EventEnum.ToolChanged]: IToolChangedDetail;
@@ -63,7 +63,7 @@ export namespace Events {
     [EventEnum.ShapesRemoved]: CustomEvent<IShapesDetail>;
     [EventEnum.ShapesChanging]: CustomEvent<IShagesChangedDetail<IShapeData>>;
     [EventEnum.ShapesChanged]: CustomEvent<IShagesChangedDetail<IShapeData>>;
-    [EventEnum.ShapesDone]: IShagesChangedDetail<IShapeData>;
+    [EventEnum.ShapesDone]: IShapesDetail;
     [EventEnum.ShapesGeoChanging]: CustomEvent<IShagesChangedDetail<IShapeGeoData>>;
     [EventEnum.ShapesGeoChanged]: CustomEvent<IShagesChangedDetail<IShapeGeoData>>;
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;

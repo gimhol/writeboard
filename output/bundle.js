@@ -1832,7 +1832,7 @@ class Board {
         });
         if (emit) {
             this.emitEvent(event_1.EventEnum.ShapesAdded, {
-                isAction: true,
+                isAction: false,
                 shapeDatas: shapes.map(v => v.data.copy())
             });
         }
@@ -2125,7 +2125,7 @@ class ActionQueue {
         this._actions = [];
         this._cancellers = [];
         this._supportEvents = [
-            EventType_1.EventEnum.ShapesAdded,
+            EventType_1.EventEnum.ShapesDone,
             EventType_1.EventEnum.ShapesGeoChanged,
             EventType_1.EventEnum.ShapesRemoved
         ];
@@ -2179,7 +2179,7 @@ class ActionQueue {
     }
     _redoAction(e) {
         switch (e.type) {
-            case EventType_1.EventEnum.ShapesAdded: {
+            case EventType_1.EventEnum.ShapesDone: {
                 const { shapeDatas } = e.detail;
                 this._addShape(shapeDatas);
                 break;
@@ -2198,7 +2198,7 @@ class ActionQueue {
     }
     _undoAction(e) {
         switch (e.type) {
-            case EventType_1.EventEnum.ShapesAdded: {
+            case EventType_1.EventEnum.ShapesDone: {
                 const { shapeDatas } = e.detail;
                 this._removeShape(shapeDatas);
                 break;
@@ -4129,12 +4129,17 @@ class LinesTool {
         this.moveDot(dot);
     }
     pointerUp(dot) {
+        var _a;
         const shape = this._curShape;
         if (!shape) {
             return;
         }
         if (!this._pressingShift) {
             shape.data.editing = false;
+            (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
+                isAction: true,
+                shapeDatas: [shape.data.copy()]
+            });
             delete this._curShape;
         }
         else {
@@ -4510,10 +4515,15 @@ class PenTool {
         this.addDot(dot);
     }
     pointerUp(dot) {
+        var _a;
         const shape = this._curShape;
         if (shape)
             shape.data.editing = false;
         this.addDot(dot, 'last');
+        (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
+            isAction: true,
+            shapeDatas: [shape.data.copy()]
+        });
         this.end();
     }
 }
@@ -4914,6 +4924,7 @@ Css_1.Css.add(`
 }`);
 class TextTool {
     set curShape(shape) {
+        var _a;
         const preShape = this._curShape;
         if (preShape === shape)
             return;
@@ -4929,18 +4940,26 @@ class TextTool {
         }
         if (preShape) {
             preShape.editing = false;
-            if (!preShape.text) {
+            if (!preShape.text && !this._newTxt) {
                 const board = this.board;
                 if (!board)
                     return;
                 preShape.merge(this._prevData);
                 board.remove(preShape, true);
             }
+            else if (this._newTxt) {
+                this._newTxt = false;
+                (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
+                    isAction: true,
+                    shapeDatas: [shape.data.copy()]
+                });
+            }
         }
         this._prevData = shape === null || shape === void 0 ? void 0 : shape.data.copy();
     }
     constructor() {
         this._editor = document.createElement('textarea');
+        this._newTxt = false;
         this._updateEditorStyle = (shape) => {
             this._editor.style.font = shape.data.font;
             this._editor.style.left = shape.data.x + 'px';
@@ -5032,6 +5051,7 @@ class TextTool {
             return;
         }
         else if (!shapeText) {
+            this._newTxt = true;
             const newShapeText = board.factory.newShape(ShapeEnum_1.ShapeEnum.Text);
             newShapeText.data.layer = board.layer().id;
             newShapeText.move(dot.x, dot.y);
@@ -5329,6 +5349,9 @@ class SimpleTool {
                 });
                 board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
                     isAction: false, shapeDatas: [[curr, this._startData]]
+                });
+                board.emitEvent(event_1.EventEnum.ShapesDone, {
+                    isAction: false, shapeDatas: [shape.data.copy()]
                 });
                 this._prevData = curr;
                 break;

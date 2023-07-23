@@ -72,6 +72,10 @@ export class PenTool implements ITool {
     if (shape)
       shape.data.editing = false
     this.addDot(dot, 'last')
+    this._board?.emitEvent(EventEnum.ShapesDone, {
+      isAction: true,
+      shapeDatas: [shape!.data.copy()]
+    })
     this.end()
   }
   private _prevData: PenData | undefined
