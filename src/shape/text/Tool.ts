@@ -57,7 +57,7 @@ export class TextTool implements ITool {
         this._newTxt = false;
         this._board?.emitEvent(EventEnum.ShapesDone, {
           isAction: true,
-          shapeDatas: [shape!.data.copy()]
+          shapeDatas: [preShape.data.copy()]
         })
       }
     }

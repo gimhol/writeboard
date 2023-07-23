@@ -5351,7 +5351,7 @@ class SimpleTool {
                     isAction: false, shapeDatas: [[curr, this._startData]]
                 });
                 board.emitEvent(event_1.EventEnum.ShapesDone, {
-                    isAction: false, shapeDatas: [shape.data.copy()]
+                    isAction: true, shapeDatas: [shape.data.copy()]
                 });
                 this._prevData = curr;
                 break;
