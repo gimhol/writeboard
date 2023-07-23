@@ -34,7 +34,8 @@ export class SelectorTool implements ITool {
 
   private _shapes: {
     shape: Shape,
-    prevData: Events.IShapePositionData
+    prevData: Events.IShapeGeoData,
+    startData: Events.IShapeGeoData,
   }[] = []
 
   get board(): Board | undefined { return this._rect.board; }
@@ -71,7 +72,9 @@ export class SelectorTool implements ITool {
       const data = {
         i: v.data.i,
         x: v.data.x,
-        y: v.data.y
+        y: v.data.y,
+        w: v.data.w,
+        h: v.data.h,
       }
       if (startX === undefined) {
         x = x === undefined ? v.data.x : Math.min(x, v.data.x);
@@ -79,7 +82,8 @@ export class SelectorTool implements ITool {
       }
       return {
         shape: v,
-        prevData: data
+        prevData: data,
+        startData: data,
       }
     })
     this._prevPos = { x: x!, y: y! }
@@ -96,7 +100,7 @@ export class SelectorTool implements ITool {
     this._prevPos.x += diffX;
     this._prevPos.y += diffY;
     this._shapes.forEach(v => {
-      v.prevData = Events.pickShapePositionData(v.shape.data)
+      v.prevData = Events.pickShapePosData(v.shape.data)
       !v.shape.locked && v.shape.moveBy(diffX, diffY)
     })
     return this;
@@ -207,21 +211,32 @@ export class SelectorTool implements ITool {
     }
   }
   private _waiting = false
-  emitMovedEvent(immediately: boolean): void {
-    if (this._waiting && !immediately)
+  emitMovedEvent(immediate: boolean): void {
+    if (this._waiting && !immediate)
       return
     this._waiting = true
     const board = this.board
     if (!board) return
-    board.emitEvent(EventEnum.ShapesMoved, {
+    board.emitEvent(EventEnum.ShapesGeoChanging, {
       shapeDatas: this._shapes.map(v => {
-        const ret: [Events.IShapePositionData, Events.IShapePositionData] = [
-          Events.pickShapePositionData(v.shape.data), v.prevData
+        const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
+          Events.pickShapePosData(v.shape.data), v.prevData
         ]
         return ret
       })
     });
     setTimeout(() => { this._waiting = false }, 1000 / 30)
+
+    if (immediate) {
+      board.emitEvent(EventEnum.ShapesGeoChanged, {
+        shapeDatas: this._shapes.map(v => {
+          const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
+            Events.pickShapePosData(v.shape.data), v.startData
+          ]
+          return ret
+        })
+      });
+    }
   }
   private updateGeo() {
     const { x, y, w, h } = this._rectHelper.gen()

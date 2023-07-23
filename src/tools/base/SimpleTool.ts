@@ -74,46 +74,55 @@ export class SimpleTool implements ITool {
     if (!shape) return
     board.add(shape, true)
     this._rect.start(x, y)
-    this.updateGeo()
+    this.updateGeo(0)
   }
   pointerDraw(dot: IDot): void {
     const { x, y } = dot
     this._rect.end(x, y)
-    this.updateGeo()
+    this.updateGeo(1)
   }
   pointerUp(dot: IDot): void {
     const { x, y } = dot
     this._rect.end(x, y)
-    this.updateGeo()
+    this.updateGeo(2)
     delete this._curShape
   }
   protected applyRect() {
     const { x, y, w, h } = this._rect.gen()
     this._curShape?.geo(x, y, w, h)
   }
-  private updateGeo() {
+  private updateGeo(state: 0 | 1 | 2) {
     const shape = this._curShape
     const board = this.board
     if (!shape || !board) return
 
-    if (this._prevData) {
-      this.applyRect();
-      return
+    switch (state) {
+      case 0: {
+        this._prevData = Event.pickShapeGeoData(shape.data)
+        this._startData = this._prevData;
+        this.applyRect();
+        break;
+      }
+      case 1: {
+        this.applyRect();
+        const curr = Event.pickShapeGeoData(shape.data);
+        board.emitEvent(EventEnum.ShapesGeoChanging, {
+          shapeDatas: [[curr, this._prevData!]]
+        })
+        this._prevData = curr;
+        break;
+      }
+      case 2: {
+        this.applyRect();
+        const curr = Event.pickShapeGeoData(shape.data);
+        board.emitEvent(EventEnum.ShapesGeoChanging, { shapeDatas: [[curr, this._prevData!]] })
+        board.emitEvent(EventEnum.ShapesGeoChanged, { shapeDatas: [[curr, this._startData!]] })
+        this._prevData = curr;
+        break;
+      }
     }
-
-    this._prevData = Event.pickShapeGeoData(shape.data)
-    const prev = this._prevData
-    const emitEvent = () => {
-      const curr = Event.pickShapeGeoData(shape.data)
-      board.emitEvent(EventEnum.ShapesResized, {
-        shapeDatas: [[curr, prev]]
-      })
-      delete this._prevData
-    }
-
-    this.applyRect();
-    setTimeout(emitEvent, 1000 / 60)
   }
+  protected _startData: Event.IShapeGeoData | undefined
   protected _prevData: Event.IShapeGeoData | undefined
   protected _curShape: Shape | undefined
   protected _board: Board | undefined

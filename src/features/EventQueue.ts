@@ -59,8 +59,7 @@ export class ActionQueue {
         this._addShape(shapeDatas)
         break;
       }
-      case EventEnum.ShapesMoved:
-      case EventEnum.ShapesResized:
+      case EventEnum.ShapesGeoChanging:
       case EventEnum.ShapesChanged: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._changeShapes(shapeDatas, 0);
@@ -81,8 +80,7 @@ export class ActionQueue {
         this._removeShape(shapeDatas)
         break;
       }
-      case EventEnum.ShapesMoved:
-      case EventEnum.ShapesResized:
+      case EventEnum.ShapesGeoChanging:
       case EventEnum.ShapesChanged: {
         const { shapeDatas } = e.detail as EMap[typeof e.type];
         this._changeShapes(shapeDatas, 1);

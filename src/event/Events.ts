@@ -14,13 +14,18 @@ export namespace Events {
     operator?: string;
     shapeDatas: [T, T][];
   }
-  export interface IShapePositionData extends Pick<IShapeData, 'i' | 'x' | 'y'> { }
-  export interface IShapeGeoData extends Pick<IShapeData, 'i' | 'x' | 'y' | 'w' | 'h'> { }
-  export function pickShapePositionData(data: IShapeData): IShapePositionData {
+  export interface IShapeGeoData {
+    i: string;
+    x?: number;
+    y?: number;
+    w?: number;
+    h?: number;
+  }
+  export function pickShapePosData(data: IShapeData): IShapeGeoData {
     return {
       i: data.i,
       x: data.x,
-      y: data.y
+      y: data.y,
     }
   }
   export function pickShapeGeoData(data: IShapeData): IShapeGeoData {
@@ -41,8 +46,8 @@ export namespace Events {
     [EventEnum.ShapesAdded]: IFullDetail;
     [EventEnum.ShapesRemoved]: IFullDetail;
     [EventEnum.ShapesChanged]: IPartDetail<IShapeData>;
-    [EventEnum.ShapesMoved]: IPartDetail<IShapePositionData>;
-    [EventEnum.ShapesResized]: IPartDetail<IShapePositionData>;
+    [EventEnum.ShapesGeoChanging]: IPartDetail<IShapeGeoData>;
+    [EventEnum.ShapesGeoChanged]: IPartDetail<IShapeGeoData>;
     [EventEnum.ToolChanged]: IToolChangedDetail;
     [EventEnum.LayerAdded]: Layer;
     [EventEnum.LayerRemoved]: Layer;
@@ -53,13 +58,13 @@ export namespace Events {
     [EventEnum.ShapesAdded]: CustomEvent<IFullDetail>;
     [EventEnum.ShapesRemoved]: CustomEvent<IFullDetail>;
     [EventEnum.ShapesChanged]: CustomEvent<IPartDetail<IShapeData>>;
-    [EventEnum.ShapesMoved]: CustomEvent<IPartDetail<IShapePositionData>>;
-    [EventEnum.ShapesResized]: CustomEvent<IPartDetail<IShapePositionData>>;
+    [EventEnum.ShapesGeoChanging]: CustomEvent<IPartDetail<IShapeGeoData>>;
+    [EventEnum.ShapesGeoChanged]: CustomEvent<IPartDetail<IShapeGeoData>>;
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;
     [EventEnum.LayerAdded]: CustomEvent<Layer>;
     [EventEnum.LayerRemoved]: CustomEvent<Layer>;
     [EventEnum.ShapesSelected]: CustomEvent<IShapeData[]>;
     [EventEnum.ShapesDeselected]: CustomEvent<IShapeData[]>;
-  } 
+  }
 }
 

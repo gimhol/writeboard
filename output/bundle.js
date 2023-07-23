@@ -9,7 +9,7 @@ var ButtonState;
 (function (ButtonState) {
     ButtonState[ButtonState["Normal"] = 0] = "Normal";
     ButtonState[ButtonState["Checked"] = 1] = "Checked";
-})(ButtonState = exports.ButtonState || (exports.ButtonState = {}));
+})(ButtonState || (exports.ButtonState = ButtonState = {}));
 class Button extends View_1.View {
     get title() { return this.titles.get(ButtonState.Normal); }
     set title(v) {
@@ -157,7 +157,7 @@ var SizeType;
     SizeType["Small"] = "s";
     SizeType["Middle"] = "m";
     SizeType["Large"] = "l";
-})(SizeType = exports.SizeType || (exports.SizeType = {}));
+})(SizeType || (exports.SizeType = SizeType = {}));
 
 },{}],3:[function(require,module,exports){
 "use strict";
@@ -185,7 +185,7 @@ var CssAlignSelf;
     CssAlignSelf["Revert"] = "revert";
     CssAlignSelf["RevertLayer"] = "revert-layer";
     CssAlignSelf["Unset"] = "unset";
-})(CssAlignSelf = exports.CssAlignSelf || (exports.CssAlignSelf = {}));
+})(CssAlignSelf || (exports.CssAlignSelf = CssAlignSelf = {}));
 var CssObjectFit;
 (function (CssObjectFit) {
     CssObjectFit["Fill"] = "fill";
@@ -193,7 +193,7 @@ var CssObjectFit;
     CssObjectFit["Cover"] = "cover";
     CssObjectFit["None"] = "none";
     CssObjectFit["scaleDown"] = "scale-down";
-})(CssObjectFit = exports.CssObjectFit || (exports.CssObjectFit = {}));
+})(CssObjectFit || (exports.CssObjectFit = CssObjectFit = {}));
 var CssPosition;
 (function (CssPosition) {
     CssPosition["Static"] = "static";
@@ -201,14 +201,14 @@ var CssPosition;
     CssPosition["Absolute"] = "absolute";
     CssPosition["Fixed"] = "fixed";
     CssPosition["Sticky"] = "sticky";
-})(CssPosition = exports.CssPosition || (exports.CssPosition = {}));
+})(CssPosition || (exports.CssPosition = CssPosition = {}));
 var CssFlexDirection;
 (function (CssFlexDirection) {
     CssFlexDirection["row"] = "row";
     CssFlexDirection["rowReverse"] = "row-reverse";
     CssFlexDirection["column"] = "column";
     CssFlexDirection["columnReverse"] = "column-reverse";
-})(CssFlexDirection = exports.CssFlexDirection || (exports.CssFlexDirection = {}));
+})(CssFlexDirection || (exports.CssFlexDirection = CssFlexDirection = {}));
 var CssCursor;
 (function (CssCursor) {
     CssCursor["Auto"] = "auto";
@@ -247,7 +247,7 @@ var CssCursor;
     CssCursor["ResizeNWSE"] = "nwse-resize";
     CssCursor["ZoomIn"] = "zoom-in";
     CssCursor["ZoomOut"] = "zoom-out";
-})(CssCursor = exports.CssCursor || (exports.CssCursor = {}));
+})(CssCursor || (exports.CssCursor = CssCursor = {}));
 var CssDisplay;
 (function (CssDisplay) {
     CssDisplay["Block"] = "block";
@@ -268,7 +268,7 @@ var CssDisplay;
     CssDisplay["Revert"] = "revert";
     CssDisplay["RevertLayer"] = "revert-layer";
     CssDisplay["Unset"] = "unset";
-})(CssDisplay = exports.CssDisplay || (exports.CssDisplay = {}));
+})(CssDisplay || (exports.CssDisplay = CssDisplay = {}));
 ;
 exports.autoPxKeys = new Set([
     'width',
@@ -464,7 +464,7 @@ exports.Styles = Styles;
 Styles.csses = new Map();
 Styles.pendings = new Map;
 
-},{"../utils":11,"./StyleType":3}],5:[function(require,module,exports){
+},{"../utils":13,"./StyleType":3}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.View = void 0;
@@ -661,13 +661,21 @@ class View {
 exports.View = View;
 View.RAW_KEY_IN_ELEMENT = 'g_view';
 
-},{"../Events/EventType":7,"../Observer/FocusOb":9,"../Observer/HoverOb":10,"./Styles":4}],6:[function(require,module,exports){
+},{"../Events/EventType":9,"../Observer/FocusOb":11,"../Observer/HoverOb":12,"./Styles":4}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Menu = exports.MenuEventType = exports.MenuItemView = void 0;
-const View_1 = require("../BaseView/View");
-const HoverOb_1 = require("../Observer/HoverOb");
-const utils_1 = require("../utils");
+exports.MenuEventType = void 0;
+var MenuEventType;
+(function (MenuEventType) {
+    MenuEventType["ItemClick"] = "onItemClick";
+})(MenuEventType || (exports.MenuEventType = MenuEventType = {}));
+
+},{}],7:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MenuItemView = void 0;
+const View_1 = require("../../BaseView/View");
+const _1 = require(".");
 class MenuItemView extends View_1.View {
     get menu() { return this._menu; }
     get submenu() { return this._submenu; }
@@ -693,7 +701,7 @@ class MenuItemView extends View_1.View {
             more.style.marginLeft = '5px';
             more.innerText = '>';
             this.inner.appendChild(more);
-            this._submenu = new Menu(this._menu.container, info);
+            this._submenu = new _1.Menu(this._menu.container, info);
         }
         this.hoverOb;
     }
@@ -718,22 +726,17 @@ class MenuItemView extends View_1.View {
     }
 }
 exports.MenuItemView = MenuItemView;
-var MenuEventType;
-(function (MenuEventType) {
-    MenuEventType["ItemClick"] = "onItemClick";
-})(MenuEventType = exports.MenuEventType || (exports.MenuEventType = {}));
-class GlobalPointerDown extends View_1.View {
-    constructor() {
-        super('div');
-        window.addEventListener('pointerdown', e => {
-            if ((0, utils_1.findParent)(e.target, ele => !!View_1.View.try(ele, Menu))) {
-                return;
-            }
-            this.inner.dispatchEvent(new PointerEvent('fired'));
-        }, true);
-    }
-}
-const globalDown = new GlobalPointerDown();
+
+},{".":8,"../../BaseView/View":5}],8:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Menu = void 0;
+const Styles_1 = require("../../BaseView/Styles");
+const View_1 = require("../../BaseView/View");
+const HoverOb_1 = require("../../Observer/HoverOb");
+const utils_1 = require("../../utils");
+const Events_1 = require("./Events");
+const ItemView_1 = require("./ItemView");
 class Menu extends View_1.View {
     get container() { return this._container; }
     constructor(container, inits) {
@@ -741,11 +744,17 @@ class Menu extends View_1.View {
         super('div');
         this._items = [];
         this._zIndex = 9999;
+        Styles_1.Styles.css('./g_menu.css');
         this._container = container;
         this._zIndex = (_a = inits === null || inits === void 0 ? void 0 : inits.zIndex) !== null && _a !== void 0 ? _a : this._zIndex;
-        this.styles.setCls('g_menu');
+        this.styles.addCls('g_menu');
         this.setup((_b = inits === null || inits === void 0 ? void 0 : inits.items) !== null && _b !== void 0 ? _b : []);
-        globalDown.addEventListener('fired', () => this.hide());
+        window.addEventListener('pointerdown', e => {
+            if ((0, utils_1.findParent)(e.target, ele => !!View_1.View.try(ele, Menu))) {
+                return;
+            }
+            this.hide();
+        }, true);
         window.addEventListener('blur', () => this.hide());
     }
     addEventListener(arg0, arg1, arg2) {
@@ -754,32 +763,31 @@ class Menu extends View_1.View {
     removeEventListener(arg0, arg1, arg2) {
         return super.removeEventListener(arg0, arg1, arg2);
     }
-    item(key) {
-        var _a;
-        return (_a = this._items.find(v => v.info.key === key)) === null || _a === void 0 ? void 0 : _a.info;
+    dispatchEvent(arg0) {
+        return super.dispatchEvent(arg0);
     }
     setup(items) {
         this._items.forEach(item => {
             var _a, _b;
             item.removeEventListener('click', this._onitemclick);
-            (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.removeEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick);
+            (_a = item.submenu) === null || _a === void 0 ? void 0 : _a.removeEventListener(Events_1.MenuEventType.ItemClick, this._onsubmenuitemclick);
             (_b = item.submenu) === null || _b === void 0 ? void 0 : _b.removeSelf();
             this.removeChild(item);
         });
         this._items = items.map(info => {
             var _a;
             this._onitemclick = () => {
-                this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: info }));
+                this.dispatchEvent(new CustomEvent(Events_1.MenuEventType.ItemClick, { detail: info }));
                 this.hide();
             };
             this._onsubmenuitemclick = (e) => {
-                this.inner.dispatchEvent(new CustomEvent(MenuEventType.ItemClick, { detail: e.detail }));
+                this.dispatchEvent(new CustomEvent(Events_1.MenuEventType.ItemClick, { detail: e.detail }));
                 this.hide();
             };
-            const view = new MenuItemView(this, Object.assign(Object.assign({}, info), { zIndex: this._zIndex + 1 }));
+            const view = new ItemView_1.MenuItemView(this, Object.assign(Object.assign({}, info), { zIndex: this._zIndex + 1 }));
             this.addChild(view);
             view.addEventListener('click', this._onitemclick);
-            (_a = view.submenu) === null || _a === void 0 ? void 0 : _a.addEventListener(MenuEventType.ItemClick, this._onsubmenuitemclick);
+            (_a = view.submenu) === null || _a === void 0 ? void 0 : _a.addEventListener(Events_1.MenuEventType.ItemClick, this._onsubmenuitemclick);
             new HoverOb_1.HoverOb(view.inner).setCallback((hover) => {
                 if (!hover) {
                     return;
@@ -814,9 +822,9 @@ class Menu extends View_1.View {
     }
 }
 exports.Menu = Menu;
-Menu.EventType = MenuEventType;
+Menu.EventType = Events_1.MenuEventType;
 
-},{"../BaseView/View":5,"../Observer/HoverOb":10,"../utils":11}],7:[function(require,module,exports){
+},{"../../BaseView/Styles":4,"../../BaseView/View":5,"../../Observer/HoverOb":12,"../../utils":13,"./Events":6,"./ItemView":7}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DockableEventType = exports.ViewEventType = exports.EventType = void 0;
@@ -825,19 +833,19 @@ var EventType;
     EventType["ViewDragStart"] = "viewdragstart";
     EventType["ViewDragging"] = "viewdrag";
     EventType["ViewDragEnd"] = "viewdragend";
-})(EventType = exports.EventType || (exports.EventType = {}));
+})(EventType || (exports.EventType = EventType = {}));
 var ViewEventType;
 (function (ViewEventType) {
     ViewEventType["Added"] = "viewadded";
     ViewEventType["Removed"] = "viewremoved";
-})(ViewEventType = exports.ViewEventType || (exports.ViewEventType = {}));
+})(ViewEventType || (exports.ViewEventType = ViewEventType = {}));
 var DockableEventType;
 (function (DockableEventType) {
     DockableEventType["Docked"] = "docked";
     DockableEventType["Undocked"] = "undocked";
-})(DockableEventType = exports.DockableEventType || (exports.DockableEventType = {}));
+})(DockableEventType || (exports.DockableEventType = DockableEventType = {}));
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ButtonGroup = exports.ButtonGroupMode = void 0;
@@ -846,7 +854,7 @@ var ButtonGroupMode;
     ButtonGroupMode[ButtonGroupMode["None"] = 0] = "None";
     ButtonGroupMode[ButtonGroupMode["Single"] = 1] = "Single";
     ButtonGroupMode[ButtonGroupMode["Multipy"] = 2] = "Multipy";
-})(ButtonGroupMode = exports.ButtonGroupMode || (exports.ButtonGroupMode = {}));
+})(ButtonGroupMode || (exports.ButtonGroupMode = ButtonGroupMode = {}));
 class ButtonGroup {
     set onClick(v) { this._onClick = v; }
     constructor(inits) {
@@ -882,7 +890,7 @@ class ButtonGroup {
 }
 exports.ButtonGroup = ButtonGroup;
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FocusOb = void 0;
@@ -915,7 +923,7 @@ class FocusOb {
 }
 exports.FocusOb = FocusOb;
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HoverOb = void 0;
@@ -994,7 +1002,7 @@ class HoverOb {
 }
 exports.HoverOb = HoverOb;
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findParent = exports.reValue = exports.getValue = void 0;
@@ -1018,7 +1026,7 @@ function findParent(any, check) {
 }
 exports.findParent = findParent;
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shiftable = void 0;
@@ -1038,7 +1046,7 @@ class Shiftable {
 }
 exports.Shiftable = Shiftable;
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
@@ -1554,7 +1562,7 @@ function main() {
     });
 }
 
-},{"../../dist":26,"../../dist/event":19,"./G/BaseView/Button":1,"./G/BaseView/SizeType":2,"./G/BaseView/Styles":4,"./G/BaseView/View":5,"./G/CompoundView/Menu":6,"./G/Helper/ButtonGroup":8,"./Shiftable":12}],14:[function(require,module,exports){
+},{"../../dist":28,"../../dist/event":21,"./G/BaseView/Button":1,"./G/BaseView/SizeType":2,"./G/BaseView/Styles":4,"./G/BaseView/View":5,"./G/CompoundView/Menu":8,"./G/Helper/ButtonGroup":10,"./Shiftable":14}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Board = void 0;
@@ -1933,7 +1941,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":19,"../shape":49,"../tools":84,"../utils":96,"./Layer":15}],15:[function(require,module,exports){
+},{"../event":21,"../shape":51,"../tools":86,"../utils":98,"./Layer":17}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2007,7 +2015,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{"../utils/Css":89}],16:[function(require,module,exports){
+},{"../utils/Css":91}],18:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2027,7 +2035,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Layer"), exports);
 __exportStar(require("./Board"), exports);
 
-},{"./Board":14,"./Layer":15}],17:[function(require,module,exports){
+},{"./Board":16,"./Layer":17}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventEnum = void 0;
@@ -2037,30 +2045,30 @@ var EventEnum;
     EventEnum["ShapesAdded"] = "SHAPES_ADDED";
     EventEnum["ShapesRemoved"] = "SHAPES_REMOVED";
     EventEnum["ShapesChanged"] = "SHAPES_CHANGED";
-    EventEnum["ShapesMoved"] = "SHAPES_MOVED";
-    EventEnum["ShapesResized"] = "SHAPES_RESIZED";
+    EventEnum["ShapesGeoChanging"] = "SHAPES_GEO_CHANGING";
+    EventEnum["ShapesGeoChanged"] = "SHAPES_GEO_CHANGED";
     EventEnum["ToolChanged"] = "TOOL_CHANGED";
     EventEnum["LayerAdded"] = "LAYER_ADDED";
     EventEnum["LayerRemoved"] = "LAYER_REMOVED";
     EventEnum["ShapesSelected"] = "SHAPES_SELECTED";
     EventEnum["ShapesDeselected"] = "SHAPES_DESELECTED";
-})(EventEnum = exports.EventEnum || (exports.EventEnum = {}));
+})(EventEnum || (exports.EventEnum = EventEnum = {}));
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Events = void 0;
 const EventType_1 = require("./EventType");
 var Events;
 (function (Events) {
-    function pickShapePositionData(data) {
+    function pickShapePosData(data) {
         return {
             i: data.i,
             x: data.x,
-            y: data.y
+            y: data.y,
         };
     }
-    Events.pickShapePositionData = pickShapePositionData;
+    Events.pickShapePosData = pickShapePosData;
     function pickShapeGeoData(data) {
         return {
             i: data.i,
@@ -2071,9 +2079,9 @@ var Events;
         };
     }
     Events.pickShapeGeoData = pickShapeGeoData;
-})(Events = exports.Events || (exports.Events = {}));
+})(Events || (exports.Events = Events = {}));
 
-},{"./EventType":17}],19:[function(require,module,exports){
+},{"./EventType":19}],21:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2093,7 +2101,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Events"), exports);
 __exportStar(require("./EventType"), exports);
 
-},{"./EventType":17,"./Events":18}],20:[function(require,module,exports){
+},{"./EventType":19,"./Events":20}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
@@ -2164,8 +2172,7 @@ class Player {
                 this._addShape(shapeDatas);
                 break;
             }
-            case event_1.EventEnum.ShapesMoved:
-            case event_1.EventEnum.ShapesResized:
+            case event_1.EventEnum.ShapesGeoChanging:
             case event_1.EventEnum.ShapesChanged: {
                 const { shapeDatas } = e.detail;
                 this._changeShapes(shapeDatas, 0);
@@ -2185,8 +2192,7 @@ class Player {
                 this._removeShape(shapeDatas);
                 break;
             }
-            case event_1.EventEnum.ShapesMoved:
-            case event_1.EventEnum.ShapesResized:
+            case event_1.EventEnum.ShapesGeoChanging:
             case event_1.EventEnum.ShapesChanged: {
                 const { shapeDatas } = e.detail;
                 this._changeShapes(shapeDatas, 1);
@@ -2218,7 +2224,7 @@ class Player {
 }
 exports.Player = Player;
 
-},{"../event":19}],21:[function(require,module,exports){
+},{"../event":21}],23:[function(require,module,exports){
 "use strict";
 /******************************************************************
  * Copyright @ 2023 朱剑豪. All rights reserverd.
@@ -2298,11 +2304,11 @@ class Recorder {
 }
 exports.Recorder = Recorder;
 
-},{"../event":19}],22:[function(require,module,exports){
+},{"../event":21}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2323,7 +2329,7 @@ __exportStar(require("./Player"), exports);
 __exportStar(require("./Recorder"), exports);
 __exportStar(require("./Screenplay"), exports);
 
-},{"./Player":20,"./Recorder":21,"./Screenplay":22}],24:[function(require,module,exports){
+},{"./Player":22,"./Recorder":23,"./Screenplay":24}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.builtInFontNames = exports.builtInFontFamilies = void 0;
@@ -2406,7 +2412,7 @@ exports.builtInFontNames = {
     "FZYaoti": "方正姚体"
 };
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FontFamilysChecker = void 0;
@@ -2443,9 +2449,9 @@ var FontFamilysChecker;
     }
     FontFamilysChecker.check = check;
     ;
-})(FontFamilysChecker = exports.FontFamilysChecker || (exports.FontFamilysChecker = {}));
+})(FontFamilysChecker || (exports.FontFamilysChecker = FontFamilysChecker = {}));
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2470,7 +2476,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":16,"./features":23,"./mgr":31,"./shape":49,"./tools":84,"./utils":96}],27:[function(require,module,exports){
+},{"./board":18,"./features":25,"./mgr":33,"./shape":51,"./tools":86,"./utils":98}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultFactory = void 0;
@@ -2570,7 +2576,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":16,"../fonts/builtInFontFamilies":24,"../fonts/checker":25,"../shape/base/Data":33,"../shape/base/Shape":34,"../tools/base/InvalidTool":80,"./FactoryEnum":28,"./Gaia":29,"./ShapesMgr":30}],28:[function(require,module,exports){
+},{"../board":18,"../fonts/builtInFontFamilies":26,"../fonts/checker":27,"../shape/base/Data":35,"../shape/base/Shape":36,"../tools/base/InvalidTool":82,"./FactoryEnum":30,"./Gaia":31,"./ShapesMgr":32}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -2578,7 +2584,7 @@ var FactoryEnum;
 (function (FactoryEnum) {
     FactoryEnum[FactoryEnum["Invalid"] = 0] = "Invalid";
     FactoryEnum[FactoryEnum["Default"] = 1] = "Default";
-})(FactoryEnum = exports.FactoryEnum || (exports.FactoryEnum = {}));
+})(FactoryEnum || (exports.FactoryEnum = FactoryEnum = {}));
 function getFactoryName(type) {
     switch (type) {
         case FactoryEnum.Invalid: return 'FactoryEnum.Invalid';
@@ -2588,7 +2594,7 @@ function getFactoryName(type) {
 }
 exports.getFactoryName = getFactoryName;
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gaia = void 0;
@@ -2683,7 +2689,7 @@ Gaia._shapeInfos = new Map();
 Gaia._factorys = new Map();
 Gaia._factoryInfos = new Map();
 
-},{"../shape/ShapeEnum":32,"../tools/ToolEnum":79}],30:[function(require,module,exports){
+},{"../shape/ShapeEnum":34,"../tools/ToolEnum":81}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultShapesMgr = void 0;
@@ -2752,7 +2758,7 @@ class DefaultShapesMgr {
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/Rect":93}],31:[function(require,module,exports){
+},{"../utils/Rect":95}],33:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2774,7 +2780,7 @@ __exportStar(require("./FactoryEnum"), exports);
 __exportStar(require("./Gaia"), exports);
 __exportStar(require("./ShapesMgr"), exports);
 
-},{"./Factory":27,"./FactoryEnum":28,"./Gaia":29,"./ShapesMgr":30}],32:[function(require,module,exports){
+},{"./Factory":29,"./FactoryEnum":30,"./Gaia":31,"./ShapesMgr":32}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShapeName = exports.ShapeEnum = void 0;
@@ -2791,7 +2797,7 @@ var ShapeEnum;
     ShapeEnum[ShapeEnum["HalfTick"] = 8] = "HalfTick";
     ShapeEnum[ShapeEnum["Lines"] = 9] = "Lines";
     ShapeEnum[ShapeEnum["Img"] = 10] = "Img";
-})(ShapeEnum = exports.ShapeEnum || (exports.ShapeEnum = {}));
+})(ShapeEnum || (exports.ShapeEnum = ShapeEnum = {}));
 function getShapeName(type) {
     switch (type) {
         case ShapeEnum.Invalid: return 'ShapeEnum.Invalid';
@@ -2810,7 +2816,7 @@ function getShapeName(type) {
 }
 exports.getShapeName = getShapeName;
 
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
@@ -3017,7 +3023,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":32}],34:[function(require,module,exports){
+},{"../ShapeEnum":34}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
@@ -3029,12 +3035,12 @@ var ResizeDirection;
     ResizeDirection[ResizeDirection["TopRight"] = 2] = "TopRight";
     ResizeDirection[ResizeDirection["BottomLeft"] = 3] = "BottomLeft";
     ResizeDirection[ResizeDirection["BottomRight"] = 4] = "BottomRight";
-})(ResizeDirection = exports.ResizeDirection || (exports.ResizeDirection = {}));
+})(ResizeDirection || (exports.ResizeDirection = ResizeDirection = {}));
 var Resizable;
 (function (Resizable) {
     Resizable[Resizable["None"] = 0] = "None";
     Resizable[Resizable["All"] = 1] = "All";
-})(Resizable = exports.Resizable || (exports.Resizable = {}));
+})(Resizable || (exports.Resizable = Resizable = {}));
 class Shape {
     constructor(data) {
         this._resizable = Resizable.None;
@@ -3258,7 +3264,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":93}],35:[function(require,module,exports){
+},{"../../utils/Rect":95}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -3296,7 +3302,7 @@ class ShapeNeedPath extends Shape_1.Shape {
 }
 exports.ShapeNeedPath = ShapeNeedPath;
 
-},{"./Shape":34}],36:[function(require,module,exports){
+},{"./Shape":36}],38:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3317,7 +3323,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./ShapeNeedPath"), exports);
 
-},{"./Data":33,"./Shape":34,"./ShapeNeedPath":35}],37:[function(require,module,exports){
+},{"./Data":35,"./Shape":36,"./ShapeNeedPath":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossData = void 0;
@@ -3339,7 +3345,7 @@ class CrossData extends base_1.ShapeData {
 }
 exports.CrossData = CrossData;
 
-},{"../ShapeEnum":32,"../base":36}],38:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeCross = void 0;
@@ -3364,7 +3370,7 @@ class ShapeCross extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeCross = ShapeCross;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Cross, () => new Data_1.CrossData, d => new ShapeCross(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":37}],39:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":39}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossTool = void 0;
@@ -3375,7 +3381,7 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "CrossTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Cross, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Cross, ShapeEnum_1.ShapeEnum.Cross), { name: 'Cross', desc: 'cross drawer', shape: ShapeEnum_1.ShapeEnum.Cross });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],40:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],42:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3396,7 +3402,7 @@ __exportStar(require("./Data"), exports);
 __exportStar(require("./Shape"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":37,"./Shape":38,"./Tool":39}],41:[function(require,module,exports){
+},{"./Data":39,"./Shape":40,"./Tool":41}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickData = void 0;
@@ -3418,7 +3424,7 @@ class HalfTickData extends base_1.ShapeData {
 }
 exports.HalfTickData = HalfTickData;
 
-},{"../ShapeEnum":32,"../base":36}],42:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeHalfTick = void 0;
@@ -3445,7 +3451,7 @@ class ShapeHalfTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeHalfTick = ShapeHalfTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.HalfTick, () => new Data_1.HalfTickData, d => new ShapeHalfTick(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":41}],43:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":43}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HalfTickTool = void 0;
@@ -3456,9 +3462,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "HalfTickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.HalfTick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.HalfTick, ShapeEnum_1.ShapeEnum.HalfTick), { name: 'Half tick', desc: 'half tick drawer', shape: ShapeEnum_1.ShapeEnum.HalfTick });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],44:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":41,"./Shape":42,"./Tool":43,"dup":40}],45:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],46:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":43,"./Shape":44,"./Tool":45,"dup":42}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImgData = exports.ObjectFit = void 0;
@@ -3469,7 +3475,7 @@ var ObjectFit;
     ObjectFit[ObjectFit["Fill"] = 0] = "Fill";
     ObjectFit[ObjectFit["Contain"] = 1] = "Contain";
     ObjectFit[ObjectFit["Cover"] = 2] = "Cover";
-})(ObjectFit = exports.ObjectFit || (exports.ObjectFit = {}));
+})(ObjectFit || (exports.ObjectFit = ObjectFit = {}));
 class ImgData extends base_1.ShapeData {
     get src() {
         return this.s;
@@ -3510,7 +3516,7 @@ class ImgData extends base_1.ShapeData {
 }
 exports.ImgData = ImgData;
 
-},{"../ShapeEnum":32,"../base":36}],46:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -3623,7 +3629,7 @@ class ShapeImg extends base_1.Shape {
 exports.ShapeImg = ShapeImg;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Img, () => new Data_1.ImgData, d => new ShapeImg(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base":36,"./Data":45}],47:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base":38,"./Data":47}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -3634,9 +3640,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Img, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Img, ShapeEnum_1.ShapeEnum.Img), { name: 'Image', desc: 'Image drawer', shape: ShapeEnum_1.ShapeEnum.Img });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],48:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":45,"./Shape":46,"./Tool":47,"dup":40}],49:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],50:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":47,"./Shape":48,"./Tool":49,"dup":42}],51:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3666,7 +3672,7 @@ __exportStar(require("./halftick"), exports);
 __exportStar(require("./lines"), exports);
 __exportStar(require("./img"), exports);
 
-},{"./ShapeEnum":32,"./base":36,"./cross":40,"./halftick":44,"./img":48,"./lines":53,"./oval":57,"./pen":61,"./polygon":65,"./rect":69,"./text":74,"./tick":78}],50:[function(require,module,exports){
+},{"./ShapeEnum":34,"./base":38,"./cross":42,"./halftick":46,"./img":50,"./lines":55,"./oval":59,"./pen":63,"./polygon":67,"./rect":71,"./text":76,"./tick":80}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesData = void 0;
@@ -3704,7 +3710,7 @@ class LinesData extends base_1.ShapeData {
 }
 exports.LinesData = LinesData;
 
-},{"../ShapeEnum":32,"../base":36}],51:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeLines = void 0;
@@ -3818,7 +3824,7 @@ class ShapeLines extends base_1.Shape {
 exports.ShapeLines = ShapeLines;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Lines, () => new Data_1.LinesData, d => new ShapeLines(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base":36,"./Data":50}],52:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base":38,"./Data":52}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LinesTool = void 0;
@@ -4003,9 +4009,9 @@ class LinesTool {
 exports.LinesTool = LinesTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Lines, () => new LinesTool(), { name: 'Lines', desc: 'lines', shape: ShapeEnum_1.ShapeEnum.Lines });
 
-},{"../../event":19,"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../ShapeEnum":32}],53:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":50,"./Shape":51,"./Tool":52,"dup":40}],54:[function(require,module,exports){
+},{"../../event":21,"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../ShapeEnum":34}],55:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":52,"./Shape":53,"./Tool":54,"dup":42}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalData = void 0;
@@ -4025,7 +4031,7 @@ class OvalData extends base_1.ShapeData {
 }
 exports.OvalData = OvalData;
 
-},{"../ShapeEnum":32,"../base":36}],55:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeOval = void 0;
@@ -4049,7 +4055,7 @@ class ShapeOval extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeOval = ShapeOval;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Oval, () => new Data_1.OvalData, d => new ShapeOval(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":54}],56:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":56}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OvalTool = void 0;
@@ -4091,9 +4097,9 @@ class OvalTool extends SimpleTool_1.SimpleTool {
 exports.OvalTool = OvalTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Oval, () => new OvalTool(), { name: 'Oval', desc: 'oval drawer', shape: ShapeEnum_1.ShapeEnum.Oval });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],57:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":54,"./Shape":55,"./Tool":56,"dup":40}],58:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],59:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":56,"./Shape":57,"./Tool":58,"dup":42}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenData = exports.DotsType = void 0;
@@ -4105,7 +4111,7 @@ var DotsType;
     DotsType[DotsType["All"] = 1] = "All";
     DotsType[DotsType["Append"] = 2] = "Append";
     DotsType[DotsType["Subtract"] = 3] = "Subtract";
-})(DotsType = exports.DotsType || (exports.DotsType = {}));
+})(DotsType || (exports.DotsType = DotsType = {}));
 class PenData extends base_1.ShapeData {
     get needFill() {
         return false;
@@ -4152,7 +4158,7 @@ class PenData extends base_1.ShapeData {
 }
 exports.PenData = PenData;
 
-},{"../ShapeEnum":32,"../base":36}],59:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePen = void 0;
@@ -4297,7 +4303,7 @@ class ShapePen extends base_1.Shape {
 exports.ShapePen = ShapePen;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Pen, () => new Data_1.PenData, d => new ShapePen(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base":36,"./Data":58}],60:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base":38,"./Data":60}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PenTool = void 0;
@@ -4377,9 +4383,9 @@ class PenTool {
 exports.PenTool = PenTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Pen, () => new PenTool(), { name: 'Pen', desc: 'simple pen', shape: ShapeEnum_1.ShapeEnum.Pen });
 
-},{"../../event":19,"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../ShapeEnum":32,"./Data":58}],61:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":58,"./Shape":59,"./Tool":60,"dup":40}],62:[function(require,module,exports){
+},{"../../event":21,"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../ShapeEnum":34,"./Data":60}],63:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":60,"./Shape":61,"./Tool":62,"dup":42}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonData = void 0;
@@ -4406,7 +4412,7 @@ class PolygonData extends base_1.ShapeData {
 }
 exports.PolygonData = PolygonData;
 
-},{"../ShapeEnum":32,"../base":36}],63:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapePolygon = void 0;
@@ -4425,7 +4431,7 @@ class ShapePolygon extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapePolygon = ShapePolygon;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Polygon, () => new Data_1.PolygonData, d => new ShapePolygon(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":62}],64:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":64}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PolygonTool = void 0;
@@ -4439,9 +4445,9 @@ const desc = {
 };
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Polygon, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Polygon, ShapeEnum_1.ShapeEnum.Polygon), desc);
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],65:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":62,"./Shape":63,"./Tool":64,"dup":40}],66:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],67:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":64,"./Shape":65,"./Tool":66,"dup":42}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectData = void 0;
@@ -4460,7 +4466,7 @@ class RectData extends base_1.ShapeData {
 }
 exports.RectData = RectData;
 
-},{"../ShapeEnum":32,"../base":36}],67:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRect = void 0;
@@ -4479,7 +4485,7 @@ class ShapeRect extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeRect = ShapeRect;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Rect, () => new Data_1.RectData, d => new ShapeRect(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":66}],68:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":68}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectTool = void 0;
@@ -4490,9 +4496,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "RectTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Rect, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Rect, ShapeEnum_1.ShapeEnum.Rect), { name: 'Rectangle', desc: 'rect drawer', shape: ShapeEnum_1.ShapeEnum.Rect });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],69:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":66,"./Shape":67,"./Tool":68,"dup":40}],70:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],71:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":68,"./Shape":69,"./Tool":70,"dup":42}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextData = void 0;
@@ -4550,7 +4556,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../ShapeEnum":32,"../base":36}],71:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -4728,7 +4734,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/Gaia":29,"../../utils/Rect":93,"../ShapeEnum":32,"../base":36,"./Data":70,"./TextSelection":72}],72:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../utils/Rect":95,"../ShapeEnum":34,"../base":38,"./Data":72,"./TextSelection":74}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -4745,7 +4751,7 @@ class TextSelection {
 }
 exports.TextSelection = TextSelection;
 
-},{}],73:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextTool = void 0;
@@ -4908,7 +4914,7 @@ class TextTool {
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'Text', desc: 'enter some text', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":19,"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../utils/Css":89,"../ShapeEnum":32}],74:[function(require,module,exports){
+},{"../../event":21,"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../utils/Css":91,"../ShapeEnum":34}],76:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4930,7 +4936,7 @@ __exportStar(require("./Shape"), exports);
 __exportStar(require("./TextSelection"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./Data":70,"./Shape":71,"./TextSelection":72,"./Tool":73}],75:[function(require,module,exports){
+},{"./Data":72,"./Shape":73,"./TextSelection":74,"./Tool":75}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickData = void 0;
@@ -4952,7 +4958,7 @@ class TickData extends base_1.ShapeData {
 }
 exports.TickData = TickData;
 
-},{"../ShapeEnum":32,"../base":36}],76:[function(require,module,exports){
+},{"../ShapeEnum":34,"../base":38}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeTick = void 0;
@@ -4975,7 +4981,7 @@ class ShapeTick extends ShapeNeedPath_1.ShapeNeedPath {
 exports.ShapeTick = ShapeTick;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Tick, () => new Data_1.TickData, d => new ShapeTick(d));
 
-},{"../../mgr/Gaia":29,"../ShapeEnum":32,"../base/ShapeNeedPath":35,"./Data":75}],77:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../ShapeEnum":34,"../base/ShapeNeedPath":37,"./Data":77}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TickTool = void 0;
@@ -4986,9 +4992,9 @@ const SimpleTool_1 = require("../../tools/base/SimpleTool");
 Object.defineProperty(exports, "TickTool", { enumerable: true, get: function () { return SimpleTool_1.SimpleTool; } });
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Tick, () => new SimpleTool_1.SimpleTool(ToolEnum_1.ToolEnum.Tick, ShapeEnum_1.ShapeEnum.Tick), { name: 'Tick', desc: 'tick drawer', shape: ShapeEnum_1.ShapeEnum.Tick });
 
-},{"../../mgr/Gaia":29,"../../tools/ToolEnum":79,"../../tools/base/SimpleTool":81,"../ShapeEnum":32}],78:[function(require,module,exports){
-arguments[4][40][0].apply(exports,arguments)
-},{"./Data":75,"./Shape":76,"./Tool":77,"dup":40}],79:[function(require,module,exports){
+},{"../../mgr/Gaia":31,"../../tools/ToolEnum":81,"../../tools/base/SimpleTool":83,"../ShapeEnum":34}],80:[function(require,module,exports){
+arguments[4][42][0].apply(exports,arguments)
+},{"./Data":77,"./Shape":78,"./Tool":79,"dup":42}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToolName = exports.ToolEnum = void 0;
@@ -5006,7 +5012,7 @@ var ToolEnum;
     ToolEnum["HalfTick"] = "TOOL_HALFTICK";
     ToolEnum["Lines"] = "TOOL_Lines";
     ToolEnum["Img"] = "TOOL_Img";
-})(ToolEnum = exports.ToolEnum || (exports.ToolEnum = {}));
+})(ToolEnum || (exports.ToolEnum = ToolEnum = {}));
 function getToolName(type) {
     switch (type) {
         case ToolEnum.Invalid: return 'ToolEnum.Invalid';
@@ -5025,7 +5031,7 @@ function getToolName(type) {
 }
 exports.getToolName = getToolName;
 
-},{}],80:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidTool = void 0;
@@ -5063,7 +5069,7 @@ class InvalidTool {
 }
 exports.InvalidTool = InvalidTool;
 
-},{"../ToolEnum":79}],81:[function(require,module,exports){
+},{"../ToolEnum":81}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleTool = void 0;
@@ -5135,17 +5141,17 @@ class SimpleTool {
             return;
         board.add(shape, true);
         this._rect.start(x, y);
-        this.updateGeo();
+        this.updateGeo(0);
     }
     pointerDraw(dot) {
         const { x, y } = dot;
         this._rect.end(x, y);
-        this.updateGeo();
+        this.updateGeo(1);
     }
     pointerUp(dot) {
         const { x, y } = dot;
         this._rect.end(x, y);
-        this.updateGeo();
+        this.updateGeo(2);
         delete this._curShape;
     }
     applyRect() {
@@ -5153,35 +5159,45 @@ class SimpleTool {
         const { x, y, w, h } = this._rect.gen();
         (_a = this._curShape) === null || _a === void 0 ? void 0 : _a.geo(x, y, w, h);
     }
-    updateGeo() {
+    updateGeo(state) {
         const shape = this._curShape;
         const board = this.board;
         if (!shape || !board)
             return;
-        if (this._prevData) {
-            this.applyRect();
-            return;
+        switch (state) {
+            case 0: {
+                this._prevData = event_1.Events.pickShapeGeoData(shape.data);
+                this._startData = this._prevData;
+                this.applyRect();
+                break;
+            }
+            case 1: {
+                this.applyRect();
+                const curr = event_1.Events.pickShapeGeoData(shape.data);
+                board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
+                    shapeDatas: [[curr, this._prevData]]
+                });
+                this._prevData = curr;
+                break;
+            }
+            case 2: {
+                this.applyRect();
+                const curr = event_1.Events.pickShapeGeoData(shape.data);
+                board.emitEvent(event_1.EventEnum.ShapesGeoChanging, { shapeDatas: [[curr, this._prevData]] });
+                board.emitEvent(event_1.EventEnum.ShapesGeoChanged, { shapeDatas: [[curr, this._startData]] });
+                this._prevData = curr;
+                break;
+            }
         }
-        this._prevData = event_1.Events.pickShapeGeoData(shape.data);
-        const prev = this._prevData;
-        const emitEvent = () => {
-            const curr = event_1.Events.pickShapeGeoData(shape.data);
-            board.emitEvent(event_1.EventEnum.ShapesResized, {
-                shapeDatas: [[curr, prev]]
-            });
-            delete this._prevData;
-        };
-        this.applyRect();
-        setTimeout(emitEvent, 1000 / 60);
     }
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":19,"../../utils/RectHelper":94}],82:[function(require,module,exports){
+},{"../../event":21,"../../utils/RectHelper":96}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],83:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5202,7 +5218,7 @@ __exportStar(require("./InvalidTool"), exports);
 __exportStar(require("./SimpleTool"), exports);
 __exportStar(require("./Tool"), exports);
 
-},{"./InvalidTool":80,"./SimpleTool":81,"./Tool":82}],84:[function(require,module,exports){
+},{"./InvalidTool":82,"./SimpleTool":83,"./Tool":84}],86:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5223,7 +5239,7 @@ __exportStar(require("./base"), exports);
 __exportStar(require("./selector"), exports);
 __exportStar(require("./ToolEnum"), exports);
 
-},{"./ToolEnum":79,"./base":83,"./selector":86}],85:[function(require,module,exports){
+},{"./ToolEnum":81,"./base":85,"./selector":88}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
@@ -5245,7 +5261,7 @@ var SelectorStatus;
     SelectorStatus[SelectorStatus["Selecting"] = 4] = "Selecting";
     SelectorStatus[SelectorStatus["ReadyForResizing"] = 5] = "ReadyForResizing";
     SelectorStatus[SelectorStatus["Resizing"] = 6] = "Resizing";
-})(SelectorStatus = exports.SelectorStatus || (exports.SelectorStatus = {}));
+})(SelectorStatus || (exports.SelectorStatus = SelectorStatus = {}));
 const Tag = '[SelectorTool]';
 class SelectorTool {
     get type() { return ToolEnum_1.ToolEnum.Selector; }
@@ -5289,7 +5305,9 @@ class SelectorTool {
             const data = {
                 i: v.data.i,
                 x: v.data.x,
-                y: v.data.y
+                y: v.data.y,
+                w: v.data.w,
+                h: v.data.h,
             };
             if (startX === undefined) {
                 x = x === undefined ? v.data.x : Math.min(x, v.data.x);
@@ -5297,7 +5315,8 @@ class SelectorTool {
             }
             return {
                 shape: v,
-                prevData: data
+                prevData: data,
+                startData: data,
             };
         });
         this._prevPos = { x: x, y: y };
@@ -5310,7 +5329,7 @@ class SelectorTool {
         this._prevPos.x += diffX;
         this._prevPos.y += diffY;
         this._shapes.forEach(v => {
-            v.prevData = Events_1.Events.pickShapePositionData(v.shape.data);
+            v.prevData = Events_1.Events.pickShapePosData(v.shape.data);
             !v.shape.locked && v.shape.moveBy(diffX, diffY);
         });
         return this;
@@ -5428,22 +5447,32 @@ class SelectorTool {
             textTool.connect(this._shapes[0].shape);
         }
     }
-    emitMovedEvent(immediately) {
-        if (this._waiting && !immediately)
+    emitMovedEvent(immediate) {
+        if (this._waiting && !immediate)
             return;
         this._waiting = true;
         const board = this.board;
         if (!board)
             return;
-        board.emitEvent(event_1.EventEnum.ShapesMoved, {
+        board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
             shapeDatas: this._shapes.map(v => {
                 const ret = [
-                    Events_1.Events.pickShapePositionData(v.shape.data), v.prevData
+                    Events_1.Events.pickShapePosData(v.shape.data), v.prevData
                 ];
                 return ret;
             })
         });
         setTimeout(() => { this._waiting = false; }, 1000 / 30);
+        if (immediate) {
+            board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
+                shapeDatas: this._shapes.map(v => {
+                    const ret = [
+                        Events_1.Events.pickShapePosData(v.shape.data), v.startData
+                    ];
+                    return ret;
+                })
+            });
+        }
     }
     updateGeo() {
         const { x, y, w, h } = this._rectHelper.gen();
@@ -5456,7 +5485,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":19,"../../event/Events":18,"../../mgr/Gaia":29,"../../shape":49,"../../shape/base/Data":33,"../../shape/rect/Shape":67,"../../utils/RectHelper":94,"../../utils/Vector":95,"../ToolEnum":79}],86:[function(require,module,exports){
+},{"../../event":21,"../../event/Events":20,"../../mgr/Gaia":31,"../../shape":51,"../../shape/base/Data":35,"../../shape/rect/Shape":69,"../../utils/RectHelper":96,"../../utils/Vector":97,"../ToolEnum":81}],88:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5475,7 +5504,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./SelectorTool"), exports);
 
-},{"./SelectorTool":85}],87:[function(require,module,exports){
+},{"./SelectorTool":87}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
@@ -5497,7 +5526,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],88:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -5654,7 +5683,7 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":87}],89:[function(require,module,exports){
+},{"./BinaryRange":89}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Css = void 0;
@@ -5671,17 +5700,17 @@ var Css;
         ele.innerHTML += style;
     }
     Css.add = add;
-})(Css = exports.Css || (exports.Css = {}));
-
-},{}],90:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
-},{}],91:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+})(Css || (exports.Css = Css = {}));
 
 },{}],92:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],93:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -5912,7 +5941,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":93}],93:[function(require,module,exports){
+},{"./Rect":95}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -5987,7 +6016,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],94:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -5996,13 +6025,13 @@ var GenMode;
 (function (GenMode) {
     GenMode[GenMode["FromCorner"] = 0] = "FromCorner";
     GenMode[GenMode["FromCenter"] = 1] = "FromCenter";
-})(GenMode = exports.GenMode || (exports.GenMode = {}));
+})(GenMode || (exports.GenMode = GenMode = {}));
 var LockMode;
 (function (LockMode) {
     LockMode[LockMode["Default"] = 0] = "Default";
     LockMode[LockMode["Square"] = 1] = "Square";
     LockMode[LockMode["Circle"] = 2] = "Circle";
-})(LockMode = exports.LockMode || (exports.LockMode = {}));
+})(LockMode || (exports.LockMode = LockMode = {}));
 class RectHelper {
     constructor() {
         this._from = Vector_1.Vector.pure(NaN, NaN);
@@ -6039,7 +6068,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":95}],95:[function(require,module,exports){
+},{"./Vector":97}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -6069,7 +6098,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],96:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6099,4 +6128,4 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 
-},{"./BinaryRange":87,"./BinaryTree":88,"./Dot":90,"./ITree":91,"./QuadTree":92,"./Rect":93,"./Vector":95}]},{},[13]);
+},{"./BinaryRange":89,"./BinaryTree":90,"./Dot":92,"./ITree":93,"./QuadTree":94,"./Rect":95,"./Vector":97}]},{},[15]);
