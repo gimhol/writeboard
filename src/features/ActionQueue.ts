@@ -81,7 +81,6 @@ export class ActionQueue {
       }
     }
   }
-
   private _undoAction(e: CustomEvent<any>) {
     switch (e.type) {
       case EventEnum.ShapesDone: {
@@ -103,11 +102,11 @@ export class ActionQueue {
   }
   private _addShape(shapeDatas?: IShapeData[]) {
     const shapes = shapeDatas?.map(v => this._actor!.factory.newShape(v));
-    shapes && this._actor!.add(shapes, false);
+    shapes && this._actor!.add(shapes, true);
   }
   private _removeShape(shapeDatas?: IShapeData[]) {
     const shapes = shapeDatas?.map(data => this._actor!.find(data.i)!).filter(v => v);
-    shapes && this._actor!.remove(shapes, false);
+    shapes && this._actor!.remove(shapes, true);
   }
   private _changeShapes(shapeDatas: [Partial<IShapeData>, Partial<IShapeData>][], which: 0 | 1) {
     shapeDatas.forEach((currAndPrev) => {
