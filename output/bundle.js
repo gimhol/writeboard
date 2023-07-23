@@ -2217,11 +2217,11 @@ class ActionQueue {
     }
     _addShape(shapeDatas) {
         const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(v => this._actor.factory.newShape(v));
-        shapes && this._actor.add(shapes, false);
+        shapes && this._actor.add(shapes, true);
     }
     _removeShape(shapeDatas) {
         const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(data => this._actor.find(data.i)).filter(v => v);
-        shapes && this._actor.remove(shapes, false);
+        shapes && this._actor.remove(shapes, true);
     }
     _changeShapes(shapeDatas, which) {
         shapeDatas.forEach((currAndPrev) => {
@@ -4951,7 +4951,7 @@ class TextTool {
                 this._newTxt = false;
                 (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
                     isAction: true,
-                    shapeDatas: [shape.data.copy()]
+                    shapeDatas: [preShape.data.copy()]
                 });
             }
         }
