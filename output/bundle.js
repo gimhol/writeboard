@@ -1581,6 +1581,9 @@ const utils_1 = require("../utils");
 const Layer_1 = require("./Layer");
 const Tag = '[Board]';
 class Board {
+    get whoami() {
+        return this._whoami;
+    }
     get width() {
         return this._width;
     }
@@ -1655,7 +1658,7 @@ class Board {
         this._mousedown = false;
         this._tools = {};
         this._selects = [];
-        this._operator = 'whiteboard';
+        this._whoami = 'local';
         this._editingLayerId = '';
         this._width = 512;
         this._height = 512;
@@ -1803,7 +1806,7 @@ class Board {
         const from = this._toolType;
         this._toolType = to;
         this.emitEvent(event_1.EventEnum.ToolChanged, {
-            operator: this._operator,
+            operator: this._whoami,
             from, to
         });
         (_a = this._tool) === null || _a === void 0 ? void 0 : _a.end();
@@ -1819,8 +1822,11 @@ class Board {
     get selects() {
         return this._selects;
     }
-    add(arg0, emit) {
-        const shapes = Array.isArray(arg0) ? arg0 : [arg0];
+    add(shapes, opts) {
+        var _a;
+        const emit = !!opts;
+        const operator = (_a = opts === null || opts === void 0 ? void 0 : opts.operator) !== null && _a !== void 0 ? _a : this._whoami;
+        shapes = Array.isArray(shapes) ? shapes : [shapes];
         if (!shapes.length)
             return 0;
         const ret = this._shapesMgr.add(...shapes);
@@ -1832,19 +1838,27 @@ class Board {
         });
         if (emit) {
             this.emitEvent(event_1.EventEnum.ShapesAdded, {
+                operator,
                 shapeDatas: shapes.map(v => v.data.copy())
             });
         }
         return ret;
     }
-    remove(arg0, emit) {
-        const shapes = Array.isArray(arg0) ? arg0 : [arg0];
+    remove(shapes, opts) {
+        var _a;
+        const emit = !!opts;
+        const operator = (_a = opts === null || opts === void 0 ? void 0 : opts.operator) !== null && _a !== void 0 ? _a : this._whoami;
+        shapes = Array.isArray(shapes) ? shapes : [shapes];
         if (!shapes.length)
             return 0;
-        this.setSelects(this.selects.filter(a => !shapes.find(b => a === b)), emit);
+        const remains = shapes.filter(a => !this.selects.find(b => a === b));
+        this.setSelects(remains, emit);
         if (emit) {
             const shapeDatas = shapes.map(v => v.data);
-            shapeDatas.length && this.emitEvent(event_1.EventEnum.ShapesRemoved, { shapeDatas });
+            shapeDatas.length && this.emitEvent(event_1.EventEnum.ShapesRemoved, {
+                operator,
+                shapeDatas
+            });
         }
         const ret = this._shapesMgr.remove(...shapes);
         shapes.forEach(item => {
@@ -1888,19 +1902,28 @@ class Board {
      * @param {true} [emit] 是否发射事件
      * @memberof Board
      */
-    selectAt(rect, emit) {
+    selectAt(rect, opts) {
         const hits = this._shapesMgr.hits(rect);
-        return this.setSelects(hits, emit);
+        return this.setSelects(hits, opts);
     }
-    setSelects(shapes, emit) {
+    setSelects(shapes, opts) {
+        var _a;
+        const emit = !!opts;
+        const operator = (_a = opts === null || opts === void 0 ? void 0 : opts.operator) !== null && _a !== void 0 ? _a : this._whoami;
         const selecteds = shapes.filter(v => !v.selected);
         const desecteds = this._selects.filter(a => !shapes.find(b => a === b));
         desecteds.forEach(v => v.selected = false);
         selecteds.forEach(v => v.selected = true);
         this._selects = shapes;
         if (emit) {
-            selecteds.length && this.emitEvent(event_1.EventEnum.ShapesSelected, selecteds.map(v => v.data));
-            desecteds.length && this.emitEvent(event_1.EventEnum.ShapesDeselected, desecteds.map(v => v.data));
+            selecteds.length && this.emitEvent(event_1.EventEnum.ShapesSelected, {
+                operator,
+                shapeDatas: selecteds.map(v => v.data)
+            });
+            desecteds.length && this.emitEvent(event_1.EventEnum.ShapesDeselected, {
+                operator,
+                shapeDatas: desecteds.map(v => v.data)
+            });
         }
         return [selecteds, desecteds];
     }
@@ -2135,6 +2158,9 @@ class ActionQueue {
                 return;
             }
             const func = (e) => {
+                if (e.detail.operator !== actor.whoami) {
+                    return;
+                }
                 if (this._actionsIdx < this._actions.length - 1) {
                     this._actions = this._actions.slice(0, this._actionsIdx);
                 }
@@ -2152,6 +2178,7 @@ class ActionQueue {
     }
     undo() {
         if (this._actionsIdx < 0) {
+            console.log('[ActionQueue] no more undo.');
             return this;
         }
         this._actions[this._actionsIdx][0]();
@@ -2160,6 +2187,7 @@ class ActionQueue {
     }
     redo() {
         if (this._actionsIdx >= this._actions.length - 1) {
+            console.log('[ActionQueue] no more redo.');
             return this;
         }
         ++this._actionsIdx;
@@ -2178,11 +2206,11 @@ const _changeShapes = (board, shapeDatas, which) => {
 };
 const _addShapes = (board, shapeDatas) => {
     const shapes = shapeDatas.map(v => board.factory.newShape(v));
-    board.add(shapes, true);
+    board.add(shapes, { operator: 'action_queue' });
 };
 const _removeShapes = (board, shapeDatas) => {
     const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(data => board.find(data.i)).filter(v => v);
-    board.remove(shapes, true);
+    board.remove(shapes, { operator: 'action_queue' });
 };
 mgr_1.Gaia.registAction(EventType_1.EventEnum.ShapesDone, {
     undo: (board, event) => {
@@ -2208,10 +2236,18 @@ mgr_1.Gaia.registAction(EventType_1.EventEnum.ShapesGeoChanged, {
     undo: (board, event) => {
         const { detail: { shapeDatas } } = event;
         _changeShapes(board, shapeDatas, 1);
+        board.emitEvent(EventType_1.EventEnum.ShapesGeoChanged, {
+            operator: 'action_queue',
+            shapeDatas: shapeDatas.map(arr => [arr[1], arr[0]])
+        });
     },
     redo: (board, event) => {
         const { detail: { shapeDatas } } = event;
         _changeShapes(board, shapeDatas, 0);
+        board.emitEvent(EventType_1.EventEnum.ShapesGeoChanged, {
+            operator: 'action_queue',
+            shapeDatas
+        });
     }
 });
 
@@ -4013,6 +4049,7 @@ class LinesTool {
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
+                operator: board.whoami,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4077,6 +4114,7 @@ class LinesTool {
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
+                operator: board.whoami,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4124,6 +4162,7 @@ class LinesTool {
         if (!this._pressingShift) {
             shape.data.editing = false;
             (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
+                operator: this._board.whoami,
                 shapeDatas: [shape.data.copy()]
             });
             delete this._curShape;
@@ -4469,6 +4508,7 @@ class PenTool {
             curr.dotsType = Data_1.DotsType.Append;
             curr.coords.splice(0, prev.coords.length);
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
+                operator: board.whoami,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4506,6 +4546,7 @@ class PenTool {
             shape.data.editing = false;
         this.addDot(dot, 'last');
         (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
+            operator: this._board.whoami,
             shapeDatas: [shape.data.copy()]
         });
         this.end();
@@ -4934,6 +4975,7 @@ class TextTool {
             else if (this._newTxt) {
                 this._newTxt = false;
                 (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
+                    operator: this._board.whoami,
                     shapeDatas: [preShape.data.copy()]
                 });
             }
@@ -4970,6 +5012,7 @@ class TextTool {
                 return;
             const curr = shape.data.copy();
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
+                operator: board.whoami,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -5317,6 +5360,7 @@ class SimpleTool {
                 this.applyRect();
                 const curr = event_1.Events.pickShapeGeoData(shape.data);
                 board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
+                    operator: board.whoami,
                     shapeDatas: [[curr, this._prevData]]
                 });
                 this._prevData = curr;
@@ -5326,12 +5370,15 @@ class SimpleTool {
                 this.applyRect();
                 const curr = event_1.Events.pickShapeGeoData(shape.data);
                 board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
+                    operator: board.whoami,
                     shapeDatas: [[curr, this._prevData]]
                 });
                 board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
+                    operator: board.whoami,
                     shapeDatas: [[curr, this._startData]]
                 });
                 board.emitEvent(event_1.EventEnum.ShapesDone, {
+                    operator: board.whoami,
                     shapeDatas: [shape.data.copy()]
                 });
                 this._prevData = curr;
@@ -5604,6 +5651,7 @@ class SelectorTool {
         if (!board)
             return;
         board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
+            operator: board.whoami,
             shapeDatas: this._shapes.map(v => {
                 const ret = [
                     Events_1.Events.pickShapePosData(v.shape.data), v.prevData
@@ -5614,6 +5662,7 @@ class SelectorTool {
         setTimeout(() => { this._waiting = false; }, 1000 / 30);
         if (immediate) {
             board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
+                operator: board.whoami,
                 shapeDatas: this._shapes.map(v => {
                     const ret = [
                         Events_1.Events.pickShapePosData(v.shape.data), v.startData

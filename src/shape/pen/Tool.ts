@@ -37,6 +37,7 @@ export class PenTool implements ITool {
       curr.dotsType = DotsType.Append
       curr.coords.splice(0, prev.coords.length)
       board.emitEvent(EventEnum.ShapesChanging, {
+        operator: board.whoami,
         shapeType: this.type,
         shapeDatas: [[curr, prev]]
       })
@@ -72,6 +73,7 @@ export class PenTool implements ITool {
       shape.data.editing = false
     this.addDot(dot, 'last')
     this._board?.emitEvent(EventEnum.ShapesDone, {
+      operator: this._board.whoami,
       shapeDatas: [shape!.data.copy()]
     })
     this.end()

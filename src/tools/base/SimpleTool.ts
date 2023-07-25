@@ -107,6 +107,7 @@ export class SimpleTool implements ITool {
         this.applyRect();
         const curr = Event.pickShapeGeoData(shape.data);
         board.emitEvent(EventEnum.ShapesGeoChanging, {
+          operator: board.whoami,
           shapeDatas: [[curr, this._prevData!]]
         })
         this._prevData = curr;
@@ -116,12 +117,15 @@ export class SimpleTool implements ITool {
         this.applyRect();
         const curr = Event.pickShapeGeoData(shape.data);
         board.emitEvent(EventEnum.ShapesGeoChanging, {
+          operator: board.whoami,
           shapeDatas: [[curr, this._prevData!]]
         })
         board.emitEvent(EventEnum.ShapesGeoChanged, {
+          operator: board.whoami,
           shapeDatas: [[curr, this._startData!]]
         })
         board.emitEvent(EventEnum.ShapesDone, {
+          operator: board.whoami,
           shapeDatas: [shape.data.copy()]
         })
         this._prevData = curr;

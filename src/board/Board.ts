@@ -26,11 +26,13 @@ export class Board {
   private _tool: ITool | undefined
   private _selects: Shape[] = []
   private _element: HTMLElement;
-  private _operator = 'whiteboard'
+  private _whoami = 'local'
   private _editingLayerId: string = '';
   private _width = 512;
   private _height = 512;
-
+  get whoami() {
+    return this._whoami
+  }
   get width() {
     return this._width;
   }
@@ -236,7 +238,7 @@ export class Board {
     const from = this._toolType
     this._toolType = to
     this.emitEvent(EventEnum.ToolChanged, {
-      operator: this._operator,
+      operator: this._whoami,
       from, to
     })
 
@@ -254,12 +256,11 @@ export class Board {
   get selects() {
     return this._selects
   }
-
-  add(shape: Shape, emit?: boolean): number;
-  add(shapes: Shape[], emit?: boolean): number;
-  add(arg0: Shape[] | Shape, emit?: boolean): number {
-    const shapes = Array.isArray(arg0) ? arg0 : [arg0];
-    if (!shapes.length) return 0
+  add(shapes: Shape[] | Shape, opts?: boolean | { operator: string }): number {
+    const emit = !!opts;
+    const operator = (opts as any)?.operator ?? this._whoami;
+    shapes = Array.isArray(shapes) ? shapes : [shapes];
+    if (!shapes.length) return 0;
     const ret = this._shapesMgr.add(...shapes)
     shapes.forEach(item => {
       item.board = this
@@ -268,6 +269,7 @@ export class Board {
     })
     if (emit) {
       this.emitEvent(EventEnum.ShapesAdded, {
+        operator,
         shapeDatas: shapes.map(v => v.data.copy())
       })
     }
@@ -275,16 +277,22 @@ export class Board {
     return ret
   }
 
-  remove(shape: Shape, emit?: boolean): number;
-  remove(shapes: Shape[], emit?: boolean): number;
-  remove(arg0: Shape[] | Shape, emit?: boolean): number {
-    const shapes = Array.isArray(arg0) ? arg0 : [arg0];
+  remove(shapes: Shape[] | Shape, opts?: boolean | { operator: string }): number {
+    const emit = !!opts;
+    const operator = (opts as any)?.operator ?? this._whoami;
+    shapes = Array.isArray(shapes) ? shapes : [shapes];
+
     if (!shapes.length) return 0
-    this.setSelects(this.selects.filter(a => !shapes.find(b => a === b)), emit);
+
+    const remains = shapes.filter(a => !this.selects.find(b => a === b))
+    this.setSelects(remains, emit);
 
     if (emit) {
       const shapeDatas = shapes.map(v => v.data);
-      shapeDatas.length && this.emitEvent(EventEnum.ShapesRemoved, { shapeDatas })
+      shapeDatas.length && this.emitEvent(EventEnum.ShapesRemoved, {
+        operator,
+        shapeDatas
+      })
     }
 
     const ret = this._shapesMgr.remove(...shapes);
@@ -296,7 +304,7 @@ export class Board {
     return ret
   }
 
-  removeAll(emit?: boolean) {
+  removeAll(emit?: boolean | { operator: string }): number {
     return this.remove(this._shapesMgr.shapes(), emit)
   }
 
@@ -335,20 +343,28 @@ export class Board {
    * @param {true} [emit] 是否发射事件
    * @memberof Board
    */
-  selectAt(rect: IRect, emit?: boolean): [Shape[], Shape[]] {
+  selectAt(rect: IRect, opts?: boolean | { operator: string }): [Shape[], Shape[]] {
     const hits = this._shapesMgr.hits(rect);
-    return this.setSelects(hits, emit);
+    return this.setSelects(hits, opts);
   }
 
-  setSelects(shapes: Shape[], emit?: boolean): [Shape[], Shape[]] {
+  setSelects(shapes: Shape[], opts?: boolean | { operator: string }): [Shape[], Shape[]] {
+    const emit = !!opts;
+    const operator = (opts as any)?.operator ?? this._whoami;
     const selecteds = shapes.filter(v => !v.selected);
     const desecteds = this._selects.filter(a => !shapes.find(b => a === b))
     desecteds.forEach(v => v.selected = false)
     selecteds.forEach(v => v.selected = true)
     this._selects = shapes
     if (emit) {
-      selecteds.length && this.emitEvent(EventEnum.ShapesSelected, selecteds.map(v => v.data));
-      desecteds.length && this.emitEvent(EventEnum.ShapesDeselected, desecteds.map(v => v.data));
+      selecteds.length && this.emitEvent(EventEnum.ShapesSelected, {
+        operator,
+        shapeDatas: selecteds.map(v => v.data)
+      });
+      desecteds.length && this.emitEvent(EventEnum.ShapesDeselected, {
+        operator,
+        shapeDatas: desecteds.map(v => v.data)
+      });
     }
     return [selecteds, desecteds]
   }

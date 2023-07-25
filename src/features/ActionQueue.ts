@@ -15,6 +15,9 @@ export class ActionQueue {
       const handler = Gaia.action(eventType);
       if (!handler) { return }
       const func: any = (e: CustomEvent) => {
+        if (e.detail.operator !== actor.whoami) {
+          return;
+        }
         if (this._actionsIdx < this._actions.length - 1) {
           this._actions = this._actions.slice(0, this._actionsIdx);
         }
@@ -31,13 +34,19 @@ export class ActionQueue {
     return this;
   }
   undo(): this {
-    if (this._actionsIdx < 0) { return this; }
+    if (this._actionsIdx < 0) {
+      console.log('[ActionQueue] no more undo.')
+      return this;
+    }
     this._actions[this._actionsIdx][0]();
     --this._actionsIdx;
     return this;
   }
   redo(): this {
-    if (this._actionsIdx >= this._actions.length - 1) { return this; }
+    if (this._actionsIdx >= this._actions.length - 1) {
+      console.log('[ActionQueue] no more redo.')
+      return this;
+    }
     ++this._actionsIdx;
     this._actions[this._actionsIdx][1]();
     return this;
@@ -56,11 +65,11 @@ const _changeShapes = (board: Board, shapeDatas: [Partial<IShapeData>, Partial<I
 }
 const _addShapes = (board: Board, shapeDatas: IShapeData[]) => {
   const shapes = shapeDatas.map(v => board.factory.newShape(v));
-  board.add(shapes, true);
+  board.add(shapes, { operator: 'action_queue' });
 }
 const _removeShapes = (board: Board, shapeDatas: IShapeData[]) => {
   const shapes = shapeDatas?.map(data => board.find(data.i)!).filter(v => v);
-  board.remove(shapes, true);
+  board.remove(shapes, { operator: 'action_queue' });
 }
 Gaia.registAction(EventEnum.ShapesDone, {
   undo: (board, event) => {
@@ -86,9 +95,17 @@ Gaia.registAction(EventEnum.ShapesGeoChanged, {
   undo: (board, event) => {
     const { detail: { shapeDatas } } = event;
     _changeShapes(board, shapeDatas, 1);
+    board.emitEvent(EventEnum.ShapesGeoChanged, {
+      operator: 'action_queue',
+      shapeDatas: shapeDatas.map(arr => [arr[1], arr[0]]) as typeof shapeDatas
+    })
   },
   redo: (board, event) => {
     const { detail: { shapeDatas } } = event;
     _changeShapes(board, shapeDatas, 0);
+    board.emitEvent(EventEnum.ShapesGeoChanged, {
+      operator: 'action_queue',
+      shapeDatas
+    })
   }
 })
