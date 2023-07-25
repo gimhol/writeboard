@@ -7,13 +7,11 @@ import { EventEnum } from "./EventType";
 export namespace Events {
   export interface IShapesDetail {
     operator?: string;
-    isAction: boolean;
     shapeDatas: IShapeData[];
   }
   export interface IShagesChangedDetail<T extends Partial<IShapeData>> {
     shapeType?: ShapeType;
     operator?: string;
-    isAction: boolean;
     shapeDatas: [T, T][];
   }
   export interface IShapeGeoData {
@@ -63,7 +61,7 @@ export namespace Events {
     [EventEnum.ShapesRemoved]: CustomEvent<IShapesDetail>;
     [EventEnum.ShapesChanging]: CustomEvent<IShagesChangedDetail<IShapeData>>;
     [EventEnum.ShapesChanged]: CustomEvent<IShagesChangedDetail<IShapeData>>;
-    [EventEnum.ShapesDone]: IShapesDetail;
+    [EventEnum.ShapesDone]: CustomEvent<IShapesDetail>;
     [EventEnum.ShapesGeoChanging]: CustomEvent<IShagesChangedDetail<IShapeGeoData>>;
     [EventEnum.ShapesGeoChanged]: CustomEvent<IShagesChangedDetail<IShapeGeoData>>;
     [EventEnum.ToolChanged]: CustomEvent<IToolChangedDetail>;

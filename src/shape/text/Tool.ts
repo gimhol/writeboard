@@ -56,7 +56,6 @@ export class TextTool implements ITool {
       } else if(this._newTxt){
         this._newTxt = false;
         this._board?.emitEvent(EventEnum.ShapesDone, {
-          isAction: true,
           shapeDatas: [preShape.data.copy()]
         })
       }
@@ -92,7 +91,6 @@ export class TextTool implements ITool {
 
     const curr = shape.data.copy()
     board.emitEvent(EventEnum.ShapesChanging, {
-      isAction: false,
       shapeType: this.type,
       shapeDatas: [[curr, prev]]
     })

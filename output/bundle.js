@@ -1832,7 +1832,6 @@ class Board {
         });
         if (emit) {
             this.emitEvent(event_1.EventEnum.ShapesAdded, {
-                isAction: false,
                 shapeDatas: shapes.map(v => v.data.copy())
             });
         }
@@ -1844,10 +1843,8 @@ class Board {
             return 0;
         this.setSelects(this.selects.filter(a => !shapes.find(b => a === b)), emit);
         if (emit) {
-            const removeds = shapes.map(v => v.data);
-            removeds.length && this.emitEvent(event_1.EventEnum.ShapesRemoved, {
-                isAction: true, shapeDatas: removeds
-            });
+            const shapeDatas = shapes.map(v => v.data);
+            shapeDatas.length && this.emitEvent(event_1.EventEnum.ShapesRemoved, { shapeDatas });
         }
         const ret = this._shapesMgr.remove(...shapes);
         shapes.forEach(item => {
@@ -2119,52 +2116,45 @@ __exportStar(require("./EventType"), exports);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActionQueue = void 0;
 const EventType_1 = require("../event/EventType");
+const mgr_1 = require("../mgr");
 class ActionQueue {
     constructor() {
         this._actionsIdx = -1;
         this._actions = [];
         this._cancellers = [];
-        this._supportEvents = [
-            EventType_1.EventEnum.ShapesDone,
-            EventType_1.EventEnum.ShapesGeoChanged,
-            EventType_1.EventEnum.ShapesRemoved
-        ];
-    }
-    getActor() {
-        return this._actor;
     }
     setActor(actor) {
-        if (this._actor === actor) {
-            return this;
-        }
         this._cancellers.forEach(v => v());
         this._cancellers = [];
-        if (actor) {
-            this._supportEvents.forEach(v => {
-                const func = (e) => {
-                    if (!e.detail.isAction) {
-                        return;
-                    }
-                    if (this._actionsIdx < this._actions.length - 1) {
-                        this._actions = this._actions.slice(0, this._actionsIdx);
-                    }
-                    this._actions.push(e);
-                    this._actionsIdx = this._actions.length - 1;
-                };
-                actor.addEventListener(v, func);
-                const canceller = () => actor.removeEventListener(v, func);
-                this._cancellers.push(canceller);
-            });
+        if (!actor) {
+            return this;
         }
-        this._actor = actor;
+        mgr_1.Gaia.listActions().forEach(eventType => {
+            const handler = mgr_1.Gaia.action(eventType);
+            if (!handler) {
+                return;
+            }
+            const func = (e) => {
+                if (this._actionsIdx < this._actions.length - 1) {
+                    this._actions = this._actions.slice(0, this._actionsIdx);
+                }
+                this._actions.push([
+                    () => handler.undo(actor, e),
+                    () => handler.redo(actor, e),
+                ]);
+                this._actionsIdx = this._actions.length - 1;
+            };
+            actor.addEventListener(eventType, func);
+            const canceller = () => actor.removeEventListener(eventType, func);
+            this._cancellers.push(canceller);
+        });
         return this;
     }
     undo() {
         if (this._actionsIdx < 0) {
             return this;
         }
-        const action = this._actions[this._actionsIdx];
-        this._undoAction(action);
+        this._actions[this._actionsIdx][0]();
         --this._actionsIdx;
         return this;
     }
@@ -2173,68 +2163,59 @@ class ActionQueue {
             return this;
         }
         ++this._actionsIdx;
-        const action = this._actions[this._actionsIdx];
-        this._redoAction(action);
+        this._actions[this._actionsIdx][1]();
         return this;
-    }
-    _redoAction(e) {
-        switch (e.type) {
-            case EventType_1.EventEnum.ShapesDone: {
-                const { shapeDatas } = e.detail;
-                this._addShape(shapeDatas);
-                break;
-            }
-            case EventType_1.EventEnum.ShapesGeoChanged: {
-                const { shapeDatas } = e.detail;
-                this._changeShapes(shapeDatas, 0);
-                break;
-            }
-            case EventType_1.EventEnum.ShapesRemoved: {
-                const { shapeDatas } = e.detail;
-                this._removeShape(shapeDatas);
-                break;
-            }
-        }
-    }
-    _undoAction(e) {
-        switch (e.type) {
-            case EventType_1.EventEnum.ShapesDone: {
-                const { shapeDatas } = e.detail;
-                this._removeShape(shapeDatas);
-                break;
-            }
-            case EventType_1.EventEnum.ShapesGeoChanged: {
-                const { shapeDatas } = e.detail;
-                this._changeShapes(shapeDatas, 1);
-                break;
-            }
-            case EventType_1.EventEnum.ShapesRemoved: {
-                const { shapeDatas } = e.detail;
-                this._addShape(shapeDatas);
-                break;
-            }
-        }
-    }
-    _addShape(shapeDatas) {
-        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(v => this._actor.factory.newShape(v));
-        shapes && this._actor.add(shapes, true);
-    }
-    _removeShape(shapeDatas) {
-        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(data => this._actor.find(data.i)).filter(v => v);
-        shapes && this._actor.remove(shapes, true);
-    }
-    _changeShapes(shapeDatas, which) {
-        shapeDatas.forEach((currAndPrev) => {
-            var _a;
-            const data = currAndPrev[which];
-            const id = data.i;
-            id && ((_a = this._actor.find(id)) === null || _a === void 0 ? void 0 : _a.merge(data));
-        });
     }
 }
 exports.ActionQueue = ActionQueue;
+const _changeShapes = (board, shapeDatas, which) => {
+    shapeDatas.forEach((currAndPrev) => {
+        var _a;
+        const data = currAndPrev[which];
+        const id = data.i;
+        id && ((_a = board.find(id)) === null || _a === void 0 ? void 0 : _a.merge(data));
+    });
+};
+const _addShapes = (board, shapeDatas) => {
+    const shapes = shapeDatas.map(v => board.factory.newShape(v));
+    board.add(shapes, true);
+};
+const _removeShapes = (board, shapeDatas) => {
+    const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(data => board.find(data.i)).filter(v => v);
+    board.remove(shapes, true);
+};
+mgr_1.Gaia.registAction(EventType_1.EventEnum.ShapesDone, {
+    undo: (board, event) => {
+        const { detail: { shapeDatas } } = event;
+        _removeShapes(board, shapeDatas);
+    },
+    redo: (board, event) => {
+        const { detail: { shapeDatas } } = event;
+        _addShapes(board, shapeDatas);
+    }
+});
+mgr_1.Gaia.registAction(EventType_1.EventEnum.ShapesRemoved, {
+    undo: (board, event) => {
+        const { detail: { shapeDatas } } = event;
+        _addShapes(board, shapeDatas);
+    },
+    redo: (board, event) => {
+        const { detail: { shapeDatas } } = event;
+        _removeShapes(board, shapeDatas);
+    }
+});
+mgr_1.Gaia.registAction(EventType_1.EventEnum.ShapesGeoChanged, {
+    undo: (board, event) => {
+        const { detail: { shapeDatas } } = event;
+        _changeShapes(board, shapeDatas, 1);
+    },
+    redo: (board, event) => {
+        const { detail: { shapeDatas } } = event;
+        _changeShapes(board, shapeDatas, 0);
+    }
+});
 
-},{"../event/EventType":19}],23:[function(require,module,exports){
+},{"../event/EventType":19,"../mgr":34}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
@@ -2813,6 +2794,13 @@ class Gaia {
     static shape(type) {
         return this._shapes.get(type);
     }
+    static registAction(eventType, handler) {
+        this._actionHandler.set(eventType, handler);
+    }
+    static listActions() { return Array.from(this._actionHandler.keys()); }
+    static action(eventType) {
+        return this._actionHandler.get(eventType);
+    }
 }
 exports.Gaia = Gaia;
 Gaia._tools = new Map();
@@ -2822,6 +2810,7 @@ Gaia._shapes = new Map();
 Gaia._shapeInfos = new Map();
 Gaia._factorys = new Map();
 Gaia._factoryInfos = new Map();
+Gaia._actionHandler = new Map();
 
 },{"../shape/ShapeEnum":35,"../tools/ToolEnum":82}],33:[function(require,module,exports){
 "use strict";
@@ -4024,7 +4013,6 @@ class LinesTool {
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
-                isAction: false,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4089,7 +4077,6 @@ class LinesTool {
             const curr = shape.data.copy();
             curr.coords.splice(0, prev.coords.length);
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
-                isAction: false,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4137,7 +4124,6 @@ class LinesTool {
         if (!this._pressingShift) {
             shape.data.editing = false;
             (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
-                isAction: true,
                 shapeDatas: [shape.data.copy()]
             });
             delete this._curShape;
@@ -4483,7 +4469,6 @@ class PenTool {
             curr.dotsType = Data_1.DotsType.Append;
             curr.coords.splice(0, prev.coords.length);
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
-                isAction: false,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -4521,7 +4506,6 @@ class PenTool {
             shape.data.editing = false;
         this.addDot(dot, 'last');
         (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
-            isAction: true,
             shapeDatas: [shape.data.copy()]
         });
         this.end();
@@ -4950,7 +4934,6 @@ class TextTool {
             else if (this._newTxt) {
                 this._newTxt = false;
                 (_a = this._board) === null || _a === void 0 ? void 0 : _a.emitEvent(event_1.EventEnum.ShapesDone, {
-                    isAction: true,
                     shapeDatas: [preShape.data.copy()]
                 });
             }
@@ -4987,7 +4970,6 @@ class TextTool {
                 return;
             const curr = shape.data.copy();
             board.emitEvent(event_1.EventEnum.ShapesChanging, {
-                isAction: false,
                 shapeType: this.type,
                 shapeDatas: [[curr, prev]]
             });
@@ -5335,7 +5317,6 @@ class SimpleTool {
                 this.applyRect();
                 const curr = event_1.Events.pickShapeGeoData(shape.data);
                 board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
-                    isAction: false,
                     shapeDatas: [[curr, this._prevData]]
                 });
                 this._prevData = curr;
@@ -5345,13 +5326,13 @@ class SimpleTool {
                 this.applyRect();
                 const curr = event_1.Events.pickShapeGeoData(shape.data);
                 board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
-                    isAction: false, shapeDatas: [[curr, this._prevData]]
+                    shapeDatas: [[curr, this._prevData]]
                 });
                 board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
-                    isAction: false, shapeDatas: [[curr, this._startData]]
+                    shapeDatas: [[curr, this._startData]]
                 });
                 board.emitEvent(event_1.EventEnum.ShapesDone, {
-                    isAction: true, shapeDatas: [shape.data.copy()]
+                    shapeDatas: [shape.data.copy()]
                 });
                 this._prevData = curr;
                 break;
@@ -5623,7 +5604,6 @@ class SelectorTool {
         if (!board)
             return;
         board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
-            isAction: false,
             shapeDatas: this._shapes.map(v => {
                 const ret = [
                     Events_1.Events.pickShapePosData(v.shape.data), v.prevData
@@ -5634,7 +5614,6 @@ class SelectorTool {
         setTimeout(() => { this._waiting = false; }, 1000 / 30);
         if (immediate) {
             board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
-                isAction: true,
                 shapeDatas: this._shapes.map(v => {
                     const ret = [
                         Events_1.Events.pickShapePosData(v.shape.data), v.startData

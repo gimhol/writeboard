@@ -255,9 +255,9 @@ export class Board {
     return this._selects
   }
 
-  add(shape: Shape, emit: boolean): number;
-  add(shapes: Shape[], emit: boolean): number;
-  add(arg0: Shape[] | Shape, emit: boolean): number {
+  add(shape: Shape, emit?: boolean): number;
+  add(shapes: Shape[], emit?: boolean): number;
+  add(arg0: Shape[] | Shape, emit?: boolean): number {
     const shapes = Array.isArray(arg0) ? arg0 : [arg0];
     if (!shapes.length) return 0
     const ret = this._shapesMgr.add(...shapes)
@@ -268,7 +268,6 @@ export class Board {
     })
     if (emit) {
       this.emitEvent(EventEnum.ShapesAdded, {
-        isAction: false,
         shapeDatas: shapes.map(v => v.data.copy())
       })
     }
@@ -276,21 +275,19 @@ export class Board {
     return ret
   }
 
-  remove(shape: Shape, emit: boolean): number;
-  remove(shapes: Shape[], emit: boolean): number;
-  remove(arg0: Shape[] | Shape, emit: boolean): number {
+  remove(shape: Shape, emit?: boolean): number;
+  remove(shapes: Shape[], emit?: boolean): number;
+  remove(arg0: Shape[] | Shape, emit?: boolean): number {
     const shapes = Array.isArray(arg0) ? arg0 : [arg0];
     if (!shapes.length) return 0
     this.setSelects(this.selects.filter(a => !shapes.find(b => a === b)), emit);
 
     if (emit) {
-      const removeds = shapes.map(v => v.data);
-      removeds.length && this.emitEvent(EventEnum.ShapesRemoved, {
-        isAction: true, shapeDatas: removeds
-      })
+      const shapeDatas = shapes.map(v => v.data);
+      shapeDatas.length && this.emitEvent(EventEnum.ShapesRemoved, { shapeDatas })
     }
 
-    const ret = this._shapesMgr.remove(...shapes)
+    const ret = this._shapesMgr.remove(...shapes);
     shapes.forEach(item => {
       this.markDirty(item.boundingRect())
       item.board = undefined
@@ -299,11 +296,11 @@ export class Board {
     return ret
   }
 
-  removeAll(emit: boolean) {
+  removeAll(emit?: boolean) {
     return this.remove(this._shapesMgr.shapes(), emit)
   }
 
-  removeSelected(emit: boolean) {
+  removeSelected(emit?: boolean) {
     this.remove(this._selects.filter(v => !v.locked), emit);
     this._selects = []
   }
@@ -315,7 +312,7 @@ export class Board {
    * @return {Shape[]} 新选中的图形
    * @memberof Board
    */
-  selectAll(emit: boolean): Shape[] {
+  selectAll(emit?: boolean): Shape[] {
     return this.setSelects([...this.shapes()], emit)[0];
   }
 
@@ -326,7 +323,7 @@ export class Board {
    * @return {Shape[]} ？？？
    * @memberof Board
    */
-  deselect(emit: boolean): Shape[] {
+  deselect(emit?: boolean): Shape[] {
     return this.setSelects([], emit)[1];
   }
 
@@ -338,12 +335,12 @@ export class Board {
    * @param {true} [emit] 是否发射事件
    * @memberof Board
    */
-  selectAt(rect: IRect, emit: boolean): [Shape[], Shape[]] {
+  selectAt(rect: IRect, emit?: boolean): [Shape[], Shape[]] {
     const hits = this._shapesMgr.hits(rect);
     return this.setSelects(hits, emit);
   }
 
-  setSelects(shapes: Shape[], emit: boolean): [Shape[], Shape[]] {
+  setSelects(shapes: Shape[], emit?: boolean): [Shape[], Shape[]] {
     const selecteds = shapes.filter(v => !v.selected);
     const desecteds = this._selects.filter(a => !shapes.find(b => a === b))
     desecteds.forEach(v => v.selected = false)

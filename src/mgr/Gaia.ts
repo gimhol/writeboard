@@ -7,6 +7,8 @@ import { ToolEnum, ToolType, getToolName } from "../tools/ToolEnum"
 import { ShapeType, getShapeName } from "../shape/ShapeEnum"
 import type { CrossData, CrossTool, HalfTickData, HalfTickTool, LinesData, LinesTool, OvalData, OvalTool, PenData, PenTool, PolygonData, PolygonTool, RectData, RectTool, ShapeCross, ShapeEnum, ShapeHalfTick, ShapeLines, ShapeOval, ShapePen, ShapePolygon, ShapeRect, ShapeText, ShapeTick, TextData, TextTool, TickData, TickTool } from "../shape"
 import { SelectorTool } from "../tools"
+import { Board } from "../board"
+import { EventEnum, Events } from "../event"
 
 export interface IFactoryInfomation {
   readonly name: string
@@ -90,7 +92,7 @@ export class Gaia {
     let info = this._toolInfos.get(type);
     if (!info) { return; }
     info = func(info);
-    this._toolInfos.set(type, info); 
+    this._toolInfos.set(type, info);
   }
   static registerShape<D extends ShapeData>(
     type: ShapeType,
@@ -135,6 +137,21 @@ export class Gaia {
   static shape(type: ShapeType): IShapeCreater<any> | undefined {
     return this._shapes.get(type);
   }
+
+  static registAction<K extends keyof Events.EventMap>(eventType: K, handler: ActionHandler<Events.EventMap[K]>): void;
+  static registAction(eventType: string, handler: ActionHandler): void {
+    this._actionHandler.set(eventType, handler);
+  }
+  static listActions(): string[] { return Array.from(this._actionHandler.keys()) }
+  static action(eventType: string): ActionHandler | undefined {
+    return this._actionHandler.get(eventType);
+  }
+  private static _actionHandler = new Map<string, ActionHandler>()
+}
+
+export interface ActionHandler<D = any> {
+  undo(board: Board, e: D): void;
+  redo(board: Board, e: D): void;
 }
 
 export interface FactoryEnumFactoryMap {
