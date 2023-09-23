@@ -68,7 +68,7 @@ export class ShortcutsKeeper {
       default: return true;
     }
     const selector = board.tool as SelectorTool;
-    selector.connect(selects).moveBy(diffX, diffY).emitMovedEvent(true);
+    selector.connect(selects).moveBy(diffX, diffY).emitGeoEvent(true);
 
     board.toolType = toolType;
     board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形

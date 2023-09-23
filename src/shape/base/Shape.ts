@@ -4,10 +4,14 @@ import { IRect, Rect } from "../../utils/Rect"
 import { ShapeType } from "../ShapeEnum"
 export enum ResizeDirection {
   None = 0,
-  TopLeft,
-  TopRight,
-  BottomLeft,
-  BottomRight,
+  Top = 'Top',
+  Bottom = 'Bottom',
+  Left = 'Left',
+  Right = 'Right',
+  TopLeft = 'TopLeft',
+  TopRight = 'TopRight',
+  BottomLeft = 'BottomLeft',
+  BottomRight = 'BottomRight',
 }
 export enum Resizable {
   None = 0,
@@ -106,7 +110,9 @@ export class Shape<D extends ShapeData = ShapeData> {
       this._data.h
     )
   }
-
+  setGeo(rect: Rect): void {
+    this.geo(rect.x, rect.y, rect.w, rect.h)
+  }
   geo(x: number, y: number, w: number, h: number): void {
     if (x === this._data.x &&
       y === this._data.y &&
@@ -167,11 +173,33 @@ export class Shape<D extends ShapeData = ShapeData> {
       if (!locked && this._resizable === Resizable.All) {
         ctx.fillStyle = 'white'
         ctx.setLineDash([]);
-        const s = 5;
-        const lx = x + halfLineW;
-        const rx = x + w - s - halfLineW;
-        const ty = y + halfLineW;
-        const by = y + h - s - halfLineW;
+        const {
+          s, lx, rx, ty, by, mx, my,
+        } = this.getResizerNumbers(x, y, w, h)
+
+        // top resizer
+        ctx.beginPath()
+        ctx.rect(mx, ty, s, s)
+        ctx.fill()
+        ctx.stroke()
+
+        // bottom resizer
+        ctx.beginPath()
+        ctx.rect(mx, by, s, s)
+        ctx.fill()
+        ctx.stroke()
+
+        // left resizer
+        ctx.beginPath()
+        ctx.rect(lx, my, s, s)
+        ctx.fill()
+        ctx.stroke()
+
+        // right resizer
+        ctx.beginPath()
+        ctx.rect(rx, my, s, s)
+        ctx.fill()
+        ctx.stroke()
 
         // top-left resizer
         ctx.beginPath()
@@ -222,20 +250,47 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
   }
 
+  getResizerNumbers(x: number, y: number, w: number, h: number) {
+    const lineWidth = 1
+    const halfLineW = lineWidth / 2
+    const s = 5;
+    return {
+      s,
+      lx: x + halfLineW,
+      rx: x + w - s - halfLineW,
+      ty: y + halfLineW,
+      by: y + h - s - halfLineW,
+      mx: Math.floor(x + (w - s) / 2) - halfLineW,
+      my: Math.floor(y + (h - s) / 2) - halfLineW,
+    }
+  }
   resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
     if (!this.selected || !this._resizable || this.ghost || this.locked) {
       return [ResizeDirection.None, undefined];
     }
-    const lineWidth = 1
-    const halfLineW = lineWidth / 2
     const { x, y, w, h } = this.boundingRect();
-    const s = 5;
-    const lx = x + halfLineW;
-    const rx = x + w - s - halfLineW;
-    const ty = y + halfLineW;
-    const by = y + h - s - halfLineW;
+    const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(x, y, w, h)
+
     const pos = { x: pointerX, y: pointerY }
     const rect = new Rect(0, 0, s, s);
+
+    rect.moveTo(mx, ty)
+    if (rect.hit(pos)) {
+      return [ResizeDirection.Top, rect];
+    }
+    rect.moveTo(mx, by);
+    if (rect.hit(pos)) {
+      return [ResizeDirection.Bottom, rect];
+    }
+    rect.moveTo(lx, my);
+    if (rect.hit(pos)) {
+      return [ResizeDirection.Left, rect];
+    }
+    rect.moveTo(rx, my);
+    if (rect.hit(pos)) {
+      return [ResizeDirection.Right, rect];
+    }
+
     rect.moveTo(lx, ty)
     if (rect.hit(pos)) {
       return [ResizeDirection.TopLeft, rect];

@@ -10,6 +10,20 @@ export class Rect implements IRect {
   get left() { return this.x }
   get right() { return this.x + this.w }
   get bottom() { return this.y + this.h }
+  set top(v: number) {
+    this.h = this.bottom - v;
+    this.y = v;
+  }
+  set left(v: number) {
+    this.w = this.right - v;
+    this.x = v;
+  }
+  set right(v: number) {
+    this.w = v - this.x
+  }
+  set bottom(v: number) {
+    this.h = v - this.y
+  }
   constructor(x: number, y: number, w: number, h: number) {
     this.x = x
     this.y = y
@@ -28,10 +42,12 @@ export class Rect implements IRect {
   toString() {
     return `Rect(x=${this.x}, y=${this.x}, w=${this.w}, h=${this.h})`
   }
-  moveTo(x: number, y: number): void {
+  moveTo(x: number, y: number): this {
     this.x = x;
     this.y = y;
+    return this;
   }
+
   mid(): IVector {
     return { x: this.x + this.w / 2, y: this.y + this.h / 2 }
   }

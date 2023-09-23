@@ -102,7 +102,7 @@ export class Board {
     this.editLayer(layers[0].info.id);
   }
   get layers(): Layer[] { return Array.from(this._layers.values()) }
-
+  get element(): HTMLElement { return this._element }
   constructor(factory: IFactory, options: BoardOptions) {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();
@@ -397,7 +397,6 @@ export class Board {
   }
 
   pointermove = (e: PointerEvent) => {
-    if (!this._mousedown) { return; }
     if (this._mousedown) {
       this.tool?.pointerDraw(this.getDot(e));
     } else {

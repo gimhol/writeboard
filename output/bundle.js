@@ -1107,7 +1107,7 @@ class ShortcutsKeeper {
                 default: return true;
             }
             const selector = board.tool;
-            selector.connect(selects).moveBy(diffX, diffY).emitMovedEvent(true);
+            selector.connect(selects).moveBy(diffX, diffY).emitGeoEvent(true);
             board.toolType = toolType;
             board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形
             return false;
@@ -1701,6 +1701,7 @@ class Board {
         this.editLayer(layers[0].info.id);
     }
     get layers() { return Array.from(this._layers.values()); }
+    get element() { return this._element; }
     constructor(factory, options) {
         var _a, _b;
         this._toolType = tools_1.ToolEnum.Pen;
@@ -1725,9 +1726,6 @@ class Board {
         };
         this.pointermove = (e) => {
             var _a, _b;
-            if (!this._mousedown) {
-                return;
-            }
             if (this._mousedown) {
                 (_a = this.tool) === null || _a === void 0 ? void 0 : _a.pointerDraw(this.getDot(e));
             }
@@ -3257,10 +3255,14 @@ const Rect_1 = require("../../utils/Rect");
 var ResizeDirection;
 (function (ResizeDirection) {
     ResizeDirection[ResizeDirection["None"] = 0] = "None";
-    ResizeDirection[ResizeDirection["TopLeft"] = 1] = "TopLeft";
-    ResizeDirection[ResizeDirection["TopRight"] = 2] = "TopRight";
-    ResizeDirection[ResizeDirection["BottomLeft"] = 3] = "BottomLeft";
-    ResizeDirection[ResizeDirection["BottomRight"] = 4] = "BottomRight";
+    ResizeDirection["Top"] = "Top";
+    ResizeDirection["Bottom"] = "Bottom";
+    ResizeDirection["Left"] = "Left";
+    ResizeDirection["Right"] = "Right";
+    ResizeDirection["TopLeft"] = "TopLeft";
+    ResizeDirection["TopRight"] = "TopRight";
+    ResizeDirection["BottomLeft"] = "BottomLeft";
+    ResizeDirection["BottomRight"] = "BottomRight";
 })(ResizeDirection = exports.ResizeDirection || (exports.ResizeDirection = {}));
 var Resizable;
 (function (Resizable) {
@@ -3352,6 +3354,9 @@ class Shape {
     getGeo() {
         return new Rect_1.Rect(this._data.x, this._data.y, this._data.w, this._data.h);
     }
+    setGeo(rect) {
+        this.geo(rect.x, rect.y, rect.w, rect.h);
+    }
     geo(x, y, w, h) {
         if (x === this._data.x &&
             y === this._data.y &&
@@ -3407,11 +3412,27 @@ class Shape {
             if (!locked && this._resizable === Resizable.All) {
                 ctx.fillStyle = 'white';
                 ctx.setLineDash([]);
-                const s = 5;
-                const lx = x + halfLineW;
-                const rx = x + w - s - halfLineW;
-                const ty = y + halfLineW;
-                const by = y + h - s - halfLineW;
+                const { s, lx, rx, ty, by, mx, my, } = this.getResizerNumbers(x, y, w, h);
+                // top resizer
+                ctx.beginPath();
+                ctx.rect(mx, ty, s, s);
+                ctx.fill();
+                ctx.stroke();
+                // bottom resizer
+                ctx.beginPath();
+                ctx.rect(mx, by, s, s);
+                ctx.fill();
+                ctx.stroke();
+                // left resizer
+                ctx.beginPath();
+                ctx.rect(lx, my, s, s);
+                ctx.fill();
+                ctx.stroke();
+                // right resizer
+                ctx.beginPath();
+                ctx.rect(rx, my, s, s);
+                ctx.fill();
+                ctx.stroke();
                 // top-left resizer
                 ctx.beginPath();
                 ctx.rect(lx, ty, s, s);
@@ -3455,20 +3476,44 @@ class Shape {
             h: Math.ceil(d.h + d.lineWidth + offset)
         };
     }
+    getResizerNumbers(x, y, w, h) {
+        const lineWidth = 1;
+        const halfLineW = lineWidth / 2;
+        const s = 5;
+        return {
+            s,
+            lx: x + halfLineW,
+            rx: x + w - s - halfLineW,
+            ty: y + halfLineW,
+            by: y + h - s - halfLineW,
+            mx: Math.floor(x + (w - s) / 2) - halfLineW,
+            my: Math.floor(y + (h - s) / 2) - halfLineW,
+        };
+    }
     resizeDirection(pointerX, pointerY) {
         if (!this.selected || !this._resizable || this.ghost || this.locked) {
             return [ResizeDirection.None, undefined];
         }
-        const lineWidth = 1;
-        const halfLineW = lineWidth / 2;
         const { x, y, w, h } = this.boundingRect();
-        const s = 5;
-        const lx = x + halfLineW;
-        const rx = x + w - s - halfLineW;
-        const ty = y + halfLineW;
-        const by = y + h - s - halfLineW;
+        const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(x, y, w, h);
         const pos = { x: pointerX, y: pointerY };
         const rect = new Rect_1.Rect(0, 0, s, s);
+        rect.moveTo(mx, ty);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.Top, rect];
+        }
+        rect.moveTo(mx, by);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.Bottom, rect];
+        }
+        rect.moveTo(lx, my);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.Left, rect];
+        }
+        rect.moveTo(rx, my);
+        if (rect.hit(pos)) {
+            return [ResizeDirection.Right, rect];
+        }
         rect.moveTo(lx, ty);
         if (rect.hit(pos)) {
             return [ResizeDirection.TopLeft, rect];
@@ -5514,6 +5559,7 @@ const Data_1 = require("../../shape/base/Data");
 const Gaia_1 = require("../../mgr/Gaia");
 const Shape_1 = require("../../shape/rect/Shape");
 const ToolEnum_1 = require("../ToolEnum");
+const base_1 = require("../../shape/base");
 const Vector_1 = require("../../utils/Vector");
 const Events_1 = require("../../event/Events");
 const event_1 = require("../../event");
@@ -5540,6 +5586,7 @@ class SelectorTool {
         this._rectHelper = new RectHelper_1.RectHelper();
         this._status = SelectorStatus.Invalid;
         this._prevPos = { x: 0, y: 0 };
+        this._resizerOffset = { x: 0, y: 0 };
         this._windowPointerDown = () => this.deselect();
         this._shapes = [];
         this._waiting = false;
@@ -5551,9 +5598,11 @@ class SelectorTool {
         this._rect.render(ctx);
     }
     start() {
+        this.board.element.style.cursor = '';
         document.addEventListener('pointerdown', this._windowPointerDown);
     }
     end() {
+        this.board.element.style.cursor = '';
         document.removeEventListener('pointerdown', this._windowPointerDown);
         this.deselect();
     }
@@ -5631,7 +5680,43 @@ class SelectorTool {
             // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
             const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
             if (direction) {
+                this._resizerDirection = direction;
                 this._resizerRect = resizerRect;
+                this._resizingShape = shape;
+                switch (direction) {
+                    case base_1.ResizeDirection.Top:
+                        this._resizerOffset.x = 0;
+                        this._resizerOffset.y = resizerRect.top - dot.y;
+                        break;
+                    case base_1.ResizeDirection.Bottom:
+                        this._resizerOffset.x = 0;
+                        this._resizerOffset.y = resizerRect.bottom - dot.y;
+                        break;
+                    case base_1.ResizeDirection.Left:
+                        this._resizerOffset.x = resizerRect.left - dot.x;
+                        this._resizerOffset.y = 0;
+                        break;
+                    case base_1.ResizeDirection.Right:
+                        this._resizerOffset.x = resizerRect.right - dot.x;
+                        this._resizerOffset.y = 0;
+                        break;
+                    case base_1.ResizeDirection.TopLeft:
+                        this._resizerOffset.x = resizerRect.left - dot.x;
+                        this._resizerOffset.y = resizerRect.top - dot.y;
+                        break;
+                    case base_1.ResizeDirection.TopRight:
+                        this._resizerOffset.x = resizerRect.right - dot.x;
+                        this._resizerOffset.y = resizerRect.top - dot.y;
+                        break;
+                    case base_1.ResizeDirection.BottomLeft:
+                        this._resizerOffset.x = resizerRect.left - dot.x;
+                        this._resizerOffset.y = resizerRect.bottom - dot.y;
+                        break;
+                    case base_1.ResizeDirection.BottomRight:
+                        this._resizerOffset.x = resizerRect.right - dot.x;
+                        this._resizerOffset.y = resizerRect.bottom - dot.y;
+                        break;
+                }
                 this._status = SelectorStatus.ReadyForResizing;
                 board.setSelects([shape], true);
             }
@@ -5641,7 +5726,39 @@ class SelectorTool {
         }
         this.connect(board.selects, x, y);
     }
-    pointerMove() { }
+    pointerMove(dot) {
+        let direction;
+        let rect;
+        this.board.selects.find(e => {
+            const arr = e.resizeDirection(dot.x, dot.y);
+            if (arr[0] != base_1.ResizeDirection.None) {
+                direction = arr[0];
+                rect = arr[1];
+                return true;
+            }
+        });
+        switch (direction) {
+            case base_1.ResizeDirection.Top:
+            case base_1.ResizeDirection.Bottom:
+                this.board.element.style.cursor = 'ns-resize';
+                break;
+            case base_1.ResizeDirection.Left:
+            case base_1.ResizeDirection.Right:
+                this.board.element.style.cursor = 'ew-resize';
+                break;
+            case base_1.ResizeDirection.TopLeft:
+            case base_1.ResizeDirection.BottomRight:
+                this.board.element.style.cursor = 'nw-resize';
+                break;
+            case base_1.ResizeDirection.TopRight:
+            case base_1.ResizeDirection.BottomLeft:
+                this.board.element.style.cursor = 'ne-resize';
+                break;
+            default:
+                this.board.element.style.cursor = '';
+                break;
+        }
+    }
     pointerDraw(dot) {
         const board = this.board;
         if (!board)
@@ -5651,8 +5768,8 @@ class SelectorTool {
                 if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
                     return;
                 }
-            case SelectorStatus.Selecting: {
                 this._status = SelectorStatus.Selecting;
+            case SelectorStatus.Selecting: {
                 this._rectHelper.end(dot.x, dot.y);
                 this.updateGeo();
                 board.selectAt(this._rect.data, true);
@@ -5662,18 +5779,51 @@ class SelectorTool {
                 if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
                     return;
                 }
-            case SelectorStatus.Dragging: {
                 this._status = SelectorStatus.Dragging;
-                this.move(dot.x, dot.y).emitMovedEvent(false);
+            case SelectorStatus.Dragging: {
+                this.move(dot.x, dot.y).emitGeoEvent(false);
                 return;
             }
             case SelectorStatus.ReadyForResizing: // let it fall-through
                 if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
                     return;
                 }
-            case SelectorStatus.Resizing: {
                 this._status = SelectorStatus.Resizing;
-                this.emitMovedEvent(false);
+            case SelectorStatus.Resizing: {
+                const shape = this._resizingShape;
+                const geo = shape.getGeo();
+                switch (this._resizerDirection) {
+                    case base_1.ResizeDirection.Top:
+                        geo.top = this._resizerOffset.y + dot.y;
+                        break;
+                    case base_1.ResizeDirection.Bottom:
+                        geo.bottom = this._resizerOffset.y + dot.y;
+                        break;
+                    case base_1.ResizeDirection.Left:
+                        geo.left = this._resizerOffset.x + dot.x;
+                        break;
+                    case base_1.ResizeDirection.Right:
+                        geo.right = this._resizerOffset.x + dot.x;
+                        break;
+                    case base_1.ResizeDirection.TopLeft:
+                        geo.top = this._resizerOffset.y + dot.y;
+                        geo.left = this._resizerOffset.x + dot.x;
+                        break;
+                    case base_1.ResizeDirection.TopRight:
+                        geo.top = this._resizerOffset.y + dot.y;
+                        geo.right = this._resizerOffset.x + dot.x;
+                        break;
+                    case base_1.ResizeDirection.BottomLeft:
+                        geo.bottom = this._resizerOffset.y + dot.y;
+                        geo.left = this._resizerOffset.x + dot.x;
+                        break;
+                    case base_1.ResizeDirection.BottomRight:
+                        geo.bottom = this._resizerOffset.y + dot.y;
+                        geo.right = this._resizerOffset.x + dot.x;
+                        break;
+                }
+                shape.setGeo(geo);
+                this.emitGeoEvent(false);
                 return;
             }
         }
@@ -5691,7 +5841,7 @@ class SelectorTool {
             }
         }
         if (this._status === SelectorStatus.Dragging) {
-            this.emitMovedEvent(true);
+            this.emitGeoEvent(true);
         }
         this._rect.visible = false;
         this._rectHelper.clear();
@@ -5713,7 +5863,7 @@ class SelectorTool {
             textTool.connect(this._shapes[0].shape);
         }
     }
-    emitMovedEvent(immediate) {
+    emitGeoEvent(immediate) {
         if (this._waiting && !immediate)
             return;
         this._waiting = true;
@@ -5725,7 +5875,7 @@ class SelectorTool {
             tool: this.type,
             shapeDatas: this._shapes.map(v => {
                 const ret = [
-                    Events_1.Events.pickShapePosData(v.shape.data), v.prevData
+                    Events_1.Events.pickShapeGeoData(v.shape.data), v.prevData
                 ];
                 return ret;
             })
@@ -5737,7 +5887,7 @@ class SelectorTool {
                 tool: this.type,
                 shapeDatas: this._shapes.map(v => {
                     const ret = [
-                        Events_1.Events.pickShapePosData(v.shape.data), v.startData
+                        Events_1.Events.pickShapeGeoData(v.shape.data), v.startData
                     ];
                     return ret;
                 })
@@ -5755,7 +5905,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":22,"../../event/Events":21,"../../mgr/Gaia":33,"../../shape":53,"../../shape/base/Data":37,"../../shape/rect/Shape":71,"../../utils/RectHelper":98,"../../utils/Vector":99,"../ToolEnum":83}],90:[function(require,module,exports){
+},{"../../event":22,"../../event/Events":21,"../../mgr/Gaia":33,"../../shape":53,"../../shape/base":40,"../../shape/base/Data":37,"../../shape/rect/Shape":71,"../../utils/RectHelper":98,"../../utils/Vector":99,"../ToolEnum":83}],90:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6220,6 +6370,20 @@ class Rect {
     get left() { return this.x; }
     get right() { return this.x + this.w; }
     get bottom() { return this.y + this.h; }
+    set top(v) {
+        this.h = this.bottom - v;
+        this.y = v;
+    }
+    set left(v) {
+        this.w = this.right - v;
+        this.x = v;
+    }
+    set right(v) {
+        this.w = v - this.x;
+    }
+    set bottom(v) {
+        this.h = v - this.y;
+    }
     constructor(x, y, w, h) {
         this.x = x;
         this.y = y;
@@ -6241,6 +6405,7 @@ class Rect {
     moveTo(x, y) {
         this.x = x;
         this.y = y;
+        return this;
     }
     mid() {
         return { x: this.x + this.w / 2, y: this.y + this.h / 2 };

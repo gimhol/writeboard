@@ -3,7 +3,7 @@ import { ShapeData } from "../../shape/base/Data"
 import { Gaia } from "../../mgr/Gaia"
 import { ShapeRect } from "../../shape/rect/Shape"
 import { ToolEnum, ToolType } from "../ToolEnum"
-import { Shape } from "../../shape/base"
+import { ResizeDirection, Shape } from "../../shape/base"
 import { IVector, Vector } from "../../utils/Vector"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../base/Tool"
@@ -29,7 +29,10 @@ export class SelectorTool implements ITool {
   private _rectHelper = new RectHelper()
   private _status = SelectorStatus.Invalid
   private _prevPos: IVector = { x: 0, y: 0 }
+  private _resizerDirection?: ResizeDirection
   private _resizerRect?: Rect;
+  private _resizingShape?: Shape;
+  private _resizerOffset: IVector = { x: 0, y: 0 }
   private _windowPointerDown = () => this.deselect();
 
   private _shapes: {
@@ -38,8 +41,8 @@ export class SelectorTool implements ITool {
     startData: Events.IShapeGeoData,
   }[] = []
 
-  get board(): Board | undefined { return this._rect.board; }
-  set board(v: Board | undefined) { this._rect.board = v; }
+  get board(): Board { return this._rect.board!!; }
+  set board(v: Board) { this._rect.board = v!!; }
   get rect(): RectHelper { return this._rectHelper }
   constructor() {
     this._rect.data.lineWidth = 2
@@ -50,9 +53,11 @@ export class SelectorTool implements ITool {
     this._rect.render(ctx)
   }
   start(): void {
+    this.board.element.style.cursor = ''
     document.addEventListener('pointerdown', this._windowPointerDown)
   }
   end(): void {
+    this.board.element.style.cursor = ''
     document.removeEventListener('pointerdown', this._windowPointerDown)
     this.deselect();
   }
@@ -61,8 +66,6 @@ export class SelectorTool implements ITool {
     if (!board) { return; }
     board.deselect(true);
   }
-
-
   connect(shapes: Shape[]): this;
   connect(shapes: Shape[], startX: number, startY: number): this;
   connect(shapes: Shape[], startX?: number, startY?: number): this {
@@ -137,7 +140,43 @@ export class SelectorTool implements ITool {
       // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
       const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
       if (direction) {
+        this._resizerDirection = direction;
         this._resizerRect = resizerRect;
+        this._resizingShape = shape
+        switch (direction) {
+          case ResizeDirection.Top:
+            this._resizerOffset.x = 0
+            this._resizerOffset.y = resizerRect!.top - dot.y
+            break
+          case ResizeDirection.Bottom:
+            this._resizerOffset.x = 0
+            this._resizerOffset.y = resizerRect!.bottom - dot.y
+            break
+          case ResizeDirection.Left:
+            this._resizerOffset.x = resizerRect!.left - dot.x
+            this._resizerOffset.y = 0
+            break
+          case ResizeDirection.Right:
+            this._resizerOffset.x = resizerRect!.right - dot.x
+            this._resizerOffset.y = 0
+            break
+          case ResizeDirection.TopLeft:
+            this._resizerOffset.x = resizerRect!.left - dot.x
+            this._resizerOffset.y = resizerRect!.top - dot.y
+            break
+          case ResizeDirection.TopRight:
+            this._resizerOffset.x = resizerRect!.right - dot.x
+            this._resizerOffset.y = resizerRect!.top - dot.y
+            break
+          case ResizeDirection.BottomLeft:
+            this._resizerOffset.x = resizerRect!.left - dot.x
+            this._resizerOffset.y = resizerRect!.bottom - dot.y
+            break
+          case ResizeDirection.BottomRight:
+            this._resizerOffset.x = resizerRect!.right - dot.x
+            this._resizerOffset.y = resizerRect!.bottom - dot.y
+            break
+        }
         this._status = SelectorStatus.ReadyForResizing;
         board.setSelects([shape], true)
       } else {
@@ -146,15 +185,49 @@ export class SelectorTool implements ITool {
     }
     this.connect(board.selects, x, y);
   }
-  pointerMove(): void { }
+
+  pointerMove(dot: IDot): void {
+    let direction: ResizeDirection | undefined
+    let rect: Rect | undefined;
+    this.board.selects.find(e => {
+      const arr = e.resizeDirection(dot.x, dot.y)
+      if (arr[0] != ResizeDirection.None) {
+        direction = arr[0]
+        rect = arr[1]
+        return true
+      }
+    })
+    switch (direction) {
+      case ResizeDirection.Top:
+      case ResizeDirection.Bottom:
+        this.board.element.style.cursor = 'ns-resize'
+        break
+      case ResizeDirection.Left:
+      case ResizeDirection.Right:
+        this.board.element.style.cursor = 'ew-resize'
+        break
+      case ResizeDirection.TopLeft:
+      case ResizeDirection.BottomRight:
+        this.board.element.style.cursor = 'nw-resize'
+        break
+      case ResizeDirection.TopRight:
+      case ResizeDirection.BottomLeft:
+        this.board.element.style.cursor = 'ne-resize'
+        break
+      default:
+        this.board.element.style.cursor = ''
+        break
+    }
+  }
+
   pointerDraw(dot: IDot): void {
     const board = this.board
     if (!board) return
     switch (this._status) {
       case SelectorStatus.ReadyForSelecting: // let it fall-through
         if (Vector.manhattan(this._prevPos, dot) < 5) { return; }
-      case SelectorStatus.Selecting: {
         this._status = SelectorStatus.Selecting;
+      case SelectorStatus.Selecting: {
         this._rectHelper.end(dot.x, dot.y)
         this.updateGeo();
         board.selectAt(this._rect.data, true);
@@ -162,16 +235,49 @@ export class SelectorTool implements ITool {
       }
       case SelectorStatus.ReadyForDragging: // let it fall-through
         if (Vector.manhattan(this._prevPos, dot) < 5) { return; }
-      case SelectorStatus.Dragging: {
         this._status = SelectorStatus.Dragging;
-        this.move(dot.x, dot.y).emitMovedEvent(false);
+      case SelectorStatus.Dragging: {
+        this.move(dot.x, dot.y).emitGeoEvent(false);
         return
       }
       case SelectorStatus.ReadyForResizing: // let it fall-through
         if (Vector.manhattan(this._prevPos, dot) < 5) { return; }
-      case SelectorStatus.Resizing: {
         this._status = SelectorStatus.Resizing;
-        this.emitMovedEvent(false)
+      case SelectorStatus.Resizing: {
+        const shape = this._resizingShape!
+        const geo = shape.getGeo()
+        switch (this._resizerDirection) {
+          case ResizeDirection.Top:
+            geo.top = this._resizerOffset.y + dot.y
+            break
+          case ResizeDirection.Bottom:
+            geo.bottom = this._resizerOffset.y + dot.y
+            break
+          case ResizeDirection.Left:
+            geo.left = this._resizerOffset.x + dot.x
+            break
+          case ResizeDirection.Right:
+            geo.right = this._resizerOffset.x + dot.x
+            break
+          case ResizeDirection.TopLeft:
+            geo.top = this._resizerOffset.y + dot.y
+            geo.left = this._resizerOffset.x + dot.x
+            break
+          case ResizeDirection.TopRight:
+            geo.top = this._resizerOffset.y + dot.y
+            geo.right = this._resizerOffset.x + dot.x
+            break
+          case ResizeDirection.BottomLeft:
+            geo.bottom = this._resizerOffset.y + dot.y
+            geo.left = this._resizerOffset.x + dot.x
+            break
+          case ResizeDirection.BottomRight:
+            geo.bottom = this._resizerOffset.y + dot.y
+            geo.right = this._resizerOffset.x + dot.x
+            break
+        }
+        shape.setGeo(geo)
+        this.emitGeoEvent(false)
         return
       }
     }
@@ -189,12 +295,13 @@ export class SelectorTool implements ITool {
       }
     }
     if (this._status === SelectorStatus.Dragging) {
-      this.emitMovedEvent(true)
+      this.emitGeoEvent(true)
     }
     this._rect.visible = false
     this._rectHelper.clear()
     this._status = SelectorStatus.Invalid
   }
+
   doubleClick() {
     const { board } = this
     if (!board) { return; };
@@ -211,7 +318,7 @@ export class SelectorTool implements ITool {
     }
   }
   private _waiting = false
-  emitMovedEvent(immediate: boolean): void {
+  emitGeoEvent(immediate: boolean): void {
     if (this._waiting && !immediate)
       return
     this._waiting = true
@@ -222,7 +329,7 @@ export class SelectorTool implements ITool {
       tool: this.type,
       shapeDatas: this._shapes.map(v => {
         const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
-          Events.pickShapePosData(v.shape.data), v.prevData
+          Events.pickShapeGeoData(v.shape.data), v.prevData
         ]
         return ret
       })
@@ -235,7 +342,7 @@ export class SelectorTool implements ITool {
         tool: this.type,
         shapeDatas: this._shapes.map(v => {
           const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
-            Events.pickShapePosData(v.shape.data), v.startData
+            Events.pickShapeGeoData(v.shape.data), v.startData
           ]
           return ret
         })
