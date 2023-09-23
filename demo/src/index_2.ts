@@ -281,14 +281,14 @@ const ctrlShorcuts = new Map<string, () => void>([
   ['a', () => board.selectAll(true)],
   ['d', () => board.deselect(true)],
 ])
-board.addEventListener(EventEnum.LayerAdded, e => {
-  e.detail.onscreen.addEventListener('keydown', onkeydown)
-  e.detail.onscreen.addEventListener('contextmenu', oncontextmenu)
-});
-board.addEventListener(EventEnum.LayerRemoved, e => {
-  e.detail.onscreen.removeEventListener('keydown', onkeydown)
-  e.detail.onscreen.removeEventListener('contextmenu', oncontextmenu)
-});
+// board.addEventListener(EventEnum.LayerAdded, e => {
+//   e.detail.onscreen.addEventListener('keydown', onkeydown)
+//   e.detail.onscreen.addEventListener('contextmenu', oncontextmenu)
+// });
+// board.addEventListener(EventEnum.LayerRemoved, e => {
+//   e.detail.onscreen.removeEventListener('keydown', onkeydown)
+//   e.detail.onscreen.removeEventListener('contextmenu', oncontextmenu)
+// });
 board.layers.forEach(layer => {
   layer.onscreen.addEventListener('keydown', onkeydown)
   layer.onscreen.addEventListener('contextmenu', oncontextmenu)

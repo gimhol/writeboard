@@ -16,6 +16,7 @@ export namespace Events {
     shapeDatas: [T, T][];
   }
   export interface IAnyShagesDetail extends IOperatorDetail {
+    tool: ToolType,
     shapeDatas: [Partial<IShapeData>, Partial<IShapeData>][];
   }
   export interface ILayerDetail extends IOperatorDetail {

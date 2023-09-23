@@ -3,6 +3,7 @@ import { EventEnum } from "../event/EventType";
 import { Events } from "../event/Events";
 import { Gaia } from "../mgr";
 import { IShapeData } from "../shape/base/Data";
+import { ToolEnum } from "../tools";
 type EMap = Events.EventDetailMap;
 
 export class ActionQueue {
@@ -16,6 +17,9 @@ export class ActionQueue {
       if (!handler) { return }
       const func: any = (e: CustomEvent) => {
         if (e.detail.operator !== actor.whoami) {
+          return;
+        }
+        if (!handler.isAction(actor, e)) {
           return;
         }
         if (this._actionsIdx < this._actions.length - 1) {
@@ -51,6 +55,10 @@ export class ActionQueue {
     this._actions[this._actionsIdx][1]();
     return this;
   }
+  get index() { return this._actionsIdx }
+  get length() { return this._actions.length }
+  get canRedo() { return this._actionsIdx < this._actions.length - 1 }
+  get canUndo() { return this._actionsIdx >= 0 }
   private _maxLen: number | undefined;
   private _actionsIdx: number = -1;
   private _actions: [() => void, () => void][] = [];
@@ -72,6 +80,7 @@ const _removeShapes = (board: Board, shapeDatas: IShapeData[]) => {
   board.remove(shapes, { operator: 'action_queue' });
 }
 Gaia.registAction(EventEnum.ShapesDone, {
+  isAction: () => true,
   undo: (board, event) => {
     const { detail: { shapeDatas } } = event;
     _removeShapes(board, shapeDatas)
@@ -82,6 +91,7 @@ Gaia.registAction(EventEnum.ShapesDone, {
   }
 })
 Gaia.registAction(EventEnum.ShapesRemoved, {
+  isAction: () => true,
   undo: (board, event) => {
     const { detail: { shapeDatas } } = event;
     _addShapes(board, shapeDatas)
@@ -92,11 +102,17 @@ Gaia.registAction(EventEnum.ShapesRemoved, {
   }
 })
 Gaia.registAction(EventEnum.ShapesGeoChanged, {
+  isAction: (board, event) => {
+    const ret = event.detail.tool === ToolEnum.Selector
+    console.log("isAction:", ret)
+    return ret
+  },
   undo: (board, event) => {
     const { detail: { shapeDatas } } = event;
     _changeShapes(board, shapeDatas, 1);
     board.emitEvent(EventEnum.ShapesGeoChanged, {
       operator: 'action_queue',
+      tool: ToolEnum.Invalid,
       shapeDatas: shapeDatas.map(arr => [arr[1], arr[0]]) as typeof shapeDatas
     })
   },
@@ -105,6 +121,7 @@ Gaia.registAction(EventEnum.ShapesGeoChanged, {
     _changeShapes(board, shapeDatas, 0);
     board.emitEvent(EventEnum.ShapesGeoChanged, {
       operator: 'action_queue',
+      tool: ToolEnum.Invalid,
       shapeDatas
     })
   }

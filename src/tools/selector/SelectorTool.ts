@@ -219,6 +219,7 @@ export class SelectorTool implements ITool {
     if (!board) return
     board.emitEvent(EventEnum.ShapesGeoChanging, {
       operator: board.whoami,
+      tool: this.type,
       shapeDatas: this._shapes.map(v => {
         const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
           Events.pickShapePosData(v.shape.data), v.prevData
@@ -231,6 +232,7 @@ export class SelectorTool implements ITool {
     if (immediate) {
       board.emitEvent(EventEnum.ShapesGeoChanged, {
         operator: board.whoami,
+        tool: this.type,
         shapeDatas: this._shapes.map(v => {
           const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
             Events.pickShapePosData(v.shape.data), v.startData

@@ -19,6 +19,7 @@ import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Shiftable } from "./Shiftable";
+import { ShortcutKind, ShortcutsKeeper } from "./Shortcuts";
 
 View.get(document.head).addChild(
   new View('title', '每日一句'),
@@ -188,6 +189,9 @@ function main() {
     height: resultHeight,
     element: blackboard.inner,
   });
+  const aq = new ActionQueue().setActor(board);
+  const rec = new Recorder().setActor(board);
+  const sc = new Player()
 
   const updateEditPanel = () => {
     let needFill = false;
@@ -235,98 +239,28 @@ function main() {
     e.preventDefault();
   };
 
+  const shortcutsKeeper = new ShortcutsKeeper(board, aq)
   const onkeydown = (e: KeyboardEvent) => {
-    let type: (keyof typeof shortcuts) | undefined;
-    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-      type = 'ctrl'; // 快捷键： ctrl + key
-    } else if (!e.ctrlKey && e.shiftKey && !e.altKey) {
-      type = 'shift'; // 快捷键： alt + key
-    } else if (!e.ctrlKey && !e.shiftKey && e.altKey) {
-      type = 'alt'; // 快捷键： alt + key
-    } else {
-      type = 'single'; // 快捷键： key
-    }
 
-    const func = shortcuts[type].get(e.key);
-    if (!func || func(e) === true) { return; } // func返回true时，意味着不要拦截默认事件。
+    let type = ShortcutKind.None;
+    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+      type = ShortcutKind.Ctrl; // 快捷键： ctrl + key
+    } else if (!e.ctrlKey && e.shiftKey && !e.altKey) {
+      type = ShortcutKind.Shift; // 快捷键： alt + key
+    } else if (!e.ctrlKey && !e.shiftKey && e.altKey) {
+      type = ShortcutKind.Alt; // 快捷键： alt + key
+    } else {
+      type = ShortcutKind.Single; // 快捷键： key
+    }
+    if (!type) { return }
+
+    const func = shortcutsKeeper.handles.get(type)?.get(e.key);
+    if (!func) { return; }
+
+    if (func(e) === true) { return; } // func返回true时，意味着不要拦截默认事件。
     console.log('shortcut hit!', type, e.key)
     e.stopPropagation();
     e.preventDefault();
-  }
-
-  const moveShapes = (e: KeyboardEvent) => {
-    const { selects, toolType } = board;
-    if (!selects) { return true; }
-
-    if (toolType !== ToolEnum.Selector) {
-      board.toolType = ToolEnum.Selector;
-    };
-    let diffX = 0;
-    let diffY = 0;
-    /*
-    按着shift移动50像素
-    按着alt移动1像素
-    否则移动4像素
-    */
-    let diff = e.shiftKey ? 50 : e.altKey ? 1 : 5;
-    switch (e.key) {
-      case 'ArrowUp': diffY = -diff; break;
-      case 'ArrowDown': diffY = diff; break;
-      case 'ArrowLeft': diffX = -diff; break;
-      case 'ArrowRight': diffX = diff; break;
-      default: return true;
-    }
-    const selector = board.tool as SelectorTool;
-    selector.connect(selects).moveBy(diffX, diffY).emitMovedEvent(true);
-
-    board.toolType = toolType;
-    board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形
-
-    return false;
-  }
-  const toggleShapeLocks = () => {
-    const { selects } = board;
-    if (!selects) { return true; }
-
-    const locked = !selects.find(v => !v.locked); // 存在未锁定的，视为全部未锁定
-    selects.forEach(v => v.locked = !locked);
-    return false;
-  }
-
-  const shortcuts = {
-    ctrl: new Map<string, (e: KeyboardEvent) => (void | boolean)>([
-      ['a', () => { board.selectAll(true) }],
-      ['d', () => { board.deselect(true) }],
-      ['l', () => { toggleShapeLocks() }],
-    ]),
-    shift: new Map<string, (e: KeyboardEvent) => (void | boolean)>([
-      ['ArrowUp', e => moveShapes(e)],
-      ['ArrowDown', e => moveShapes(e)],
-      ['ArrowLeft', e => moveShapes(e)],
-      ['ArrowRight', e => moveShapes(e)],
-    ]),
-    alt: new Map<string, (e: KeyboardEvent) => (void | boolean)>([
-      ['ArrowUp', e => moveShapes(e)],
-      ['ArrowDown', e => moveShapes(e)],
-      ['ArrowLeft', e => moveShapes(e)],
-      ['ArrowRight', e => moveShapes(e)],
-    ]),
-    single: new Map<string, (e: KeyboardEvent) => (void | boolean)>([
-      ['Delete', () => board.removeSelected(true)],
-      ['s', () => board.setToolType(ToolEnum.Selector)],
-      ['p', () => board.setToolType(ToolEnum.Pen)],
-      ['r', () => board.setToolType(ToolEnum.Rect)],
-      ['o', () => board.setToolType(ToolEnum.Oval)],
-      ['t', () => board.setToolType(ToolEnum.Text)],
-      ['z', () => board.setToolType(ToolEnum.Tick)],
-      ['c', () => board.setToolType(ToolEnum.Cross)],
-      ['x', () => board.setToolType(ToolEnum.HalfTick)],
-      ['l', () => board.setToolType(ToolEnum.Lines)],
-      ['ArrowUp', e => moveShapes(e)],
-      ['ArrowDown', e => moveShapes(e)],
-      ['ArrowLeft', e => moveShapes(e)],
-      ['ArrowRight', e => moveShapes(e)],
-    ]),
   }
 
   blackboard.addEventListener('keydown', onkeydown)
@@ -568,9 +502,6 @@ function main() {
   board.setToolType(ToolEnum.Selector);
 
 
-  const aq = new ActionQueue().setActor(board);
-  const rec = new Recorder().setActor(board);
-  const sc = new Player()
   Object.assign(window, {
     board, factory, mainView, Gaia, menu,
     record: {

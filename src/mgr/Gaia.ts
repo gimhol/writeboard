@@ -150,6 +150,7 @@ export class Gaia {
 }
 
 export interface ActionHandler<D = any> {
+  isAction(board: Board, e: D): boolean,
   undo(board: Board, e: D): void;
   redo(board: Board, e: D): void;
 }
