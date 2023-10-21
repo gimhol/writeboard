@@ -1,7 +1,8 @@
-import { ShapeData } from "./Data"
-import { Board } from "../../board/Board"
-import { IRect, Rect } from "../../utils/Rect"
-import { ShapeType } from "../ShapeEnum"
+import { Board } from "../../board/Board";
+import { IRect, Rect } from "../../utils/Rect";
+import { ShapeEnum, ShapeType } from "../ShapeEnum";
+import { ShapeData } from "./Data";
+
 export enum ResizeDirection {
   None = 0,
   Top = 'Top',
@@ -13,10 +14,12 @@ export enum ResizeDirection {
   BottomLeft = 'BottomLeft',
   BottomRight = 'BottomRight',
 }
+
 export enum Resizable {
   None = 0,
   All = 1,
 }
+
 export class Shape<D extends ShapeData = ShapeData> {
   private _data: D;
   private _board?: Board;
@@ -24,25 +27,75 @@ export class Shape<D extends ShapeData = ShapeData> {
   constructor(data: D) {
     this._data = data
   }
+
+  /**
+   * 图形的数据
+   *
+   * @readonly
+   * @type {D}
+   * @memberof Shape
+   */
   get data(): D { return this._data as D }
+
+  /**
+   * 图形类型
+   * 
+   * 当图形为内置图形时，值为ShapeEnum，否则为字符串
+   *
+   * @readonly
+   * @see {ShapeEnum}
+   * @type {ShapeType}
+   * @memberof Shape
+   */
   get type(): ShapeType { return this._data.type }
+
+  /**
+   * 图形属于哪个黑板
+   *
+   * @type {(Board | undefined)}
+   * @memberof Shape
+   */
   get board(): Board | undefined { return this._board }
   set board(v: Board | undefined) { this._board = v }
-  get visible(): boolean {
-    return !!this._data.visible
-  }
+
+  /**
+   * 图形是否可见，
+   * 
+   * 当不可见时，图形将在渲染时被忽略
+   *
+   * @type {boolean}
+   * @memberof Shape
+   */
+  get visible(): boolean { return !!this._data.visible }
   set visible(v: boolean) {
     if (!!this._data.visible === v) return
     this._data.visible = v
     this.markDirty()
   }
 
+  /**
+   * 是否正在编辑中
+   * 
+   * TODO
+   *
+   * @type {boolean}
+   * @memberof Shape
+   */
   get editing(): boolean { return !!this._data.editing }
   set editing(v: boolean) {
     if (this._data.editing === v) return
     this._data.editing = v
     this.markDirty()
   }
+
+  /**
+   * 图形是否被选中
+   * 
+   * 选中图形后，图形将呈现为被选中状态，其他一些对图形的操作均需要选中图形
+   *
+   * @type {boolean}
+   * @memberof Shape
+   */
   get selected(): boolean { return !!this._data.selected }
   set selected(v: boolean) {
     if (this._data.selected === v) return
@@ -50,14 +103,42 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
+  /**
+   * 图形是否可以被用户修改尺寸
+   * 
+   * 当不为Resizable.None时，选中的图形将出现控制点，
+   * 此时可以点击拖拽控制点来修改图形的尺寸
+   *
+   * @readonly
+   * @type {Resizable}
+   * @memberof Shape
+   */
   get resizable(): Resizable { return this._resizable; }
 
+  /**
+   * 图形是否被锁定
+   * 
+   * 被锁定的图形将不能被编辑，选中图形时，选中图形将显示为被锁定
+   *
+   * @type {boolean}
+   * @memberof Shape
+   */
   get locked(): boolean { return this._data.locked }
   set locked(v: boolean) {
     if (this._data.locked === v) return
     this._data.locked = v
     this.markDirty()
   }
+
+  /**
+   * 图形能否交互
+   * 
+   * 当ghost为true时，只能看见这个图形，而不能选中并与其产生交互。
+   * 利用这个属性，可以实现比较特殊的功能，比如：背景图
+   *
+   * @type {boolean}
+   * @memberof Shape
+   */
   get ghost(): boolean { return this._data.ghost }
   set ghost(v: boolean) {
     if (this._data.ghost === v) return
@@ -65,6 +146,13 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
+  /**
+   * 图形描边宽度
+   * 若图形不存在描边，则为0
+   *
+   * @type {number}
+   * @memberof Shape
+   */
   get lineWidth(): number { return this._data.lineWidth }
   set lineWidth(v: number) {
     if (!this._data.needStroke) { return; }
@@ -84,6 +172,13 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.board?.markDirty(rect)
   }
 
+  /**
+   * 移动图形
+   * 
+   * @param x x坐标
+   * @param y y坐标
+   * @returns void
+   */
   move(x: number, y: number): void {
     if (x === this._data.x && y === this._data.y)
       return
