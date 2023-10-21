@@ -15,11 +15,31 @@ export enum ResizeDirection {
   BottomRight = 'BottomRight',
 }
 
+/**
+ * 表示图形能以何种方式被拉伸
+ *
+ * @export
+ * @enum {number}
+ */
 export enum Resizable {
+  /**
+   * 图形不能被拉伸
+   */
   None = 0,
+
+  /**
+   * 八方向拉伸
+   */
   All = 1,
 }
 
+/**
+ * 一切图形的基类
+ *
+ * @export
+ * @class Shape 图形基类
+ * @template D 图形数据类
+ */
 export class Shape<D extends ShapeData = ShapeData> {
   private _data: D;
   private _board?: Board;
@@ -323,6 +343,13 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
   }
 
+  /**
+   * 绘制矩形
+   * 
+   * TODO
+   * 
+   * @returns 
+   */
   drawingRect(): IRect {
     const d = this._data
     const drawOffset = (d.lineWidth % 2) ? 0.5 : 0
@@ -334,6 +361,13 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
   }
 
+  /**
+   * 包围盒
+   * 
+   * TODO
+   * 
+   * @returns 
+   */
   boundingRect(): IRect {
     const d = this.data
     const offset = (d.lineWidth % 2) ? 1 : 0
