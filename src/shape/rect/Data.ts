@@ -8,8 +8,5 @@ export class RectData extends ShapeData {
     this.strokeStyle = '#ff0000'
     this.lineWidth = 2
   }
-  override copy(): RectData {
-    return new RectData().copyFrom(this)
-  }
 }
 

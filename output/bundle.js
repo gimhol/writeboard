@@ -2020,7 +2020,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":22,"../shape":53,"../tools":88,"../utils":100,"./Layer":18}],18:[function(require,module,exports){
+},{"../event":22,"../shape":53,"../tools":88,"../utils":101,"./Layer":18}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2692,7 +2692,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":19,"./features":27,"./mgr":35,"./shape":53,"./tools":88,"./utils":100}],31:[function(require,module,exports){
+},{"./board":19,"./features":27,"./mgr":35,"./shape":53,"./tools":88,"./utils":101}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultFactory = void 0;
@@ -3044,6 +3044,7 @@ exports.getShapeName = getShapeName;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
+const helper_1 = require("../../utils/helper");
 const ShapeEnum_1 = require("../ShapeEnum");
 class ShapeData {
     constructor() {
@@ -3188,21 +3189,21 @@ class ShapeData {
         return this;
     }
     copyFrom(o) {
-        if (typeof o.t === 'string' || typeof o.t === 'number')
+        if ((0, helper_1.isStr)(o.t) || (0, helper_1.isNum)(o.t))
             this.t = o.t;
-        if (typeof o.i === 'string')
+        if ((0, helper_1.isStr)(o.i))
             this.i = o.i;
-        if (typeof o.x === 'number')
+        if ((0, helper_1.isNum)(o.x))
             this.x = o.x;
-        if (typeof o.y === 'number')
+        if ((0, helper_1.isNum)(o.y))
             this.y = o.y;
-        if (typeof o.z === 'number')
+        if ((0, helper_1.isNum)(o.z))
             this.z = o.z;
-        if (typeof o.w === 'number')
+        if ((0, helper_1.isNum)(o.w))
             this.w = o.w;
-        if (typeof o.h === 'number')
+        if ((0, helper_1.isNum)(o.h))
             this.h = o.h;
-        if (typeof o.l === 'string')
+        if ((0, helper_1.isStr)(o.l))
             this.l = o.l;
         const { style, status } = o;
         if (style) {
@@ -3216,38 +3217,38 @@ class ShapeData {
                 this.style.c = style.c;
             if (style.d)
                 this.style.d = [...style.d];
-            if (typeof style.e === 'number')
+            if ((0, helper_1.isNum)(style.e))
                 this.style.e = style.e;
             if (style.f)
                 this.style.f = style.f;
-            if (typeof style.g === 'number')
+            if ((0, helper_1.isNum)(style.g))
                 this.style.g = style.g;
-            if (typeof style.h === 'number')
+            if ((0, helper_1.isNum)(style.h))
                 this.style.h = style.h;
         }
         if (status) {
             if (!this.status)
                 this.status = {};
-            if (typeof status.v === 'number')
+            if ((0, helper_1.isNum)(status.v))
                 this.status.v = status.v;
-            if (typeof status.s === 'number')
+            if ((0, helper_1.isNum)(status.s))
                 this.status.s = status.s;
-            if (typeof status.e === 'number')
+            if ((0, helper_1.isNum)(status.e))
                 this.status.e = status.e;
-            if (typeof status.f === 'number')
+            if ((0, helper_1.isNum)(status.f))
                 this.status.f = status.f;
-            if (typeof status.g === 'number')
+            if ((0, helper_1.isNum)(status.g))
                 this.status.g = status.g;
         }
         return this;
     }
     copy() {
-        return new ShapeData().copyFrom(this);
+        return new (Object.getPrototypeOf(this).constructor).copyFrom(this);
     }
 }
 exports.ShapeData = ShapeData;
 
-},{"../ShapeEnum":36}],38:[function(require,module,exports){
+},{"../../utils/helper":100,"../ShapeEnum":36}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
@@ -3264,29 +3265,85 @@ var ResizeDirection;
     ResizeDirection["BottomLeft"] = "BottomLeft";
     ResizeDirection["BottomRight"] = "BottomRight";
 })(ResizeDirection = exports.ResizeDirection || (exports.ResizeDirection = {}));
+/**
+ * 表示图形能以何种方式被拉伸
+ *
+ * @export
+ * @enum {number}
+ */
 var Resizable;
 (function (Resizable) {
+    /**
+     * 图形不能被拉伸
+     */
     Resizable[Resizable["None"] = 0] = "None";
+    /**
+     * 八方向拉伸
+     */
     Resizable[Resizable["All"] = 1] = "All";
 })(Resizable = exports.Resizable || (exports.Resizable = {}));
+/**
+ * 一切图形的基类
+ *
+ * @export
+ * @class Shape 图形基类
+ * @template D 图形数据类
+ */
 class Shape {
     constructor(data) {
         this._resizable = Resizable.None;
         this._data = data;
     }
+    /**
+     * 图形的数据
+     *
+     * @readonly
+     * @type {D}
+     * @memberof Shape
+     */
     get data() { return this._data; }
+    /**
+     * 图形类型
+     *
+     * 当图形为内置图形时，值为ShapeEnum，否则为字符串
+     *
+     * @readonly
+     * @see {ShapeEnum}
+     * @type {ShapeType}
+     * @memberof Shape
+     */
     get type() { return this._data.type; }
+    /**
+     * 图形属于哪个黑板
+     *
+     * @type {(Board | undefined)}
+     * @memberof Shape
+     */
     get board() { return this._board; }
     set board(v) { this._board = v; }
-    get visible() {
-        return !!this._data.visible;
-    }
+    /**
+     * 图形是否可见，
+     *
+     * 当不可见时，图形将在渲染时被忽略
+     *
+     * @type {boolean}
+     * @memberof Shape
+     */
+    get visible() { return !!this._data.visible; }
     set visible(v) {
         if (!!this._data.visible === v)
             return;
         this._data.visible = v;
         this.markDirty();
     }
+    /**
+     * 是否正在编辑中
+     *
+     * TODO
+     *
+     * @type {boolean}
+     * @memberof Shape
+     */
     get editing() { return !!this._data.editing; }
     set editing(v) {
         if (this._data.editing === v)
@@ -3294,6 +3351,14 @@ class Shape {
         this._data.editing = v;
         this.markDirty();
     }
+    /**
+     * 图形是否被选中
+     *
+     * 选中图形后，图形将呈现为被选中状态，其他一些对图形的操作均需要选中图形
+     *
+     * @type {boolean}
+     * @memberof Shape
+     */
     get selected() { return !!this._data.selected; }
     set selected(v) {
         if (this._data.selected === v)
@@ -3301,7 +3366,25 @@ class Shape {
         this._data.selected = v;
         this.markDirty();
     }
+    /**
+     * 图形是否可以被用户修改尺寸
+     *
+     * 当不为Resizable.None时，选中的图形将出现控制点，
+     * 此时可以点击拖拽控制点来修改图形的尺寸
+     *
+     * @readonly
+     * @type {Resizable}
+     * @memberof Shape
+     */
     get resizable() { return this._resizable; }
+    /**
+     * 图形是否被锁定
+     *
+     * 被锁定的图形将不能被编辑，选中图形时，选中图形将显示为被锁定
+     *
+     * @type {boolean}
+     * @memberof Shape
+     */
     get locked() { return this._data.locked; }
     set locked(v) {
         if (this._data.locked === v)
@@ -3309,6 +3392,15 @@ class Shape {
         this._data.locked = v;
         this.markDirty();
     }
+    /**
+     * 图形能否交互
+     *
+     * 当ghost为true时，只能看见这个图形，而不能选中并与其产生交互。
+     * 利用这个属性，可以实现比较特殊的功能，比如：背景图
+     *
+     * @type {boolean}
+     * @memberof Shape
+     */
     get ghost() { return this._data.ghost; }
     set ghost(v) {
         if (this._data.ghost === v)
@@ -3316,6 +3408,13 @@ class Shape {
         this._data.ghost = v;
         this.markDirty();
     }
+    /**
+     * 图形描边宽度
+     * 若图形不存在描边，则为0
+     *
+     * @type {number}
+     * @memberof Shape
+     */
     get lineWidth() { return this._data.lineWidth; }
     set lineWidth(v) {
         if (!this._data.needStroke) {
@@ -3335,6 +3434,13 @@ class Shape {
         rect = rect !== null && rect !== void 0 ? rect : this.boundingRect();
         (_a = this.board) === null || _a === void 0 ? void 0 : _a.markDirty(rect);
     }
+    /**
+     * 移动图形
+     *
+     * @param x x坐标
+     * @param y y坐标
+     * @returns void
+     */
     move(x, y) {
         if (x === this._data.x && y === this._data.y)
             return;
@@ -3456,6 +3562,13 @@ class Shape {
             }
         }
     }
+    /**
+     * 绘制矩形
+     *
+     * TODO
+     *
+     * @returns
+     */
     drawingRect() {
         const d = this._data;
         const drawOffset = (d.lineWidth % 2) ? 0.5 : 0;
@@ -3466,6 +3579,13 @@ class Shape {
             h: Math.floor(d.h)
         };
     }
+    /**
+     * 包围盒
+     *
+     * TODO
+     *
+     * @returns
+     */
     boundingRect() {
         const d = this.data;
         const offset = (d.lineWidth % 2) ? 1 : 0;
@@ -3610,9 +3730,6 @@ class CrossData extends base_1.ShapeData {
         this.strokeStyle = '#FF0000';
         this.lineWidth = 2;
     }
-    copy() {
-        return new CrossData().copyFrom(this);
-    }
 }
 exports.CrossData = CrossData;
 
@@ -3688,9 +3805,6 @@ class HalfTickData extends base_1.ShapeData {
         this.type = ShapeEnum_1.ShapeEnum.HalfTick;
         this.strokeStyle = '#FF0000';
         this.lineWidth = 2;
-    }
-    copy() {
-        return new HalfTickData().copyFrom(this);
     }
 }
 exports.HalfTickData = HalfTickData;
@@ -3772,9 +3886,6 @@ class ImgData extends base_1.ShapeData {
         // src: string = 'http://download.niushibang.com/tvzwLPPzgRqnab818f2c19e1b1aefa67e9682fec5a77.jpg';
         this.s = 'http://download.niushibang.com/niubo/wx/message/93482af6-597e-4d96-b91d-498222adcfaa/1686551265158.png';
         this.type = ShapeEnum_1.ShapeEnum.Img;
-    }
-    copy() {
-        return new ImgData().copyFrom(this);
     }
     copyFrom(other) {
         super.copyFrom(other);
@@ -3974,9 +4085,6 @@ class LinesData extends base_1.ShapeData {
             this.coords = [...other.coords];
         }
         return this;
-    }
-    copy() {
-        return new LinesData().copyFrom(this);
     }
 }
 exports.LinesData = LinesData;
@@ -4303,9 +4411,6 @@ class OvalData extends base_1.ShapeData {
         this.strokeStyle = '#ff0000';
         this.lineWidth = 2;
     }
-    copy() {
-        return new OvalData().copyFrom(this);
-    }
 }
 exports.OvalData = OvalData;
 
@@ -4429,9 +4534,6 @@ class PenData extends base_1.ShapeData {
                 break;
         }
         return this;
-    }
-    copy() {
-        return new PenData().copyFrom(this);
     }
 }
 exports.PenData = PenData;
@@ -4690,9 +4792,6 @@ class PolygonData extends base_1.ShapeData {
             this.dots = other.dots.map(v => (Object.assign({}, v)));
         return this;
     }
-    copy() {
-        return new PolygonData().copyFrom(this);
-    }
 }
 exports.PolygonData = PolygonData;
 
@@ -4743,9 +4842,6 @@ class RectData extends base_1.ShapeData {
         this.type = ShapeEnum_1.ShapeEnum.Rect;
         this.strokeStyle = '#ff0000';
         this.lineWidth = 2;
-    }
-    copy() {
-        return new RectData().copyFrom(this);
     }
 }
 exports.RectData = RectData;
@@ -4833,9 +4929,6 @@ class TextData extends base_1.ShapeData {
         if (typeof other.t_b === 'number')
             this.t_b = other.t_b;
         return this;
-    }
-    copy() {
-        return new TextData().copyFrom(this);
     }
 }
 exports.TextData = TextData;
@@ -5248,9 +5341,6 @@ class TickData extends base_1.ShapeData {
         this.type = ShapeEnum_1.ShapeEnum.Tick;
         this.strokeStyle = '#FF0000';
         this.lineWidth = 2;
-    }
-    copy() {
-        return new TickData().copyFrom(this);
     }
 }
 exports.TickData = TickData;
@@ -6534,6 +6624,15 @@ class Vector {
 exports.Vector = Vector;
 
 },{}],100:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isStr = exports.isNum = void 0;
+const isNum = (x) => typeof x === 'number';
+exports.isNum = isNum;
+const isStr = (x) => typeof x === 'string';
+exports.isStr = isStr;
+
+},{}],101:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

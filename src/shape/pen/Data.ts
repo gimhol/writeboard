@@ -50,7 +50,4 @@ export class PenData extends ShapeData implements IPenData {
 
     return this
   }
-  override copy() {
-    return new PenData().copyFrom(this)
-  }
 }

@@ -11,8 +11,5 @@ export class HalfTickData extends ShapeData {
     this.strokeStyle = '#FF0000';
     this.lineWidth = 2;
   }
-  override copy(): HalfTickData {
-    return new HalfTickData().copyFrom(this)
-  }
 }
 

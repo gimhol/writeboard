@@ -26,7 +26,4 @@ export class LinesData extends ShapeData {
     }
     return this
   }
-  override copy() {
-    return new LinesData().copyFrom(this)
-  }
 }

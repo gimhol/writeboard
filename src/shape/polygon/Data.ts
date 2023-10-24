@@ -16,8 +16,5 @@ export class PolygonData extends ShapeData {
     if ('dots' in other) this.dots = other.dots!.map(v => ({ ...v }))
     return this
   }
-  override copy(): PolygonData {
-    return new PolygonData().copyFrom(this)
-  }
 }
 

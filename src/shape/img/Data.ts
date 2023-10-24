@@ -39,9 +39,7 @@ export class ImgData extends ShapeData {
     super()
     this.type = ShapeEnum.Img;
   }
-  override copy(): ImgData {
-    return new ImgData().copyFrom(this)
-  }
+
   override copyFrom(other: Partial<ImgData>): this {
     super.copyFrom(other);
     if (typeof other.s === 'string') this.s = other.s;

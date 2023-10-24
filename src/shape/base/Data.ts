@@ -1,3 +1,4 @@
+import { isNum, isStr } from "../../utils/helper"
 import { ShapeEnum, ShapeType } from "../ShapeEnum"
 
 export interface IShapeStyle {
@@ -38,23 +39,23 @@ export interface IShapeStatus {
   /**
    * visible
    */
-  v?: 1;
+  v?: 1|0;
   /**
    * selected
    */
-  s?: 1;
+  s?: 1|0;
   /**
    * editing
    */
-  e?: 1;
+  e?: 1|0;
   /**
    * locked
    */
-  f?: 1;
+  f?: 1|0;
   /**
    * ghost
    */
-  g?: 1;
+  g?: 1|0;
 }
 export interface IShapeData {
   t: ShapeType;
@@ -174,15 +175,16 @@ export class ShapeData implements IShapeData {
     this.copyFrom(o)
     return this
   }
+
   copyFrom(o: Partial<IShapeData>) {
-    if (typeof o.t === 'string' || typeof o.t === 'number') this.t = o.t
-    if (typeof o.i === 'string') this.i = o.i
-    if (typeof o.x === 'number') this.x = o.x
-    if (typeof o.y === 'number') this.y = o.y
-    if (typeof o.z === 'number') this.z = o.z
-    if (typeof o.w === 'number') this.w = o.w
-    if (typeof o.h === 'number') this.h = o.h
-    if (typeof o.l === 'string') this.l = o.l
+    if (isStr(o.t) || isNum(o.t)) this.t = o.t
+    if (isStr(o.i)) this.i = o.i
+    if (isNum(o.x)) this.x = o.x
+    if (isNum(o.y)) this.y = o.y
+    if (isNum(o.z)) this.z = o.z
+    if (isNum(o.w)) this.w = o.w
+    if (isNum(o.h)) this.h = o.h
+    if (isStr(o.l)) this.l = o.l
 
     const { style, status } = o
     if (style) {
@@ -191,22 +193,22 @@ export class ShapeData implements IShapeData {
       if (style.b) this.style.b = style.b
       if (style.c) this.style.c = style.c
       if (style.d) this.style.d = [...style.d]
-      if (typeof style.e === 'number') this.style.e = style.e
+      if (isNum(style.e)) this.style.e = style.e
       if (style.f) this.style.f = style.f
-      if (typeof style.g === 'number') this.style.g = style.g
-      if (typeof style.h === 'number') this.style.h = style.h
+      if (isNum(style.g)) this.style.g = style.g
+      if (isNum(style.h)) this.style.h = style.h
     }
     if (status) {
       if (!this.status) this.status = {}
-      if (typeof status.v === 'number') this.status.v = status.v
-      if (typeof status.s === 'number') this.status.s = status.s
-      if (typeof status.e === 'number') this.status.e = status.e
-      if (typeof status.f === 'number') this.status.f = status.f
-      if (typeof status.g === 'number') this.status.g = status.g
+      if (isNum(status.v)) this.status.v = status.v
+      if (isNum(status.s)) this.status.s = status.s
+      if (isNum(status.e)) this.status.e = status.e
+      if (isNum(status.f)) this.status.f = status.f
+      if (isNum(status.g)) this.status.g = status.g
     }
     return this
   }
-  copy(): ShapeData {
-    return new ShapeData().copyFrom(this)
+  copy(): typeof this {
+    return new (Object.getPrototypeOf(this).constructor).copyFrom(this)
   }
 }

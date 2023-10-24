@@ -9,7 +9,4 @@ export class OvalData extends ShapeData {
     this.strokeStyle = '#ff0000'
     this.lineWidth = 2
   }
-  copy(): OvalData {
-    return new OvalData().copyFrom(this)
-  }
 }

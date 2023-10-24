@@ -46,8 +46,5 @@ export class TextData extends ShapeData {
     if (typeof other.t_b === 'number') this.t_b = other.t_b;
     return this
   }
-  override copy(): TextData {
-    return new TextData().copyFrom(this)
-  }
 }
 
