@@ -209,6 +209,7 @@ export class ShapeData implements IShapeData {
     return this
   }
   copy(): typeof this {
-    return new (Object.getPrototypeOf(this).constructor).read(this)
+    const ret: (typeof this) = new (Object.getPrototypeOf(this).constructor)
+    return ret.read(this)
   }
 }
