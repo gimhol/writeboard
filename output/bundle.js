@@ -3244,7 +3244,7 @@ class ShapeData {
         return this;
     }
     copy() {
-        return new (Object.getPrototypeOf(this).constructor).copyFrom(this);
+        return new (Object.getPrototypeOf(this).constructor).read(this);
     }
 }
 exports.ShapeData = ShapeData;
