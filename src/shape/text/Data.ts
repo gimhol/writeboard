@@ -1,3 +1,4 @@
+import { isNum, isStr } from "../../utils/helper";
 import { ShapeEnum } from "../ShapeEnum";
 import { ShapeData } from "../base";
 
@@ -36,14 +37,14 @@ export class TextData extends ShapeData {
   set font_weight(v) { this.f_d[2] = v }
   set font_size(v) { this.f_d[3] = v }
   set font_family(v) { this.f_d[4] = v }
-  override copyFrom(other: Partial<TextData>) {
-    super.copyFrom(other)
-    if (typeof other.text === 'string') this.text = other.text;
-    if (Array.isArray(other.f_d)) this.f_d = [...other.f_d];
-    if (typeof other.t_l === 'number') this.t_l = other.t_l;
-    if (typeof other.t_r === 'number') this.t_r = other.t_r;
-    if (typeof other.t_t === 'number') this.t_t = other.t_t;
-    if (typeof other.t_b === 'number') this.t_b = other.t_b;
+  override read(o: Partial<TextData>) {
+    super.read(o)
+    if (isStr(o.text)) this.text = o.text;
+    if (Array.isArray(o.f_d)) this.f_d = [...o.f_d];
+    if (isNum(o.t_l)) this.t_l = o.t_l;
+    if (isNum(o.t_r)) this.t_r = o.t_r;
+    if (isNum(o.t_t)) this.t_t = o.t_t;
+    if (isNum(o.t_b)) this.t_b = o.t_b;
     return this
   }
 }

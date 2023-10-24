@@ -14,13 +14,13 @@ export class LinesData extends ShapeData {
     this.lineJoin = 'round';
     this.lineWidth = 2;
   }
-  override copyFrom(other: Partial<LinesData>) {
-    super.copyFrom(other)
+  override read(other: Partial<LinesData>) {
+    super.read(other)
     if (Array.isArray(other.coords)) this.coords = [...other.coords]
     return this
   }
   override merge(other: Partial<LinesData>) {
-    super.copyFrom(other)
+    super.read(other)
     if (Array.isArray(other.coords)) {
       this.coords = [...other.coords]
     }

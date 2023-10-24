@@ -39,23 +39,23 @@ export interface IShapeStatus {
   /**
    * visible
    */
-  v?: 1|0;
+  v?: 1 | 0;
   /**
    * selected
    */
-  s?: 1|0;
+  s?: 1 | 0;
   /**
    * editing
    */
-  e?: 1|0;
+  e?: 1 | 0;
   /**
    * locked
    */
-  f?: 1|0;
+  f?: 1 | 0;
   /**
    * ghost
    */
-  g?: 1|0;
+  g?: 1 | 0;
 }
 export interface IShapeData {
   t: ShapeType;
@@ -172,11 +172,11 @@ export class ShapeData implements IShapeData {
   get needStroke() { return true; }
 
   merge(o: Partial<IShapeData>) {
-    this.copyFrom(o)
+    this.read(o)
     return this
   }
 
-  copyFrom(o: Partial<IShapeData>) {
+  read(o: Partial<IShapeData>): this {
     if (isStr(o.t) || isNum(o.t)) this.t = o.t
     if (isStr(o.i)) this.i = o.i
     if (isNum(o.x)) this.x = o.x

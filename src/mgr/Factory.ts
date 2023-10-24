@@ -11,6 +11,7 @@ import type { ShapeType } from "../shape/ShapeEnum";
 import type { ToolType } from "../tools/ToolEnum";
 import { FontFamilysChecker } from "../fonts/checker";
 import { builtInFontFamilies, builtInFontNames } from "../fonts/builtInFontFamilies";
+import { isNum, isStr } from "../utils/helper";
 
 export interface IFactory {
   get type(): FactoryType;
@@ -86,11 +87,11 @@ export class DefaultFactory implements IFactory {
   newShape(shapeType: ShapeType): Shape;
   newShape(shapeData: IShapeData): Shape;
   newShape(v: ShapeType | IShapeData): Shape {
-    const isNew = typeof v === 'string' || typeof v === 'number'
+    const isNew = isNum(v) || isStr(v)
     const type: ShapeType = isNew ? v : v.t
     const data = this.newShapeData(type)
     const template = isNew ? this.shapeTemplate(v) : v
-    data.copyFrom(template);
+    data.read(template);
     if (isNew) {
       data.id = this.newId(data);
       data.z = this.newZ(data);

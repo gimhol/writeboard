@@ -2705,6 +2705,7 @@ const Gaia_1 = require("./Gaia");
 const board_1 = require("../board");
 const checker_1 = require("../fonts/checker");
 const builtInFontFamilies_1 = require("../fonts/builtInFontFamilies");
+const helper_1 = require("../utils/helper");
 const Tag = '[DefaultFactory]';
 class DefaultFactory {
     constructor() {
@@ -2761,11 +2762,11 @@ class DefaultFactory {
     }
     newShape(v) {
         var _a, _b;
-        const isNew = typeof v === 'string' || typeof v === 'number';
+        const isNew = (0, helper_1.isNum)(v) || (0, helper_1.isStr)(v);
         const type = isNew ? v : v.t;
         const data = this.newShapeData(type);
         const template = isNew ? this.shapeTemplate(v) : v;
-        data.copyFrom(template);
+        data.read(template);
         if (isNew) {
             data.id = this.newId(data);
             data.z = this.newZ(data);
@@ -2792,7 +2793,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":19,"../fonts/builtInFontFamilies":28,"../fonts/checker":29,"../shape/base/Data":37,"../shape/base/Shape":38,"../tools/base/InvalidTool":84,"./FactoryEnum":32,"./Gaia":33,"./ShapesMgr":34}],32:[function(require,module,exports){
+},{"../board":19,"../fonts/builtInFontFamilies":28,"../fonts/checker":29,"../shape/base/Data":37,"../shape/base/Shape":38,"../tools/base/InvalidTool":84,"../utils/helper":100,"./FactoryEnum":32,"./Gaia":33,"./ShapesMgr":34}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -3185,10 +3186,10 @@ class ShapeData {
     get needFill() { return true; }
     get needStroke() { return true; }
     merge(o) {
-        this.copyFrom(o);
+        this.read(o);
         return this;
     }
-    copyFrom(o) {
+    read(o) {
         if ((0, helper_1.isStr)(o.t) || (0, helper_1.isNum)(o.t))
             this.t = o.t;
         if ((0, helper_1.isStr)(o.i))
@@ -3853,6 +3854,7 @@ arguments[4][44][0].apply(exports,arguments)
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImgData = exports.ObjectFit = void 0;
+const helper_1 = require("../../utils/helper");
 const ShapeEnum_1 = require("../ShapeEnum");
 const base_1 = require("../base");
 var ObjectFit;
@@ -3887,18 +3889,18 @@ class ImgData extends base_1.ShapeData {
         this.s = 'http://download.niushibang.com/niubo/wx/message/93482af6-597e-4d96-b91d-498222adcfaa/1686551265158.png';
         this.type = ShapeEnum_1.ShapeEnum.Img;
     }
-    copyFrom(other) {
-        super.copyFrom(other);
-        if (typeof other.s === 'string')
+    read(other) {
+        super.read(other);
+        if ((0, helper_1.isStr)(other.s))
             this.s = other.s;
-        if (typeof other.f === 'number')
+        if ((0, helper_1.isNum)(other.f))
             this.f = other.f;
         return this;
     }
 }
 exports.ImgData = ImgData;
 
-},{"../ShapeEnum":36,"../base":40}],50:[function(require,module,exports){
+},{"../../utils/helper":100,"../ShapeEnum":36,"../base":40}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -4073,14 +4075,14 @@ class LinesData extends base_1.ShapeData {
         this.lineJoin = 'round';
         this.lineWidth = 2;
     }
-    copyFrom(other) {
-        super.copyFrom(other);
+    read(other) {
+        super.read(other);
         if (Array.isArray(other.coords))
             this.coords = [...other.coords];
         return this;
     }
     merge(other) {
-        super.copyFrom(other);
+        super.read(other);
         if (Array.isArray(other.coords)) {
             this.coords = [...other.coords];
         }
@@ -4509,8 +4511,8 @@ class PenData extends base_1.ShapeData {
         this.lineJoin = 'round';
         this.lineWidth = 3;
     }
-    copyFrom(other) {
-        super.copyFrom(other);
+    read(other) {
+        super.read(other);
         if (other.dotsType)
             this.dotsType = other.dotsType;
         if (Array.isArray(other.coords))
@@ -4518,7 +4520,7 @@ class PenData extends base_1.ShapeData {
         return this;
     }
     merge(other) {
-        super.copyFrom(other);
+        super.read(other);
         if (!Array.isArray(other.coords)) {
             return this;
         }
@@ -4786,8 +4788,8 @@ class PolygonData extends base_1.ShapeData {
         this.strokeStyle = '#000000';
         this.lineWidth = 2;
     }
-    copyFrom(other) {
-        super.copyFrom(other);
+    read(other) {
+        super.read(other);
         if ('dots' in other)
             this.dots = other.dots.map(v => (Object.assign({}, v)));
         return this;
@@ -4882,6 +4884,7 @@ arguments[4][44][0].apply(exports,arguments)
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextData = void 0;
+const helper_1 = require("../../utils/helper");
 const ShapeEnum_1 = require("../ShapeEnum");
 const base_1 = require("../base");
 class TextData extends base_1.ShapeData {
@@ -4914,26 +4917,26 @@ class TextData extends base_1.ShapeData {
     set font_weight(v) { this.f_d[2] = v; }
     set font_size(v) { this.f_d[3] = v; }
     set font_family(v) { this.f_d[4] = v; }
-    copyFrom(other) {
-        super.copyFrom(other);
-        if (typeof other.text === 'string')
-            this.text = other.text;
-        if (Array.isArray(other.f_d))
-            this.f_d = [...other.f_d];
-        if (typeof other.t_l === 'number')
-            this.t_l = other.t_l;
-        if (typeof other.t_r === 'number')
-            this.t_r = other.t_r;
-        if (typeof other.t_t === 'number')
-            this.t_t = other.t_t;
-        if (typeof other.t_b === 'number')
-            this.t_b = other.t_b;
+    read(o) {
+        super.read(o);
+        if ((0, helper_1.isStr)(o.text))
+            this.text = o.text;
+        if (Array.isArray(o.f_d))
+            this.f_d = [...o.f_d];
+        if ((0, helper_1.isNum)(o.t_l))
+            this.t_l = o.t_l;
+        if ((0, helper_1.isNum)(o.t_r))
+            this.t_r = o.t_r;
+        if ((0, helper_1.isNum)(o.t_t))
+            this.t_t = o.t_t;
+        if ((0, helper_1.isNum)(o.t_b))
+            this.t_b = o.t_b;
         return this;
     }
 }
 exports.TextData = TextData;
 
-},{"../ShapeEnum":36,"../base":40}],75:[function(require,module,exports){
+},{"../../utils/helper":100,"../ShapeEnum":36,"../base":40}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;

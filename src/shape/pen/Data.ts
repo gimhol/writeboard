@@ -24,14 +24,14 @@ export class PenData extends ShapeData implements IPenData {
     this.lineJoin = 'round'
     this.lineWidth = 3
   }
-  override copyFrom(other: Partial<PenData>) {
-    super.copyFrom(other)
+  override read(other: Partial<PenData>) {
+    super.read(other)
     if (other.dotsType) this.dotsType = other.dotsType
     if (Array.isArray(other.coords)) this.coords = [...other.coords]
     return this
   }
   override merge(other: Partial<PenData>) {
-    super.copyFrom(other)
+    super.read(other)
 
     if (!Array.isArray(other.coords)) {
       return this
@@ -47,7 +47,6 @@ export class PenData extends ShapeData implements IPenData {
         this.coords = [...other.coords];
         break;
     }
-
     return this
   }
 }

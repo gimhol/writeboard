@@ -11,8 +11,8 @@ export class PolygonData extends ShapeData {
     this.lineWidth = 2
   }
   dots: IDot[] = []
-  override copyFrom(other: Partial<PolygonData>) {
-    super.copyFrom(other)
+  override read(other: Partial<PolygonData>) {
+    super.read(other)
     if ('dots' in other) this.dots = other.dots!.map(v => ({ ...v }))
     return this
   }

@@ -1,3 +1,4 @@
+import { isNum, isStr } from "../../utils/helper";
 import { ShapeEnum } from "../ShapeEnum";
 import { ShapeData } from "../base";
 
@@ -40,11 +41,10 @@ export class ImgData extends ShapeData {
     this.type = ShapeEnum.Img;
   }
 
-  override copyFrom(other: Partial<ImgData>): this {
-    super.copyFrom(other);
-    if (typeof other.s === 'string') this.s = other.s;
-    if (typeof other.f === 'number') this.f = other.f;
-
+  override read(other: Partial<ImgData>): this {
+    super.read(other);
+    if (isStr(other.s)) this.s = other.s;
+    if (isNum(other.f)) this.f = other.f;
     return this;
   }
 }
