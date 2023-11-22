@@ -1,10 +1,10 @@
 import { Css } from "../utils/Css";
 Css.add(`
-// whiteboard STYLES
+/*whiteboard STYLES*/
 .g_whiteboard_layer {
   position: absolute;
-  touchAction: none;
-  userSelect: none;
+  touch-action: none;
+  user-select: none;
   left: 0px;
   right: 0px;
   top: 0px;
