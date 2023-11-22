@@ -48,7 +48,12 @@ export class Board {
     this._layers.forEach(l => l.height = v);
   }
 
-  addLayer(layer: ILayerInits | Layer): boolean {
+  addLayer(layer?: ILayerInits | Layer): boolean {
+    if (!layer) {
+      layer = this.factory.newLayer();
+      this.addLayer(layer);
+      return true;
+    }
     if (this._layers.has(layer.info.id)) {
       console.error(`[WhiteBoard] addLayer(): layerId already existed! id = ${layer.info.id}`)
       return false;

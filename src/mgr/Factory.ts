@@ -27,7 +27,7 @@ export interface IFactory {
   newShape(shapeData: IShapeData): Shape;
   newLayerId(): string;
   newLayerName(): string;
-  newLayer(inits: ILayerInits): Layer;
+  newLayer(inits?: Partial<ILayerInits>): Layer;
   fontFamilies(): string[];
   fontName(fontFamily: string): string;
 }
@@ -104,8 +104,18 @@ export class DefaultFactory implements IFactory {
   newLayerName(): string {
     return `layer_${Date.now()}_${++this._time}`
   }
-  newLayer(inits: ILayerInits): Layer {
-    return new Layer(inits);
+  newLayer(inits?: Partial<ILayerInits>): Layer {
+    const { info, ...remainInits } = inits || {}
+    const {
+      id = this.newLayerId(),
+      name = this.newLayerName(),
+      ...remainInfo
+    } = info || {}
+    const _inits: ILayerInits = {
+      info: { id, name, ...remainInfo }, 
+      ...remainInits
+    }
+    return new Layer(_inits);
   }
   fontFamilies(): string[] {
     return FontFamilysChecker.check(builtInFontFamilies)
