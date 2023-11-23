@@ -21,8 +21,8 @@ export interface IFactory {
   newShapesMgr(): IShapesMgr;
   newTool(toolType: ToolType): ITool;
   newShapeData(shapeType: ShapeType): ShapeData;
-  newId(data: ShapeData): string;
-  newZ(data: ShapeData): number;
+  newId(data: IShapeData): string;
+  newZ(data: IShapeData): number;
   newShape(shapeType: ShapeType): Shape;
   newShape(shapeData: IShapeData): Shape;
   newLayerId(): string;

@@ -1051,6 +1051,7 @@ exports.Shiftable = Shiftable;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShortcutsKeeper = exports.ShortcutKind = void 0;
 const dist_1 = require("../../dist");
+const event_1 = require("../../dist/event");
 var ShortcutKind;
 (function (ShortcutKind) {
     ShortcutKind[ShortcutKind["None"] = 0] = "None";
@@ -1112,8 +1113,74 @@ class ShortcutsKeeper {
             board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形
             return false;
         };
+        this.shapesMark = "write_board_shapes:";
+        this.copySelectedShapes = (e) => {
+            const datas = this.board.selects.map(shape => shape.data);
+            const blob = new Blob([this.shapesMark, JSON.stringify(datas)], { type: 'text/plain' });
+            navigator.clipboard.write([
+                new ClipboardItem({
+                    "text/plain": Promise.resolve(blob)
+                })
+            ]).catch(e => {
+                console.error(e);
+            });
+        };
+        this.pasteShapes = (raws) => {
+            const factory = this.board.factory;
+            const shapes = raws.sort((a, b) => a.z - b.z).map(raw => {
+                raw.i = factory.newId(raw);
+                raw.z = factory.newZ(raw);
+                raw.status && (raw.status.f = 0);
+                raw.x = raw.x + 10;
+                raw.y = raw.y + 10;
+                const shape = factory.newShape(raw);
+                shape.selected = true;
+                return shape;
+            });
+            this.board.deselect(false);
+            this.board.add(shapes);
+            this.board.emitEvent(event_1.EventEnum.ShapesDone, {
+                operator: this.board.whoami,
+                shapeDatas: raws
+            });
+        };
+        this.pasteTxt = (txt) => {
+            if (txt.startsWith(this.shapesMark))
+                this.pasteShapes(JSON.parse(txt.substring(this.shapesMark.length)));
+            else
+                console.log("TODO: handlePasteTxt");
+        };
+        this.handlePastePng = (blob) => {
+            console.log("TODO: handlePastePng");
+        };
+        this.handlePasteJpg = (blob) => {
+            console.log("TODO: handlePasteJpg");
+        };
+        this.handleClipboardItem = (item) => {
+            if (item.types.indexOf("image/png") >= 0)
+                item.getType("image/png").then(this.handlePastePng);
+            else if (item.types.indexOf("image/jpeg") >= 0)
+                item.getType("image/jpeg").then(this.handlePasteJpg);
+            else if (item.types.indexOf("text/plain") >= 0)
+                item.getType("text/plain").then(it => it.text()).then(this.pasteTxt);
+        };
+        this.paste = (e) => {
+            navigator.clipboard.read()
+                .then(items => items.forEach(this.handleClipboardItem))
+                .catch(e => console.error(e));
+            // navigator.clipboard.read().then(items => items.forEach(item => item.types.forEach(type => {
+            //   console.log(type)
+            //   item.getType(type).then(blob => blob.text()).then(txt => console.log(txt))
+            // })))
+            // handleClipboardItem
+            // const factory = this.board.factory
+            // const datas = this.board.selects.map(shape => shape.data)
+            // const data = JSON.stringify(datas)
+        };
         this.handles = new Map([
             [ShortcutKind.Ctrl, new Map([
+                    ['c', this.copySelectedShapes],
+                    ['v', this.paste],
                     ['a', () => { this.selectAll(); }],
                     ['d', () => { this.deselect(); }],
                     ['l', () => { this.toggleShapeLocks(); }],
@@ -1169,7 +1236,7 @@ class ShortcutsKeeper {
 }
 exports.ShortcutsKeeper = ShortcutsKeeper;
 
-},{"../../dist":30}],16:[function(require,module,exports){
+},{"../../dist":30,"../../dist/event":22}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
@@ -1649,6 +1716,11 @@ class Board {
         this._layers.forEach(l => l.height = v);
     }
     addLayer(layer) {
+        if (!layer) {
+            layer = this.factory.newLayer();
+            this.addLayer(layer);
+            return true;
+        }
         if (this._layers.has(layer.info.id)) {
             console.error(`[WhiteBoard] addLayer(): layerId already existed! id = ${layer.info.id}`);
             return false;
@@ -1870,10 +1942,9 @@ class Board {
     get selects() {
         return this._selects;
     }
-    add(shapes, opts) {
-        var _a;
-        const emit = !!opts;
-        const operator = (_a = opts === null || opts === void 0 ? void 0 : opts.operator) !== null && _a !== void 0 ? _a : this._whoami;
+    add(shapes, arg1 = false) {
+        const emit = typeof arg1 === 'boolean' ? arg1 : arg1.emit !== false;
+        const operator = typeof arg1 === 'boolean' ? this._whoami : arg1.operator;
         shapes = Array.isArray(shapes) ? shapes : [shapes];
         if (!shapes.length)
             return 0;
@@ -1884,12 +1955,10 @@ class Board {
                 this._selects.push(item);
             this.markDirty(item.boundingRect());
         });
-        if (emit) {
-            this.emitEvent(event_1.EventEnum.ShapesAdded, {
-                operator,
-                shapeDatas: shapes.map(v => v.data.copy())
-            });
-        }
+        emit && this.emitEvent(event_1.EventEnum.ShapesAdded, {
+            operator,
+            shapeDatas: shapes.map(v => v.data.copy())
+        });
         return ret;
     }
     remove(shapes, opts) {
@@ -2026,11 +2095,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
 const Css_1 = require("../utils/Css");
 Css_1.Css.add(`
-// whiteboard STYLES
+/*whiteboard STYLES*/
 .g_whiteboard_layer {
   position: absolute;
-  touchAction: none;
-  userSelect: none;
+  touch-action: none;
+  user-select: none;
   left: 0px;
   right: 0px;
   top: 0px;
@@ -2694,6 +2763,17 @@ __exportStar(require("./utils"), exports);
 
 },{"./board":19,"./features":27,"./mgr":35,"./shape":53,"./tools":88,"./utils":101}],31:[function(require,module,exports){
 "use strict";
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultFactory = void 0;
 const Data_1 = require("../shape/base/Data");
@@ -2780,7 +2860,10 @@ class DefaultFactory {
         return `layer_${Date.now()}_${++this._time}`;
     }
     newLayer(inits) {
-        return new board_1.Layer(inits);
+        const _a = inits || {}, { info } = _a, remainInits = __rest(_a, ["info"]);
+        const _b = info || {}, { id = this.newLayerId(), name = this.newLayerName() } = _b, remainInfo = __rest(_b, ["id", "name"]);
+        const _inits = Object.assign({ info: Object.assign({ id, name }, remainInfo) }, remainInits);
+        return new board_1.Layer(_inits);
     }
     fontFamilies() {
         return checker_1.FontFamilysChecker.check(builtInFontFamilies_1.builtInFontFamilies);

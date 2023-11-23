@@ -261,9 +261,12 @@ export class Board {
   get selects() {
     return this._selects
   }
-  add(shapes: Shape[] | Shape, opts?: boolean | { operator: string }): number {
-    const emit = !!opts;
-    const operator = (opts as any)?.operator ?? this._whoami;
+  add(shapes: Shape[] | Shape): number;
+  add(shapes: Shape[] | Shape, emit: boolean): number;
+  add(shapes: Shape[] | Shape, opts: { operator: string, emit?: boolean }): number
+  add(shapes: Shape[] | Shape, arg1: boolean | { operator: string, emit?: boolean } = false): number {
+    const emit = typeof arg1 === 'boolean' ? arg1 : arg1.emit !== false
+    const operator = typeof arg1 === 'boolean' ? this._whoami : arg1.operator
     shapes = Array.isArray(shapes) ? shapes : [shapes];
     if (!shapes.length) return 0;
     const ret = this._shapesMgr.add(...shapes)
@@ -272,13 +275,10 @@ export class Board {
       if (item.selected) this._selects.push(item)
       this.markDirty(item.boundingRect())
     })
-    if (emit) {
-      this.emitEvent(EventEnum.ShapesAdded, {
-        operator,
-        shapeDatas: shapes.map(v => v.data.copy())
-      })
-    }
-
+    emit && this.emitEvent(EventEnum.ShapesAdded, {
+      operator,
+      shapeDatas: shapes.map(v => v.data.copy())
+    })
     return ret
   }
 

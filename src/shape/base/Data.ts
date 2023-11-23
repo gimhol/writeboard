@@ -59,6 +59,7 @@ export interface IShapeStatus {
 }
 export interface IShapeData {
   t: ShapeType;
+  /** id */
   i: string;
   x: number;
   y: number;
