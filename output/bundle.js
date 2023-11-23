@@ -1126,7 +1126,8 @@ class ShortcutsKeeper {
             });
         };
         this.pasteShapes = (raws) => {
-            const factory = this.board.factory;
+            const board = this.board;
+            const factory = board.factory;
             const shapes = raws.sort((a, b) => a.z - b.z).map(raw => {
                 raw.i = factory.newId(raw);
                 raw.z = factory.newZ(raw);
@@ -1137,10 +1138,10 @@ class ShortcutsKeeper {
                 shape.selected = true;
                 return shape;
             });
-            this.board.deselect(false);
-            this.board.add(shapes);
-            this.board.emitEvent(event_1.EventEnum.ShapesDone, {
-                operator: this.board.whoami,
+            board.deselect(false);
+            board.add(shapes);
+            board.emitEvent(event_1.EventEnum.ShapesDone, {
+                operator: board.whoami,
                 shapeDatas: raws
             });
         };
@@ -1168,14 +1169,6 @@ class ShortcutsKeeper {
             navigator.clipboard.read()
                 .then(items => items.forEach(this.handleClipboardItem))
                 .catch(e => console.error(e));
-            // navigator.clipboard.read().then(items => items.forEach(item => item.types.forEach(type => {
-            //   console.log(type)
-            //   item.getType(type).then(blob => blob.text()).then(txt => console.log(txt))
-            // })))
-            // handleClipboardItem
-            // const factory = this.board.factory
-            // const datas = this.board.selects.map(shape => shape.data)
-            // const data = JSON.stringify(datas)
         };
         this.handles = new Map([
             [ShortcutKind.Ctrl, new Map([
