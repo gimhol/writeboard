@@ -241,26 +241,8 @@ function main() {
 
   const shortcutsKeeper = new ShortcutsKeeper(board, aq)
   const onkeydown = (e: KeyboardEvent) => {
-
-    let type = ShortcutKind.None;
-    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-      type = ShortcutKind.Ctrl; // 快捷键： ctrl + key
-    } else if (!e.ctrlKey && e.shiftKey && !e.altKey) {
-      type = ShortcutKind.Shift; // 快捷键： alt + key
-    } else if (!e.ctrlKey && !e.shiftKey && e.altKey) {
-      type = ShortcutKind.Alt; // 快捷键： alt + key
-    } else {
-      type = ShortcutKind.Single; // 快捷键： key
-    }
-    if (!type) { return }
-
-    const func = shortcutsKeeper.handles.get(type)?.get(e.key);
-    if (!func) { return; }
-
-    if (func(e) === true) { return; } // func返回true时，意味着不要拦截默认事件。
-    console.log('shortcut hit!', type, e.key)
-    e.stopPropagation();
-    e.preventDefault();
+    shortcutsKeeper.handleKeyboardEvent(e)
+    console.log(shortcutsKeeper.shortcuts)
   }
 
   blackboard.addEventListener('keydown', onkeydown)

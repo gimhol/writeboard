@@ -1060,18 +1060,49 @@ var ShortcutKind;
     ShortcutKind["Alt"] = "alt";
     ShortcutKind["Single"] = "single";
 })(ShortcutKind = exports.ShortcutKind || (exports.ShortcutKind = {}));
+var BehaviorEnum;
+(function (BehaviorEnum) {
+    BehaviorEnum[BehaviorEnum["Copy"] = 1] = "Copy";
+    BehaviorEnum[BehaviorEnum["Cut"] = 2] = "Cut";
+    BehaviorEnum[BehaviorEnum["Paste"] = 3] = "Paste";
+    BehaviorEnum[BehaviorEnum["Delete"] = 4] = "Delete";
+    BehaviorEnum[BehaviorEnum["SelectAll"] = 5] = "SelectAll";
+    BehaviorEnum[BehaviorEnum["Deselect"] = 6] = "Deselect";
+    BehaviorEnum[BehaviorEnum["ToggleLock"] = 7] = "ToggleLock";
+    BehaviorEnum[BehaviorEnum["Undo"] = 8] = "Undo";
+    BehaviorEnum[BehaviorEnum["Redo"] = 9] = "Redo";
+    BehaviorEnum[BehaviorEnum["MoveShapesUp"] = 10] = "MoveShapesUp";
+    BehaviorEnum[BehaviorEnum["MoveShapesDown"] = 11] = "MoveShapesDown";
+    BehaviorEnum[BehaviorEnum["MoveShapesLeft"] = 12] = "MoveShapesLeft";
+    BehaviorEnum[BehaviorEnum["MoveShapesRight"] = 13] = "MoveShapesRight";
+    BehaviorEnum[BehaviorEnum["MoveShapesUpABit"] = 14] = "MoveShapesUpABit";
+    BehaviorEnum[BehaviorEnum["MoveShapesDownABit"] = 15] = "MoveShapesDownABit";
+    BehaviorEnum[BehaviorEnum["MoveShapesLeftABit"] = 16] = "MoveShapesLeftABit";
+    BehaviorEnum[BehaviorEnum["MoveShapesRightABit"] = 17] = "MoveShapesRightABit";
+    BehaviorEnum[BehaviorEnum["MoveShapesUpMore"] = 18] = "MoveShapesUpMore";
+    BehaviorEnum[BehaviorEnum["MoveShapesDownMore"] = 19] = "MoveShapesDownMore";
+    BehaviorEnum[BehaviorEnum["MoveShapesLeftMore"] = 20] = "MoveShapesLeftMore";
+    BehaviorEnum[BehaviorEnum["MoveShapesRightMore"] = 21] = "MoveShapesRightMore";
+    BehaviorEnum[BehaviorEnum["ToolSelector"] = 22] = "ToolSelector";
+    BehaviorEnum[BehaviorEnum["ToolPen"] = 23] = "ToolPen";
+    BehaviorEnum[BehaviorEnum["ToolRect"] = 24] = "ToolRect";
+    BehaviorEnum[BehaviorEnum["ToolOval"] = 25] = "ToolOval";
+    BehaviorEnum[BehaviorEnum["ToolText"] = 26] = "ToolText";
+    BehaviorEnum[BehaviorEnum["ToolTick"] = 27] = "ToolTick";
+    BehaviorEnum[BehaviorEnum["ToolCross"] = 28] = "ToolCross";
+    BehaviorEnum[BehaviorEnum["ToolHalfTick"] = 29] = "ToolHalfTick";
+    BehaviorEnum[BehaviorEnum["ToolLines"] = 30] = "ToolLines";
+})(BehaviorEnum || (BehaviorEnum = {}));
 class ShortcutsKeeper {
     get board() { return this._board; }
     get actionQueue() { return this._actionQueue; }
     constructor(board, actionQueue) {
         this.undo = () => {
-            if (this.actionQueue.canUndo)
-                this.actionQueue.undo();
+            this.actionQueue.canUndo && this.actionQueue.undo();
             return true;
         };
         this.redo = () => {
-            if (this.actionQueue.canRedo)
-                this.actionQueue.redo();
+            this.actionQueue.canRedo && this.actionQueue.redo();
             return true;
         };
         this.moveShapes = (e) => {
@@ -1089,7 +1120,7 @@ class ShortcutsKeeper {
             /*
             按着shift移动50像素
             按着alt移动1像素
-            否则移动4像素
+            否则移动5像素
             */
             let diff = e.shiftKey ? 50 : e.altKey ? 1 : 5;
             switch (e.key) {
@@ -1113,46 +1144,133 @@ class ShortcutsKeeper {
             board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形
             return false;
         };
-        this.handles = new Map([
+        this.handleKeyboardEvent = (e) => {
+            var _a;
+            const kind = this.shortcutKind(e);
+            if (!kind)
+                return;
+            const behavior = (_a = this.keys.get(kind)) === null || _a === void 0 ? void 0 : _a.get(e.key);
+            if (!behavior)
+                return;
+            const func = this.behaviors[behavior];
+            if (func(e) === true) {
+                return;
+            } // func返回true时，意味着不要拦截默认事件。
+            e.stopPropagation();
+            e.preventDefault();
+        };
+        this.descriptions = {
+            [BehaviorEnum.Copy]: "复制",
+            [BehaviorEnum.Cut]: "剪切",
+            [BehaviorEnum.Paste]: "粘贴",
+            [BehaviorEnum.Delete]: "删除",
+            [BehaviorEnum.SelectAll]: "全选",
+            [BehaviorEnum.Deselect]: "取消选择",
+            [BehaviorEnum.ToggleLock]: "锁定/解锁图形",
+            [BehaviorEnum.Undo]: "撤销",
+            [BehaviorEnum.Redo]: "重做",
+            [BehaviorEnum.MoveShapesUp]: "向上移动图形",
+            [BehaviorEnum.MoveShapesDown]: "向下移动图形",
+            [BehaviorEnum.MoveShapesLeft]: "向左移动图形",
+            [BehaviorEnum.MoveShapesRight]: "向右移动图形",
+            [BehaviorEnum.MoveShapesUpABit]: "向上移动图形",
+            [BehaviorEnum.MoveShapesDownABit]: "向下移动图形",
+            [BehaviorEnum.MoveShapesLeftABit]: "向左移动图形",
+            [BehaviorEnum.MoveShapesRightABit]: "向右移动图形",
+            [BehaviorEnum.MoveShapesUpMore]: "向上移动图形",
+            [BehaviorEnum.MoveShapesDownMore]: "向下移动图形",
+            [BehaviorEnum.MoveShapesLeftMore]: "向左移动图形",
+            [BehaviorEnum.MoveShapesRightMore]: "向右移动图形",
+            [BehaviorEnum.ToolSelector]: "切换工具：选择器",
+            [BehaviorEnum.ToolPen]: "切换工具：笔",
+            [BehaviorEnum.ToolRect]: "切换工具：矩形",
+            [BehaviorEnum.ToolOval]: "切换工具：椭圆",
+            [BehaviorEnum.ToolText]: "切换工具：文本",
+            [BehaviorEnum.ToolTick]: "切换工具：打钩",
+            [BehaviorEnum.ToolCross]: "切换工具：打叉",
+            [BehaviorEnum.ToolHalfTick]: "切换工具：打半对",
+            [BehaviorEnum.ToolLines]: "切换工具：直线",
+        };
+        this.behaviors = {
+            [BehaviorEnum.Copy]: () => { this._clipboard.copy(); },
+            [BehaviorEnum.Cut]: () => { this._clipboard.cut(); },
+            [BehaviorEnum.Paste]: () => { this._clipboard.paste(); },
+            [BehaviorEnum.Delete]: () => this.board.removeSelected(true),
+            [BehaviorEnum.SelectAll]: () => { this.selectAll(); },
+            [BehaviorEnum.Deselect]: () => { this.deselect(); },
+            [BehaviorEnum.ToggleLock]: () => { this.toggleShapeLocks(); },
+            [BehaviorEnum.Undo]: this.undo,
+            [BehaviorEnum.Redo]: this.redo,
+            [BehaviorEnum.MoveShapesUp]: this.moveShapes,
+            [BehaviorEnum.MoveShapesDown]: this.moveShapes,
+            [BehaviorEnum.MoveShapesLeft]: this.moveShapes,
+            [BehaviorEnum.MoveShapesRight]: this.moveShapes,
+            [BehaviorEnum.MoveShapesUpABit]: this.moveShapes,
+            [BehaviorEnum.MoveShapesDownABit]: this.moveShapes,
+            [BehaviorEnum.MoveShapesLeftABit]: this.moveShapes,
+            [BehaviorEnum.MoveShapesRightABit]: this.moveShapes,
+            [BehaviorEnum.MoveShapesUpMore]: this.moveShapes,
+            [BehaviorEnum.MoveShapesDownMore]: this.moveShapes,
+            [BehaviorEnum.MoveShapesLeftMore]: this.moveShapes,
+            [BehaviorEnum.MoveShapesRightMore]: this.moveShapes,
+            [BehaviorEnum.ToolSelector]: () => this.board.setToolType(dist_1.ToolEnum.Selector),
+            [BehaviorEnum.ToolPen]: () => this.board.setToolType(dist_1.ToolEnum.Pen),
+            [BehaviorEnum.ToolRect]: () => this.board.setToolType(dist_1.ToolEnum.Rect),
+            [BehaviorEnum.ToolOval]: () => this.board.setToolType(dist_1.ToolEnum.Oval),
+            [BehaviorEnum.ToolText]: () => this.board.setToolType(dist_1.ToolEnum.Text),
+            [BehaviorEnum.ToolTick]: () => this.board.setToolType(dist_1.ToolEnum.Tick),
+            [BehaviorEnum.ToolCross]: () => this.board.setToolType(dist_1.ToolEnum.Cross),
+            [BehaviorEnum.ToolHalfTick]: () => this.board.setToolType(dist_1.ToolEnum.HalfTick),
+            [BehaviorEnum.ToolLines]: () => this.board.setToolType(dist_1.ToolEnum.Lines),
+        };
+        this.keys = new Map([
             [ShortcutKind.Ctrl, new Map([
-                    ['c', () => { this._clipboard.copy(); }],
-                    ['x', () => { this._clipboard.cut(); }],
-                    ['v', () => { this._clipboard.paste(); }],
-                    ['a', () => { this.selectAll(); }],
-                    ['d', () => { this.deselect(); }],
-                    ['l', () => { this.toggleShapeLocks(); }],
-                    ['z', this.undo],
-                    ['y', this.redo]
+                    ['c', BehaviorEnum.Copy],
+                    ['x', BehaviorEnum.Cut],
+                    ['v', BehaviorEnum.Paste],
+                    ['a', BehaviorEnum.SelectAll],
+                    ['d', BehaviorEnum.Deselect],
+                    ['l', BehaviorEnum.ToggleLock],
+                    ['z', BehaviorEnum.Undo],
+                    ['y', BehaviorEnum.Redo]
                 ])],
             [ShortcutKind.Shift, new Map([
-                    ['ArrowUp', this.moveShapes],
-                    ['ArrowDown', this.moveShapes],
-                    ['ArrowLeft', this.moveShapes],
-                    ['ArrowRight', this.moveShapes],
+                    ['ArrowUp', BehaviorEnum.MoveShapesUpMore],
+                    ['ArrowDown', BehaviorEnum.MoveShapesDownMore],
+                    ['ArrowLeft', BehaviorEnum.MoveShapesLeftMore],
+                    ['ArrowRight', BehaviorEnum.MoveShapesRightMore],
                 ])],
             [ShortcutKind.Alt, new Map([
-                    ['ArrowUp', this.moveShapes],
-                    ['ArrowDown', this.moveShapes],
-                    ['ArrowLeft', this.moveShapes],
-                    ['ArrowRight', this.moveShapes],
+                    ['ArrowUp', BehaviorEnum.MoveShapesUpABit],
+                    ['ArrowDown', BehaviorEnum.MoveShapesDownABit],
+                    ['ArrowLeft', BehaviorEnum.MoveShapesLeftABit],
+                    ['ArrowRight', BehaviorEnum.MoveShapesRightABit],
                 ])],
             [ShortcutKind.Single, new Map([
-                    ['Delete', () => this.board.removeSelected(true)],
-                    ['s', () => this.board.setToolType(dist_1.ToolEnum.Selector)],
-                    ['p', () => this.board.setToolType(dist_1.ToolEnum.Pen)],
-                    ['r', () => this.board.setToolType(dist_1.ToolEnum.Rect)],
-                    ['o', () => this.board.setToolType(dist_1.ToolEnum.Oval)],
-                    ['t', () => this.board.setToolType(dist_1.ToolEnum.Text)],
-                    ['z', () => this.board.setToolType(dist_1.ToolEnum.Tick)],
-                    ['c', () => this.board.setToolType(dist_1.ToolEnum.Cross)],
-                    ['x', () => this.board.setToolType(dist_1.ToolEnum.HalfTick)],
-                    ['l', () => this.board.setToolType(dist_1.ToolEnum.Lines)],
-                    ['ArrowUp', this.moveShapes],
-                    ['ArrowDown', this.moveShapes],
-                    ['ArrowLeft', this.moveShapes],
-                    ['ArrowRight', this.moveShapes],
+                    ['Delete', BehaviorEnum.Delete],
+                    ['s', BehaviorEnum.ToolSelector],
+                    ['p', BehaviorEnum.ToolPen],
+                    ['r', BehaviorEnum.ToolRect],
+                    ['o', BehaviorEnum.ToolOval],
+                    ['t', BehaviorEnum.ToolText],
+                    ['z', BehaviorEnum.ToolTick],
+                    ['c', BehaviorEnum.ToolCross],
+                    ['x', BehaviorEnum.ToolHalfTick],
+                    ['l', BehaviorEnum.ToolLines],
+                    ['ArrowUp', BehaviorEnum.MoveShapesUp],
+                    ['ArrowDown', BehaviorEnum.MoveShapesDown],
+                    ['ArrowLeft', BehaviorEnum.MoveShapesLeft],
+                    ['ArrowRight', BehaviorEnum.MoveShapesRight],
                 ])]
         ]);
+        this.shortcuts = (() => {
+            const ret = new Map();
+            this.keys.forEach((v0, shortcutKind) => v0.forEach((behavior, key) => {
+                var _a;
+                ret.set(behavior, [shortcutKind, key, (_a = this.descriptions[behavior]) !== null && _a !== void 0 ? _a : ""]);
+            }));
+            return ret;
+        })();
         this._board = board;
         this._actionQueue = actionQueue;
         this._clipboard = new features_1.FClipboard(board);
@@ -1170,6 +1288,15 @@ class ShortcutsKeeper {
         }
         const locked = !selects.find(v => !v.locked);
         selects.forEach(v => v.locked = !locked);
+    }
+    shortcutKind(e) {
+        if (e.ctrlKey && !e.shiftKey && !e.altKey)
+            return ShortcutKind.Ctrl; // 快捷键： ctrl + key
+        else if (!e.ctrlKey && e.shiftKey && !e.altKey)
+            return ShortcutKind.Shift; // 快捷键： alt + key
+        else if (!e.ctrlKey && !e.shiftKey && e.altKey)
+            return ShortcutKind.Alt; // 快捷键： alt + key
+        return ShortcutKind.Single; // 快捷键： key
     }
 }
 exports.ShortcutsKeeper = ShortcutsKeeper;
@@ -1388,33 +1515,8 @@ function main() {
     };
     const shortcutsKeeper = new Shortcuts_1.ShortcutsKeeper(board, aq);
     const onkeydown = (e) => {
-        var _a;
-        let type = Shortcuts_1.ShortcutKind.None;
-        if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-            type = Shortcuts_1.ShortcutKind.Ctrl; // 快捷键： ctrl + key
-        }
-        else if (!e.ctrlKey && e.shiftKey && !e.altKey) {
-            type = Shortcuts_1.ShortcutKind.Shift; // 快捷键： alt + key
-        }
-        else if (!e.ctrlKey && !e.shiftKey && e.altKey) {
-            type = Shortcuts_1.ShortcutKind.Alt; // 快捷键： alt + key
-        }
-        else {
-            type = Shortcuts_1.ShortcutKind.Single; // 快捷键： key
-        }
-        if (!type) {
-            return;
-        }
-        const func = (_a = shortcutsKeeper.handles.get(type)) === null || _a === void 0 ? void 0 : _a.get(e.key);
-        if (!func) {
-            return;
-        }
-        if (func(e) === true) {
-            return;
-        } // func返回true时，意味着不要拦截默认事件。
-        console.log('shortcut hit!', type, e.key);
-        e.stopPropagation();
-        e.preventDefault();
+        shortcutsKeeper.handleKeyboardEvent(e);
+        console.log(shortcutsKeeper.shortcuts);
     };
     blackboard.addEventListener('keydown', onkeydown);
     blackboard.addEventListener('contextmenu', oncontextmenu);
