@@ -1,15 +1,14 @@
 import {
+  ActionQueue,
   FactoryEnum, Gaia,
   ObjectFit,
   Player,
   Recorder,
-  SelectorTool,
   ShapeEnum,
   ShapeImg,
   ShapeText,
   TextData,
-  ToolEnum,
-  ActionQueue
+  ToolEnum
 } from "../../dist";
 import { EventEnum } from "../../dist/event";
 import { Button } from "./G/BaseView/Button";
@@ -19,7 +18,7 @@ import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Shiftable } from "./Shiftable";
-import { ShortcutKind, ShortcutsKeeper } from "./Shortcuts";
+import { ShortcutsKeeper } from "./Shortcuts";
 
 View.get(document.head).addChild(
   new View('title', '每日一句'),
@@ -42,7 +41,29 @@ function main() {
   const ffn = factory.fontFamilies().map(ff => ff + ' = ' + factory.fontName(ff))
   console.log('可用字体：', ffn)
 
-  const mainView = View.get(document.body).styles.addCls('g_cp_main_view').view;
+  const mainView = View.ref<'body'>()
+  const blackboard = View.ref<'div'>()
+
+  View.get(document.body)
+    .ref(mainView)
+    .styles
+    .addCls('g_cp_main_view')
+    .view
+    .addChild(
+      View.get('div')
+        .styles.addCls('g_cp_content_zone').view
+        .addChild(
+          View.get('div')
+            .ref(blackboard)
+            .styles
+            .addCls('g_cp_blackboard')
+            .apply('size', {
+              width: resultWidth,
+              height: resultHeight,
+            })
+            .view
+        )
+    );
 
 
   enum MenuKey {
@@ -53,7 +74,6 @@ function main() {
     InsertImage = 'InsertImage',
     ExportResult = 'ExportResult',
   }
-
 
   Gaia.editToolInfo(ToolEnum.Cross, v => ({ ...v, name: '打叉' }));
   Gaia.editToolInfo(ToolEnum.HalfTick, v => ({ ...v, name: '半对' }));
@@ -66,7 +86,7 @@ function main() {
   Gaia.editToolInfo(ToolEnum.Selector, v => ({ ...v, name: '选择器' }));
   Gaia.editToolInfo(ToolEnum.Text, v => ({ ...v, name: '文本' }));
   Gaia.editToolInfo(ToolEnum.Tick, v => ({ ...v, name: '打钩' }));
-  const menu = new Menu(mainView).setup([{
+  const menu = new Menu(mainView.current!).setup([{
     label: '工具',
     items: Gaia.listTools()
       .filter(v => v !== ToolEnum.Img && v !== ToolEnum.Polygon)
@@ -162,32 +182,19 @@ function main() {
     }
   });
 
-  const blackboard = new View('div').styles
-    .addCls('g_cp_blackboard')
-    .apply('size', {
-      width: resultWidth,
-      height: resultHeight,
-    }).view;
-
   const resize = () => {
-    const { width } = mainView.inner.getBoundingClientRect();
-    blackboard.styles.apply('transform', {
+    const { width } = mainView.current!.inner.getBoundingClientRect();
+    blackboard.current!.styles.apply('transform', {
       transform: `translate(-50%,-50%) scale(${Math.min(1, width / resultWidth)})`
     })
   }
   window.addEventListener('resize', resize)
   resize();
 
-  const contentZone = new View('div');
-  contentZone.styles.addCls('g_cp_content_zone')
-  contentZone.addChild(blackboard);
-  mainView.addChild(contentZone);
-
-
   const board = factory.newWhiteBoard({
     width: resultWidth,
     height: resultHeight,
-    element: blackboard.inner,
+    element: blackboard.current!.inner,
   });
   const aq = new ActionQueue().setActor(board);
   const rec = new Recorder().setActor(board);
@@ -245,8 +252,8 @@ function main() {
     console.log(shortcutsKeeper.shortcuts)
   }
 
-  blackboard.addEventListener('keydown', onkeydown)
-  blackboard.addEventListener('contextmenu', oncontextmenu)
+  blackboard.current!.addEventListener('keydown', onkeydown)
+  blackboard.current!.addEventListener('contextmenu', oncontextmenu)
 
   const init = (ttt: TTT) => {
     board.removeAll(false);
@@ -462,7 +469,7 @@ function main() {
   )
 
   bottomRow.addEventListener('pointerdown', e => e.stopPropagation())
-  mainView.addChild(bottomRow);
+  mainView.current!.addChild(bottomRow);
 
   const download = () => {
     board.deselect(true);

@@ -3,12 +3,22 @@ import { FocusOb } from "../Observer/FocusOb";
 import { HoverOb } from "../Observer/HoverOb";
 import { Styles } from "./Styles";
 
+export class Ref<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap>{
+  current: View<T> | null = null;
+  constructor() { }
+}
 export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap> {
   public static RAW_KEY_IN_ELEMENT = 'g_view' as const;
+
+  public static ref<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap>(): Ref<T> {
+    return new Ref<T>()
+  }
+
   public static get(ele: null | undefined): null;
   public static get(ele: Element): View;
   public static get(ele: Element | null | undefined): View | null;
   public static get<T extends keyof HTMLElementTagNameMap>(ele: HTMLElementTagNameMap[T]): View<T>;
+  public static get<T extends keyof HTMLElementTagNameMap>(ele: T): View<T>;
   public static get(ele: any): any {
     if (!ele) { return null; }
     return View.try(ele, View) ?? new View(ele);
@@ -187,5 +197,15 @@ export class View<T extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNa
   setAttribute(qualifiedName: string, value: string) {
     this.inner.setAttribute(qualifiedName, value);
     return this;
+  }
+
+  apply(handle: (v: this) => void): this {
+    handle(this)
+    return this
+  }
+
+  ref(ref: Ref<T>): this {
+    ref.current = this
+    return this
   }
 }
