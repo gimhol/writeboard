@@ -1,5 +1,5 @@
-import { ActionQueue, Board, IShapeData, SelectorTool, ShapeData, ToolEnum } from "../../dist";
-import { EventEnum } from "../../dist/event";
+import { ActionQueue, Board, SelectorTool, ToolEnum } from "../../dist";
+import { FClipboard } from "../../dist/features";
 
 export interface ShortcutHandle {
   (e: KeyboardEvent): (void | boolean)
@@ -18,9 +18,12 @@ export class ShortcutsKeeper {
   private _actionQueue: ActionQueue;
   get actionQueue() { return this._actionQueue }
 
+  private _clipboard: FClipboard
+
   constructor(board: Board, actionQueue: ActionQueue) {
     this._board = board
     this._actionQueue = actionQueue
+    this._clipboard = new FClipboard(board)
   }
 
   selectAll() {
@@ -76,71 +79,11 @@ export class ShortcutsKeeper {
 
     return false;
   }
-  shapesMark = "write_board_shapes:"
-  copySelectedShapes: ShortcutHandle = (e) => {
-    const datas = this.board.selects.map(shape => shape.data)
-    const blob = new Blob([this.shapesMark, JSON.stringify(datas)], { type: 'text/plain' })
-    navigator.clipboard.write([
-      new ClipboardItem({
-        "text/plain": Promise.resolve(blob)
-      })
-    ]).catch(e => {
-      console.error(e)
-    })
-  }
-
-  pasteShapes = (raws: IShapeData[]) => {
-    const board = this.board
-    const factory = board.factory
-    const shapes = raws.sort((a, b) => a.z - b.z).map(raw => {
-      raw.i = factory.newId(raw)
-      raw.z = factory.newZ(raw)
-      raw.status && (raw.status.f = 0)
-      raw.x = raw.x + 10
-      raw.y = raw.y + 10
-      const shape = factory.newShape(raw)
-      shape.selected = true
-      return shape
-    })
-    board.deselect(false)
-    board.add(shapes)
-    board.emitEvent(EventEnum.ShapesDone, {
-      operator: board.whoami,
-      shapeDatas: raws
-    })
-  }
-
-  pasteTxt = (txt: string) => {
-    if (txt.startsWith(this.shapesMark))
-      this.pasteShapes(JSON.parse(txt.substring(this.shapesMark.length)))
-    else
-      console.log("TODO: handlePasteTxt")
-  }
-
-  handlePastePng = (blob: Blob) => {
-    console.log("TODO: handlePastePng")
-  }
-  handlePasteJpg = (blob: Blob) => {
-    console.log("TODO: handlePasteJpg")
-  }
-  handleClipboardItem = (item: ClipboardItem) => {
-    if (item.types.indexOf("image/png") >= 0)
-      item.getType("image/png").then(this.handlePastePng)
-    else if (item.types.indexOf("image/jpeg") >= 0)
-      item.getType("image/jpeg").then(this.handlePasteJpg)
-    else if (item.types.indexOf("text/plain") >= 0)
-      item.getType("text/plain").then(it => it.text()).then(this.pasteTxt)
-  }
-
-  paste: ShortcutHandle = (e) => {
-    navigator.clipboard.read()
-      .then(items => items.forEach(this.handleClipboardItem))
-      .catch(e => console.error(e))
-  }
   handles = new Map<ShortcutKind, Map<string, ShortcutHandle>>([
     [ShortcutKind.Ctrl, new Map<string, (e: KeyboardEvent) => (void | boolean)>([
-      ['c', this.copySelectedShapes],
-      ['v', this.paste],
+      ['c', () => { this._clipboard.copy() }],
+      ['x', () => { this._clipboard.cut() }],
+      ['v', () => { this._clipboard.paste() }],
       ['a', () => { this.selectAll() }],
       ['d', () => { this.deselect() }],
       ['l', () => { this.toggleShapeLocks() }],
