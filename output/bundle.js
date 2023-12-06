@@ -3272,10 +3272,11 @@ class ShapeData {
         this.i = '';
         this.x = 0;
         this.y = 0;
-        this.w = -0;
-        this.h = -0;
-        this.z = -0;
+        this.w = 0;
+        this.h = 0;
+        this.z = 0;
         this.l = '';
+        this.r = void 0;
         this.style = {};
         this.status = { v: 1 };
     }
@@ -3404,6 +3405,8 @@ class ShapeData {
     set layer(v) { this.l = v; }
     get needFill() { return true; }
     get needStroke() { return true; }
+    get rotation() { var _a; return (_a = this.r) !== null && _a !== void 0 ? _a : 0; }
+    set rotation(v) { this.r = v || void 0; }
     merge(o) {
         this.read(o);
         return this;
@@ -3425,6 +3428,7 @@ class ShapeData {
             this.h = o.h;
         if ((0, helper_1.isStr)(o.l))
             this.l = o.l;
+        this.r = (0, helper_1.isNum)(o.r) ? o.r : void 0;
         const { style, status } = o;
         if (style) {
             if (!this.style)
@@ -3872,6 +3876,16 @@ class Shape {
             return [ResizeDirection.BottomRight, rect];
         }
         return [ResizeDirection.None, undefined];
+    }
+    beginDraw(ctx) {
+        const { x, y, w, h, rotation } = this.data;
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(rotation);
+        ctx.translate(-w / 2, -h / 2);
+    }
+    endDraw(ctx) {
+        ctx.restore();
     }
 }
 exports.Shape = Shape;

@@ -67,6 +67,7 @@ export interface IShapeData {
   h: number;
   z: number;
   l: string;
+  r?: number;
   style?: IShapeStyle;
   status?: IShapeStatus;
 }
@@ -75,10 +76,11 @@ export class ShapeData implements IShapeData {
   i = ''
   x = 0
   y = 0
-  w = -0
-  h = -0
-  z = -0
+  w = 0
+  h = 0
+  z = 0
   l = ''
+  r: number | undefined = void 0//Math.PI/4
   style?: Partial<IShapeStyle> = {}
   status?: Partial<IShapeStatus> = { v: 1 }
 
@@ -172,6 +174,9 @@ export class ShapeData implements IShapeData {
   get needFill() { return true; }
   get needStroke() { return true; }
 
+  get rotation() { return this.r ?? 0; }
+  set rotation(v: number) { this.r = v || void 0 }
+
   merge(o: Partial<IShapeData>) {
     this.read(o)
     return this
@@ -186,6 +191,7 @@ export class ShapeData implements IShapeData {
     if (isNum(o.w)) this.w = o.w
     if (isNum(o.h)) this.h = o.h
     if (isStr(o.l)) this.l = o.l
+    this.r = isNum(o.r) ? o.r : void 0
 
     const { style, status } = o
     if (style) {

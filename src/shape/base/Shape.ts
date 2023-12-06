@@ -438,4 +438,15 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
     return [ResizeDirection.None, undefined]
   }
+
+  protected beginDraw(ctx: CanvasRenderingContext2D): void {
+    const { x, y, w, h, rotation } = this.data
+    ctx.save()
+    ctx.translate(x + w / 2, y + h / 2)
+    ctx.rotate(rotation)
+    ctx.translate(- w / 2, - h / 2)
+  }
+  protected endDraw(ctx: CanvasRenderingContext2D): void {
+    ctx.restore()
+  }
 }
