@@ -217,6 +217,19 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
+  rotateBy(d: number): void {
+    this.markDirty()
+    this._data.rotation += d
+    this.markDirty()
+  }
+
+  rotateTo(d: number): void {
+    if (d == this._data.rotation) return
+    this.markDirty()
+    this._data.rotation = d
+    this.markDirty()
+  }
+
   getGeo(): Rect {
     return new Rect(
       this._data.x,
