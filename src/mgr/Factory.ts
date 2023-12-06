@@ -13,8 +13,12 @@ import { FontFamilysChecker } from "../fonts/checker";
 import { builtInFontFamilies, builtInFontNames } from "../fonts/builtInFontFamilies";
 import { isNum, isStr } from "../utils/helper";
 
+export interface IResizerInfo {
+  size: number;
+}
 export interface IFactory {
   get type(): FactoryType;
+  get resizer(): IResizerInfo;
   shapeTemplate(shapeType: ShapeType): ShapeData;
   setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
   newWhiteBoard(options: BoardOptions): Board;
@@ -40,6 +44,9 @@ export class DefaultFactory implements IFactory {
   get type(): FactoryType {
     return FactoryEnum.Default
   }
+  resizer: IResizerInfo = {
+    size: 10
+  };
   shapeTemplate(type: ShapeType): ShapeData {
     const ret = this._shapeTemplates[type] || this.newShapeData(type)
     this._shapeTemplates[type] = ret
@@ -112,7 +119,7 @@ export class DefaultFactory implements IFactory {
       ...remainInfo
     } = info || {}
     const _inits: ILayerInits = {
-      info: { id, name, ...remainInfo }, 
+      info: { id, name, ...remainInfo },
       ...remainInits
     }
     return new Layer(_inits);
