@@ -246,34 +246,38 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Resizing: {
         const shape = this._resizingShape!
         const geo = shape.getGeo()
+        const rs = board.factory.resizer.size
+        const { y: roy, x: rox } = this._resizerOffset
+        const { x, y } = dot
+        const { left: l, right: r, bottom: b, top: t } = geo
         switch (this._resizerDirection) {
           case ResizeDirection.Top:
-            geo.top = this._resizerOffset.y + dot.y
+            geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
             break
           case ResizeDirection.Bottom:
-            geo.bottom = this._resizerOffset.y + dot.y
+            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
             break
           case ResizeDirection.Left:
-            geo.left = this._resizerOffset.x + dot.x
+            geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
             break
           case ResizeDirection.Right:
-            geo.right = this._resizerOffset.x + dot.x
+            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
             break
           case ResizeDirection.TopLeft:
-            geo.top = this._resizerOffset.y + dot.y
-            geo.left = this._resizerOffset.x + dot.x
+            geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
+            geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
             break
           case ResizeDirection.TopRight:
-            geo.top = this._resizerOffset.y + dot.y
-            geo.right = this._resizerOffset.x + dot.x
+            geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
+            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
             break
           case ResizeDirection.BottomLeft:
-            geo.bottom = this._resizerOffset.y + dot.y
-            geo.left = this._resizerOffset.x + dot.x
+            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
+            geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
             break
           case ResizeDirection.BottomRight:
-            geo.bottom = this._resizerOffset.y + dot.y
-            geo.right = this._resizerOffset.x + dot.x
+            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
+            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
             break
         }
         shape.setGeo(geo)
