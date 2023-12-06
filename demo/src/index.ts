@@ -275,6 +275,7 @@ function main() {
     const imgd_logo = img_logo.data.copy();
     imgd_logo.id = 'img_logo';
     imgd_logo.src = ttt.logo_img.src;
+    imgd_logo.rotation = Math.PI / 8
     imgd_logo.w = ttt.logo_img.w;
     imgd_logo.h = ttt.logo_img.h;
     imgd_logo.x = resultWidth - ttt.logo_img.w - 15;

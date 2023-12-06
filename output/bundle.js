@@ -1564,6 +1564,7 @@ function main() {
         const imgd_logo = img_logo.data.copy();
         imgd_logo.id = 'img_logo';
         imgd_logo.src = ttt.logo_img.src;
+        imgd_logo.rotation = Math.PI / 8;
         imgd_logo.w = ttt.logo_img.w;
         imgd_logo.h = ttt.logo_img.h;
         imgd_logo.x = resultWidth - ttt.logo_img.w - 15;
@@ -2928,6 +2929,9 @@ class DefaultFactory {
         this._z = 0;
         this._time = 0;
         this._shapeTemplates = {};
+        this.resizer = {
+            size: 10
+        };
     }
     get type() {
         return FactoryEnum_1.FactoryEnum.Default;
@@ -3276,7 +3280,7 @@ class ShapeData {
         this.h = 0;
         this.z = 0;
         this.l = '';
-        this.r = void 0;
+        this.r = void 0; //Math.PI/4
         this.style = {};
         this.status = { v: 1 };
     }
@@ -3682,6 +3686,18 @@ class Shape {
         this._data.h = h;
         this.markDirty();
     }
+    rotateBy(d) {
+        this.markDirty();
+        this._data.rotation += d;
+        this.markDirty();
+    }
+    rotateTo(d) {
+        if (d == this._data.rotation)
+            return;
+        this.markDirty();
+        this._data.rotation = d;
+        this.markDirty();
+    }
     getGeo() {
         return new Rect_1.Rect(this._data.x, this._data.y, this._data.w, this._data.h);
     }
@@ -3730,9 +3746,10 @@ class Shape {
             const lineWidth = locked ? 2 : 1;
             const halfLineW = lineWidth / 2;
             ctx.lineWidth = lineWidth;
-            const { x, y, w, h } = this.boundingRect();
+            this.beginDraw(ctx);
+            let { x, y, w, h } = this.selectorRect();
             ctx.beginPath();
-            ctx.rect(x + halfLineW, y + halfLineW, w - lineWidth, h - lineWidth);
+            ctx.rect(x, y, w, h);
             ctx.closePath();
             ctx.strokeStyle = locked ? '#ffffff88' : '#ffffff';
             ctx.setLineDash([]);
@@ -3785,62 +3802,81 @@ class Shape {
                 ctx.fill();
                 ctx.stroke();
             }
+            this.endDraw(ctx);
         }
     }
     /**
      * 绘制矩形
      *
-     * TODO
-     *
      * @returns
      */
     drawingRect() {
         const d = this._data;
-        const drawOffset = (d.lineWidth % 2) ? 0.5 : 0;
         return {
-            x: Math.floor(d.x) + drawOffset,
-            y: Math.floor(d.y) + drawOffset,
+            x: Math.floor(d.x),
+            y: Math.floor(d.y),
             w: Math.floor(d.w),
             h: Math.floor(d.h)
         };
     }
+    selectorRect() {
+        const { w, h, locked, lineWidth } = this.data;
+        const hlw = Math.floor(lineWidth / 2);
+        const offset = locked ? 0 : 0.5;
+        return {
+            x: offset - hlw,
+            y: offset - hlw,
+            w: Math.floor(w + hlw * 2) - 1,
+            h: Math.floor(h + hlw * 2) - 1
+        };
+    }
     /**
      * 包围盒
-     *
-     * TODO
      *
      * @returns
      */
     boundingRect() {
         const d = this.data;
         const offset = (d.lineWidth % 2) ? 1 : 0;
+        if (!d.r)
+            return {
+                x: Math.floor(d.x - d.lineWidth / 2),
+                y: Math.floor(d.y - d.lineWidth / 2),
+                w: Math.ceil(d.w + d.lineWidth + offset),
+                h: Math.ceil(d.h + d.lineWidth + offset)
+            };
+        const w = Math.abs(d.w * Math.cos(d.r)) + Math.abs(d.h * Math.sin(d.r));
+        const h = Math.abs(d.w * Math.sin(d.r)) + Math.abs(d.h * Math.cos(d.r));
+        const x = d.x - (w - d.w) / 2;
+        const y = d.y - (h - d.h) / 2;
         return {
-            x: Math.floor(d.x - d.lineWidth / 2),
-            y: Math.floor(d.y - d.lineWidth / 2),
-            w: Math.ceil(d.w + d.lineWidth + offset),
-            h: Math.ceil(d.h + d.lineWidth + offset)
+            x: Math.floor(x - d.lineWidth / 2),
+            y: Math.floor(y - d.lineWidth / 2),
+            w: Math.ceil(w + d.lineWidth + offset),
+            h: Math.ceil(h + d.lineWidth + offset)
         };
     }
     getResizerNumbers(x, y, w, h) {
-        const lineWidth = 1;
-        const halfLineW = lineWidth / 2;
-        const s = 5;
+        var _a;
+        const lw = 1;
+        const hlw = lw / 2;
+        const s = ((_a = this._board) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
         return {
             s,
-            lx: x + halfLineW,
-            rx: x + w - s - halfLineW,
-            ty: y + halfLineW,
-            by: y + h - s - halfLineW,
-            mx: Math.floor(x + (w - s) / 2) - halfLineW,
-            my: Math.floor(y + (h - s) / 2) - halfLineW,
+            lx: x,
+            rx: x + w - s,
+            ty: y,
+            by: y + h - s,
+            mx: Math.floor(x + (w - s) / 2) - hlw,
+            my: Math.floor(y + (h - s) / 2) - hlw,
         };
     }
     resizeDirection(pointerX, pointerY) {
         if (!this.selected || !this._resizable || this.ghost || this.locked) {
             return [ResizeDirection.None, undefined];
         }
-        const { x, y, w, h } = this.boundingRect();
-        const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(x, y, w, h);
+        const { x, y, w, h } = this.selectorRect();
+        const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(this.data.x + x, this.data.y + y, w, h);
         const pos = { x: pointerX, y: pointerY };
         const rect = new Rect_1.Rect(0, 0, s, s);
         rect.moveTo(mx, ty);
@@ -3878,11 +3914,20 @@ class Shape {
         return [ResizeDirection.None, undefined];
     }
     beginDraw(ctx) {
-        const { x, y, w, h, rotation } = this.data;
+        let { x, y, w, h, rotation } = this.data;
         ctx.save();
-        ctx.translate(x + w / 2, y + h / 2);
-        ctx.rotate(rotation);
-        ctx.translate(-w / 2, -h / 2);
+        x = Math.floor(x);
+        y = Math.floor(y);
+        const hw = Math.floor(w / 2);
+        const hh = Math.floor(h / 2);
+        if (rotation) {
+            ctx.translate(x + hw, y + hh);
+            ctx.rotate(rotation);
+            ctx.translate(-hw, -hh);
+        }
+        else {
+            ctx.translate(x, y);
+        }
     }
     endDraw(ctx) {
         ctx.restore();
@@ -4181,10 +4226,12 @@ class ShapeImg extends base_1.Shape {
             return;
         const { img } = this;
         if (this._loaded) {
-            let { x, y, w, h } = this.boundingRect();
+            let { x, y, w, h } = this.drawingRect();
             switch (this.data.objectFit) {
                 case Data_1.ObjectFit.Fill: {
-                    ctx.drawImage(img, 0, 0, img.width, img.height, x, y, w, h);
+                    this.beginDraw(ctx);
+                    ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
+                    this.endDraw(ctx);
                     break;
                 }
                 case Data_1.ObjectFit.Contain: {
@@ -4202,7 +4249,9 @@ class ShapeImg extends base_1.Shape {
                         dw = h * a;
                         dx += (w - dw) * 0.5;
                     }
-                    ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+                    this.beginDraw(ctx);
+                    ctx.drawImage(img, 0, 0, img.width, img.height, dx - x, dy - y, dw, dh);
+                    this.endDraw(ctx);
                     break;
                 }
                 case Data_1.ObjectFit.Cover: {
@@ -4220,7 +4269,9 @@ class ShapeImg extends base_1.Shape {
                         sw = sh * b;
                         sx = (img.width - sw) / 2;
                     }
-                    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+                    this.beginDraw(ctx);
+                    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+                    this.endDraw(ctx);
                     break;
                 }
             }
@@ -4234,14 +4285,19 @@ class ShapeImg extends base_1.Shape {
         super.render(ctx);
     }
     drawText(ctx, text) {
-        const { x, y, w, h } = this.boundingRect();
+        const br = this.boundingRect();
+        ctx.fillStyle = '#FF000088';
+        ctx.fillRect(br.x, br.y, br.w, br.h);
+        this.beginDraw(ctx);
+        const { x, y, w, h } = this.drawingRect();
         ctx.fillStyle = '#00000088';
-        ctx.fillRect(x, y, w, h);
+        ctx.fillRect(0, 0, w, h);
         ctx.font = 'normal 16px serif';
         ctx.fillStyle = 'white';
         const { fontBoundingBoxDescent: fd, fontBoundingBoxAscent: fa, actualBoundingBoxLeft: al } = ctx.measureText(text);
         const height = fd + fa;
-        ctx.fillText(this._error, 1 + x + al, y + height);
+        ctx.fillText(text, 1 + al, height);
+        this.endDraw(ctx);
     }
 }
 exports.ShapeImg = ShapeImg;
@@ -6119,34 +6175,38 @@ class SelectorTool {
             case SelectorStatus.Resizing: {
                 const shape = this._resizingShape;
                 const geo = shape.getGeo();
+                const rs = board.factory.resizer.size;
+                const { y: roy, x: rox } = this._resizerOffset;
+                const { x, y } = dot;
+                const { left: l, right: r, bottom: b, top: t } = geo;
                 switch (this._resizerDirection) {
                     case base_1.ResizeDirection.Top:
-                        geo.top = this._resizerOffset.y + dot.y;
+                        geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
                         break;
                     case base_1.ResizeDirection.Bottom:
-                        geo.bottom = this._resizerOffset.y + dot.y;
+                        geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
                         break;
                     case base_1.ResizeDirection.Left:
-                        geo.left = this._resizerOffset.x + dot.x;
+                        geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
                         break;
                     case base_1.ResizeDirection.Right:
-                        geo.right = this._resizerOffset.x + dot.x;
+                        geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
                         break;
                     case base_1.ResizeDirection.TopLeft:
-                        geo.top = this._resizerOffset.y + dot.y;
-                        geo.left = this._resizerOffset.x + dot.x;
+                        geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
+                        geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
                         break;
                     case base_1.ResizeDirection.TopRight:
-                        geo.top = this._resizerOffset.y + dot.y;
-                        geo.right = this._resizerOffset.x + dot.x;
+                        geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
+                        geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
                         break;
                     case base_1.ResizeDirection.BottomLeft:
-                        geo.bottom = this._resizerOffset.y + dot.y;
-                        geo.left = this._resizerOffset.x + dot.x;
+                        geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
+                        geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
                         break;
                     case base_1.ResizeDirection.BottomRight:
-                        geo.bottom = this._resizerOffset.y + dot.y;
-                        geo.right = this._resizerOffset.x + dot.x;
+                        geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
+                        geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
                         break;
                 }
                 shape.setGeo(geo);

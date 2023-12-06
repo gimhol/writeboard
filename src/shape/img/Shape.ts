@@ -49,11 +49,13 @@ export class ShapeImg extends Shape<ImgData> {
 
     const { img } = this;
     if (this._loaded) {
-      let { x, y, w, h } = this.boundingRect();
+      let { x, y, w, h } = this.drawingRect();
 
       switch (this.data.objectFit) {
         case ObjectFit.Fill: {
-          ctx.drawImage(img, 0, 0, img.width, img.height, x, y, w, h);
+          this.beginDraw(ctx)
+          ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
+          this.endDraw(ctx)
           break;
         }
         case ObjectFit.Contain: {
@@ -70,9 +72,9 @@ export class ShapeImg extends Shape<ImgData> {
             dw = h * a;
             dx += (w - dw) * 0.5;
           }
-          ctx.drawImage(img, 0, 0, img.width, img.height,
-            dx, dy, dw, dh
-          );
+          this.beginDraw(ctx)
+          ctx.drawImage(img, 0, 0, img.width, img.height, dx-x, dy-y, dw, dh );
+          this.endDraw(ctx)
           break;
         }
         case ObjectFit.Cover: {
@@ -89,7 +91,9 @@ export class ShapeImg extends Shape<ImgData> {
             sw = sh * b;
             sx = (img.width - sw) / 2
           }
-          ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+          this.beginDraw(ctx)
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+          this.endDraw(ctx)
           break;
         }
       }
@@ -102,9 +106,15 @@ export class ShapeImg extends Shape<ImgData> {
   }
 
   drawText(ctx: CanvasRenderingContext2D, text: string): void {
-    const { x, y, w, h } = this.boundingRect();
+
+    const br = this.boundingRect();
+    ctx.fillStyle = '#FF000088';
+    ctx.fillRect(br.x, br.y, br.w, br.h);
+
+    this.beginDraw(ctx)
+    const { x, y, w, h } = this.drawingRect();
     ctx.fillStyle = '#00000088';
-    ctx.fillRect(x, y, w, h);
+    ctx.fillRect(0, 0, w, h);
     ctx.font = 'normal 16px serif'
     ctx.fillStyle = 'white';
     const {
@@ -113,7 +123,8 @@ export class ShapeImg extends Shape<ImgData> {
       actualBoundingBoxLeft: al
     } = ctx.measureText(text);
     const height = fd + fa;
-    ctx.fillText(this._error, 1 + x + al, y + height);
+    ctx.fillText(text, 1 + al, height);
+    this.endDraw(ctx)
 
   }
 }
