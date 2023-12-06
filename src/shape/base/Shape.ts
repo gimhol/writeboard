@@ -286,9 +286,10 @@ export class Shape<D extends ShapeData = ShapeData> {
       const lineWidth = locked ? 2 : 1
       const halfLineW = lineWidth / 2
       ctx.lineWidth = lineWidth
-      const { x, y, w, h } = this.boundingRect()
+      this.beginDraw(ctx)
+      let { x, y, w, h } = this.selectorRect()
       ctx.beginPath()
-      ctx.rect(x + halfLineW, y + halfLineW, w - lineWidth, h - lineWidth)
+      ctx.rect(x, y, w, h)
       ctx.closePath()
 
       ctx.strokeStyle = locked ? '#ffffff88' : '#ffffff'
@@ -353,65 +354,85 @@ export class Shape<D extends ShapeData = ShapeData> {
         ctx.fill()
         ctx.stroke()
       }
+      this.endDraw(ctx)
     }
   }
 
   /**
    * 绘制矩形
    * 
-   * TODO
-   * 
    * @returns 
    */
   drawingRect(): IRect {
     const d = this._data
-    const drawOffset = (d.lineWidth % 2) ? 0.5 : 0
     return {
-      x: Math.floor(d.x) + drawOffset,
-      y: Math.floor(d.y) + drawOffset,
+      x: Math.floor(d.x),
+      y: Math.floor(d.y),
       w: Math.floor(d.w),
       h: Math.floor(d.h)
+    }
+  }
+
+  selectorRect(): IRect {
+    const { w, h, locked, lineWidth } = this.data
+    const hlw = Math.floor(lineWidth / 2)
+    const offset = locked ? 0 : 0.5
+    return {
+      x: offset - hlw,
+      y: offset - hlw,
+      w: Math.floor(w + hlw * 2) - 1,
+      h: Math.floor(h + hlw * 2) - 1
     }
   }
 
   /**
    * 包围盒
    * 
-   * TODO
-   * 
    * @returns 
    */
   boundingRect(): IRect {
     const d = this.data
     const offset = (d.lineWidth % 2) ? 1 : 0
+    if (!d.r)
+      return {
+        x: Math.floor(d.x - d.lineWidth / 2),
+        y: Math.floor(d.y - d.lineWidth / 2),
+        w: Math.ceil(d.w + d.lineWidth + offset),
+        h: Math.ceil(d.h + d.lineWidth + offset)
+      }
+
+    const w = Math.abs(d.w * Math.cos(d.r)) + Math.abs(d.h * Math.sin(d.r))
+    const h = Math.abs(d.w * Math.sin(d.r)) + Math.abs(d.h * Math.cos(d.r))
+    const x = d.x - (w - d.w) / 2
+    const y = d.y - (h - d.h) / 2
     return {
-      x: Math.floor(d.x - d.lineWidth / 2),
-      y: Math.floor(d.y - d.lineWidth / 2),
-      w: Math.ceil(d.w + d.lineWidth + offset),
-      h: Math.ceil(d.h + d.lineWidth + offset)
+      x: Math.floor(x - d.lineWidth / 2),
+      y: Math.floor(y - d.lineWidth / 2),
+      w: Math.ceil(w + d.lineWidth + offset),
+      h: Math.ceil(h + d.lineWidth + offset)
     }
   }
 
   getResizerNumbers(x: number, y: number, w: number, h: number) {
-    const lineWidth = 1
-    const halfLineW = lineWidth / 2
-    const s = 5;
+    const lw = 1
+    const hlw = lw / 2
+    const s = this._board?.factory.resizer.size || 10;
     return {
       s,
-      lx: x + halfLineW,
-      rx: x + w - s - halfLineW,
-      ty: y + halfLineW,
-      by: y + h - s - halfLineW,
-      mx: Math.floor(x + (w - s) / 2) - halfLineW,
-      my: Math.floor(y + (h - s) / 2) - halfLineW,
+      lx: x,
+      rx: x + w - s,
+      ty: y,
+      by: y + h - s,
+      mx: Math.floor(x + (w - s) / 2) - hlw,
+      my: Math.floor(y + (h - s) / 2) - hlw,
     }
   }
   resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
     if (!this.selected || !this._resizable || this.ghost || this.locked) {
       return [ResizeDirection.None, undefined];
     }
-    const { x, y, w, h } = this.boundingRect();
-    const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(x, y, w, h)
+    const { x, y, w, h } = this.selectorRect();
+    const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(this.data.x + x, this.data.y + y, w, h)
 
     const pos = { x: pointerX, y: pointerY }
     const rect = new Rect(0, 0, s, s);
@@ -453,11 +474,19 @@ export class Shape<D extends ShapeData = ShapeData> {
   }
 
   protected beginDraw(ctx: CanvasRenderingContext2D): void {
-    const { x, y, w, h, rotation } = this.data
+    let { x, y, w, h, rotation } = this.data
     ctx.save()
-    ctx.translate(x + w / 2, y + h / 2)
-    ctx.rotate(rotation)
-    ctx.translate(- w / 2, - h / 2)
+    x = Math.floor(x)
+    y = Math.floor(y)
+    const hw = Math.floor(w / 2)
+    const hh = Math.floor(h / 2)
+    if (rotation) {
+      ctx.translate(x + hw, y + hh)
+      ctx.rotate(rotation)
+      ctx.translate(- hw, - hh)
+    } else {
+      ctx.translate(x, y)
+    }
   }
   protected endDraw(ctx: CanvasRenderingContext2D): void {
     ctx.restore()
