@@ -386,19 +386,22 @@ export class Shape<D extends ShapeData = ShapeData> {
   }
 
   /**
-   * 包围盒
-   * 
-   * @returns 
+   * 获取包围盒矩形
+   *
+   * @return {IRect} 包围盒矩形
+   * @memberof Shape
    */
   boundingRect(): IRect {
     const d = this.data
     const offset = (d.lineWidth % 2) ? 1 : 0
+    const overDraw1 = 1
+    const overDraw2 = overDraw1 * 2
     if (!d.r)
       return {
-        x: Math.floor(d.x - d.lineWidth / 2),
-        y: Math.floor(d.y - d.lineWidth / 2),
-        w: Math.ceil(d.w + d.lineWidth + offset),
-        h: Math.ceil(d.h + d.lineWidth + offset)
+        x: Math.floor(d.x - d.lineWidth / 2 - overDraw1),
+        y: Math.floor(d.y - d.lineWidth / 2 - overDraw1),
+        w: Math.ceil(d.w + d.lineWidth + offset + overDraw2),
+        h: Math.ceil(d.h + d.lineWidth + offset + overDraw2)
       }
 
     const w = Math.abs(d.w * Math.cos(d.r)) + Math.abs(d.h * Math.sin(d.r))
@@ -406,10 +409,10 @@ export class Shape<D extends ShapeData = ShapeData> {
     const x = d.x - (w - d.w) / 2
     const y = d.y - (h - d.h) / 2
     return {
-      x: Math.floor(x - d.lineWidth / 2),
-      y: Math.floor(y - d.lineWidth / 2),
-      w: Math.ceil(w + d.lineWidth + offset),
-      h: Math.ceil(h + d.lineWidth + offset)
+      x: Math.floor(x - d.lineWidth / 2 - overDraw1),
+      y: Math.floor(y - d.lineWidth / 2 - overDraw1),
+      w: Math.ceil(w + d.lineWidth + offset + overDraw2),
+      h: Math.ceil(h + d.lineWidth + offset + overDraw2)
     }
   }
 

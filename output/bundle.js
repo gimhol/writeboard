@@ -1564,7 +1564,6 @@ function main() {
         const imgd_logo = img_logo.data.copy();
         imgd_logo.id = 'img_logo';
         imgd_logo.src = ttt.logo_img.src;
-        imgd_logo.rotation = Math.PI / 8;
         imgd_logo.w = ttt.logo_img.w;
         imgd_logo.h = ttt.logo_img.h;
         imgd_logo.x = resultWidth - ttt.logo_img.w - 15;
@@ -1706,9 +1705,17 @@ function main() {
             }
         });
     });
+    const btnRotate1 = new Button_1.Button().init({ content: '↺18°', size: SizeType_1.SizeType.Large, title: '↺18°' });
+    btnRotate1.addEventListener('click', () => {
+        board.selects.forEach(shape => shape.rotateBy(-Math.PI / 10));
+    });
+    const btnRotate2 = new Button_1.Button().init({ content: '↻18°', size: SizeType_1.SizeType.Large, title: '↻18°' });
+    btnRotate2.addEventListener('click', () => {
+        board.selects.forEach(shape => shape.rotateBy(Math.PI / 10));
+    });
     const bottomRow = new View_1.View('div');
     bottomRow.styles.addCls('g_cp_content_bottom_row');
-    bottomRow.addChild(btnRemove, btnToolPen, btnToolTxt, btnToolRect, btnToolOval, btnToolSelector, btnFontSizeUp, btnFontSizeDown, btnLineWidthUp, btnLineWidthDown, btnNext, btnExport);
+    bottomRow.addChild(btnRemove, btnToolPen, btnToolTxt, btnToolRect, btnToolOval, btnToolSelector, btnFontSizeUp, btnFontSizeDown, btnLineWidthUp, btnLineWidthDown, btnRotate1, btnRotate2, btnNext, btnExport);
     bottomRow.addEventListener('pointerdown', e => e.stopPropagation());
     mainView.current.addChild(bottomRow);
     const download = () => {
@@ -3831,29 +3838,32 @@ class Shape {
         };
     }
     /**
-     * 包围盒
+     * 获取包围盒矩形
      *
-     * @returns
+     * @return {IRect} 包围盒矩形
+     * @memberof Shape
      */
     boundingRect() {
         const d = this.data;
         const offset = (d.lineWidth % 2) ? 1 : 0;
+        const overDraw1 = 1;
+        const overDraw2 = overDraw1 * 2;
         if (!d.r)
             return {
-                x: Math.floor(d.x - d.lineWidth / 2),
-                y: Math.floor(d.y - d.lineWidth / 2),
-                w: Math.ceil(d.w + d.lineWidth + offset),
-                h: Math.ceil(d.h + d.lineWidth + offset)
+                x: Math.floor(d.x - d.lineWidth / 2 - overDraw1),
+                y: Math.floor(d.y - d.lineWidth / 2 - overDraw1),
+                w: Math.ceil(d.w + d.lineWidth + offset + overDraw2),
+                h: Math.ceil(d.h + d.lineWidth + offset + overDraw2)
             };
         const w = Math.abs(d.w * Math.cos(d.r)) + Math.abs(d.h * Math.sin(d.r));
         const h = Math.abs(d.w * Math.sin(d.r)) + Math.abs(d.h * Math.cos(d.r));
         const x = d.x - (w - d.w) / 2;
         const y = d.y - (h - d.h) / 2;
         return {
-            x: Math.floor(x - d.lineWidth / 2),
-            y: Math.floor(y - d.lineWidth / 2),
-            w: Math.ceil(w + d.lineWidth + offset),
-            h: Math.ceil(h + d.lineWidth + offset)
+            x: Math.floor(x - d.lineWidth / 2 - overDraw1),
+            y: Math.floor(y - d.lineWidth / 2 - overDraw1),
+            w: Math.ceil(w + d.lineWidth + offset + overDraw2),
+            h: Math.ceil(h + d.lineWidth + offset + overDraw2)
         };
     }
     getResizerNumbers(x, y, w, h) {

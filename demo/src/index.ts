@@ -275,7 +275,6 @@ function main() {
     const imgd_logo = img_logo.data.copy();
     imgd_logo.id = 'img_logo';
     imgd_logo.src = ttt.logo_img.src;
-    imgd_logo.rotation = Math.PI / 8
     imgd_logo.w = ttt.logo_img.w;
     imgd_logo.h = ttt.logo_img.h;
     imgd_logo.x = resultWidth - ttt.logo_img.w - 15;
@@ -451,6 +450,15 @@ function main() {
       }
     })
   })
+  const btnRotate1 = new Button().init({ content: '↺18°', size: SizeType.Large, title: '↺18°' });
+  btnRotate1.addEventListener('click', () => {
+    board.selects.forEach(shape => shape.rotateBy(-Math.PI / 10))
+  })
+
+  const btnRotate2 = new Button().init({ content: '↻18°', size: SizeType.Large, title: '↻18°' });
+  btnRotate2.addEventListener('click', () => {
+    board.selects.forEach(shape => shape.rotateBy(Math.PI / 10))
+  })
 
   const bottomRow = new View('div');
   bottomRow.styles.addCls('g_cp_content_bottom_row')
@@ -465,6 +473,8 @@ function main() {
     btnFontSizeDown,
     btnLineWidthUp,
     btnLineWidthDown,
+    btnRotate1,
+    btnRotate2,
     btnNext,
     btnExport,
   )
