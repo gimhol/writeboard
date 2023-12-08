@@ -218,16 +218,24 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
-  rotateBy(d: number): void {
-    this.markDirty()
-    this._data.rotation += d
-    this.markDirty()
+  rotateBy(d: number, ox: number | undefined = void 0, oy: number | undefined = void 0): void {
+    const r = this._data.rotation + d
+    this.rotateTo(r, ox, oy);
   }
 
-  rotateTo(d: number): void {
-    if (d == this._data.rotation) return
+  rotateTo(r: number, ox: number | undefined = void 0, oy: number | undefined = void 0): void {
+    if (r == this._data.rotation) return
     this.markDirty()
-    this._data.rotation = d
+    this._data.rotation = r;
+    const { x, y, w, h } = this._data;
+    const mx = x + w / 2;
+    const my = y + h / 2;
+    ox = ox ?? mx;
+    oy = oy ?? my;
+    const mx1 = (mx - ox) * Math.cos(r) - (my - oy) * Math.sin(r) + ox;
+    const my1 = (mx - ox) * Math.sin(r) + (my - oy) * Math.cos(r) + oy;
+    this._data.x = mx1 - w / 2
+    this._data.y = my1 - h / 2
     this.markDirty()
   }
 

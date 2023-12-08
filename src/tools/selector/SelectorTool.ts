@@ -191,7 +191,6 @@ export class SelectorTool implements ITool {
     let direction: ResizeDirection | undefined
     let rect: Rect | undefined;
     this.board.selects.find(it => {
-      8
       const dot2 = it.map2me(dot.x, dot.y)
       const arr = it.resizeDirection(dot2.x, dot2.y)
       if (arr[0] != ResizeDirection.None) {

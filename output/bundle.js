@@ -3718,16 +3718,24 @@ class Shape {
         this._data.h = h;
         this.markDirty();
     }
-    rotateBy(d) {
-        this.markDirty();
-        this._data.rotation += d;
-        this.markDirty();
+    rotateBy(d, ox = void 0, oy = void 0) {
+        const r = this._data.rotation + d;
+        this.rotateTo(r, ox, oy);
     }
-    rotateTo(d) {
-        if (d == this._data.rotation)
+    rotateTo(r, ox = void 0, oy = void 0) {
+        if (r == this._data.rotation)
             return;
         this.markDirty();
-        this._data.rotation = d;
+        this._data.rotation = r;
+        const { x, y, w, h } = this._data;
+        const mx = x + w / 2;
+        const my = y + h / 2;
+        ox = ox !== null && ox !== void 0 ? ox : mx;
+        oy = oy !== null && oy !== void 0 ? oy : my;
+        const mx1 = (mx - ox) * Math.cos(r) - (my - oy) * Math.sin(r) + ox;
+        const my1 = (mx - ox) * Math.sin(r) + (my - oy) * Math.cos(r) + oy;
+        this._data.x = mx1 - w / 2;
+        this._data.y = my1 - h / 2;
         this.markDirty();
     }
     getGeo() {
@@ -6172,7 +6180,6 @@ class SelectorTool {
         let direction;
         let rect;
         this.board.selects.find(it => {
-            8;
             const dot2 = it.map2me(dot.x, dot.y);
             const arr = it.resizeDirection(dot2.x, dot2.y);
             if (arr[0] != base_1.ResizeDirection.None) {
