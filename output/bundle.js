@@ -1320,6 +1320,29 @@ exports.ShortcutsKeeper = ShortcutsKeeper;
 
 },{"../../dist":31,"../../dist/features":28}],16:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const dist_1 = require("../../dist");
 const event_1 = require("../../dist/event");
@@ -1331,6 +1354,7 @@ const Menu_1 = require("./G/CompoundView/Menu");
 const ButtonGroup_1 = require("./G/Helper/ButtonGroup");
 const Shiftable_1 = require("./Shiftable");
 const Shortcuts_1 = require("./Shortcuts");
+const Gim = __importStar(require("../../dist"));
 View_1.View.get(document.head).addChild(new View_1.View('title', '每日一句'), new View_1.View('link')
     .setAttribute('rel', 'icon')
     .setAttribute('sizes', '16x16')
@@ -1707,7 +1731,7 @@ function main() {
     });
     const btnRotate1 = new Button_1.Button().init({ content: '↺18°', size: SizeType_1.SizeType.Large, title: '↺18°' });
     btnRotate1.addEventListener('click', () => {
-        board.selects.forEach(shape => shape.rotateBy(-Math.PI / 10));
+        board.selects.forEach(shape => shape.rotateBy(-Math.PI / 4));
     });
     const btnRotate2 = new Button_1.Button().init({ content: '↻18°', size: SizeType_1.SizeType.Large, title: '↻18°' });
     btnRotate2.addEventListener('click', () => {
@@ -1737,6 +1761,7 @@ function main() {
     board.setToolType(dist_1.ToolEnum.Selector);
     Object.assign(window, {
         board, factory, mainView, Gaia: dist_1.Gaia, menu,
+        gim: Gim,
         record: {
             who: rec,
             start: () => rec.stop().start(),
@@ -2161,7 +2186,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":22,"../shape":54,"../tools":89,"../utils":102,"./Layer":18}],18:[function(require,module,exports){
+},{"../event":22,"../shape":54,"../tools":89,"../utils":103,"./Layer":18}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2905,7 +2930,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":19,"./features":28,"./mgr":36,"./shape":54,"./tools":89,"./utils":102}],32:[function(require,module,exports){
+},{"./board":19,"./features":28,"./mgr":36,"./shape":54,"./tools":89,"./utils":103}],32:[function(require,module,exports){
 "use strict";
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
@@ -3023,7 +3048,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":19,"../fonts/builtInFontFamilies":29,"../fonts/checker":30,"../shape/base/Data":38,"../shape/base/Shape":39,"../tools/base/InvalidTool":85,"../utils/helper":101,"./FactoryEnum":33,"./Gaia":34,"./ShapesMgr":35}],33:[function(require,module,exports){
+},{"../board":19,"../fonts/builtInFontFamilies":29,"../fonts/checker":30,"../shape/base/Data":38,"../shape/base/Shape":39,"../tools/base/InvalidTool":85,"../utils/helper":102,"./FactoryEnum":33,"./Gaia":34,"./ShapesMgr":35}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -3148,7 +3173,7 @@ Gaia._actionHandler = new Map();
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultShapesMgr = void 0;
-const Rect_1 = require("../utils/Rect");
+const RotatedRect_1 = require("../utils/RotatedRect");
 const Tag = '[DefaultShapesMgr]';
 class DefaultShapesMgr {
     constructor() {
@@ -3196,7 +3221,7 @@ class DefaultShapesMgr {
         const ret = [];
         for (let idx = count - 1; idx >= 0; --idx) {
             const v = this._items[idx];
-            if (!v.ghost && Rect_1.Rect.hit(v.data, rect))
+            if (!v.ghost && RotatedRect_1.RotatedRect.hit(v.data, rect))
                 ret.push(v);
         }
         return ret;
@@ -3205,7 +3230,7 @@ class DefaultShapesMgr {
         const count = this._items.length;
         for (let idx = count - 1; idx >= 0; --idx) {
             const v = this._items[idx];
-            if (!v.ghost && Rect_1.Rect.hit(v.data, rect))
+            if (!v.ghost && RotatedRect_1.RotatedRect.hit(v.data, rect))
                 return v;
         }
         return null;
@@ -3213,7 +3238,7 @@ class DefaultShapesMgr {
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/Rect":98}],36:[function(require,module,exports){
+},{"../utils/RotatedRect":100}],36:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3484,7 +3509,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../../utils/helper":101,"../ShapeEnum":37}],39:[function(require,module,exports){
+},{"../../utils/helper":102,"../ShapeEnum":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
@@ -3881,12 +3906,28 @@ class Shape {
             my: Math.floor(y + (h - s) / 2) - hlw,
         };
     }
+    map2me(pointerX, pointerY) {
+        const { r, x, y, w, h } = this.data;
+        if (!r)
+            return { x: pointerX, y: pointerY };
+        const x2 = x + w / 2;
+        const y2 = y + h / 2;
+        const cr = Math.cos(-r);
+        const sr = Math.sin(-r);
+        const dx = pointerX - x2;
+        const dy = pointerY - y2;
+        return {
+            x: dx * cr - dy * sr + x2,
+            y: dx * sr + dy * cr + y2
+        };
+    }
     resizeDirection(pointerX, pointerY) {
         if (!this.selected || !this._resizable || this.ghost || this.locked) {
             return [ResizeDirection.None, undefined];
         }
+        const { x: l, y: t } = this.data;
         const { x, y, w, h } = this.selectorRect();
-        const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(this.data.x + x, this.data.y + y, w, h);
+        const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(l + x, t + y, w, h);
         const pos = { x: pointerX, y: pointerY };
         const rect = new Rect_1.Rect(0, 0, s, s);
         rect.moveTo(mx, ty);
@@ -4189,7 +4230,7 @@ class ImgData extends base_1.ShapeData {
 }
 exports.ImgData = ImgData;
 
-},{"../../utils/helper":101,"../ShapeEnum":37,"../base":41}],51:[function(require,module,exports){
+},{"../../utils/helper":102,"../ShapeEnum":37,"../base":41}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -5236,7 +5277,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../../utils/helper":101,"../ShapeEnum":37,"../base":41}],76:[function(require,module,exports){
+},{"../../utils/helper":102,"../ShapeEnum":37,"../base":41}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -6071,6 +6112,7 @@ class SelectorTool {
         }
         else {
             // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
+            const dot = shape.map2me(x, y);
             const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
             if (direction) {
                 this._resizerDirection = direction;
@@ -6122,8 +6164,10 @@ class SelectorTool {
     pointerMove(dot) {
         let direction;
         let rect;
-        this.board.selects.find(e => {
-            const arr = e.resizeDirection(dot.x, dot.y);
+        this.board.selects.find(it => {
+            8;
+            const dot2 = it.map2me(dot.x, dot.y);
+            const arr = it.resizeDirection(dot2.x, dot2.y);
             if (arr[0] != base_1.ResizeDirection.None) {
                 direction = arr[0];
                 rect = arr[1];
@@ -6302,7 +6346,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":22,"../../event/Events":21,"../../mgr/Gaia":34,"../../shape":54,"../../shape/base":41,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils/RectHelper":99,"../../utils/Vector":100,"../ToolEnum":84}],91:[function(require,module,exports){
+},{"../../event":22,"../../event/Events":21,"../../mgr/Gaia":34,"../../shape":54,"../../shape/base":41,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils/RectHelper":99,"../../utils/Vector":101,"../ToolEnum":84}],91:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6900,7 +6944,109 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":100}],100:[function(require,module,exports){
+},{"./Vector":101}],100:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RotatedRect = void 0;
+const Vector_1 = require("./Vector");
+class RotatedRect {
+    get axisX() { return this._axisX; }
+    get axisY() { return this._axisY; }
+    set top(v) {
+        this.h = this.bottom - v;
+        this.y = v;
+    }
+    set left(v) {
+        this.w = this.right - v;
+        this.x = v;
+    }
+    set right(v) {
+        this.w = v - this.x;
+    }
+    set bottom(v) {
+        this.h = v - this.y;
+    }
+    get r() { return this._r; }
+    set r(r) {
+        this._r = r;
+        this._cr = Math.cos(r);
+        this._sr = Math.sin(r);
+        this._axisX = { x: this._cr, y: this._sr };
+        this._axisY = { x: -this._sr, y: this._cr };
+    }
+    get middleX() { return this.x + this.w / 2; }
+    get middleY() { return this.y + this.h / 2; }
+    set middleX(v) { this.x = v - this.w / 2; }
+    set middleY(v) { this.y = v - this.h / 2; }
+    constructor(x = 0, y = 0, w = 0, h = 0, r = 0) {
+        this._r = 0;
+        this._cr = 0;
+        this._sr = 0;
+        this._axisX = { x: 0, y: 0 };
+        this._axisY = { x: 0, y: 0 };
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this._cr = Math.cos(r);
+        this._sr = Math.sin(r);
+        this._axisX = { x: this._cr, y: this._sr };
+        this._axisY = { x: -this._sr, y: this._cr };
+        this._r = r;
+    }
+    set(o) {
+        this.x = o.x;
+        this.y = o.y;
+        this.w = o.w;
+        this.h = o.h;
+        this.r = o.r;
+        return this;
+    }
+    hit(b) {
+        return RotatedRect.hit(this, b);
+    }
+    toString() {
+        return `RotatedRect(x=${this.x}, y=${this.x}, w=${this.w}, h=${this.h}, r=${this.r})`;
+    }
+    moveTo(x, y) {
+        this.x = x;
+        this.y = y;
+        return this;
+    }
+    mid() {
+        return { x: this.x + this.w / 2, y: this.y + this.h / 2 };
+    }
+    static create(rect) {
+        return new RotatedRect(rect.x, rect.y, rect.w, rect.h, rect.r);
+    }
+    static pure(x, y, w, h, r) {
+        return { x, y, w, h, r };
+    }
+    static hit(a, b) {
+        const realA = a instanceof RotatedRect ? a : new RotatedRect(a.x, a.y, a.w, a.h, a.r || 0);
+        const realB = b instanceof RotatedRect ? b : new RotatedRect(b.x, b.y, b.w, b.h, b.r || 0);
+        const centerDistanceVertor = { x: realA.middleX - realB.middleX, y: realA.middleY - realB.middleY };
+        const axes = [realA._axisX, realA._axisY, realB._axisX, realB._axisY];
+        for (let i = 0, len = axes.length; i < len; i++) {
+            const a = axes[i];
+            const p0 = realA.projection(a);
+            const p1 = realB.projection(a);
+            const p2 = Vector_1.Vector.dot(centerDistanceVertor, a) * 2;
+            if (p0 + p1 <= p2) {
+                return false;
+            }
+        }
+        return true;
+    }
+    projection(axis) {
+        const px = Vector_1.Vector.dot(this._axisX, axis);
+        const py = Vector_1.Vector.dot(this._axisY, axis);
+        return px * this.w + py * this.h;
+    }
+}
+exports.RotatedRect = RotatedRect;
+
+},{"./Vector":101}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -6920,17 +7066,23 @@ class Vector {
     static pure(x, y) {
         return { x, y };
     }
-    static distance(v0, v1) {
-        return Math.sqrt(Math.pow(v0.x - v1.x, 2) +
-            Math.pow(v0.y - v1.y, 2));
+    static distance(a, b) {
+        return Math.sqrt(Math.pow(a.x - b.x, 2) +
+            Math.pow(a.y - b.y, 2));
     }
-    static manhattan(v0, v1) {
-        return Math.abs(v0.x - v1.x) + Math.abs(v0.y - v1.y);
+    static manhattan(a, b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+    static dot(a, b) {
+        return Math.abs(a.x * b.x + a.y * b.y);
+    }
+    static multiply(a, n) {
+        return { x: a.x * n, y: a.y * n };
     }
 }
 exports.Vector = Vector;
 
-},{}],101:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isStr = exports.isNum = void 0;
@@ -6939,7 +7091,7 @@ exports.isNum = isNum;
 const isStr = (x) => typeof x === 'string';
 exports.isStr = isStr;
 
-},{}],102:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6968,5 +7120,6 @@ __exportStar(require("./ITree"), exports);
 __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
+__exportStar(require("./RotatedRect"), exports);
 
-},{"./BinaryRange":92,"./BinaryTree":93,"./Dot":95,"./ITree":96,"./QuadTree":97,"./Rect":98,"./Vector":100}]},{},[16]);
+},{"./BinaryRange":92,"./BinaryTree":93,"./Dot":95,"./ITree":96,"./QuadTree":97,"./Rect":98,"./RotatedRect":100,"./Vector":101}]},{},[16]);

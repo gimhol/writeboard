@@ -11,4 +11,4 @@ export * from "./ITree"
 export * from "./QuadTree"
 export * from "./Rect"
 export * from "./Vector"
-
+export * from "./RotatedRect"

@@ -1,5 +1,6 @@
 import { Board } from "../../board/Board";
 import { IRect, Rect } from "../../utils/Rect";
+import { IVector } from "../../utils/Vector";
 import { ShapeEnum, ShapeType } from "../ShapeEnum";
 import { ShapeData } from "./Data";
 
@@ -430,12 +431,29 @@ export class Shape<D extends ShapeData = ShapeData> {
       my: Math.floor(y + (h - s) / 2) - hlw,
     }
   }
+
+  map2me(pointerX: number, pointerY: number): IVector {
+    const { r, x, y, w, h } = this.data
+    if (!r) return { x: pointerX, y: pointerY }
+    const x2 = x + w / 2
+    const y2 = y + h / 2
+    const cr = Math.cos(-r)
+    const sr = Math.sin(-r)
+    const dx = pointerX - x2
+    const dy = pointerY - y2
+    return {
+      x: dx * cr - dy * sr + x2,
+      y: dx * sr + dy * cr + y2
+    }
+  }
+
   resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
     if (!this.selected || !this._resizable || this.ghost || this.locked) {
       return [ResizeDirection.None, undefined];
     }
+    const { x: l, y: t } = this.data
     const { x, y, w, h } = this.selectorRect();
-    const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(this.data.x + x, this.data.y + y, w, h)
+    const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(l + x, t + y, w, h)
 
     const pos = { x: pointerX, y: pointerY }
     const rect = new Rect(0, 0, s, s);

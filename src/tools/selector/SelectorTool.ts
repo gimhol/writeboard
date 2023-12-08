@@ -138,6 +138,7 @@ export class SelectorTool implements ITool {
       board.setSelects([shape], true)
     } else {
       // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
+      const dot = shape.map2me(x, y)
       const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
       if (direction) {
         this._resizerDirection = direction;
@@ -189,8 +190,10 @@ export class SelectorTool implements ITool {
   pointerMove(dot: IDot): void {
     let direction: ResizeDirection | undefined
     let rect: Rect | undefined;
-    this.board.selects.find(e => {
-      const arr = e.resizeDirection(dot.x, dot.y)
+    this.board.selects.find(it => {
+      8
+      const dot2 = it.map2me(dot.x, dot.y)
+      const arr = it.resizeDirection(dot2.x, dot2.y)
       if (arr[0] != ResizeDirection.None) {
         direction = arr[0]
         rect = arr[1]

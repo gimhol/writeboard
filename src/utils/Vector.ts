@@ -17,13 +17,19 @@ export class Vector implements IVector {
   static pure(x: number, y: number): IVector {
     return { x, y }
   }
-  static distance(v0: IVector, v1: IVector): number {
+  static distance(a: IVector, b: IVector): number {
     return Math.sqrt(
-      Math.pow(v0.x - v1.x, 2) +
-      Math.pow(v0.y - v1.y, 2)
+      Math.pow(a.x - b.x, 2) +
+      Math.pow(a.y - b.y, 2)
     )
   }
-  static manhattan(v0: IVector, v1: IVector): number {
-    return Math.abs(v0.x - v1.x) + Math.abs(v0.y - v1.y);
+  static manhattan(a: IVector, b: IVector): number {
+    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  }
+  static dot(a: IVector, b: IVector) {
+    return Math.abs(a.x * b.x + a.y * b.y);
+  }
+  static multiply(a: IVector, n: number): IVector {
+    return { x: a.x * n, y: a.y * n }
   }
 }

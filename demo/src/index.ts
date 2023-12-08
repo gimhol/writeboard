@@ -19,7 +19,7 @@ import { Menu } from "./G/CompoundView/Menu";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Shiftable } from "./Shiftable";
 import { ShortcutsKeeper } from "./Shortcuts";
-
+import * as Gim from "../../dist";
 View.get(document.head).addChild(
   new View('title', '每日一句'),
   new View('link')
@@ -452,7 +452,7 @@ function main() {
   })
   const btnRotate1 = new Button().init({ content: '↺18°', size: SizeType.Large, title: '↺18°' });
   btnRotate1.addEventListener('click', () => {
-    board.selects.forEach(shape => shape.rotateBy(-Math.PI / 10))
+    board.selects.forEach(shape => shape.rotateBy(-Math.PI / 4))
   })
 
   const btnRotate2 = new Button().init({ content: '↻18°', size: SizeType.Large, title: '↻18°' });
@@ -501,9 +501,9 @@ function main() {
 
   board.setToolType(ToolEnum.Selector);
 
-
   Object.assign(window, {
-    board, factory, mainView, Gaia, menu,
+    board, factory, mainView, Gaia, menu, 
+    gim: Gim,
     record: {
       who: rec,
       start: () => rec.stop().start(),

@@ -1,5 +1,6 @@
 import { Shape } from "../shape/base/Shape"
 import { IRect, Rect } from "../utils/Rect"
+import { RotatedRect } from "../utils/RotatedRect"
 export interface IShapesMgr {
   /**
    * 查找指定ID的图形
@@ -81,7 +82,7 @@ export class DefaultShapesMgr implements IShapesMgr {
     const ret: Shape[] = []
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]
-      if (!v.ghost && Rect.hit(v.data, rect))
+      if (!v.ghost && RotatedRect.hit(v.data, rect))
         ret.push(v)
     }
     return ret
@@ -91,7 +92,7 @@ export class DefaultShapesMgr implements IShapesMgr {
     const count = this._items.length
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]
-      if (!v.ghost && Rect.hit(v.data, rect))
+      if (!v.ghost && RotatedRect.hit(v.data, rect))
         return v
     }
     return null
