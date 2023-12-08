@@ -1,3 +1,4 @@
+import { transform } from "typescript"
 import { Board } from "../../board"
 import { EventEnum } from "../../event"
 import { Gaia } from "../../mgr/Gaia"
@@ -53,7 +54,7 @@ export class TextTool implements ITool {
         if (!board) return;
         preShape.merge(this._prevData!);
         board.remove(preShape, true);
-      } else if(this._newTxt){
+      } else if (this._newTxt) {
         this._newTxt = false;
         this._board?.emitEvent(EventEnum.ShapesDone, {
           operator: this._board.whoami,
@@ -74,6 +75,7 @@ export class TextTool implements ITool {
     this._editor.style.maxHeight = shape.data.h + 'px'
     this._editor.style.paddingLeft = shape.data.t_l + 'px'
     this._editor.style.paddingTop = shape.data.t_t + 'px'
+    this._editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg)`
   }
   private _updateShapeText = () => {
     const shape = this._curShape

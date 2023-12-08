@@ -3845,8 +3845,8 @@ class Shape {
     drawingRect() {
         const d = this._data;
         return {
-            x: Math.floor(d.x),
-            y: Math.floor(d.y),
+            x: 0,
+            y: 0,
             w: Math.floor(d.w),
             h: Math.floor(d.h)
         };
@@ -4002,6 +4002,7 @@ class ShapeNeedPath extends Shape_1.Shape {
     render(ctx) {
         if (!this.visible)
             return;
+        this.beginDraw(ctx);
         const d = this.data;
         if (d.fillStyle || (d.lineWidth && d.strokeStyle))
             this.path(ctx);
@@ -4019,6 +4020,7 @@ class ShapeNeedPath extends Shape_1.Shape {
             ctx.setLineDash(d.lineDash);
             ctx.stroke();
         }
+        this.endDraw(ctx);
         super.render(ctx);
     }
 }
@@ -5008,8 +5010,8 @@ class ShapePen extends base_1.Shape {
             return;
         const d = this.data;
         if (d.lineWidth && d.strokeStyle && this._srcGeo) {
-            ctx.save();
-            ctx.translate(this.data.x - this._srcGeo.x, this.data.y - this._srcGeo.y);
+            this.beginDraw(ctx);
+            ctx.translate(-this._srcGeo.x, -this._srcGeo.y);
             ctx.lineCap = d.lineCap;
             ctx.lineDashOffset = d.lineDashOffset || 0;
             ctx.lineJoin = d.lineJoin;
@@ -5018,7 +5020,7 @@ class ShapePen extends base_1.Shape {
             ctx.strokeStyle = d.strokeStyle;
             ctx.setLineDash(d.lineDash);
             ctx.stroke(this._path2D);
-            ctx.restore();
+            this.endDraw(ctx);
         }
         super.render(ctx);
     }
@@ -5414,8 +5416,12 @@ class ShapeText extends base_1.Shape {
             return;
         const needStroke = this.data.strokeStyle && this.data.lineWidth;
         const needFill = this.data.fillStyle;
+        if (!this.editing && !needStroke && !needFill) {
+            return super.render(ctx);
+        }
+        this.beginDraw(ctx);
         if (this.editing) {
-            const { x, y, w, h } = this.boundingRect();
+            const { x, y, w, h } = this.drawingRect();
             let lineWidth = 1;
             let halfLineW = lineWidth / 2;
             ctx.lineWidth = lineWidth;
@@ -5424,8 +5430,7 @@ class ShapeText extends base_1.Shape {
             ctx.strokeRect(x + halfLineW, y + halfLineW, w - lineWidth, h - lineWidth);
         }
         if (needStroke || needFill) {
-            const { x, y } = this.data;
-            const { w, h } = this.boundingRect();
+            const { x, y, w, h } = this.drawingRect();
             const { offscreen } = this;
             offscreen.width = w;
             offscreen.height = h;
@@ -5449,6 +5454,7 @@ class ShapeText extends base_1.Shape {
             }
             ctx.drawImage(offscreen, x, y);
         }
+        this.endDraw(ctx);
         return super.render(ctx);
     }
 }
@@ -5544,6 +5550,7 @@ class TextTool {
             this._editor.style.maxHeight = shape.data.h + 'px';
             this._editor.style.paddingLeft = shape.data.t_l + 'px';
             this._editor.style.paddingTop = shape.data.t_t + 'px';
+            this._editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg)`;
         };
         this._updateShapeText = () => {
             const shape = this._curShape;

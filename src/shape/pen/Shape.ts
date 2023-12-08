@@ -127,12 +127,11 @@ export class ShapePen extends Shape<PenData> {
     if (!this.visible)
       return;
     const d = this.data;
-
     if (d.lineWidth && d.strokeStyle && this._srcGeo) {
-      ctx.save()
+      this.beginDraw(ctx)
       ctx.translate(
-        this.data.x - this._srcGeo.x,
-        this.data.y - this._srcGeo.y
+        - this._srcGeo.x,
+        - this._srcGeo.y
       )
       ctx.lineCap = d.lineCap
       ctx.lineDashOffset = d.lineDashOffset || 0
@@ -142,7 +141,7 @@ export class ShapePen extends Shape<PenData> {
       ctx.strokeStyle = d.strokeStyle
       ctx.setLineDash(d.lineDash)
       ctx.stroke(this._path2D)
-      ctx.restore()
+      this.endDraw(ctx)
     }
     super.render(ctx);
   }

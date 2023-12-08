@@ -148,8 +148,12 @@ export class ShapeText extends Shape<TextData> {
     const needStroke = this.data.strokeStyle && this.data.lineWidth
     const needFill = this.data.fillStyle
 
+    if (!this.editing && !needStroke && !needFill) {
+      return super.render(ctx)
+    }
+    this.beginDraw(ctx)
     if (this.editing) {
-      const { x, y, w, h } = this.boundingRect()
+      const { x, y, w, h } = this.drawingRect()
       let lineWidth = 1
       let halfLineW = lineWidth / 2
       ctx.lineWidth = lineWidth
@@ -157,11 +161,8 @@ export class ShapeText extends Shape<TextData> {
       ctx.setLineDash([])
       ctx.strokeRect(x + halfLineW, y + halfLineW, w - lineWidth, h - lineWidth)
     }
-
     if (needStroke || needFill) {
-      const { x, y } = this.data;
-
-      const { w, h } = this.boundingRect();
+      const { x, y, w, h } = this.drawingRect();
       const { offscreen } = this;
       offscreen.width = w;
       offscreen.height = h;
@@ -186,6 +187,7 @@ export class ShapeText extends Shape<TextData> {
       }
       ctx.drawImage(offscreen, x, y);
     }
+    this.endDraw(ctx)
     return super.render(ctx)
   }
 }

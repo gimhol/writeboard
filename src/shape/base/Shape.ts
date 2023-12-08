@@ -367,8 +367,8 @@ export class Shape<D extends ShapeData = ShapeData> {
   drawingRect(): IRect {
     const d = this._data
     return {
-      x: Math.floor(d.x),
-      y: Math.floor(d.y),
+      x: 0,
+      y: 0,
       w: Math.floor(d.w),
       h: Math.floor(d.h)
     }

@@ -12,8 +12,8 @@ export class ShapeNeedPath<D extends ShapeData = ShapeData> extends Shape<D> {
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible)
       return;
+    this.beginDraw(ctx)
     const d = this.data;
-
     if (d.fillStyle || (d.lineWidth && d.strokeStyle))
       this.path(ctx);
     if (d.fillStyle) {
@@ -30,6 +30,7 @@ export class ShapeNeedPath<D extends ShapeData = ShapeData> extends Shape<D> {
       ctx.setLineDash(d.lineDash);
       ctx.stroke();
     }
+    this.endDraw(ctx)
     super.render(ctx);
   }
 }
