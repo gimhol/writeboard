@@ -329,90 +329,17 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible) return
-    const { ghost, locked } = this;
-    if (this.selected && !ghost) {
-      // 虚线其实相当损耗性能
-      const lineWidth = locked ? 2 : 1
-      const halfLineW = lineWidth / 2
-      ctx.lineWidth = lineWidth
-      this.beginDraw(ctx)
-      let { x, y, w, h } = this.selectorRect()
-      ctx.beginPath()
-      ctx.rect(x, y, w, h)
-      ctx.closePath()
-
-      ctx.strokeStyle = locked ? '#ffffff88' : '#ffffff'
-      ctx.setLineDash([])
-      ctx.stroke()
-      ctx.strokeStyle = locked ? '#00000088' : '#000000'
-      ctx.setLineDash(locked ? [lineWidth * 8] : [lineWidth * 4])
-      ctx.stroke()
-
-      if (!locked && this._resizable === Resizable.All) {
-        ctx.fillStyle = 'white'
-        ctx.setLineDash([]);
-        const {
-          s, lx, rx, ty, by, mx, my,
-        } = this.getResizerNumbers(x, y, w, h)
-
-        // top resizer
-        ctx.beginPath()
-        ctx.rect(mx, ty, s, s)
-        ctx.fill()
-        ctx.stroke()
-
-        // bottom resizer
-        ctx.beginPath()
-        ctx.rect(mx, by, s, s)
-        ctx.fill()
-        ctx.stroke()
-
-        // left resizer
-        ctx.beginPath()
-        ctx.rect(lx, my, s, s)
-        ctx.fill()
-        ctx.stroke()
-
-        // right resizer
-        ctx.beginPath()
-        ctx.rect(rx, my, s, s)
-        ctx.fill()
-        ctx.stroke()
-
-        // top-left resizer
-        ctx.beginPath()
-        ctx.rect(lx, ty, s, s)
-        ctx.fill()
-        ctx.stroke()
-
-        // top-right resizer
-        ctx.beginPath()
-        ctx.rect(rx, ty, s, s)
-        ctx.fill()
-        ctx.stroke()
-
-        // bottom-left resizer
-        ctx.beginPath()
-        ctx.rect(lx, by, s, s)
-        ctx.fill()
-        ctx.stroke()
-
-        // bottom-right resizer
-        ctx.beginPath()
-        ctx.rect(rx, by, s, s)
-        ctx.fill()
-        ctx.stroke()
-      }
-      this.endDraw(ctx)
-    }
-    this.renderDebug(ctx)
+    const decoration = this.board?.factory.shapeDecoration(this)
+    const { ghost, locked, resizable, selected } = this;
+    this.beginDraw(ctx)
+    ghost && decoration?.ghost?.(this, ctx)
+    selected && locked && decoration?.locked?.(this, ctx)
+    selected && !locked && decoration?.selected?.(this, ctx)
+    selected && !locked && resizable && decoration?.resizable?.(this, ctx)
+    this.endDraw(ctx)
+    decoration?.debug?.(this, ctx)
   }
 
-  renderDebug(ctx: CanvasRenderingContext2D): void {
-    const { x, y, w, h } = this.boundingRect()
-    ctx.fillStyle = "#00FF0033"
-    ctx.fillRect(x + 1, y + 1, w - 2, h - 2)
-  }
 
   /**
    * 绘制矩形
@@ -450,14 +377,14 @@ export class Shape<D extends ShapeData = ShapeData> {
   boundingRect(): IRect {
     const d = this.data
     const offset = (d.lineWidth % 2) ? 1 : 0
-    const overDraw1 = 1
-    const overDraw2 = overDraw1 * 2
+    const overbound1 = this.board?.factory.overbound(this) || 1
+    const overbound2 = overbound1 * 2
     if (!d.r)
       return {
-        x: Math.floor(d.x - d.lineWidth / 2 - overDraw1),
-        y: Math.floor(d.y - d.lineWidth / 2 - overDraw1),
-        w: Math.ceil(d.w + d.lineWidth + offset + overDraw2),
-        h: Math.ceil(d.h + d.lineWidth + offset + overDraw2)
+        x: Math.floor(d.x - d.lineWidth / 2 - overbound1),
+        y: Math.floor(d.y - d.lineWidth / 2 - overbound1),
+        w: Math.ceil(d.w + d.lineWidth + offset + overbound2),
+        h: Math.ceil(d.h + d.lineWidth + offset + overbound2)
       }
 
     const w = Math.abs(d.w * Math.cos(d.r)) + Math.abs(d.h * Math.sin(d.r))
@@ -465,10 +392,10 @@ export class Shape<D extends ShapeData = ShapeData> {
     const x = d.x - (w - d.w) / 2
     const y = d.y - (h - d.h) / 2
     return {
-      x: Math.floor(x - d.lineWidth / 2 - overDraw1),
-      y: Math.floor(y - d.lineWidth / 2 - overDraw1),
-      w: Math.ceil(w + d.lineWidth + offset + overDraw2),
-      h: Math.ceil(h + d.lineWidth + offset + overDraw2)
+      x: Math.floor(x - d.lineWidth / 2 - overbound1),
+      y: Math.floor(y - d.lineWidth / 2 - overbound1),
+      w: Math.ceil(w + d.lineWidth + offset + overbound2),
+      h: Math.ceil(h + d.lineWidth + offset + overbound2)
     }
   }
 

@@ -12,6 +12,7 @@ import type { ToolType } from "../tools/ToolEnum";
 import { FontFamilysChecker } from "../fonts/checker";
 import { builtInFontFamilies, builtInFontNames } from "../fonts/builtInFontFamilies";
 import { isNum, isStr } from "../utils/helper";
+import { DefaultShapeDecoration, IShapeDecoration } from "../board/ShapeDecoration";
 
 export interface IResizerInfo {
   size: number;
@@ -34,6 +35,8 @@ export interface IFactory {
   newLayer(inits?: Partial<ILayerInits>): Layer;
   fontFamilies(): string[];
   fontName(fontFamily: string): string;
+  shapeDecoration(shape: Shape): IShapeDecoration;
+  overbound(shape: Shape): number;
 }
 
 const Tag = '[DefaultFactory]';
@@ -130,6 +133,12 @@ export class DefaultFactory implements IFactory {
   fontName(fontFamily: string): string {
     return builtInFontNames[fontFamily] ?? fontFamily;
   }
+  private _shapeDecoration = new DefaultShapeDecoration
+  shapeDecoration(_: Shape<ShapeData>): IShapeDecoration {
+    return this._shapeDecoration
+  }
+
+  overbound(_: Shape<ShapeData>): number { return 1 }
 }
 
 Gaia.registerFactory(FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' })
