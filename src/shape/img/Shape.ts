@@ -73,7 +73,7 @@ export class ShapeImg extends Shape<ImgData> {
             dx += (w - dw) * 0.5;
           }
           this.beginDraw(ctx)
-          ctx.drawImage(img, 0, 0, img.width, img.height, dx-x, dy-y, dw, dh );
+          ctx.drawImage(img, 0, 0, img.width, img.height, dx - x, dy - y, dw, dh);
           this.endDraw(ctx)
           break;
         }
@@ -107,12 +107,10 @@ export class ShapeImg extends Shape<ImgData> {
 
   drawText(ctx: CanvasRenderingContext2D, text: string): void {
 
-    const br = this.boundingRect();
-    ctx.fillStyle = '#FF000088';
-    ctx.fillRect(br.x, br.y, br.w, br.h);
-
     this.beginDraw(ctx)
     const { x, y, w, h } = this.drawingRect();
+    ctx.fillStyle = '#FF000088';
+    ctx.fillRect(x, y, w, h);
     ctx.fillStyle = '#00000088';
     ctx.fillRect(0, 0, w, h);
     ctx.font = 'normal 16px serif'
@@ -123,7 +121,7 @@ export class ShapeImg extends Shape<ImgData> {
       actualBoundingBoxLeft: al
     } = ctx.measureText(text);
     const height = fd + fa;
-    ctx.fillText(text, 1 + al, height);
+    ctx.fillText(text, x + 1 + al, y + height);
     this.endDraw(ctx)
 
   }

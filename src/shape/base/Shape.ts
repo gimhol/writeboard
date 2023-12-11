@@ -3,17 +3,16 @@ import { IRect, Rect } from "../../utils/Rect";
 import { IVector } from "../../utils/Vector";
 import { ShapeEnum, ShapeType } from "../ShapeEnum";
 import { ShapeData } from "./Data";
-
 export enum ResizeDirection {
-  None = 0,
-  Top = 'Top',
-  Bottom = 'Bottom',
-  Left = 'Left',
-  Right = 'Right',
-  TopLeft = 'TopLeft',
-  TopRight = 'TopRight',
-  BottomLeft = 'BottomLeft',
-  BottomRight = 'BottomRight',
+  None        = 0,
+  Top         = 1,
+  TopRight    = 2,
+  Right       = 3,
+  BottomRight = 4,
+  Bottom      = 5,
+  BottomLeft  = 6,
+  Left        = 7,
+  TopLeft     = 8,
 }
 
 /**
@@ -218,6 +217,8 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
+  get rotation() { return this.data.rotation }
+
   rotateBy(d: number, ox: number | undefined = void 0, oy: number | undefined = void 0): void {
     const r = this._data.rotation + d
     this.rotateTo(r, ox, oy);
@@ -226,7 +227,7 @@ export class Shape<D extends ShapeData = ShapeData> {
   rotateTo(r: number, ox: number | undefined = void 0, oy: number | undefined = void 0): void {
     if (r == this._data.rotation) return
     this.markDirty()
-    this._data.rotation = r;
+    this._data.rotation = r % (Math.PI * 2);
     const { x, y, w, h } = this._data;
     const mx = x + w / 2;
     const my = y + h / 2;
@@ -365,6 +366,13 @@ export class Shape<D extends ShapeData = ShapeData> {
       }
       this.endDraw(ctx)
     }
+    this.renderDebug(ctx)
+  }
+
+  renderDebug(ctx: CanvasRenderingContext2D): void {
+    const { x, y, w, h } = this.boundingRect()
+    ctx.fillStyle = "#00FF0033"
+    ctx.fillRect(x + 1, y + 1, w - 2, h - 2)
   }
 
   /**

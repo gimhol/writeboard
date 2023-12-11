@@ -2157,9 +2157,9 @@ class Board {
     get tools() { return this._tools; }
     get tool() { return this._tool; }
     markDirty(rect) {
-        const requestRender = !this._dirty;
+        const requested = !this._dirty;
         this._dirty = this._dirty ? utils_1.Rect.bounds(this._dirty, rect) : rect;
-        requestRender && requestAnimationFrame(() => this.render());
+        requested && requestAnimationFrame(() => this.render());
     }
     render() {
         var _a;
@@ -2186,7 +2186,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":22,"../shape":54,"../tools":89,"../utils":103,"./Layer":18}],18:[function(require,module,exports){
+},{"../event":22,"../shape":54,"../tools":89,"../utils":105,"./Layer":18}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2260,7 +2260,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{"../utils/Css":94}],19:[function(require,module,exports){
+},{"../utils/Css":95}],19:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -2930,7 +2930,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":19,"./features":28,"./mgr":36,"./shape":54,"./tools":89,"./utils":103}],32:[function(require,module,exports){
+},{"./board":19,"./features":28,"./mgr":36,"./shape":54,"./tools":89,"./utils":105}],32:[function(require,module,exports){
 "use strict";
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
@@ -3048,7 +3048,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":19,"../fonts/builtInFontFamilies":29,"../fonts/checker":30,"../shape/base/Data":38,"../shape/base/Shape":39,"../tools/base/InvalidTool":85,"../utils/helper":102,"./FactoryEnum":33,"./Gaia":34,"./ShapesMgr":35}],33:[function(require,module,exports){
+},{"../board":19,"../fonts/builtInFontFamilies":29,"../fonts/checker":30,"../shape/base/Data":38,"../shape/base/Shape":39,"../tools/base/InvalidTool":85,"../utils/helper":104,"./FactoryEnum":33,"./Gaia":34,"./ShapesMgr":35}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -3238,7 +3238,7 @@ class DefaultShapesMgr {
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/RotatedRect":100}],36:[function(require,module,exports){
+},{"../utils/RotatedRect":102}],36:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3300,6 +3300,7 @@ exports.getShapeName = getShapeName;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeData = void 0;
+const utils_1 = require("../../utils");
 const helper_1 = require("../../utils/helper");
 const ShapeEnum_1 = require("../ShapeEnum");
 class ShapeData {
@@ -3442,7 +3443,7 @@ class ShapeData {
     get needFill() { return true; }
     get needStroke() { return true; }
     get rotation() { var _a; return (_a = this.r) !== null && _a !== void 0 ? _a : 0; }
-    set rotation(v) { this.r = v || void 0; }
+    set rotation(v) { this.r = utils_1.Degrees.normalized(v); }
     merge(o) {
         this.read(o);
         return this;
@@ -3509,7 +3510,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../../utils/helper":102,"../ShapeEnum":37}],39:[function(require,module,exports){
+},{"../../utils":105,"../../utils/helper":104,"../ShapeEnum":37}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
@@ -3517,14 +3518,14 @@ const Rect_1 = require("../../utils/Rect");
 var ResizeDirection;
 (function (ResizeDirection) {
     ResizeDirection[ResizeDirection["None"] = 0] = "None";
-    ResizeDirection["Top"] = "Top";
-    ResizeDirection["Bottom"] = "Bottom";
-    ResizeDirection["Left"] = "Left";
-    ResizeDirection["Right"] = "Right";
-    ResizeDirection["TopLeft"] = "TopLeft";
-    ResizeDirection["TopRight"] = "TopRight";
-    ResizeDirection["BottomLeft"] = "BottomLeft";
-    ResizeDirection["BottomRight"] = "BottomRight";
+    ResizeDirection[ResizeDirection["Top"] = 1] = "Top";
+    ResizeDirection[ResizeDirection["TopRight"] = 2] = "TopRight";
+    ResizeDirection[ResizeDirection["Right"] = 3] = "Right";
+    ResizeDirection[ResizeDirection["BottomRight"] = 4] = "BottomRight";
+    ResizeDirection[ResizeDirection["Bottom"] = 5] = "Bottom";
+    ResizeDirection[ResizeDirection["BottomLeft"] = 6] = "BottomLeft";
+    ResizeDirection[ResizeDirection["Left"] = 7] = "Left";
+    ResizeDirection[ResizeDirection["TopLeft"] = 8] = "TopLeft";
 })(ResizeDirection = exports.ResizeDirection || (exports.ResizeDirection = {}));
 /**
  * 表示图形能以何种方式被拉伸
@@ -3718,6 +3719,7 @@ class Shape {
         this._data.h = h;
         this.markDirty();
     }
+    get rotation() { return this.data.rotation; }
     rotateBy(d, ox = void 0, oy = void 0) {
         const r = this._data.rotation + d;
         this.rotateTo(r, ox, oy);
@@ -3726,7 +3728,7 @@ class Shape {
         if (r == this._data.rotation)
             return;
         this.markDirty();
-        this._data.rotation = r;
+        this._data.rotation = r % (Math.PI * 2);
         const { x, y, w, h } = this._data;
         const mx = x + w / 2;
         const my = y + h / 2;
@@ -3844,6 +3846,12 @@ class Shape {
             }
             this.endDraw(ctx);
         }
+        this.renderDebug(ctx);
+    }
+    renderDebug(ctx) {
+        const { x, y, w, h } = this.boundingRect();
+        ctx.fillStyle = "#00FF0033";
+        ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
     }
     /**
      * 绘制矩形
@@ -3994,7 +4002,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":98}],40:[function(require,module,exports){
+},{"../../utils/Rect":100}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -4240,7 +4248,7 @@ class ImgData extends base_1.ShapeData {
 }
 exports.ImgData = ImgData;
 
-},{"../../utils/helper":102,"../ShapeEnum":37,"../base":41}],51:[function(require,module,exports){
+},{"../../utils/helper":104,"../ShapeEnum":37,"../base":41}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -4346,18 +4354,17 @@ class ShapeImg extends base_1.Shape {
         super.render(ctx);
     }
     drawText(ctx, text) {
-        const br = this.boundingRect();
-        ctx.fillStyle = '#FF000088';
-        ctx.fillRect(br.x, br.y, br.w, br.h);
         this.beginDraw(ctx);
         const { x, y, w, h } = this.drawingRect();
+        ctx.fillStyle = '#FF000088';
+        ctx.fillRect(x, y, w, h);
         ctx.fillStyle = '#00000088';
         ctx.fillRect(0, 0, w, h);
         ctx.font = 'normal 16px serif';
         ctx.fillStyle = 'white';
         const { fontBoundingBoxDescent: fd, fontBoundingBoxAscent: fa, actualBoundingBoxLeft: al } = ctx.measureText(text);
         const height = fd + fa;
-        ctx.fillText(text, 1 + al, height);
+        ctx.fillText(text, x + 1 + al, y + height);
         this.endDraw(ctx);
     }
 }
@@ -5287,7 +5294,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../../utils/helper":102,"../ShapeEnum":37,"../base":41}],76:[function(require,module,exports){
+},{"../../utils/helper":104,"../ShapeEnum":37,"../base":41}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -5469,7 +5476,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/Gaia":34,"../../utils/Rect":98,"../ShapeEnum":37,"../base":41,"./Data":75,"./TextSelection":77}],77:[function(require,module,exports){
+},{"../../mgr/Gaia":34,"../../utils/Rect":100,"../ShapeEnum":37,"../base":41,"./Data":75,"./TextSelection":77}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -5663,7 +5670,7 @@ class TextTool {
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'Text', desc: 'enter some text', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":22,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../utils/Css":94,"../ShapeEnum":37}],79:[function(require,module,exports){
+},{"../../event":22,"../../mgr/Gaia":34,"../../tools/ToolEnum":84,"../../utils/Css":95,"../ShapeEnum":37}],79:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5953,7 +5960,7 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":22,"../../utils/RectHelper":99}],87:[function(require,module,exports){
+},{"../../event":22,"../../utils/RectHelper":101}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -6013,6 +6020,7 @@ const Vector_1 = require("../../utils/Vector");
 const Events_1 = require("../../event/Events");
 const event_1 = require("../../event");
 const shape_1 = require("../../shape");
+const utils_1 = require("../../utils");
 var SelectorStatus;
 (function (SelectorStatus) {
     SelectorStatus[SelectorStatus["Invalid"] = 0] = "Invalid";
@@ -6177,40 +6185,39 @@ class SelectorTool {
         this.connect(board.selects, x, y);
     }
     pointerMove(dot) {
-        let direction;
-        let rect;
-        this.board.selects.find(it => {
-            const dot2 = it.map2me(dot.x, dot.y);
-            const arr = it.resizeDirection(dot2.x, dot2.y);
-            if (arr[0] != base_1.ResizeDirection.None) {
-                direction = arr[0];
-                rect = arr[1];
-                return true;
-            }
+        const result = utils_1.Arrays.find(this.board.selects, it => {
+            const { x, y } = it.map2me(dot.x, dot.y);
+            const [direction] = it.resizeDirection(x, y);
+            if (direction != base_1.ResizeDirection.None)
+                return [direction, it.rotation];
         });
-        switch (direction) {
-            case base_1.ResizeDirection.Top:
-            case base_1.ResizeDirection.Bottom:
-                this.board.element.style.cursor = 'ns-resize';
-                break;
-            case base_1.ResizeDirection.Left:
-            case base_1.ResizeDirection.Right:
-                this.board.element.style.cursor = 'ew-resize';
-                break;
-            case base_1.ResizeDirection.TopLeft:
-            case base_1.ResizeDirection.BottomRight:
-                this.board.element.style.cursor = 'nw-resize';
-                break;
-            case base_1.ResizeDirection.TopRight:
-            case base_1.ResizeDirection.BottomLeft:
-                this.board.element.style.cursor = 'ne-resize';
-                break;
-            default:
-                this.board.element.style.cursor = '';
-                break;
+        let cursor = '';
+        if (result) {
+            let [direction, deg] = result;
+            deg = utils_1.Degrees.normalized(deg + (direction - 1) * 0.25 * Math.PI);
+            switch (Math.floor((25 + utils_1.Degrees.angle(deg)) / 45)) {
+                case 0:
+                case 4:
+                    cursor = 'ns-resize';
+                    break;
+                case 2:
+                case 6:
+                    cursor = 'ew-resize';
+                    break;
+                case 3:
+                case 7:
+                    cursor = 'nw-resize';
+                    break;
+                case 1:
+                case 5:
+                    cursor = 'ne-resize';
+                    break;
+            }
         }
+        this.board.element.style.cursor = cursor;
     }
     pointerDraw(dot) {
+        var _a;
         const board = this.board;
         if (!board)
             return;
@@ -6245,39 +6252,107 @@ class SelectorTool {
                 const geo = shape.getGeo();
                 const rs = board.factory.resizer.size;
                 const { y: roy, x: rox } = this._resizerOffset;
-                const { x, y } = dot;
-                const { left: l, right: r, bottom: b, top: t } = geo;
+                const { x, y } = shape.map2me(dot.x, dot.y);
+                {
+                    const { left: l, right: r, bottom: b, top: t } = geo;
+                    switch (this._resizerDirection) {
+                        case base_1.ResizeDirection.Top:
+                            geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
+                            break;
+                        case base_1.ResizeDirection.Bottom:
+                            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
+                            break;
+                        case base_1.ResizeDirection.Left:
+                            geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
+                            break;
+                        case base_1.ResizeDirection.Right:
+                            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
+                            break;
+                        case base_1.ResizeDirection.TopLeft:
+                            geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
+                            geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
+                            break;
+                        case base_1.ResizeDirection.TopRight:
+                            geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
+                            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
+                            break;
+                        case base_1.ResizeDirection.BottomLeft:
+                            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
+                            geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
+                            break;
+                        case base_1.ResizeDirection.BottomRight:
+                            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
+                            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
+                            break;
+                    }
+                }
+                const degree = (_a = shape.data.r) !== null && _a !== void 0 ? _a : 0;
+                let direction = degree;
+                const { x: x1, y: y1, w: w1, h: h1 } = shape.data;
+                const { x: bx1, y: by1, w: bw1, h: bh1 } = shape.boundingRect();
+                shape.markDirty();
+                shape.data.x = geo.x;
+                shape.data.y = geo.y;
+                shape.data.w = geo.w;
+                shape.data.h = geo.h;
+                const { x: x2, y: y2, w: w2, h: h2 } = shape.data;
+                const { x: bx2, y: by2, w: bw2, h: bh2 } = shape.boundingRect();
                 switch (this._resizerDirection) {
                     case base_1.ResizeDirection.Top:
-                        geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
+                        direction = utils_1.Degrees.normalized(direction);
                         break;
                     case base_1.ResizeDirection.Bottom:
-                        geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
+                        direction = utils_1.Degrees.normalized(direction + Math.PI);
                         break;
                     case base_1.ResizeDirection.Left:
-                        geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
+                        direction = utils_1.Degrees.normalized(direction - Math.PI * 0.50);
                         break;
                     case base_1.ResizeDirection.Right:
-                        geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
+                        direction = utils_1.Degrees.normalized(direction + Math.PI * 0.50);
                         break;
                     case base_1.ResizeDirection.TopLeft:
-                        geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
-                        geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
+                        direction = utils_1.Degrees.normalized(direction - Math.PI * 0.25);
                         break;
                     case base_1.ResizeDirection.TopRight:
-                        geo.top = Math.floor(Math.min(roy + y, b - rs * 2));
-                        geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
+                        direction = utils_1.Degrees.normalized(direction + Math.PI * 0.25);
                         break;
                     case base_1.ResizeDirection.BottomLeft:
-                        geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
-                        geo.left = Math.floor(Math.min(rox + x, r - rs * 2));
+                        direction = utils_1.Degrees.normalized(direction - Math.PI * 0.75);
                         break;
                     case base_1.ResizeDirection.BottomRight:
-                        geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2));
-                        geo.right = Math.ceil(Math.max(rox + x, l + rs * 2));
+                        direction = utils_1.Degrees.normalized(direction + Math.PI * 0.75);
                         break;
                 }
-                shape.setGeo(geo);
+                if (utils_1.Numbers.equals(0, direction)) {
+                }
+                else if (utils_1.Numbers.equals(Math.PI * 0.5, direction)) {
+                    shape.data.x += bx1 - bx2;
+                    shape.data.y += by1 - by2;
+                }
+                else if (utils_1.Numbers.equals(Math.PI * 1.0, direction)) {
+                    shape.data.y += by1 - by2;
+                }
+                else if (utils_1.Numbers.equals(Math.PI * 1.5, direction)) {
+                    shape.data.x += (bx1 + bw1) - (bx2 + bw2);
+                    shape.data.y += by1 - by2;
+                }
+                else if (direction < Math.PI * 0.5) {
+                    shape.data.x += bx1 - bx2;
+                    shape.data.y += (by1 + bh1) - (by2 + bh2); // + Math.cos(degree) * (h1 - h2)
+                }
+                else if (direction < Math.PI * 1.0) {
+                    shape.data.x += bx1 - bx2;
+                    shape.data.y += by1 - by2;
+                }
+                else if (direction < Math.PI * 1.5) {
+                    shape.data.x += (bx1 + bw1) - (bx2 + bw2);
+                    shape.data.y += by1 - by2;
+                }
+                else {
+                    shape.data.x += (bx1 + bw1) - (bx2 + bw2);
+                    shape.data.y += (by1 + bh1) - (by2 + bh2);
+                }
+                shape.markDirty();
                 this.emitGeoEvent(false);
                 return;
             }
@@ -6308,7 +6383,6 @@ class SelectorTool {
             return;
         }
         ;
-        console.log(this._shapes.length);
         // 双击某个文本时，切换到文本编辑工具，编辑此文本，当文本编辑框失去焦点时，回到选择器工具；
         if (this._shapes.length && this._shapes[0].shape instanceof shape_1.ShapeText) {
             board.setToolType(ToolEnum_1.ToolEnum.Text);
@@ -6360,7 +6434,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":22,"../../event/Events":21,"../../mgr/Gaia":34,"../../shape":54,"../../shape/base":41,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils/RectHelper":99,"../../utils/Vector":101,"../ToolEnum":84}],91:[function(require,module,exports){
+},{"../../event":22,"../../event/Events":21,"../../mgr/Gaia":34,"../../shape":54,"../../shape/base":41,"../../shape/base/Data":38,"../../shape/rect/Shape":72,"../../utils":105,"../../utils/RectHelper":101,"../../utils/Vector":103,"../ToolEnum":84}],91:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6382,6 +6456,24 @@ __exportStar(require("./SelectorTool"), exports);
 },{"./SelectorTool":90}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Arrays = void 0;
+var Arrays;
+(function (Arrays) {
+    function find(arr, func) {
+        for (let i = 0, len = arr.length; i < len; i++) {
+            const result = func(arr[i]);
+            if (result !== null && result !== void 0) {
+                return result;
+            }
+        }
+        return null;
+    }
+    Arrays.find = find;
+})(Arrays = exports.Arrays || (exports.Arrays = {}));
+
+},{}],93:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
 class BinaryRange {
     constructor(f, t) {
@@ -6401,7 +6493,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -6558,7 +6650,7 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":92}],94:[function(require,module,exports){
+},{"./BinaryRange":93}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Css = void 0;
@@ -6577,15 +6669,47 @@ var Css;
     Css.add = add;
 })(Css = exports.Css || (exports.Css = {}));
 
-},{}],95:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
 },{}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
 },{}],97:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],98:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Degrees = exports.Numbers = void 0;
+var Numbers;
+(function (Numbers) {
+    function equals(a, b) {
+        return Math.abs(a - b) <= Number.EPSILON;
+    }
+    Numbers.equals = equals;
+})(Numbers = exports.Numbers || (exports.Numbers = {}));
+var Degrees;
+(function (Degrees) {
+    function normalized(v) {
+        if (!v)
+            return v;
+        else if (Numbers.equals(0, v))
+            return 0;
+        else if (v < 0)
+            return v % (Math.PI * 2) + Math.PI * 2;
+        else
+            return v % (Math.PI * 2);
+    }
+    Degrees.normalized = normalized;
+    function angle(v) {
+        if (!v)
+            return v;
+        return 180 * v / Math.PI;
+    }
+    Degrees.angle = angle;
+})(Degrees = exports.Degrees || (exports.Degrees = {}));
+
+},{}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -6816,7 +6940,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":98}],98:[function(require,module,exports){
+},{"./Rect":100}],100:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -6906,7 +7030,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],99:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -6958,7 +7082,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":101}],100:[function(require,module,exports){
+},{"./Vector":103}],102:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RotatedRect = void 0;
@@ -7060,7 +7184,7 @@ class RotatedRect {
 }
 exports.RotatedRect = RotatedRect;
 
-},{"./Vector":101}],101:[function(require,module,exports){
+},{"./Vector":103}],103:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -7096,7 +7220,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],102:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isStr = exports.isNum = void 0;
@@ -7105,7 +7229,7 @@ exports.isNum = isNum;
 const isStr = (x) => typeof x === 'string';
 exports.isStr = isStr;
 
-},{}],103:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7135,5 +7259,7 @@ __exportStar(require("./QuadTree"), exports);
 __exportStar(require("./Rect"), exports);
 __exportStar(require("./Vector"), exports);
 __exportStar(require("./RotatedRect"), exports);
+__exportStar(require("./Numbers"), exports);
+__exportStar(require("./Arrays"), exports);
 
-},{"./BinaryRange":92,"./BinaryTree":93,"./Dot":95,"./ITree":96,"./QuadTree":97,"./Rect":98,"./RotatedRect":100,"./Vector":101}]},{},[16]);
+},{"./Arrays":92,"./BinaryRange":93,"./BinaryTree":94,"./Dot":96,"./ITree":97,"./Numbers":98,"./QuadTree":99,"./Rect":100,"./RotatedRect":102,"./Vector":103}]},{},[16]);

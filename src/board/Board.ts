@@ -420,9 +420,9 @@ export class Board {
 
   private _dirty: IRect | undefined
   markDirty(rect: IRect) {
-    const requestRender = !this._dirty
+    const requested = !this._dirty
     this._dirty = this._dirty ? Rect.bounds(this._dirty, rect) : rect
-    requestRender && requestAnimationFrame(() => this.render())
+    requested && requestAnimationFrame(() => this.render())
   }
   render() {
     const dirty = this._dirty

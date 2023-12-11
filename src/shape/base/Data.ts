@@ -1,3 +1,4 @@
+import { Degrees, Numbers } from "../../utils"
 import { isNum, isStr } from "../../utils/helper"
 import { ShapeEnum, ShapeType } from "../ShapeEnum"
 
@@ -175,7 +176,7 @@ export class ShapeData implements IShapeData {
   get needStroke() { return true; }
 
   get rotation() { return this.r ?? 0; }
-  set rotation(v: number) { this.r = v || void 0 }
+  set rotation(v: number) { this.r = Degrees.normalized(v) }
 
   merge(o: Partial<IShapeData>) {
     this.read(o)

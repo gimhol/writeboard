@@ -12,6 +12,7 @@ import { Events } from "../../event/Events"
 import { EventEnum } from "../../event"
 import { IRect, Rect } from "../../utils/Rect"
 import { ShapeText, TextTool } from "../../shape"
+import { Arrays, Degrees, Numbers } from "../../utils"
 export enum SelectorStatus {
   Invalid = 0,
   ReadyForDragging,
@@ -188,38 +189,23 @@ export class SelectorTool implements ITool {
   }
 
   pointerMove(dot: IDot): void {
-    let direction: ResizeDirection | undefined
-    let rect: Rect | undefined;
-    this.board.selects.find(it => {
-      const dot2 = it.map2me(dot.x, dot.y)
-      const arr = it.resizeDirection(dot2.x, dot2.y)
-      if (arr[0] != ResizeDirection.None) {
-        direction = arr[0]
-        rect = arr[1]
-        return true
-      }
+    const result = Arrays.find(this.board.selects, it => {
+      const { x, y } = it.map2me(dot.x, dot.y)
+      const [direction] = it.resizeDirection(x, y)
+      if (direction != ResizeDirection.None) return [direction, it.rotation] as const
     })
-    switch (direction) {
-      case ResizeDirection.Top:
-      case ResizeDirection.Bottom:
-        this.board.element.style.cursor = 'ns-resize'
-        break
-      case ResizeDirection.Left:
-      case ResizeDirection.Right:
-        this.board.element.style.cursor = 'ew-resize'
-        break
-      case ResizeDirection.TopLeft:
-      case ResizeDirection.BottomRight:
-        this.board.element.style.cursor = 'nw-resize'
-        break
-      case ResizeDirection.TopRight:
-      case ResizeDirection.BottomLeft:
-        this.board.element.style.cursor = 'ne-resize'
-        break
-      default:
-        this.board.element.style.cursor = ''
-        break
+    let cursor: string = ''; 
+    if (result) {
+      let [direction, deg] = result;
+      deg = Degrees.normalized(deg + (direction - 1) * 0.25 * Math.PI);
+      switch (Math.floor((25 + Degrees.angle(deg)) / 45)) {
+        case 0: case 4: cursor = 'ns-resize'; break;
+        case 2: case 6: cursor = 'ew-resize'; break;
+        case 3: case 7: cursor = 'nw-resize'; break;
+        case 1: case 5: cursor = 'ne-resize'; break;
+      }
     }
+    this.board.element.style.cursor = cursor;
   }
 
   pointerDraw(dot: IDot): void {
@@ -250,39 +236,100 @@ export class SelectorTool implements ITool {
         const geo = shape.getGeo()
         const rs = board.factory.resizer.size
         const { y: roy, x: rox } = this._resizerOffset
-        const { x, y } = dot
-        const { left: l, right: r, bottom: b, top: t } = geo
+        const { x, y } = shape.map2me(dot.x, dot.y)
+        {
+          const { left: l, right: r, bottom: b, top: t } = geo
+          switch (this._resizerDirection) {
+            case ResizeDirection.Top:
+              geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
+              break
+            case ResizeDirection.Bottom:
+              geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
+              break
+            case ResizeDirection.Left:
+              geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+              break
+            case ResizeDirection.Right:
+              geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+              break
+            case ResizeDirection.TopLeft:
+              geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
+              geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+              break
+            case ResizeDirection.TopRight:
+              geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
+              geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+              break
+            case ResizeDirection.BottomLeft:
+              geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
+              geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+              break
+            case ResizeDirection.BottomRight:
+              geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
+              geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+              break
+          }
+        }
+        const degree: number = shape.data.r ?? 0
+        let direction: number = degree
+        const { x: x1, y: y1, w: w1, h: h1 } = shape.data
+        const { x: bx1, y: by1, w: bw1, h: bh1 } = shape.boundingRect()
+        shape.markDirty()
+        shape.data.x = geo.x
+        shape.data.y = geo.y
+        shape.data.w = geo.w
+        shape.data.h = geo.h
+        const { x: x2, y: y2, w: w2, h: h2 } = shape.data
+        const { x: bx2, y: by2, w: bw2, h: bh2 } = shape.boundingRect()
         switch (this._resizerDirection) {
           case ResizeDirection.Top:
-            geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
+            direction = Degrees.normalized(direction)
             break
           case ResizeDirection.Bottom:
-            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
+            direction = Degrees.normalized(direction + Math.PI)
             break
           case ResizeDirection.Left:
-            geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+            direction = Degrees.normalized(direction - Math.PI * 0.50)
             break
           case ResizeDirection.Right:
-            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+            direction = Degrees.normalized(direction + Math.PI * 0.50)
             break
           case ResizeDirection.TopLeft:
-            geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
-            geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+            direction = Degrees.normalized(direction - Math.PI * 0.25)
             break
           case ResizeDirection.TopRight:
-            geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
-            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+            direction = Degrees.normalized(direction + Math.PI * 0.25)
             break
           case ResizeDirection.BottomLeft:
-            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
-            geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+            direction = Degrees.normalized(direction - Math.PI * 0.75)
             break
           case ResizeDirection.BottomRight:
-            geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
-            geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+            direction = Degrees.normalized(direction + Math.PI * 0.75)
             break
         }
-        shape.setGeo(geo)
+        if (Numbers.equals(0, direction)) {
+        } else if (Numbers.equals(Math.PI * 0.5, direction)) {
+          shape.data.x += bx1 - bx2
+          shape.data.y += by1 - by2
+        } else if (Numbers.equals(Math.PI * 1.0, direction)) {
+          shape.data.y += by1 - by2
+        } else if (Numbers.equals(Math.PI * 1.5, direction)) {
+          shape.data.x += (bx1 + bw1) - (bx2 + bw2)
+          shape.data.y += by1 - by2
+        } else if (direction < Math.PI * 0.5) {
+          shape.data.x += bx1 - bx2
+          shape.data.y += (by1 + bh1) - (by2 + bh2)// + Math.cos(degree) * (h1 - h2)
+        } else if (direction < Math.PI * 1.0) {
+          shape.data.x += bx1 - bx2
+          shape.data.y += by1 - by2
+        } else if (direction < Math.PI * 1.5) {
+          shape.data.x += (bx1 + bw1) - (bx2 + bw2)
+          shape.data.y += by1 - by2
+        } else {
+          shape.data.x += (bx1 + bw1) - (bx2 + bw2)
+          shape.data.y += (by1 + bh1) - (by2 + bh2)
+        }
+        shape.markDirty()
         this.emitGeoEvent(false)
         return
       }
@@ -311,7 +358,6 @@ export class SelectorTool implements ITool {
   doubleClick() {
     const { board } = this
     if (!board) { return; };
-    console.log(this._shapes.length)
 
     // 双击某个文本时，切换到文本编辑工具，编辑此文本，当文本编辑框失去焦点时，回到选择器工具；
     if (this._shapes.length && this._shapes[0].shape instanceof ShapeText) {
