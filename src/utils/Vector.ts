@@ -8,6 +8,14 @@ export class Vector implements IVector {
     this.y = y
   }
 
+  plus(o: IVector): this { return this.add(o.x, o.y); }
+
+  add(x: number, y: number): this {
+    this.x += x;
+    this.y += y;
+    return this;
+  }
+
   static mid(v0: IVector, v1: IVector, factor: number = 0.5): IVector {
     return {
       x: v0.x + (v1.x - v0.x) * factor,

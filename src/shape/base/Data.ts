@@ -177,7 +177,7 @@ export class ShapeData implements IShapeData {
 
   get rotation() { return this.r ?? 0; }
   set rotation(v: number) { this.r = Degrees.normalized(v) }
-
+  
   merge(o: Partial<IShapeData>) {
     this.read(o)
     return this

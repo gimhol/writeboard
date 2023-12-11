@@ -1,18 +1,19 @@
 import { Board } from "../../board/Board";
 import { IRect, Rect } from "../../utils/Rect";
-import { IVector } from "../../utils/Vector";
+import { IVector, Vector } from "../../utils/Vector";
+import { isNum } from "../../utils/helper";
 import { ShapeEnum, ShapeType } from "../ShapeEnum";
 import { ShapeData } from "./Data";
 export enum ResizeDirection {
-  None        = 0,
-  Top         = 1,
-  TopRight    = 2,
-  Right       = 3,
+  None = 0,
+  Top = 1,
+  TopRight = 2,
+  Right = 3,
   BottomRight = 4,
-  Bottom      = 5,
-  BottomLeft  = 6,
-  Left        = 7,
-  TopLeft     = 8,
+  Bottom = 5,
+  BottomLeft = 6,
+  Left = 7,
+  TopLeft = 8,
 }
 
 /**
@@ -216,6 +217,46 @@ export class Shape<D extends ShapeData = ShapeData> {
     this._data.h = h
     this.markDirty()
   }
+  get x() { return this._data.x }
+  get y() { return this._data.y }
+  get halfW() { return this._data.w / 2 }
+  get halfH() { return this._data.h / 2 }
+  get midX() { return this._data.x + this.halfW }
+  get midY() { return this._data.y + this.halfH }
+  get w() { return this._data.w }
+  get h() { return this._data.h }
+  get left() { return this._data.x }
+  get right() { return this._data.y }
+  get top() { return this._data.w + this._data.x }
+  get bottom() { return this._data.h + this._data.y }
+
+  get topLeft(): IVector { return { x: this.left, y: this.top } }
+  get bottomLeft(): IVector { return { x: this.left, y: this.bottom } }
+  get topRight(): IVector { return { x: this.right, y: this.top } }
+  get bottomRight(): IVector { return { x: this.right, y: this.bottom } }
+  get leftTop(): IVector { return this.topLeft }
+  get leftBottom(): IVector { return this.bottomLeft }
+  get rightTop(): IVector { return this.topRight }
+  get rightBottom(): IVector { return this.bottomRight }
+
+  get rotatedTopLeft(): IVector { return this.map2world(0, 0) }
+  get rotatedBottomLeft(): IVector { return this.map2world(0, this.h) }
+  get rotatedTopRight(): IVector { return this.map2world(this.w, 0) }
+  get rotatedBottomRight(): IVector { return this.map2world(this.w, this.h) }
+  get rotatedLeftTop(): IVector { return this.map2world(0, 0) }
+  get rotatedLeftBottom(): IVector { return this.map2world(0, this.h) }
+  get rotatedRightTop(): IVector { return this.map2world(this.w, 0) }
+  get rotatedRightBottom(): IVector { return this.map2world(this.w, this.h) }
+
+  get midTop(): IVector { return { x: this.midX, y: this.top } }
+  get midBottom(): IVector { return { x: this.midX, y: this.bottom } }
+  get midLeft(): IVector { return { x: this.left, y: this.midY } }
+  get midRight(): IVector { return { x: this.right, y: this.midY } }
+
+  get rotatedMidTop(): IVector { return this.map2world(this.halfW, 0) }
+  get rotatedMidBottom(): IVector { return this.map2world(this.halfW, this.h) }
+  get rotatedMidLeft(): IVector { return this.map2world(0, this.halfH) }
+  get rotatedMidRight(): IVector { return this.map2world(this.w, this.halfH) }
 
   get rotation() { return this.data.rotation }
 
@@ -228,9 +269,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     if (r == this._data.rotation) return
     this.markDirty()
     this._data.rotation = r % (Math.PI * 2);
-    const { x, y, w, h } = this._data;
-    const mx = x + w / 2;
-    const my = y + h / 2;
+    const { w, h, midX: mx, midY: my } = this;
     ox = ox ?? mx;
     oy = oy ?? my;
     const mx1 = (mx - ox) * Math.cos(r) - (my - oy) * Math.sin(r) + ox;
@@ -448,21 +487,68 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
   }
 
-  map2me(pointerX: number, pointerY: number): IVector {
-    const { r, x, y, w, h } = this.data
-    if (!r) return { x: pointerX, y: pointerY }
-    const x2 = x + w / 2
-    const y2 = y + h / 2
+  /**
+   * 世界坐标系坐标　转换　本图坐标系坐标
+   * @param x 世界坐标系X坐标
+   * @param y 世界坐标系Y坐标
+   * @returns 本图坐标系 坐标
+   */
+  map2me(x: number, y: number): Vector;
+
+  /**
+   * 世界坐标系坐标　转换　本图坐标系坐标
+   * @param v 世界坐标系坐标
+   * @returns 本图坐标系 坐标
+   */
+  map2me(v: IVector): Vector;
+
+  map2me(arg0: number | IVector, arg1?: number): Vector {
+    const ix = isNum(arg0) ? arg0 : arg0.x
+    const iy = isNum(arg0) ? arg1! : arg0.y
+    const { r, x, y } = this.data
+    if (!r) return new Vector(ix - x, iy - y)
+    const mx = this.midX
+    const my = this.midY
     const cr = Math.cos(-r)
     const sr = Math.sin(-r)
-    const dx = pointerX - x2
-    const dy = pointerY - y2
-    return {
-      x: dx * cr - dy * sr + x2,
-      y: dx * sr + dy * cr + y2
-    }
+    const dx = ix - mx
+    const dy = iy - my
+    return new Vector(
+      dx * cr - dy * sr + mx - x,
+      dx * sr + dy * cr + my - y
+    )
   }
 
+  /**
+   * 本图坐标系坐标 转换 世界坐标系坐标
+   * @param x 本图坐标系X坐标
+   * @param y 本图坐标系Y坐标
+   * @returns 世界坐标系坐标
+   */
+  map2world(x: number, y: number): Vector;
+
+  /**
+   * 本图坐标系坐标 转换 世界坐标系坐标 
+   * @param v 本图坐标系坐标
+   * @returns 世界坐标系坐标
+   */
+  map2world(v: IVector): Vector;
+  map2world(arg0: number | IVector, arg1?: number): IVector {
+    const ix = isNum(arg0) ? arg0 : arg0.x
+    const iy = isNum(arg0) ? arg1! : arg0.y
+    const { r, x, y, w, h } = this.data
+    if (!r) return { x: ix + x, y: iy + y }
+    const mx = w / 2
+    const my = h / 2
+    const cr = Math.cos(r)
+    const sr = Math.sin(r)
+    const dx = ix - mx
+    const dy = iy - my
+    return {
+      x: dx * cr - dy * sr + mx + x,
+      y: dx * sr + dy * cr + my + y
+    }
+  }
   resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
     if (!this.selected || !this._resizable || this.ghost || this.locked) {
       return [ResizeDirection.None, undefined];

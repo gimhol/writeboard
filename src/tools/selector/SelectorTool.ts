@@ -30,8 +30,8 @@ export class SelectorTool implements ITool {
   private _rectHelper = new RectHelper()
   private _status = SelectorStatus.Invalid
   private _prevPos: IVector = { x: 0, y: 0 }
-  private _resizerDirection?: ResizeDirection
-  private _resizerRect?: Rect;
+  private _resizerDirection = ResizeDirection.None
+  private _resizerAnchor: IVector = { x: 0, y: 0 }
   private _resizingShape?: Shape;
   private _resizerOffset: IVector = { x: 0, y: 0 }
   private _windowPointerDown = () => this.deselect();
@@ -139,44 +139,51 @@ export class SelectorTool implements ITool {
       board.setSelects([shape], true)
     } else {
       // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
-      const dot = shape.map2me(x, y)
+      const dot = shape.map2me(x, y).plus(shape.data)
       const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
       if (direction) {
         this._resizerDirection = direction;
-        this._resizerRect = resizerRect;
         this._resizingShape = shape
         switch (direction) {
           case ResizeDirection.Top:
             this._resizerOffset.x = 0
             this._resizerOffset.y = resizerRect!.top - dot.y
+            this._resizerAnchor = shape.rotatedMidBottom;
             break
           case ResizeDirection.Bottom:
             this._resizerOffset.x = 0
             this._resizerOffset.y = resizerRect!.bottom - dot.y
+            this._resizerAnchor = shape.rotatedMidTop;
             break
           case ResizeDirection.Left:
             this._resizerOffset.x = resizerRect!.left - dot.x
             this._resizerOffset.y = 0
+            this._resizerAnchor = shape.rotatedMidRight;
             break
           case ResizeDirection.Right:
             this._resizerOffset.x = resizerRect!.right - dot.x
             this._resizerOffset.y = 0
+            this._resizerAnchor = shape.rotatedMidLeft;
             break
           case ResizeDirection.TopLeft:
             this._resizerOffset.x = resizerRect!.left - dot.x
             this._resizerOffset.y = resizerRect!.top - dot.y
+            this._resizerAnchor = shape.rotatedBottomRight;
             break
           case ResizeDirection.TopRight:
             this._resizerOffset.x = resizerRect!.right - dot.x
             this._resizerOffset.y = resizerRect!.top - dot.y
+            this._resizerAnchor = shape.rotatedBottomLeft;
             break
           case ResizeDirection.BottomLeft:
             this._resizerOffset.x = resizerRect!.left - dot.x
             this._resizerOffset.y = resizerRect!.bottom - dot.y
+            this._resizerAnchor = shape.rotatedTopRight;
             break
           case ResizeDirection.BottomRight:
             this._resizerOffset.x = resizerRect!.right - dot.x
             this._resizerOffset.y = resizerRect!.bottom - dot.y
+            this._resizerAnchor = shape.rotatedTopLeft;
             break
         }
         this._status = SelectorStatus.ReadyForResizing;
@@ -190,15 +197,17 @@ export class SelectorTool implements ITool {
 
   pointerMove(dot: IDot): void {
     const result = Arrays.find(this.board.selects, it => {
-      const { x, y } = it.map2me(dot.x, dot.y)
+      const { x, y } = it.map2me(dot.x, dot.y).plus(it.data)
       const [direction] = it.resizeDirection(x, y)
-      if (direction != ResizeDirection.None) return [direction, it.rotation] as const
+      if (direction != ResizeDirection.None) return [direction, it] as const
     })
-    let cursor: string = ''; 
+    let cursor: string = '';
     if (result) {
-      let [direction, deg] = result;
+      const [direction, shape] = result;
+      let { rotation: deg } = shape
+      const { x, y } = shape.map2me(dot.x, dot.y).plus(shape.data)
       deg = Degrees.normalized(deg + (direction - 1) * 0.25 * Math.PI);
-      switch (Math.floor((25 + Degrees.angle(deg)) / 45)) {
+      switch (Math.floor((25 + Degrees.angle(deg)) / 45) % 8) {
         case 0: case 4: cursor = 'ns-resize'; break;
         case 2: case 6: cursor = 'ew-resize'; break;
         case 3: case 7: cursor = 'nw-resize'; break;
@@ -236,37 +245,37 @@ export class SelectorTool implements ITool {
         const geo = shape.getGeo()
         const rs = board.factory.resizer.size
         const { y: roy, x: rox } = this._resizerOffset
-        const { x, y } = shape.map2me(dot.x, dot.y)
+        const { x, y } = shape.map2me(dot.x, dot.y).plus(shape)
         {
           const { left: l, right: r, bottom: b, top: t } = geo
           switch (this._resizerDirection) {
             case ResizeDirection.Top:
-              geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
+              geo.top = Math.min(roy + y, b - rs * 2)
               break
             case ResizeDirection.Bottom:
-              geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
+              geo.bottom = Math.max(roy + y, t + rs * 2)
               break
             case ResizeDirection.Left:
-              geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+              geo.left = Math.min(rox + x, r - rs * 2)
               break
             case ResizeDirection.Right:
-              geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+              geo.right = Math.max(rox + x, l + rs * 2)
               break
             case ResizeDirection.TopLeft:
-              geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
-              geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+              geo.top = Math.min(roy + y, b - rs * 2)
+              geo.left = Math.min(rox + x, r - rs * 2)
               break
             case ResizeDirection.TopRight:
-              geo.top = Math.floor(Math.min(roy + y, b - rs * 2))
-              geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+              geo.top = Math.min(roy + y, b - rs * 2)
+              geo.right = Math.max(rox + x, l + rs * 2)
               break
             case ResizeDirection.BottomLeft:
-              geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
-              geo.left = Math.floor(Math.min(rox + x, r - rs * 2))
+              geo.bottom = Math.max(roy + y, t + rs * 2)
+              geo.left = Math.min(rox + x, r - rs * 2)
               break
             case ResizeDirection.BottomRight:
-              geo.bottom = Math.ceil(Math.max(roy + y, t + rs * 2))
-              geo.right = Math.ceil(Math.max(rox + x, l + rs * 2))
+              geo.bottom = Math.max(roy + y, t + rs * 2)
+              geo.right = Math.max(rox + x, l + rs * 2)
               break
           }
         }
@@ -275,60 +284,79 @@ export class SelectorTool implements ITool {
         const { x: x1, y: y1, w: w1, h: h1 } = shape.data
         const { x: bx1, y: by1, w: bw1, h: bh1 } = shape.boundingRect()
         shape.markDirty()
-        shape.data.x = geo.x
-        shape.data.y = geo.y
-        shape.data.w = geo.w
-        shape.data.h = geo.h
-        const { x: x2, y: y2, w: w2, h: h2 } = shape.data
-        const { x: bx2, y: by2, w: bw2, h: bh2 } = shape.boundingRect()
+        // shape.data.x = geo.x
+        // shape.data.y = geo.y
+        // shape.data.w = geo.w
+        // shape.data.h = geo.h
+        // const { x: x2, y: y2, w: w2, h: h2 } = shape.data
+        // const { x: bx2, y: by2, w: bw2, h: bh2 } = shape.boundingRect()
+
+        console.log('achor: ', this._resizerAnchor)
+        direction = Degrees.normalized(degree + (this._resizerDirection - 1) * 0.25 * Math.PI);
+
+        let midX = 0
+        let midY = 0
+        const sr = Math.sin(degree)
+        const cr = Math.cos(degree)
         switch (this._resizerDirection) {
           case ResizeDirection.Top:
-            direction = Degrees.normalized(direction)
+            midX = this._resizerAnchor.x + sr * geo.h / 2
+            midY = this._resizerAnchor.y - cr * geo.h / 2
             break
           case ResizeDirection.Bottom:
-            direction = Degrees.normalized(direction + Math.PI)
-            break
-          case ResizeDirection.Left:
-            direction = Degrees.normalized(direction - Math.PI * 0.50)
+            midX = this._resizerAnchor.x - sr * geo.h / 2
+            midY = this._resizerAnchor.y + cr * geo.h / 2
             break
           case ResizeDirection.Right:
-            direction = Degrees.normalized(direction + Math.PI * 0.50)
+            midX = this._resizerAnchor.x + cr * geo.w / 2
+            midY = this._resizerAnchor.y + sr * geo.w / 2
             break
-          case ResizeDirection.TopLeft:
-            direction = Degrees.normalized(direction - Math.PI * 0.25)
+          case ResizeDirection.Left: {
+            midX = this._resizerAnchor.x - cr * geo.w / 2
+            midY = this._resizerAnchor.y - sr * geo.w / 2
+          }
+          case ResizeDirection.TopRight: {
+            const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h)
+            const s = degree - Math.atan2(geo.h, geo.w)
+            const sr = Math.sin(s)
+            const cr = Math.cos(s)
+            midX = this._resizerAnchor.x + cr * l / 2
+            midY = this._resizerAnchor.y + sr * l / 2
             break
-          case ResizeDirection.TopRight:
-            direction = Degrees.normalized(direction + Math.PI * 0.25)
+          }
+          case ResizeDirection.BottomLeft: {
+            const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h)
+            const s = degree - Math.atan2(geo.h, geo.w)
+            const sr = Math.sin(s)
+            const cr = Math.cos(s)
+            midX = this._resizerAnchor.x - cr * l / 2
+            midY = this._resizerAnchor.y - sr * l / 2
             break
-          case ResizeDirection.BottomLeft:
-            direction = Degrees.normalized(direction - Math.PI * 0.75)
+          }
+          case ResizeDirection.TopLeft: {
+            const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h)
+            const s = degree + Math.atan2(geo.h, geo.w)
+            const sr = Math.sin(s)
+            const cr = Math.cos(s)
+            midX = this._resizerAnchor.x - cr * l / 2
+            midY = this._resizerAnchor.y - sr * l / 2
             break
-          case ResizeDirection.BottomRight:
-            direction = Degrees.normalized(direction + Math.PI * 0.75)
+          }
+          case ResizeDirection.BottomRight: {
+            const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h)
+            const s = degree + Math.atan2(geo.h, geo.w)
+            const sr = Math.sin(s)
+            const cr = Math.cos(s)
+            midX = this._resizerAnchor.x + cr * l / 2
+            midY = this._resizerAnchor.y + sr * l / 2
             break
+          }
         }
-        if (Numbers.equals(0, direction)) {
-        } else if (Numbers.equals(Math.PI * 0.5, direction)) {
-          shape.data.x += bx1 - bx2
-          shape.data.y += by1 - by2
-        } else if (Numbers.equals(Math.PI * 1.0, direction)) {
-          shape.data.y += by1 - by2
-        } else if (Numbers.equals(Math.PI * 1.5, direction)) {
-          shape.data.x += (bx1 + bw1) - (bx2 + bw2)
-          shape.data.y += by1 - by2
-        } else if (direction < Math.PI * 0.5) {
-          shape.data.x += bx1 - bx2
-          shape.data.y += (by1 + bh1) - (by2 + bh2)// + Math.cos(degree) * (h1 - h2)
-        } else if (direction < Math.PI * 1.0) {
-          shape.data.x += bx1 - bx2
-          shape.data.y += by1 - by2
-        } else if (direction < Math.PI * 1.5) {
-          shape.data.x += (bx1 + bw1) - (bx2 + bw2)
-          shape.data.y += by1 - by2
-        } else {
-          shape.data.x += (bx1 + bw1) - (bx2 + bw2)
-          shape.data.y += (by1 + bh1) - (by2 + bh2)
-        }
+
+        shape.data.x = midX - geo.w / 2
+        shape.data.y = midY - geo.h / 2
+        shape.data.w = geo.w
+        shape.data.h = geo.h
         shape.markDirty()
         this.emitGeoEvent(false)
         return
