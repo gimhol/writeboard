@@ -1,7 +1,7 @@
-import type { IRect } from "./Rect";
+import { Rect, type IRect } from "./Rect";
 import { Vector, type IVector } from "./Vector";
 
-export interface IRotatedRect extends IRect { r: number }
+export interface IRotatedRect extends IRect { r?: number }
 export class RotatedRect implements IRotatedRect {
   x: number
   y: number
@@ -57,7 +57,7 @@ export class RotatedRect implements IRotatedRect {
     this.y = o.y
     this.w = o.w
     this.h = o.h
-    this.r = o.r
+    this.r = o.r || 0
     return this
   }
 
@@ -87,9 +87,10 @@ export class RotatedRect implements IRotatedRect {
     return { x, y, w, h, r };
   }
 
-  static hit(a: IRotatedRect | IRect, b: IRotatedRect | IRect): boolean {
-    const realA = a instanceof RotatedRect ? a : new RotatedRect(a.x, a.y, a.w, a.h, (a as any).r || 0)
-    const realB = b instanceof RotatedRect ? b : new RotatedRect(b.x, b.y, b.w, b.h, (b as any).r || 0)
+  static hit(a: IRotatedRect, b: IRotatedRect): boolean {
+    if (!a.r && !b.r) return Rect.hit(a, b)
+    const realA = a instanceof RotatedRect ? a : new RotatedRect(a.x, a.y, a.w, a.h, a.r)
+    const realB = b instanceof RotatedRect ? b : new RotatedRect(b.x, b.y, b.w, b.h, b.r)
     const centerDistanceVertor = { x: realA.middleX - realB.middleX, y: realA.middleY - realB.middleY };
     const axes = [realA._axisX, realA._axisY, realB._axisX, realB._axisY];
     for (let i = 0, len = axes.length; i < len; i++) {

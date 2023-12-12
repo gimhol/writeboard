@@ -7194,6 +7194,7 @@ exports.RectHelper = RectHelper;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RotatedRect = void 0;
+const Rect_1 = require("./Rect");
 const Vector_1 = require("./Vector");
 class RotatedRect {
     get axisX() { return this._axisX; }
@@ -7245,7 +7246,7 @@ class RotatedRect {
         this.y = o.y;
         this.w = o.w;
         this.h = o.h;
-        this.r = o.r;
+        this.r = o.r || 0;
         return this;
     }
     hit(b) {
@@ -7269,8 +7270,10 @@ class RotatedRect {
         return { x, y, w, h, r };
     }
     static hit(a, b) {
-        const realA = a instanceof RotatedRect ? a : new RotatedRect(a.x, a.y, a.w, a.h, a.r || 0);
-        const realB = b instanceof RotatedRect ? b : new RotatedRect(b.x, b.y, b.w, b.h, b.r || 0);
+        if (!a.r && !b.r)
+            return Rect_1.Rect.hit(a, b);
+        const realA = a instanceof RotatedRect ? a : new RotatedRect(a.x, a.y, a.w, a.h, a.r);
+        const realB = b instanceof RotatedRect ? b : new RotatedRect(b.x, b.y, b.w, b.h, b.r);
         const centerDistanceVertor = { x: realA.middleX - realB.middleX, y: realA.middleY - realB.middleY };
         const axes = [realA._axisX, realA._axisY, realB._axisX, realB._axisY];
         for (let i = 0, len = axes.length; i < len; i++) {
@@ -7292,7 +7295,7 @@ class RotatedRect {
 }
 exports.RotatedRect = RotatedRect;
 
-},{"./Vector":104}],104:[function(require,module,exports){
+},{"./Rect":101,"./Vector":104}],104:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
