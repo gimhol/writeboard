@@ -2,7 +2,6 @@ export namespace Numbers {
   export function equals(a: number, b: number) {
     return Math.abs(a - b) <= Number.EPSILON
   }
-
 }
 export namespace Degrees {
   export function normalized(v: number): number

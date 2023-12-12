@@ -6352,110 +6352,50 @@ class SelectorTool {
                 const rs = board.factory.resizer.size;
                 const { y: roy, x: rox } = this._resizerOffset;
                 const { x, y } = shape.map2me(dot.x, dot.y).plus(shape);
-                {
-                    const { left: l, right: r, bottom: b, top: t } = geo;
-                    switch (this._resizerDirection) {
-                        case base_1.ResizeDirection.Top:
-                            geo.top = Math.min(roy + y, b - rs * 2);
-                            break;
-                        case base_1.ResizeDirection.Bottom:
-                            geo.bottom = Math.max(roy + y, t + rs * 2);
-                            break;
-                        case base_1.ResizeDirection.Left:
-                            geo.left = Math.min(rox + x, r - rs * 2);
-                            break;
-                        case base_1.ResizeDirection.Right:
-                            geo.right = Math.max(rox + x, l + rs * 2);
-                            break;
-                        case base_1.ResizeDirection.TopLeft:
-                            geo.top = Math.min(roy + y, b - rs * 2);
-                            geo.left = Math.min(rox + x, r - rs * 2);
-                            break;
-                        case base_1.ResizeDirection.TopRight:
-                            geo.top = Math.min(roy + y, b - rs * 2);
-                            geo.right = Math.max(rox + x, l + rs * 2);
-                            break;
-                        case base_1.ResizeDirection.BottomLeft:
-                            geo.bottom = Math.max(roy + y, t + rs * 2);
-                            geo.left = Math.min(rox + x, r - rs * 2);
-                            break;
-                        case base_1.ResizeDirection.BottomRight:
-                            geo.bottom = Math.max(roy + y, t + rs * 2);
-                            geo.right = Math.max(rox + x, l + rs * 2);
-                            break;
-                    }
-                }
-                const degree = (_a = shape.data.r) !== null && _a !== void 0 ? _a : 0;
-                let direction = degree;
-                const { x: x1, y: y1, w: w1, h: h1 } = shape.data;
-                const { x: bx1, y: by1, w: bw1, h: bh1 } = shape.boundingRect();
-                shape.markDirty();
-                // shape.data.x = geo.x
-                // shape.data.y = geo.y
-                // shape.data.w = geo.w
-                // shape.data.h = geo.h
-                // const { x: x2, y: y2, w: w2, h: h2 } = shape.data
-                // const { x: bx2, y: by2, w: bw2, h: bh2 } = shape.boundingRect()
-                console.log('achor: ', this._resizerAnchor);
-                direction = utils_1.Degrees.normalized(degree + (this._resizerDirection - 1) * 0.25 * Math.PI);
-                let midX = 0;
-                let midY = 0;
-                const sr = Math.sin(degree);
-                const cr = Math.cos(degree);
+                const { left: l, right: r, bottom: b, top: t } = geo;
                 switch (this._resizerDirection) {
                     case base_1.ResizeDirection.Top:
-                        midX = this._resizerAnchor.x + sr * geo.h / 2;
-                        midY = this._resizerAnchor.y - cr * geo.h / 2;
+                        geo.top = Math.min(roy + y, b - rs * 2);
                         break;
                     case base_1.ResizeDirection.Bottom:
-                        midX = this._resizerAnchor.x - sr * geo.h / 2;
-                        midY = this._resizerAnchor.y + cr * geo.h / 2;
+                        geo.bottom = Math.max(roy + y, t + rs * 2);
+                        break;
+                    case base_1.ResizeDirection.Left:
+                        geo.left = Math.min(rox + x, r - rs * 2);
                         break;
                     case base_1.ResizeDirection.Right:
-                        midX = this._resizerAnchor.x + cr * geo.w / 2;
-                        midY = this._resizerAnchor.y + sr * geo.w / 2;
+                        geo.right = Math.max(rox + x, l + rs * 2);
                         break;
-                    case base_1.ResizeDirection.Left: {
-                        midX = this._resizerAnchor.x - cr * geo.w / 2;
-                        midY = this._resizerAnchor.y - sr * geo.w / 2;
-                    }
-                    case base_1.ResizeDirection.TopRight: {
-                        const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h);
-                        const s = degree - Math.atan2(geo.h, geo.w);
-                        const sr = Math.sin(s);
-                        const cr = Math.cos(s);
-                        midX = this._resizerAnchor.x + cr * l / 2;
-                        midY = this._resizerAnchor.y + sr * l / 2;
+                    case base_1.ResizeDirection.TopLeft:
+                        geo.top = Math.min(roy + y, b - rs * 2);
+                        geo.left = Math.min(rox + x, r - rs * 2);
                         break;
-                    }
-                    case base_1.ResizeDirection.BottomLeft: {
-                        const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h);
-                        const s = degree - Math.atan2(geo.h, geo.w);
-                        const sr = Math.sin(s);
-                        const cr = Math.cos(s);
-                        midX = this._resizerAnchor.x - cr * l / 2;
-                        midY = this._resizerAnchor.y - sr * l / 2;
+                    case base_1.ResizeDirection.TopRight:
+                        geo.top = Math.min(roy + y, b - rs * 2);
+                        geo.right = Math.max(rox + x, l + rs * 2);
                         break;
-                    }
-                    case base_1.ResizeDirection.TopLeft: {
-                        const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h);
-                        const s = degree + Math.atan2(geo.h, geo.w);
-                        const sr = Math.sin(s);
-                        const cr = Math.cos(s);
-                        midX = this._resizerAnchor.x - cr * l / 2;
-                        midY = this._resizerAnchor.y - sr * l / 2;
+                    case base_1.ResizeDirection.BottomLeft:
+                        geo.bottom = Math.max(roy + y, t + rs * 2);
+                        geo.left = Math.min(rox + x, r - rs * 2);
                         break;
-                    }
-                    case base_1.ResizeDirection.BottomRight: {
-                        const l = Math.sqrt(geo.w * geo.w + geo.h * geo.h);
-                        const s = degree + Math.atan2(geo.h, geo.w);
-                        const sr = Math.sin(s);
-                        const cr = Math.cos(s);
-                        midX = this._resizerAnchor.x + cr * l / 2;
-                        midY = this._resizerAnchor.y + sr * l / 2;
+                    case base_1.ResizeDirection.BottomRight:
+                        geo.bottom = Math.max(roy + y, t + rs * 2);
+                        geo.right = Math.max(rox + x, l + rs * 2);
                         break;
-                    }
                 }
+                shape.markDirty();
+                const degree = (_a = shape.data.r) !== null && _a !== void 0 ? _a : 0;
+                const rd = this._resizerDirection - 1;
+                const beveling = (rd == 0 || rd == 4) ? geo.h : (rd == 2 || rd == 6) ? geo.w : Math.sqrt(geo.w * geo.w + geo.h * geo.h);
+                let deg = degree + Math.PI * rd / 4;
+                if (rd == 1 || rd == 5)
+                    deg += Math.atan2(geo.w, geo.h) - Math.PI / 4;
+                else if (rd == 3 || rd == 7)
+                    deg += Math.atan2(geo.h, geo.w) - Math.PI / 4;
+                const sinV = Math.sin(deg);
+                const cosV = Math.cos(deg);
+                const midX = this._resizerAnchor.x + sinV * beveling / 2;
+                const midY = this._resizerAnchor.y - cosV * beveling / 2;
                 shape.data.x = midX - geo.w / 2;
                 shape.data.y = midY - geo.h / 2;
                 shape.data.w = geo.w;
