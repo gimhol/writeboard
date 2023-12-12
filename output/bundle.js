@@ -2186,7 +2186,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":23,"../shape":55,"../tools":90,"../utils":106,"./Layer":18}],18:[function(require,module,exports){
+},{"../event":23,"../shape":55,"../tools":90,"../utils":107,"./Layer":18}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2260,7 +2260,7 @@ class Layer {
 }
 exports.Layer = Layer;
 
-},{"../utils/Css":96}],19:[function(require,module,exports){
+},{"../utils/Css":97}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultShapeDecoration = void 0;
@@ -3019,7 +3019,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":20,"./features":29,"./mgr":37,"./shape":55,"./tools":90,"./utils":106}],33:[function(require,module,exports){
+},{"./board":20,"./features":29,"./mgr":37,"./shape":55,"./tools":90,"./utils":107}],33:[function(require,module,exports){
 "use strict";
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
@@ -3143,7 +3143,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":20,"../board/ShapeDecoration":19,"../fonts/builtInFontFamilies":30,"../fonts/checker":31,"../shape/base/Data":39,"../shape/base/Shape":40,"../tools/base/InvalidTool":86,"../utils/helper":105,"./FactoryEnum":34,"./Gaia":35,"./ShapesMgr":36}],34:[function(require,module,exports){
+},{"../board":20,"../board/ShapeDecoration":19,"../fonts/builtInFontFamilies":30,"../fonts/checker":31,"../shape/base/Data":39,"../shape/base/Shape":40,"../tools/base/InvalidTool":86,"../utils/helper":106,"./FactoryEnum":34,"./Gaia":35,"./ShapesMgr":36}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -3333,7 +3333,7 @@ class DefaultShapesMgr {
 }
 exports.DefaultShapesMgr = DefaultShapesMgr;
 
-},{"../utils/RotatedRect":103}],37:[function(require,module,exports){
+},{"../utils/RotatedRect":104}],37:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3605,7 +3605,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../../utils":106,"../../utils/helper":105,"../ShapeEnum":38}],40:[function(require,module,exports){
+},{"../../utils":107,"../../utils/helper":106,"../ShapeEnum":38}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
@@ -4090,7 +4090,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":101,"../../utils/Vector":104,"../../utils/helper":105}],41:[function(require,module,exports){
+},{"../../utils/Rect":102,"../../utils/Vector":105,"../../utils/helper":106}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -4336,7 +4336,7 @@ class ImgData extends base_1.ShapeData {
 }
 exports.ImgData = ImgData;
 
-},{"../../utils/helper":105,"../ShapeEnum":38,"../base":42}],52:[function(require,module,exports){
+},{"../../utils/helper":106,"../ShapeEnum":38,"../base":42}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -5382,7 +5382,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../../utils/helper":105,"../ShapeEnum":38,"../base":42}],77:[function(require,module,exports){
+},{"../../utils/helper":106,"../ShapeEnum":38,"../base":42}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -5564,7 +5564,7 @@ class ShapeText extends base_1.Shape {
 exports.ShapeText = ShapeText;
 Gaia_1.Gaia.registerShape(ShapeEnum_1.ShapeEnum.Text, () => new Data_1.TextData, d => new ShapeText(d));
 
-},{"../../mgr/Gaia":35,"../../utils/Rect":101,"../ShapeEnum":38,"../base":42,"./Data":76,"./TextSelection":78}],78:[function(require,module,exports){
+},{"../../mgr/Gaia":35,"../../utils/Rect":102,"../ShapeEnum":38,"../base":42,"./Data":76,"./TextSelection":78}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextSelection = void 0;
@@ -5758,7 +5758,7 @@ class TextTool {
 exports.TextTool = TextTool;
 Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Text, () => new TextTool, { name: 'Text', desc: 'enter some text', shape: ShapeEnum_1.ShapeEnum.Text });
 
-},{"../../event":23,"../../mgr/Gaia":35,"../../tools/ToolEnum":85,"../../utils/Css":96,"../ShapeEnum":38}],80:[function(require,module,exports){
+},{"../../event":23,"../../mgr/Gaia":35,"../../tools/ToolEnum":85,"../../utils/Css":97,"../ShapeEnum":38}],80:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6048,7 +6048,7 @@ class SimpleTool {
 }
 exports.SimpleTool = SimpleTool;
 
-},{"../../event":23,"../../utils/RectHelper":102}],88:[function(require,module,exports){
+},{"../../event":23,"../../utils/RectHelper":103}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -6094,21 +6094,22 @@ __exportStar(require("./base"), exports);
 __exportStar(require("./selector"), exports);
 __exportStar(require("./ToolEnum"), exports);
 
-},{"./ToolEnum":85,"./base":89,"./selector":92}],91:[function(require,module,exports){
+},{"./ToolEnum":85,"./base":89,"./selector":93}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectorTool = exports.SelectorStatus = void 0;
-const RectHelper_1 = require("../../utils/RectHelper");
-const Data_1 = require("../../shape/base/Data");
-const Gaia_1 = require("../../mgr/Gaia");
-const Shape_1 = require("../../shape/rect/Shape");
-const ToolEnum_1 = require("../ToolEnum");
-const base_1 = require("../../shape/base");
-const Vector_1 = require("../../utils/Vector");
-const Events_1 = require("../../event/Events");
 const event_1 = require("../../event");
+const Events_1 = require("../../event/Events");
+const Gaia_1 = require("../../mgr/Gaia");
 const shape_1 = require("../../shape");
+const base_1 = require("../../shape/base");
+const Data_1 = require("../../shape/base/Data");
+const Shape_1 = require("../../shape/rect/Shape");
 const utils_1 = require("../../utils");
+const RectHelper_1 = require("../../utils/RectHelper");
+const Vector_1 = require("../../utils/Vector");
+const ToolEnum_1 = require("../ToolEnum");
+const ShapeRotater_1 = require("./ShapeRotater");
 var SelectorStatus;
 (function (SelectorStatus) {
     SelectorStatus[SelectorStatus["Invalid"] = 0] = "Invalid";
@@ -6122,27 +6123,35 @@ var SelectorStatus;
 const Tag = '[SelectorTool]';
 class SelectorTool {
     get type() { return ToolEnum_1.ToolEnum.Selector; }
-    get board() { return this._rect.board; }
-    set board(v) { this._rect.board = v; }
+    get board() { return this._selector.board; }
+    set board(v) {
+        this._selector.board = v;
+        this._rotater.board = v;
+    }
     get rect() { return this._rectHelper; }
     constructor() {
         this._doubleClickTimer = 0;
-        this._rect = new Shape_1.ShapeRect(new Data_1.ShapeData);
+        this._selector = new Shape_1.ShapeRect(new Data_1.ShapeData);
         this._rectHelper = new RectHelper_1.RectHelper();
         this._status = SelectorStatus.Invalid;
         this._prevPos = { x: 0, y: 0 };
-        this._resizerDirection = base_1.ResizeDirection.None;
-        this._resizerAnchor = { x: 0, y: 0 };
-        this._resizerOffset = { x: 0, y: 0 };
+        this._resizer = {
+            direction: base_1.ResizeDirection.None,
+            anchor: { x: 0, y: 0 },
+            offset: { x: 0, y: 0 },
+            shape: null
+        };
+        this._rotater = new ShapeRotater_1.ShapeRotater();
         this._windowPointerDown = () => this.deselect();
         this._shapes = [];
         this._waiting = false;
-        this._rect.data.lineWidth = 2;
-        this._rect.data.strokeStyle = '#003388FF';
-        this._rect.data.fillStyle = '#00338855';
+        this._selector.data.lineWidth = 2;
+        this._selector.data.strokeStyle = '#003388FF';
+        this._selector.data.fillStyle = '#00338855';
     }
     render(ctx) {
-        this._rect.render(ctx);
+        this._selector.render(ctx);
+        this._rotater.render(ctx);
     }
     start() {
         this.board.element.style.cursor = '';
@@ -6171,9 +6180,9 @@ class SelectorTool {
                 w: v.data.w,
                 h: v.data.h,
             };
-            if (startX === undefined) {
-                x = x === undefined ? v.data.x : Math.min(x, v.data.x);
-                y = y === undefined ? v.data.y : Math.min(y, v.data.y);
+            if (startX === void 0) {
+                x = x === void 0 ? v.data.x : Math.min(x, v.data.x);
+                y = y === void 0 ? v.data.y : Math.min(y, v.data.y);
             }
             return {
                 shape: v,
@@ -6204,18 +6213,11 @@ class SelectorTool {
         const { x, y } = dot;
         this._rectHelper.start(x, y);
         this.updateGeo();
-        const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
-        let shape;
-        for (let i = 0; i < shapes.length; ++i) { // 找到距离用户最近的未锁定图形
-            if (!shapes[i].locked) {
-                shape = shapes[i];
-                break;
-            }
-        }
+        const shape = board.hits({ x, y, w: 0, h: 0 })[0]; // 点击位置的全部图形
         if (!shape || shape.locked) {
             // 点击的位置无任何未锁定图形，则框选图形, 并取消选择以选择的图形
             this._status = SelectorStatus.ReadyForSelecting;
-            this._rect.visible = true;
+            this._selector.visible = true;
             this.deselect();
         }
         else if (!shape.selected) {
@@ -6228,48 +6230,48 @@ class SelectorTool {
             const dot = shape.map2me(x, y).plus(shape.data);
             const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
             if (direction) {
-                this._resizerDirection = direction;
-                this._resizingShape = shape;
+                this._resizer.direction = direction;
+                this._resizer.shape = shape;
                 switch (direction) {
                     case base_1.ResizeDirection.Top:
-                        this._resizerOffset.x = 0;
-                        this._resizerOffset.y = resizerRect.top - dot.y;
-                        this._resizerAnchor = shape.rotatedMidBottom;
+                        this._resizer.offset.x = 0;
+                        this._resizer.offset.y = resizerRect.top - dot.y;
+                        this._resizer.anchor = shape.rotatedMidBottom;
                         break;
                     case base_1.ResizeDirection.Bottom:
-                        this._resizerOffset.x = 0;
-                        this._resizerOffset.y = resizerRect.bottom - dot.y;
-                        this._resizerAnchor = shape.rotatedMidTop;
+                        this._resizer.offset.x = 0;
+                        this._resizer.offset.y = resizerRect.bottom - dot.y;
+                        this._resizer.anchor = shape.rotatedMidTop;
                         break;
                     case base_1.ResizeDirection.Left:
-                        this._resizerOffset.x = resizerRect.left - dot.x;
-                        this._resizerOffset.y = 0;
-                        this._resizerAnchor = shape.rotatedMidRight;
+                        this._resizer.offset.x = resizerRect.left - dot.x;
+                        this._resizer.offset.y = 0;
+                        this._resizer.anchor = shape.rotatedMidRight;
                         break;
                     case base_1.ResizeDirection.Right:
-                        this._resizerOffset.x = resizerRect.right - dot.x;
-                        this._resizerOffset.y = 0;
-                        this._resizerAnchor = shape.rotatedMidLeft;
+                        this._resizer.offset.x = resizerRect.right - dot.x;
+                        this._resizer.offset.y = 0;
+                        this._resizer.anchor = shape.rotatedMidLeft;
                         break;
                     case base_1.ResizeDirection.TopLeft:
-                        this._resizerOffset.x = resizerRect.left - dot.x;
-                        this._resizerOffset.y = resizerRect.top - dot.y;
-                        this._resizerAnchor = shape.rotatedBottomRight;
+                        this._resizer.offset.x = resizerRect.left - dot.x;
+                        this._resizer.offset.y = resizerRect.top - dot.y;
+                        this._resizer.anchor = shape.rotatedBottomRight;
                         break;
                     case base_1.ResizeDirection.TopRight:
-                        this._resizerOffset.x = resizerRect.right - dot.x;
-                        this._resizerOffset.y = resizerRect.top - dot.y;
-                        this._resizerAnchor = shape.rotatedBottomLeft;
+                        this._resizer.offset.x = resizerRect.right - dot.x;
+                        this._resizer.offset.y = resizerRect.top - dot.y;
+                        this._resizer.anchor = shape.rotatedBottomLeft;
                         break;
                     case base_1.ResizeDirection.BottomLeft:
-                        this._resizerOffset.x = resizerRect.left - dot.x;
-                        this._resizerOffset.y = resizerRect.bottom - dot.y;
-                        this._resizerAnchor = shape.rotatedTopRight;
+                        this._resizer.offset.x = resizerRect.left - dot.x;
+                        this._resizer.offset.y = resizerRect.bottom - dot.y;
+                        this._resizer.anchor = shape.rotatedTopRight;
                         break;
                     case base_1.ResizeDirection.BottomRight:
-                        this._resizerOffset.x = resizerRect.right - dot.x;
-                        this._resizerOffset.y = resizerRect.bottom - dot.y;
-                        this._resizerAnchor = shape.rotatedTopLeft;
+                        this._resizer.offset.x = resizerRect.right - dot.x;
+                        this._resizer.offset.y = resizerRect.bottom - dot.y;
+                        this._resizer.anchor = shape.rotatedTopLeft;
                         break;
                 }
                 this._status = SelectorStatus.ReadyForResizing;
@@ -6292,7 +6294,6 @@ class SelectorTool {
         if (result) {
             const [direction, shape] = result;
             let { rotation: deg } = shape;
-            const { x, y } = shape.map2me(dot.x, dot.y).plus(shape.data);
             deg = utils_1.Degrees.normalized(deg + (direction - 1) * 0.25 * Math.PI);
             switch (Math.floor((25 + utils_1.Degrees.angle(deg)) / 45) % 8) {
                 case 0:
@@ -6329,7 +6330,7 @@ class SelectorTool {
             case SelectorStatus.Selecting: {
                 this._rectHelper.end(dot.x, dot.y);
                 this.updateGeo();
-                board.selectAt(this._rect.data, true);
+                board.selectAt(this._selector.data, true);
                 return;
             }
             case SelectorStatus.ReadyForDragging: // let it fall-through
@@ -6347,13 +6348,15 @@ class SelectorTool {
                 }
                 this._status = SelectorStatus.Resizing;
             case SelectorStatus.Resizing: {
-                const shape = this._resizingShape;
+                const { shape, offset, anchor, direction } = this._resizer;
+                if (!shape)
+                    return;
                 const geo = shape.getGeo();
                 const rs = board.factory.resizer.size;
-                const { y: roy, x: rox } = this._resizerOffset;
+                const { y: roy, x: rox } = offset;
                 const { x, y } = shape.map2me(dot.x, dot.y).plus(shape);
                 const { left: l, right: r, bottom: b, top: t } = geo;
-                switch (this._resizerDirection) {
+                switch (direction) {
                     case base_1.ResizeDirection.Top:
                         geo.top = Math.min(roy + y, b - rs * 2);
                         break;
@@ -6385,7 +6388,7 @@ class SelectorTool {
                 }
                 shape.markDirty();
                 const degree = (_a = shape.data.r) !== null && _a !== void 0 ? _a : 0;
-                const rd = this._resizerDirection - 1;
+                const rd = direction - 1;
                 const beveling = (rd == 0 || rd == 4) ? geo.h : (rd == 2 || rd == 6) ? geo.w : Math.sqrt(geo.w * geo.w + geo.h * geo.h);
                 let deg = degree + Math.PI * rd / 4;
                 if (rd == 1 || rd == 5)
@@ -6394,8 +6397,8 @@ class SelectorTool {
                     deg += Math.atan2(geo.h, geo.w) - Math.PI / 4;
                 const sinV = Math.sin(deg);
                 const cosV = Math.cos(deg);
-                const midX = this._resizerAnchor.x + sinV * beveling / 2;
-                const midY = this._resizerAnchor.y - cosV * beveling / 2;
+                const midX = anchor.x + sinV * beveling / 2;
+                const midY = anchor.y - cosV * beveling / 2;
                 shape.data.x = midX - geo.w / 2;
                 shape.data.y = midY - geo.h / 2;
                 shape.data.w = geo.w;
@@ -6421,7 +6424,7 @@ class SelectorTool {
         if (this._status === SelectorStatus.Dragging) {
             this.emitGeoEvent(true);
         }
-        this._rect.visible = false;
+        this._selector.visible = false;
         this._rectHelper.clear();
         this._status = SelectorStatus.Invalid;
     }
@@ -6473,7 +6476,7 @@ class SelectorTool {
     }
     updateGeo() {
         const { x, y, w, h } = this._rectHelper.gen();
-        this._rect.geo(x, y, w, h);
+        this._selector.geo(x, y, w, h);
     }
 }
 exports.SelectorTool = SelectorTool;
@@ -6482,7 +6485,47 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":23,"../../event/Events":22,"../../mgr/Gaia":35,"../../shape":55,"../../shape/base":42,"../../shape/base/Data":39,"../../shape/rect/Shape":73,"../../utils":106,"../../utils/RectHelper":102,"../../utils/Vector":104,"../ToolEnum":85}],92:[function(require,module,exports){
+},{"../../event":23,"../../event/Events":22,"../../mgr/Gaia":35,"../../shape":55,"../../shape/base":42,"../../shape/base/Data":39,"../../shape/rect/Shape":73,"../../utils":107,"../../utils/RectHelper":103,"../../utils/Vector":105,"../ToolEnum":85,"./ShapeRotater":92}],92:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ShapeRotater = void 0;
+const shape_1 = require("../../shape");
+class ShapeRotater extends shape_1.Shape {
+    constructor() {
+        super(new shape_1.ShapeData);
+        this._resizable = shape_1.Resizable.All;
+        this.resize(100, 100);
+    }
+    render(ctx) {
+        var _a;
+        if (!this.visible)
+            return;
+        this.beginDraw(ctx);
+        const { x, y, w, h } = this.drawingRect();
+        const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
+        const mx = x + w / 2;
+        const my = y + h / 2;
+        const l = mx - s / 2;
+        ctx.fillStyle = "red";
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "white";
+        ctx.lineWidth = 1;
+        ctx.fillRect(l, y, s, s);
+        ctx.strokeRect(l + 0.5, y + 0.5, s, s);
+        ctx.beginPath();
+        ctx.moveTo(mx, y + s);
+        ctx.arc(mx, my, s / 2, -0.5 * Math.PI, 2 * Math.PI);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        this.endDraw(ctx);
+        super.render(ctx);
+    }
+}
+exports.ShapeRotater = ShapeRotater;
+
+},{"../../shape":55}],93:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6501,7 +6544,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./SelectorTool"), exports);
 
-},{"./SelectorTool":91}],93:[function(require,module,exports){
+},{"./SelectorTool":91}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Arrays = void 0;
@@ -6519,7 +6562,7 @@ var Arrays;
     Arrays.find = find;
 })(Arrays = exports.Arrays || (exports.Arrays = {}));
 
-},{}],94:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryRange = void 0;
@@ -6541,7 +6584,7 @@ class BinaryRange {
 }
 exports.BinaryRange = BinaryRange;
 
-},{}],95:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinaryTree = void 0;
@@ -6698,7 +6741,7 @@ class BinaryTree {
 }
 exports.BinaryTree = BinaryTree;
 
-},{"./BinaryRange":94}],96:[function(require,module,exports){
+},{"./BinaryRange":95}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Css = void 0;
@@ -6717,15 +6760,15 @@ var Css;
     Css.add = add;
 })(Css = exports.Css || (exports.Css = {}));
 
-},{}],97:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
 },{}],98:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
 },{}],99:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],100:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Degrees = exports.Numbers = void 0;
@@ -6757,7 +6800,7 @@ var Degrees;
     Degrees.angle = angle;
 })(Degrees = exports.Degrees || (exports.Degrees = {}));
 
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuadTree = void 0;
@@ -6988,7 +7031,7 @@ class QuadTree {
 }
 exports.QuadTree = QuadTree;
 
-},{"./Rect":101}],101:[function(require,module,exports){
+},{"./Rect":102}],102:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
@@ -7078,7 +7121,7 @@ class Rect {
 }
 exports.Rect = Rect;
 
-},{}],102:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RectHelper = exports.LockMode = exports.GenMode = void 0;
@@ -7130,7 +7173,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":104}],103:[function(require,module,exports){
+},{"./Vector":105}],104:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RotatedRect = void 0;
@@ -7235,7 +7278,7 @@ class RotatedRect {
 }
 exports.RotatedRect = RotatedRect;
 
-},{"./Rect":101,"./Vector":104}],104:[function(require,module,exports){
+},{"./Rect":102,"./Vector":105}],105:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -7277,7 +7320,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],105:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isStr = exports.isNum = void 0;
@@ -7286,7 +7329,7 @@ exports.isNum = isNum;
 const isStr = (x) => typeof x === 'string';
 exports.isStr = isStr;
 
-},{}],106:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7319,4 +7362,4 @@ __exportStar(require("./RotatedRect"), exports);
 __exportStar(require("./Numbers"), exports);
 __exportStar(require("./Arrays"), exports);
 
-},{"./Arrays":93,"./BinaryRange":94,"./BinaryTree":95,"./Dot":97,"./ITree":98,"./Numbers":99,"./QuadTree":100,"./Rect":101,"./RotatedRect":103,"./Vector":104}]},{},[16]);
+},{"./Arrays":94,"./BinaryRange":95,"./BinaryTree":96,"./Dot":98,"./ITree":99,"./Numbers":100,"./QuadTree":101,"./Rect":102,"./RotatedRect":104,"./Vector":105}]},{},[16]);

@@ -1,18 +1,18 @@
-import { RectHelper } from "../../utils/RectHelper"
-import { ShapeData } from "../../shape/base/Data"
-import { Gaia } from "../../mgr/Gaia"
-import { ShapeRect } from "../../shape/rect/Shape"
-import { ToolEnum, ToolType } from "../ToolEnum"
-import { ResizeDirection, Shape } from "../../shape/base"
-import { IVector, Vector } from "../../utils/Vector"
-import { IDot } from "../../utils/Dot"
-import { ITool } from "../base/Tool"
 import { Board } from "../../board"
-import { Events } from "../../event/Events"
 import { EventEnum } from "../../event"
-import { IRect, Rect } from "../../utils/Rect"
+import { Events } from "../../event/Events"
+import { Gaia } from "../../mgr/Gaia"
 import { ShapeText, TextTool } from "../../shape"
-import { Arrays, Degrees, Numbers } from "../../utils"
+import { ResizeDirection, Shape } from "../../shape/base"
+import { ShapeData } from "../../shape/base/Data"
+import { ShapeRect } from "../../shape/rect/Shape"
+import { Arrays, Degrees } from "../../utils"
+import { IDot } from "../../utils/Dot"
+import { RectHelper } from "../../utils/RectHelper"
+import { IVector, Vector } from "../../utils/Vector"
+import { ToolEnum, ToolType } from "../ToolEnum"
+import { ITool } from "../base/Tool"
+import { ShapeRotater } from "./ShapeRotater"
 export enum SelectorStatus {
   Invalid = 0,
   ReadyForDragging,
@@ -23,17 +23,21 @@ export enum SelectorStatus {
   Resizing,
 }
 const Tag = '[SelectorTool]'
+
 export class SelectorTool implements ITool {
   get type(): ToolType { return ToolEnum.Selector }
   private _doubleClickTimer = 0;
-  private _rect = new ShapeRect(new ShapeData)
+  private _selector = new ShapeRect(new ShapeData)
   private _rectHelper = new RectHelper()
   private _status = SelectorStatus.Invalid
   private _prevPos: IVector = { x: 0, y: 0 }
-  private _resizerDirection = ResizeDirection.None
-  private _resizerAnchor: IVector = { x: 0, y: 0 }
-  private _resizingShape?: Shape;
-  private _resizerOffset: IVector = { x: 0, y: 0 }
+  private _resizer = {
+    direction: ResizeDirection.None,
+    anchor: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 },
+    shape: <Shape | null>null
+  }
+  private _rotater = new ShapeRotater()
   private _windowPointerDown = () => this.deselect();
 
   private _shapes: {
@@ -42,16 +46,20 @@ export class SelectorTool implements ITool {
     startData: Events.IShapeGeoData,
   }[] = []
 
-  get board(): Board { return this._rect.board!!; }
-  set board(v: Board) { this._rect.board = v!!; }
+  get board(): Board { return this._selector.board!!; }
+  set board(v: Board) {
+    this._selector.board = v!!;
+    this._rotater.board = v!!;
+  }
   get rect(): RectHelper { return this._rectHelper }
   constructor() {
-    this._rect.data.lineWidth = 2
-    this._rect.data.strokeStyle = '#003388FF'
-    this._rect.data.fillStyle = '#00338855'
+    this._selector.data.lineWidth = 2
+    this._selector.data.strokeStyle = '#003388FF'
+    this._selector.data.fillStyle = '#00338855'
   }
   render(ctx: CanvasRenderingContext2D): void {
-    this._rect.render(ctx)
+    this._selector.render(ctx)
+    this._rotater.render(ctx)
   }
   start(): void {
     this.board.element.style.cursor = ''
@@ -80,9 +88,9 @@ export class SelectorTool implements ITool {
         w: v.data.w,
         h: v.data.h,
       }
-      if (startX === undefined) {
-        x = x === undefined ? v.data.x : Math.min(x, v.data.x);
-        y = y === undefined ? v.data.y : Math.min(y, v.data.y);
+      if (startX === void 0) {
+        x = x === void 0 ? v.data.x : Math.min(x, v.data.x);
+        y = y === void 0 ? v.data.y : Math.min(y, v.data.y);
       }
       return {
         shape: v,
@@ -100,6 +108,7 @@ export class SelectorTool implements ITool {
       curY - this._prevPos.y
     );
   }
+
   moveBy(diffX: number, diffY: number): this {
     this._prevPos.x += diffX;
     this._prevPos.y += diffY;
@@ -119,19 +128,12 @@ export class SelectorTool implements ITool {
     const { x, y } = dot
     this._rectHelper.start(x, y)
     this.updateGeo()
-    const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
-    let shape: Shape | undefined;
-    for (let i = 0; i < shapes.length; ++i) { // 找到距离用户最近的未锁定图形
-      if (!shapes[i].locked) {
-        shape = shapes[i];
-        break;
-      }
-    }
+    const shape: Shape | undefined = board.hits({ x, y, w: 0, h: 0 })[0]; // 点击位置的全部图形
 
     if (!shape || shape.locked) {
       // 点击的位置无任何未锁定图形，则框选图形, 并取消选择以选择的图形
       this._status = SelectorStatus.ReadyForSelecting;
-      this._rect.visible = true;
+      this._selector.visible = true;
       this.deselect();
     } else if (!shape.selected) {
       // 点击位置存在图形，且图形未被选择，则选择点中的图形。
@@ -142,48 +144,48 @@ export class SelectorTool implements ITool {
       const dot = shape.map2me(x, y).plus(shape.data)
       const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
       if (direction) {
-        this._resizerDirection = direction;
-        this._resizingShape = shape
+        this._resizer.direction = direction;
+        this._resizer.shape = shape
         switch (direction) {
           case ResizeDirection.Top:
-            this._resizerOffset.x = 0
-            this._resizerOffset.y = resizerRect!.top - dot.y
-            this._resizerAnchor = shape.rotatedMidBottom;
+            this._resizer.offset.x = 0
+            this._resizer.offset.y = resizerRect!.top - dot.y
+            this._resizer.anchor = shape.rotatedMidBottom;
             break
           case ResizeDirection.Bottom:
-            this._resizerOffset.x = 0
-            this._resizerOffset.y = resizerRect!.bottom - dot.y
-            this._resizerAnchor = shape.rotatedMidTop;
+            this._resizer.offset.x = 0
+            this._resizer.offset.y = resizerRect!.bottom - dot.y
+            this._resizer.anchor = shape.rotatedMidTop;
             break
           case ResizeDirection.Left:
-            this._resizerOffset.x = resizerRect!.left - dot.x
-            this._resizerOffset.y = 0
-            this._resizerAnchor = shape.rotatedMidRight;
+            this._resizer.offset.x = resizerRect!.left - dot.x
+            this._resizer.offset.y = 0
+            this._resizer.anchor = shape.rotatedMidRight;
             break
           case ResizeDirection.Right:
-            this._resizerOffset.x = resizerRect!.right - dot.x
-            this._resizerOffset.y = 0
-            this._resizerAnchor = shape.rotatedMidLeft;
+            this._resizer.offset.x = resizerRect!.right - dot.x
+            this._resizer.offset.y = 0
+            this._resizer.anchor = shape.rotatedMidLeft;
             break
           case ResizeDirection.TopLeft:
-            this._resizerOffset.x = resizerRect!.left - dot.x
-            this._resizerOffset.y = resizerRect!.top - dot.y
-            this._resizerAnchor = shape.rotatedBottomRight;
+            this._resizer.offset.x = resizerRect!.left - dot.x
+            this._resizer.offset.y = resizerRect!.top - dot.y
+            this._resizer.anchor = shape.rotatedBottomRight;
             break
           case ResizeDirection.TopRight:
-            this._resizerOffset.x = resizerRect!.right - dot.x
-            this._resizerOffset.y = resizerRect!.top - dot.y
-            this._resizerAnchor = shape.rotatedBottomLeft;
+            this._resizer.offset.x = resizerRect!.right - dot.x
+            this._resizer.offset.y = resizerRect!.top - dot.y
+            this._resizer.anchor = shape.rotatedBottomLeft;
             break
           case ResizeDirection.BottomLeft:
-            this._resizerOffset.x = resizerRect!.left - dot.x
-            this._resizerOffset.y = resizerRect!.bottom - dot.y
-            this._resizerAnchor = shape.rotatedTopRight;
+            this._resizer.offset.x = resizerRect!.left - dot.x
+            this._resizer.offset.y = resizerRect!.bottom - dot.y
+            this._resizer.anchor = shape.rotatedTopRight;
             break
           case ResizeDirection.BottomRight:
-            this._resizerOffset.x = resizerRect!.right - dot.x
-            this._resizerOffset.y = resizerRect!.bottom - dot.y
-            this._resizerAnchor = shape.rotatedTopLeft;
+            this._resizer.offset.x = resizerRect!.right - dot.x
+            this._resizer.offset.y = resizerRect!.bottom - dot.y
+            this._resizer.anchor = shape.rotatedTopLeft;
             break
         }
         this._status = SelectorStatus.ReadyForResizing;
@@ -204,8 +206,7 @@ export class SelectorTool implements ITool {
     let cursor: string = '';
     if (result) {
       const [direction, shape] = result;
-      let { rotation: deg } = shape
-      const { x, y } = shape.map2me(dot.x, dot.y).plus(shape.data)
+      let { rotation: deg } = shape;
       deg = Degrees.normalized(deg + (direction - 1) * 0.25 * Math.PI);
       switch (Math.floor((25 + Degrees.angle(deg)) / 45) % 8) {
         case 0: case 4: cursor = 'ns-resize'; break;
@@ -227,7 +228,7 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Selecting: {
         this._rectHelper.end(dot.x, dot.y)
         this.updateGeo();
-        board.selectAt(this._rect.data, true);
+        board.selectAt(this._selector.data, true);
         return
       }
       case SelectorStatus.ReadyForDragging: // let it fall-through
@@ -241,13 +242,15 @@ export class SelectorTool implements ITool {
         if (Vector.manhattan(this._prevPos, dot) < 5) { return; }
         this._status = SelectorStatus.Resizing;
       case SelectorStatus.Resizing: {
-        const shape = this._resizingShape!
+        const { shape, offset, anchor, direction } = this._resizer
+        if (!shape) return
+
         const geo = shape.getGeo()
         const rs = board.factory.resizer.size
-        const { y: roy, x: rox } = this._resizerOffset
+        const { y: roy, x: rox } = offset
         const { x, y } = shape.map2me(dot.x, dot.y).plus(shape)
         const { left: l, right: r, bottom: b, top: t } = geo
-        switch (this._resizerDirection) {
+        switch (direction) {
           case ResizeDirection.Top:
             geo.top = Math.min(roy + y, b - rs * 2)
             break
@@ -279,7 +282,7 @@ export class SelectorTool implements ITool {
         }
         shape.markDirty()
         const degree: number = shape.data.r ?? 0
-        const rd = this._resizerDirection - 1
+        const rd = direction - 1
         const beveling = (rd == 0 || rd == 4) ? geo.h : (rd == 2 || rd == 6) ? geo.w : Math.sqrt(geo.w * geo.w + geo.h * geo.h)
         let deg = degree + Math.PI * rd / 4;
         if (rd == 1 || rd == 5)
@@ -288,8 +291,8 @@ export class SelectorTool implements ITool {
           deg += Math.atan2(geo.h, geo.w) - Math.PI / 4
         const sinV = Math.sin(deg);
         const cosV = Math.cos(deg);
-        const midX = this._resizerAnchor.x + sinV * beveling / 2;
-        const midY = this._resizerAnchor.y - cosV * beveling / 2;
+        const midX = anchor.x + sinV * beveling / 2;
+        const midY = anchor.y - cosV * beveling / 2;
         shape.data.x = midX - geo.w / 2
         shape.data.y = midY - geo.h / 2
         shape.data.w = geo.w
@@ -315,7 +318,7 @@ export class SelectorTool implements ITool {
     if (this._status === SelectorStatus.Dragging) {
       this.emitGeoEvent(true)
     }
-    this._rect.visible = false
+    this._selector.visible = false
     this._rectHelper.clear()
     this._status = SelectorStatus.Invalid
   }
@@ -368,7 +371,7 @@ export class SelectorTool implements ITool {
   }
   private updateGeo() {
     const { x, y, w, h } = this._rectHelper.gen()
-    this._rect.geo(x, y, w, h)
+    this._selector.geo(x, y, w, h)
   }
 }
 
