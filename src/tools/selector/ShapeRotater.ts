@@ -20,7 +20,7 @@ export class ShapeRotater extends Shape<ShapeData> {
     this.markDirty()
   }
 
-  follow = (shape: Shape) => {
+  follow(shape: Shape) {
     this.update(shape)
     this._prevShape?.onDirty(() => { })
     shape.onDirty(this.update)

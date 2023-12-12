@@ -6512,15 +6512,15 @@ class ShapeRotater extends shape_1.Shape {
             this.data.rotation = shape.rotation;
             this.markDirty();
         };
-        this.follow = (shape) => {
-            var _a;
-            this.update(shape);
-            (_a = this._prevShape) === null || _a === void 0 ? void 0 : _a.onDirty(() => { });
-            shape.onDirty(this.update);
-            this._prevShape = shape;
-        };
         this._resizable = shape_1.Resizable.All;
         this.resize(100, 100);
+    }
+    follow(shape) {
+        var _a;
+        this.update(shape);
+        (_a = this._prevShape) === null || _a === void 0 ? void 0 : _a.onDirty(() => { });
+        shape.onDirty(this.update);
+        this._prevShape = shape;
     }
     render(ctx) {
         var _a;
