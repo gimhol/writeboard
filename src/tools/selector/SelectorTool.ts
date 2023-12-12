@@ -138,6 +138,7 @@ export class SelectorTool implements ITool {
     } else if (!shape.selected) {
       // 点击位置存在图形，且图形未被选择，则选择点中的图形。
       this._status = SelectorStatus.ReadyForDragging;
+      this._rotater.follow(shape)
       board.setSelects([shape], true)
     } else {
       // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。

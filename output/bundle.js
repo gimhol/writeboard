@@ -3651,6 +3651,7 @@ var Resizable;
 class Shape {
     constructor(data) {
         this._resizable = Resizable.None;
+        this._onDirty = () => { };
         this._data = data;
     }
     /**
@@ -3789,9 +3790,13 @@ class Shape {
         this.markDirty();
     }
     markDirty(rect) {
-        var _a;
+        var _a, _b;
         rect = rect !== null && rect !== void 0 ? rect : this.boundingRect();
         (_a = this.board) === null || _a === void 0 ? void 0 : _a.markDirty(rect);
+        (_b = this._onDirty) === null || _b === void 0 ? void 0 : _b.call(this, this);
+    }
+    onDirty(func) {
+        this._onDirty = func;
     }
     /**
      * 移动图形
@@ -3852,6 +3857,7 @@ class Shape {
     get rotatedMidBottom() { return this.map2world(this.halfW, this.h); }
     get rotatedMidLeft() { return this.map2world(0, this.halfH); }
     get rotatedMidRight() { return this.map2world(this.w, this.halfH); }
+    get rotatedMid() { return this.map2world(this.halfW, this.halfH); }
     get rotation() { return this.data.rotation; }
     rotateBy(d, ox = void 0, oy = void 0) {
         const r = this._data.rotation + d;
@@ -6223,6 +6229,7 @@ class SelectorTool {
         else if (!shape.selected) {
             // 点击位置存在图形，且图形未被选择，则选择点中的图形。
             this._status = SelectorStatus.ReadyForDragging;
+            this._rotater.follow(shape);
             board.setSelects([shape], true);
         }
         else {
@@ -6493,6 +6500,25 @@ const shape_1 = require("../../shape");
 class ShapeRotater extends shape_1.Shape {
     constructor() {
         super(new shape_1.ShapeData);
+        this._prevShape = null;
+        this.update = (shape) => {
+            const { x: mx, y: my } = shape.rotatedMid;
+            this.visible = shape.visible;
+            this.markDirty();
+            this.data.w = 30;
+            this.data.h = shape.h + 60;
+            this.data.x = mx - this.halfW;
+            this.data.y = my - this.halfH;
+            this.data.rotation = shape.rotation;
+            this.markDirty();
+        };
+        this.follow = (shape) => {
+            var _a;
+            this.update(shape);
+            (_a = this._prevShape) === null || _a === void 0 ? void 0 : _a.onDirty(() => { });
+            shape.onDirty(this.update);
+            this._prevShape = shape;
+        };
         this._resizable = shape_1.Resizable.All;
         this.resize(100, 100);
     }
@@ -6506,8 +6532,8 @@ class ShapeRotater extends shape_1.Shape {
         const mx = x + w / 2;
         const my = y + h / 2;
         const l = mx - s / 2;
-        ctx.fillStyle = "red";
-        ctx.fillRect(x, y, w, h);
+        // ctx.fillStyle = "red"
+        // ctx.fillRect(x, y, w, h)
         ctx.strokeStyle = "black";
         ctx.fillStyle = "white";
         ctx.lineWidth = 1;
@@ -6515,9 +6541,7 @@ class ShapeRotater extends shape_1.Shape {
         ctx.strokeRect(l + 0.5, y + 0.5, s, s);
         ctx.beginPath();
         ctx.moveTo(mx, y + s);
-        ctx.arc(mx, my, s / 2, -0.5 * Math.PI, 2 * Math.PI);
-        ctx.closePath();
-        ctx.fill();
+        ctx.lineTo(mx, 30);
         ctx.stroke();
         this.endDraw(ctx);
         super.render(ctx);

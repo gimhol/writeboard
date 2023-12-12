@@ -188,9 +188,16 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.markDirty()
   }
 
+  _onDirty: (shape: Shape) => void = () => { }
+
   markDirty(rect?: IRect): void {
     rect = rect ?? this.boundingRect();
     this.board?.markDirty(rect)
+    this._onDirty?.(this)
+  }
+
+  onDirty(func: (shape: Shape) => void): void {
+    this._onDirty = func
   }
 
   /**
@@ -257,6 +264,7 @@ export class Shape<D extends ShapeData = ShapeData> {
   get rotatedMidBottom(): IVector { return this.map2world(this.halfW, this.h) }
   get rotatedMidLeft(): IVector { return this.map2world(0, this.halfH) }
   get rotatedMidRight(): IVector { return this.map2world(this.w, this.halfH) }
+  get rotatedMid(): IVector { return this.map2world(this.halfW, this.halfH) }
 
   get rotation() { return this.data.rotation }
 
