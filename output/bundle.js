@@ -2265,40 +2265,36 @@ exports.Layer = Layer;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultShapeDecoration = void 0;
 class DefaultShapeDecoration {
+    dashSroke(ctx, segments) {
+        ctx.strokeStyle = 'white';
+        ctx.setLineDash([]);
+        ctx.stroke();
+        ctx.strokeStyle = 'black';
+        ctx.setLineDash(segments);
+        ctx.stroke();
+    }
     // debug(shape: Shape, ctx: CanvasRenderingContext2D){
     //   const { x, y, w, h } = shape.boundingRect()
     //   ctx.fillStyle = "#00FF0033"
     //   ctx.fillRect(x + 1, y + 1, w - 2, h - 2)
     // }
     locked(shape, ctx) {
-        // 虚线会损耗性能
         const lineWidth = 2;
         ctx.lineWidth = lineWidth;
         let { x, y, w, h } = shape.selectorRect();
         ctx.beginPath();
         ctx.rect(x, y, w, h);
         ctx.closePath();
-        ctx.strokeStyle = '#ffffff88';
-        ctx.setLineDash([]);
-        ctx.stroke();
-        ctx.strokeStyle = '#00000088';
-        ctx.setLineDash([lineWidth * 8]);
-        ctx.stroke();
+        this.dashSroke(ctx, [lineWidth * 8]);
     }
     selected(shape, ctx) {
-        // 虚线会损耗性能
         const lineWidth = 1;
         ctx.lineWidth = lineWidth;
         let { x, y, w, h } = shape.selectorRect();
         ctx.beginPath();
         ctx.rect(x, y, w, h);
         ctx.closePath();
-        ctx.strokeStyle = '#ffffff';
-        ctx.setLineDash([]);
-        ctx.stroke();
-        ctx.strokeStyle = '#000000';
-        ctx.setLineDash([lineWidth * 4]);
-        ctx.stroke();
+        this.dashSroke(ctx, [lineWidth * 4]);
     }
     resizable(shape, ctx) {
         let { x, y, w, h } = shape.selectorRect();
@@ -3608,7 +3604,7 @@ exports.ShapeData = ShapeData;
 },{"../../utils":107,"../../utils/helper":106,"../ShapeEnum":38}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Shape = exports.Resizable = exports.ResizeDirection = void 0;
+exports.Shape = exports.Resizable = exports.ShapeEventEnum = exports.ResizeDirection = void 0;
 const Rect_1 = require("../../utils/Rect");
 const Vector_1 = require("../../utils/Vector");
 const helper_1 = require("../../utils/helper");
@@ -3624,6 +3620,11 @@ var ResizeDirection;
     ResizeDirection[ResizeDirection["Left"] = 7] = "Left";
     ResizeDirection[ResizeDirection["TopLeft"] = 8] = "TopLeft";
 })(ResizeDirection = exports.ResizeDirection || (exports.ResizeDirection = {}));
+var ShapeEventEnum;
+(function (ShapeEventEnum) {
+    ShapeEventEnum["StartDirty"] = "start_dirty";
+    ShapeEventEnum["EndDirty"] = "end_dirty";
+})(ShapeEventEnum = exports.ShapeEventEnum || (exports.ShapeEventEnum = {}));
 /**
  * 表示图形能以何种方式被拉伸
  *
@@ -3651,7 +3652,7 @@ var Resizable;
 class Shape {
     constructor(data) {
         this._resizable = Resizable.None;
-        this._onDirty = () => { };
+        this._relCount = 0;
         this._data = data;
     }
     /**
@@ -3693,8 +3694,10 @@ class Shape {
     set visible(v) {
         if (!!this._data.visible === v)
             return;
+        const prev = { status: { v: v ? 0 : 1 } };
+        this.beginDirty(prev);
         this._data.visible = v;
-        this.markDirty();
+        this.endDirty(prev);
     }
     /**
      * 是否正在编辑中
@@ -3708,8 +3711,10 @@ class Shape {
     set editing(v) {
         if (this._data.editing === v)
             return;
+        const prev = { status: { e: v ? 0 : 1 } };
+        this.beginDirty(prev);
         this._data.editing = v;
-        this.markDirty();
+        this.endDirty(prev);
     }
     /**
      * 图形是否被选中
@@ -3723,8 +3728,10 @@ class Shape {
     set selected(v) {
         if (this._data.selected === v)
             return;
+        const prev = { status: { s: v ? 0 : 1 } };
+        this.beginDirty(prev);
         this._data.selected = v;
-        this.markDirty();
+        this.endDirty(prev);
     }
     /**
      * 图形是否可以被用户修改尺寸
@@ -3749,8 +3756,10 @@ class Shape {
     set locked(v) {
         if (this._data.locked === v)
             return;
+        const prev = { status: { f: v ? 0 : 1 } };
+        this.beginDirty(prev);
         this._data.locked = v;
-        this.markDirty();
+        this.endDirty(prev);
     }
     /**
      * 图形能否交互
@@ -3765,8 +3774,10 @@ class Shape {
     set ghost(v) {
         if (this._data.ghost === v)
             return;
+        const prev = { status: { g: v ? 0 : 1 } };
+        this.beginDirty(prev);
         this._data.ghost = v;
-        this.markDirty();
+        this.endDirty(prev);
     }
     /**
      * 图形描边宽度
@@ -3780,23 +3791,28 @@ class Shape {
         if (!this._data.needStroke) {
             return;
         }
-        this.markDirty();
+        const prev = { style: { g: this._data.lineWidth } };
+        this.beginDirty(prev);
         this._data.lineWidth = Math.max(0, v);
-        this.markDirty();
+        this.endDirty(prev);
     }
     merge(data) {
-        this.markDirty();
+        const prev = this.data.copy();
+        this.beginDirty(prev);
         this.data.merge(data);
+        this.endDirty(prev);
+    }
+    beginDirty(prev) {
+        this.dispatchEvent(ShapeEventEnum.StartDirty, { shape: this, prev });
         this.markDirty();
     }
-    markDirty(rect) {
-        var _a, _b;
-        rect = rect !== null && rect !== void 0 ? rect : this.boundingRect();
-        (_a = this.board) === null || _a === void 0 ? void 0 : _a.markDirty(rect);
-        (_b = this._onDirty) === null || _b === void 0 ? void 0 : _b.call(this, this);
+    endDirty(prev) {
+        this.markDirty();
+        this.dispatchEvent(ShapeEventEnum.EndDirty, { shape: this, prev });
     }
-    onDirty(func) {
-        this._onDirty = func;
+    markDirty(rect = this.boundingRect()) {
+        var _a;
+        (_a = this.board) === null || _a === void 0 ? void 0 : _a.markDirty(rect);
     }
     /**
      * 移动图形
@@ -3806,20 +3822,10 @@ class Shape {
      * @returns void
      */
     move(x, y) {
-        if (x === this._data.x && y === this._data.y)
-            return;
-        this.markDirty();
-        this._data.x = x;
-        this._data.y = y;
-        this.markDirty();
+        this.geo(x, y, this._data.w, this._data.h);
     }
     resize(w, h) {
-        if (w === this._data.w && h === this._data.h)
-            return;
-        this.markDirty();
-        this._data.w = w;
-        this._data.h = h;
-        this.markDirty();
+        this.geo(this._data.x, this._data.y, w, h);
     }
     get x() { return this._data.x; }
     get y() { return this._data.y; }
@@ -3866,8 +3872,8 @@ class Shape {
     rotateTo(r, ox = void 0, oy = void 0) {
         if (r == this._data.rotation)
             return;
-        this.markDirty();
-        this._data.rotation = r % (Math.PI * 2);
+        const prev = { x: this._data.x, y: this._data.y, r: this._data.r };
+        this.beginDirty(prev);
         const { w, h, midX: mx, midY: my } = this;
         ox = ox !== null && ox !== void 0 ? ox : mx;
         oy = oy !== null && oy !== void 0 ? oy : my;
@@ -3875,7 +3881,8 @@ class Shape {
         const my1 = (mx - ox) * Math.sin(r) + (my - oy) * Math.cos(r) + oy;
         this._data.x = mx1 - w / 2;
         this._data.y = my1 - h / 2;
-        this.markDirty();
+        this._data.rotation = r % (Math.PI * 2);
+        this.endDirty(prev);
     }
     getGeo() {
         return new Rect_1.Rect(this._data.x, this._data.y, this._data.w, this._data.h);
@@ -3889,32 +3896,25 @@ class Shape {
             w === this._data.w &&
             h === this._data.h)
             return;
-        this.markDirty();
+        const prev = {
+            x: this._data.x, y: this._data.y,
+            w: this._data.w, h: this._data.h
+        };
+        this.beginDirty(prev);
         this._data.x = x;
         this._data.y = y;
         this._data.w = w;
         this._data.h = h;
-        this.markDirty();
+        this.endDirty(prev);
     }
     moveBy(x, y) {
-        this.markDirty();
-        this._data.x += x;
-        this._data.y += y;
-        this.markDirty();
+        this.geo(this._data.x + x, this._data.y + y, this._data.w, this._data.h);
     }
     resizeBy(w, h) {
-        this.markDirty();
-        this._data.w += w;
-        this._data.h += h;
-        this.markDirty();
+        this.geo(this._data.x, this._data.y, this._data.w + w, this._data.h + h);
     }
     geoBy(x, y, w, h) {
-        this.markDirty();
-        this._data.x += x;
-        this._data.y += y;
-        this._data.w += w;
-        this._data.h += h;
-        this.markDirty();
+        this.geo(this._data.x + x, this._data.y + y, this._data.w + w, this._data.h + h);
     }
     render(ctx) {
         var _a, _b, _c, _d, _e, _f;
@@ -4092,6 +4092,23 @@ class Shape {
     }
     endDraw(ctx) {
         ctx.restore();
+    }
+    addEventListener(arg0, arg1, arg2) {
+        this._ele = this._ele || document.createElement('a');
+        this._ele.addEventListener(arg0, arg1, arg2);
+        if (!(arg2 === null || arg2 === void 0 ? void 0 : arg2.once))
+            this._relCount++;
+        return this;
+    }
+    removeEventListener(arg0, arg1, arg2) {
+        var _a;
+        (_a = this._ele) === null || _a === void 0 ? void 0 : _a.removeEventListener(arg0, arg1, arg2);
+        return this;
+    }
+    dispatchEvent(type, detail) {
+        var _a;
+        (_a = this._ele) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new CustomEvent(type, { detail }));
+        return this;
     }
 }
 exports.Shape = Shape;
@@ -6125,6 +6142,8 @@ var SelectorStatus;
     SelectorStatus[SelectorStatus["Selecting"] = 4] = "Selecting";
     SelectorStatus[SelectorStatus["ReadyForResizing"] = 5] = "ReadyForResizing";
     SelectorStatus[SelectorStatus["Resizing"] = 6] = "Resizing";
+    SelectorStatus[SelectorStatus["ReadyForRotating"] = 7] = "ReadyForRotating";
+    SelectorStatus[SelectorStatus["Rotating"] = 8] = "Rotating";
 })(SelectorStatus = exports.SelectorStatus || (exports.SelectorStatus = {}));
 const Tag = '[SelectorTool]';
 class SelectorTool {
@@ -6167,6 +6186,7 @@ class SelectorTool {
         this.board.element.style.cursor = '';
         document.removeEventListener('pointerdown', this._windowPointerDown);
         this.deselect();
+        this._rotater.follow(null);
     }
     deselect() {
         const { board } = this;
@@ -6291,17 +6311,25 @@ class SelectorTool {
         this.connect(board.selects, x, y);
     }
     pointerMove(dot) {
+        let cursor = '';
+        if (this._rotater.visible) {
+            const { x, y } = this._rotater.map2me(dot.x, dot.y);
+            const a = this._rotater.cursor(x, y);
+            if (a) {
+                this.board.element.style.cursor = a;
+                return;
+            }
+        }
         const result = utils_1.Arrays.find(this.board.selects, it => {
             const { x, y } = it.map2me(dot.x, dot.y).plus(it.data);
             const [direction] = it.resizeDirection(x, y);
             if (direction != base_1.ResizeDirection.None)
                 return [direction, it];
         });
-        let cursor = '';
         if (result) {
             const [direction, shape] = result;
             let { rotation: deg } = shape;
-            deg = utils_1.Degrees.normalized(deg + (direction - 1) * 0.25 * Math.PI);
+            deg = utils_1.Degrees.normalized(deg + (direction - 1) * Math.PI / 4);
             switch (Math.floor((25 + utils_1.Degrees.angle(deg)) / 45) % 8) {
                 case 0:
                 case 4:
@@ -6365,35 +6393,34 @@ class SelectorTool {
                 const { left: l, right: r, bottom: b, top: t } = geo;
                 switch (direction) {
                     case base_1.ResizeDirection.Top:
-                        geo.top = Math.min(roy + y, b - rs * 2);
+                        geo.top = Math.min(roy + y, b - rs * 3);
                         break;
                     case base_1.ResizeDirection.Bottom:
-                        geo.bottom = Math.max(roy + y, t + rs * 2);
+                        geo.bottom = Math.max(roy + y, t + rs * 3);
                         break;
                     case base_1.ResizeDirection.Left:
-                        geo.left = Math.min(rox + x, r - rs * 2);
+                        geo.left = Math.min(rox + x, r - rs * 3);
                         break;
                     case base_1.ResizeDirection.Right:
-                        geo.right = Math.max(rox + x, l + rs * 2);
+                        geo.right = Math.max(rox + x, l + rs * 3);
                         break;
                     case base_1.ResizeDirection.TopLeft:
-                        geo.top = Math.min(roy + y, b - rs * 2);
-                        geo.left = Math.min(rox + x, r - rs * 2);
+                        geo.top = Math.min(roy + y, b - rs * 3);
+                        geo.left = Math.min(rox + x, r - rs * 3);
                         break;
                     case base_1.ResizeDirection.TopRight:
-                        geo.top = Math.min(roy + y, b - rs * 2);
-                        geo.right = Math.max(rox + x, l + rs * 2);
+                        geo.top = Math.min(roy + y, b - rs * 3);
+                        geo.right = Math.max(rox + x, l + rs * 3);
                         break;
                     case base_1.ResizeDirection.BottomLeft:
-                        geo.bottom = Math.max(roy + y, t + rs * 2);
-                        geo.left = Math.min(rox + x, r - rs * 2);
+                        geo.bottom = Math.max(roy + y, t + rs * 3);
+                        geo.left = Math.min(rox + x, r - rs * 3);
                         break;
                     case base_1.ResizeDirection.BottomRight:
-                        geo.bottom = Math.max(roy + y, t + rs * 2);
-                        geo.right = Math.max(rox + x, l + rs * 2);
+                        geo.bottom = Math.max(roy + y, t + rs * 3);
+                        geo.right = Math.max(rox + x, l + rs * 3);
                         break;
                 }
-                shape.markDirty();
                 const degree = (_a = shape.data.r) !== null && _a !== void 0 ? _a : 0;
                 const rd = direction - 1;
                 const beveling = (rd == 0 || rd == 4) ? geo.h : (rd == 2 || rd == 6) ? geo.w : Math.sqrt(geo.w * geo.w + geo.h * geo.h);
@@ -6406,11 +6433,7 @@ class SelectorTool {
                 const cosV = Math.cos(deg);
                 const midX = anchor.x + sinV * beveling / 2;
                 const midY = anchor.y - cosV * beveling / 2;
-                shape.data.x = midX - geo.w / 2;
-                shape.data.y = midY - geo.h / 2;
-                shape.data.w = geo.w;
-                shape.data.h = geo.h;
-                shape.markDirty();
+                shape.geo(midX - geo.w / 2, midY - geo.h / 2, geo.w, geo.h);
                 this.emitGeoEvent(false);
                 return;
             }
@@ -6497,13 +6520,14 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRotater = void 0;
 const shape_1 = require("../../shape");
+const Numbers_1 = require("../../utils/Numbers");
 class ShapeRotater extends shape_1.Shape {
     constructor() {
         super(new shape_1.ShapeData);
         this._prevShape = null;
         this.update = (shape) => {
             const { x: mx, y: my } = shape.rotatedMid;
-            this.visible = shape.visible;
+            this.visible = shape.selected;
             this.markDirty();
             this.data.w = 30;
             this.data.h = shape.h + 60;
@@ -6512,14 +6536,16 @@ class ShapeRotater extends shape_1.Shape {
             this.data.rotation = shape.rotation;
             this.markDirty();
         };
-        this._resizable = shape_1.Resizable.All;
-        this.resize(100, 100);
+        this.listener = (e) => this.update(e.detail.shape);
+        this.data.ghost = true;
+        this.data.visible = false;
     }
     follow(shape) {
         var _a;
-        this.update(shape);
-        (_a = this._prevShape) === null || _a === void 0 ? void 0 : _a.onDirty(() => { });
-        shape.onDirty(this.update);
+        (_a = this._prevShape) === null || _a === void 0 ? void 0 : _a.addEventListener(shape_1.ShapeEventEnum.EndDirty, this.listener);
+        shape === null || shape === void 0 ? void 0 : shape.addEventListener(shape_1.ShapeEventEnum.EndDirty, this.listener);
+        if (shape)
+            this.update(shape);
         this._prevShape = shape;
     }
     render(ctx) {
@@ -6527,29 +6553,45 @@ class ShapeRotater extends shape_1.Shape {
         if (!this.visible)
             return;
         this.beginDraw(ctx);
-        const { x, y, w, h } = this.drawingRect();
+        const { x, y, w } = this.drawingRect();
         const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
-        const mx = x + w / 2;
-        const my = y + h / 2;
-        const l = mx - s / 2;
-        // ctx.fillStyle = "red"
-        // ctx.fillRect(x, y, w, h)
+        const mx = Math.floor(x + w / 2);
+        const l = Math.floor(mx - s / 2);
         ctx.strokeStyle = "black";
         ctx.fillStyle = "white";
         ctx.lineWidth = 1;
         ctx.fillRect(l, y, s, s);
         ctx.strokeRect(l + 0.5, y + 0.5, s, s);
         ctx.beginPath();
-        ctx.moveTo(mx, y + s);
-        ctx.lineTo(mx, 30);
+        ctx.moveTo(mx + 0.5, y + s);
+        ctx.lineTo(mx + 0.5, 30);
         ctx.stroke();
         this.endDraw(ctx);
         super.render(ctx);
     }
+    cursor(x, y) {
+        var _a;
+        const { w, h } = this.drawingRect();
+        const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
+        if (x < w / 2 - 10 || x > w / 2 + 10 || y < 0 || y > s * 2)
+            return null;
+        const d = Numbers_1.Degrees.normalized(this.rotation * Math.PI / 4 + Math.PI / 0.25);
+        switch (Math.floor((115 + Numbers_1.Degrees.angle(d)) / 45) % 8) {
+            case 0:
+            case 4: return 'ns-resize';
+            case 2:
+            case 6: return 'ew-resize';
+            case 3:
+            case 7: return 'nw-resize';
+            case 1:
+            case 5: return 'ne-resize';
+        }
+        return null;
+    }
 }
 exports.ShapeRotater = ShapeRotater;
 
-},{"../../shape":55}],93:[function(require,module,exports){
+},{"../../shape":55,"../../utils/Numbers":100}],93:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

@@ -3,7 +3,7 @@ import { IRect, Rect } from "../../utils/Rect";
 import { IVector, Vector } from "../../utils/Vector";
 import { isNum } from "../../utils/helper";
 import { ShapeEnum, ShapeType } from "../ShapeEnum";
-import { ShapeData } from "./Data";
+import { IShapeData, ShapeData } from "./Data";
 export enum ResizeDirection {
   None = 0,
   Top = 1,
@@ -15,6 +15,18 @@ export enum ResizeDirection {
   Left = 7,
   TopLeft = 8,
 }
+
+export enum ShapeEventEnum {
+  StartDirty = 'start_dirty',
+  EndDirty = 'end_dirty',
+}
+
+export interface ShapeEventMap {
+  [ShapeEventEnum.StartDirty]: CustomEvent<{ shape: Shape, prev: Partial<IShapeData> }>;
+  [ShapeEventEnum.EndDirty]: CustomEvent<{ shape: Shape, prev: Partial<IShapeData> }>;
+}
+
+export type ShapeEventListener<K extends keyof ShapeEventMap> = (this: HTMLObjectElement, ev: ShapeEventMap[K]) => any
 
 /**
  * 表示图形能以何种方式被拉伸
@@ -90,8 +102,10 @@ export class Shape<D extends ShapeData = ShapeData> {
   get visible(): boolean { return !!this._data.visible }
   set visible(v: boolean) {
     if (!!this._data.visible === v) return
+    const prev: Partial<IShapeData> = { status: { v: v ? 0 : 1 } }
+    this.beginDirty(prev)
     this._data.visible = v
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   /**
@@ -105,8 +119,10 @@ export class Shape<D extends ShapeData = ShapeData> {
   get editing(): boolean { return !!this._data.editing }
   set editing(v: boolean) {
     if (this._data.editing === v) return
+    const prev: Partial<IShapeData> = { status: { e: v ? 0 : 1 } }
+    this.beginDirty(prev)
     this._data.editing = v
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   /**
@@ -120,8 +136,10 @@ export class Shape<D extends ShapeData = ShapeData> {
   get selected(): boolean { return !!this._data.selected }
   set selected(v: boolean) {
     if (this._data.selected === v) return
+    const prev: Partial<IShapeData> = { status: { s: v ? 0 : 1 } }
+    this.beginDirty(prev)
     this._data.selected = v
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   /**
@@ -147,8 +165,10 @@ export class Shape<D extends ShapeData = ShapeData> {
   get locked(): boolean { return this._data.locked }
   set locked(v: boolean) {
     if (this._data.locked === v) return
+    const prev: Partial<IShapeData> = { status: { f: v ? 0 : 1 } }
+    this.beginDirty(prev)
     this._data.locked = v
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   /**
@@ -163,8 +183,10 @@ export class Shape<D extends ShapeData = ShapeData> {
   get ghost(): boolean { return this._data.ghost }
   set ghost(v: boolean) {
     if (this._data.ghost === v) return
+    const prev: Partial<IShapeData> = { status: { g: v ? 0 : 1 } }
+    this.beginDirty(prev)
     this._data.ghost = v
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   /**
@@ -177,27 +199,31 @@ export class Shape<D extends ShapeData = ShapeData> {
   get lineWidth(): number { return this._data.lineWidth }
   set lineWidth(v: number) {
     if (!this._data.needStroke) { return; }
-    this.markDirty()
+    const prev: Partial<IShapeData> = { style: { g: this._data.lineWidth } }
+    this.beginDirty(prev)
     this._data.lineWidth = Math.max(0, v);
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   merge(data: Partial<ShapeData>): void {
-    this.markDirty()
+    const prev = this.data.copy()
+    this.beginDirty(prev)
     this.data.merge(data)
+    this.endDirty(prev)
+  }
+
+  beginDirty(prev: Partial<IShapeData>): void {
+    this.dispatchEvent(ShapeEventEnum.StartDirty, { shape: this, prev })
     this.markDirty()
   }
 
-  _onDirty: (shape: Shape) => void = () => { }
-
-  markDirty(rect?: IRect): void {
-    rect = rect ?? this.boundingRect();
-    this.board?.markDirty(rect)
-    this._onDirty?.(this)
+  endDirty(prev: Partial<IShapeData>): void {
+    this.markDirty()
+    this.dispatchEvent(ShapeEventEnum.EndDirty, { shape: this, prev })
   }
 
-  onDirty(func: (shape: Shape) => void): void {
-    this._onDirty = func
+  markDirty(rect: IRect = this.boundingRect()): void {
+    this.board?.markDirty(rect)
   }
 
   /**
@@ -208,22 +234,13 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @returns void
    */
   move(x: number, y: number): void {
-    if (x === this._data.x && y === this._data.y)
-      return
-    this.markDirty()
-    this._data.x = x
-    this._data.y = y
-    this.markDirty()
+    this.geo(x, y, this._data.w, this._data.h)
   }
 
   resize(w: number, h: number): void {
-    if (w === this._data.w && h === this._data.h)
-      return
-    this.markDirty()
-    this._data.w = w
-    this._data.h = h
-    this.markDirty()
+    this.geo(this._data.x, this._data.y, w, h)
   }
+
   get x() { return this._data.x }
   get y() { return this._data.y }
   get halfW() { return this._data.w / 2 }
@@ -275,8 +292,9 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   rotateTo(r: number, ox: number | undefined = void 0, oy: number | undefined = void 0): void {
     if (r == this._data.rotation) return
-    this.markDirty()
-    this._data.rotation = r % (Math.PI * 2);
+
+    const prev: Partial<IShapeData> = { x: this._data.x, y: this._data.y, r: this._data.r }
+    this.beginDirty(prev)
     const { w, h, midX: mx, midY: my } = this;
     ox = ox ?? mx;
     oy = oy ?? my;
@@ -284,7 +302,8 @@ export class Shape<D extends ShapeData = ShapeData> {
     const my1 = (mx - ox) * Math.sin(r) + (my - oy) * Math.cos(r) + oy;
     this._data.x = mx1 - w / 2
     this._data.y = my1 - h / 2
-    this.markDirty()
+    this._data.rotation = r % (Math.PI * 2);
+    this.endDirty(prev)
   }
 
   getGeo(): Rect {
@@ -298,41 +317,51 @@ export class Shape<D extends ShapeData = ShapeData> {
   setGeo(rect: Rect): void {
     this.geo(rect.x, rect.y, rect.w, rect.h)
   }
+
   geo(x: number, y: number, w: number, h: number): void {
-    if (x === this._data.x &&
+    if (
+      x === this._data.x &&
       y === this._data.y &&
       w === this._data.w &&
-      h === this._data.h)
-      return
-    this.markDirty()
+      h === this._data.h
+    ) return
+    const prev: Partial<IShapeData> = {
+      x: this._data.x, y: this._data.y,
+      w: this._data.w, h: this._data.h
+    }
+    this.beginDirty(prev)
     this._data.x = x
     this._data.y = y
     this._data.w = w
     this._data.h = h
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   moveBy(x: number, y: number): void {
-    this.markDirty()
-    this._data.x += x
-    this._data.y += y
-    this.markDirty()
+    this.geo(
+      this._data.x + x,
+      this._data.y + y,
+      this._data.w,
+      this._data.h
+    )
   }
 
   resizeBy(w: number, h: number): void {
-    this.markDirty()
-    this._data.w += w
-    this._data.h += h
-    this.markDirty()
+    this.geo(
+      this._data.x,
+      this._data.y,
+      this._data.w + w,
+      this._data.h + h
+    )
   }
 
   geoBy(x: number, y: number, w: number, h: number): void {
-    this.markDirty()
-    this._data.x += x
-    this._data.y += y
-    this._data.w += w
-    this._data.h += h
-    this.markDirty()
+    this.geo(
+      this._data.x + x,
+      this._data.y + y,
+      this._data.w + w,
+      this._data.h + h
+    )
   }
 
   render(ctx: CanvasRenderingContext2D): void {
@@ -548,5 +577,27 @@ export class Shape<D extends ShapeData = ShapeData> {
   }
   protected endDraw(ctx: CanvasRenderingContext2D): void {
     ctx.restore()
+  }
+
+  private _ele: HTMLElement | undefined;
+  private _relCount: number = 0;
+
+  addEventListener<K extends keyof ShapeEventMap>(type: K, listener: ShapeEventListener<K>, options?: boolean | AddEventListenerOptions): this
+  addEventListener(arg0: any, arg1: any, arg2?: any): this {
+    this._ele = this._ele || document.createElement('a')
+    this._ele.addEventListener(arg0, arg1, arg2)
+    if (!arg2?.once) this._relCount++
+    return this
+  }
+
+  removeEventListener<K extends keyof ShapeEventMap>(type: K, listener: ShapeEventListener<K>, options?: boolean | AddEventListenerOptions): this
+  removeEventListener(arg0: any, arg1: any, arg2?: any): this {
+    this._ele?.removeEventListener(arg0, arg1, arg2)
+    return this
+  }
+
+  dispatchEvent<K extends keyof ShapeEventMap>(type: K, detail: ShapeEventMap[K]['detail']): this {
+    this._ele?.dispatchEvent(new CustomEvent(type, { detail }))
+    return this
   }
 }

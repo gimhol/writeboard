@@ -21,6 +21,8 @@ export enum SelectorStatus {
   Selecting,
   ReadyForResizing,
   Resizing,
+  ReadyForRotating,
+  Rotating,
 }
 const Tag = '[SelectorTool]'
 
@@ -69,6 +71,7 @@ export class SelectorTool implements ITool {
     this.board.element.style.cursor = ''
     document.removeEventListener('pointerdown', this._windowPointerDown)
     this.deselect();
+    this._rotater.follow(null)
   }
   deselect() {
     const { board } = this;
@@ -199,16 +202,26 @@ export class SelectorTool implements ITool {
   }
 
   pointerMove(dot: IDot): void {
+    let cursor: string = '';
+
+    if (this._rotater.visible) {
+      const { x, y } = this._rotater.map2me(dot.x, dot.y)
+      const a = this._rotater.cursor(x, y)
+      if (a) {
+        this.board.element.style.cursor = a;
+        return
+      }
+    }
+
     const result = Arrays.find(this.board.selects, it => {
       const { x, y } = it.map2me(dot.x, dot.y).plus(it.data)
       const [direction] = it.resizeDirection(x, y)
       if (direction != ResizeDirection.None) return [direction, it] as const
     })
-    let cursor: string = '';
     if (result) {
       const [direction, shape] = result;
       let { rotation: deg } = shape;
-      deg = Degrees.normalized(deg + (direction - 1) * 0.25 * Math.PI);
+      deg = Degrees.normalized(deg + (direction - 1) * Math.PI / 4);
       switch (Math.floor((25 + Degrees.angle(deg)) / 45) % 8) {
         case 0: case 4: cursor = 'ns-resize'; break;
         case 2: case 6: cursor = 'ew-resize'; break;
@@ -253,35 +266,34 @@ export class SelectorTool implements ITool {
         const { left: l, right: r, bottom: b, top: t } = geo
         switch (direction) {
           case ResizeDirection.Top:
-            geo.top = Math.min(roy + y, b - rs * 2)
+            geo.top = Math.min(roy + y, b - rs * 3)
             break
           case ResizeDirection.Bottom:
-            geo.bottom = Math.max(roy + y, t + rs * 2)
+            geo.bottom = Math.max(roy + y, t + rs * 3)
             break
           case ResizeDirection.Left:
-            geo.left = Math.min(rox + x, r - rs * 2)
+            geo.left = Math.min(rox + x, r - rs * 3)
             break
           case ResizeDirection.Right:
-            geo.right = Math.max(rox + x, l + rs * 2)
+            geo.right = Math.max(rox + x, l + rs * 3)
             break
           case ResizeDirection.TopLeft:
-            geo.top = Math.min(roy + y, b - rs * 2)
-            geo.left = Math.min(rox + x, r - rs * 2)
+            geo.top = Math.min(roy + y, b - rs * 3)
+            geo.left = Math.min(rox + x, r - rs * 3)
             break
           case ResizeDirection.TopRight:
-            geo.top = Math.min(roy + y, b - rs * 2)
-            geo.right = Math.max(rox + x, l + rs * 2)
+            geo.top = Math.min(roy + y, b - rs * 3)
+            geo.right = Math.max(rox + x, l + rs * 3)
             break
           case ResizeDirection.BottomLeft:
-            geo.bottom = Math.max(roy + y, t + rs * 2)
-            geo.left = Math.min(rox + x, r - rs * 2)
+            geo.bottom = Math.max(roy + y, t + rs * 3)
+            geo.left = Math.min(rox + x, r - rs * 3)
             break
           case ResizeDirection.BottomRight:
-            geo.bottom = Math.max(roy + y, t + rs * 2)
-            geo.right = Math.max(rox + x, l + rs * 2)
+            geo.bottom = Math.max(roy + y, t + rs * 3)
+            geo.right = Math.max(rox + x, l + rs * 3)
             break
         }
-        shape.markDirty()
         const degree: number = shape.data.r ?? 0
         const rd = direction - 1
         const beveling = (rd == 0 || rd == 4) ? geo.h : (rd == 2 || rd == 6) ? geo.w : Math.sqrt(geo.w * geo.w + geo.h * geo.h)
@@ -294,11 +306,12 @@ export class SelectorTool implements ITool {
         const cosV = Math.cos(deg);
         const midX = anchor.x + sinV * beveling / 2;
         const midY = anchor.y - cosV * beveling / 2;
-        shape.data.x = midX - geo.w / 2
-        shape.data.y = midY - geo.h / 2
-        shape.data.w = geo.w
-        shape.data.h = geo.h
-        shape.markDirty()
+        shape.geo(
+          midX - geo.w / 2,
+          midY - geo.h / 2,
+          geo.w,
+          geo.h
+        )
         this.emitGeoEvent(false)
         return
       }

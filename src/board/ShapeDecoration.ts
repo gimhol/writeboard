@@ -8,7 +8,16 @@ export interface IShapeDecoration {
   debug?: (shape: Shape, ctx: CanvasRenderingContext2D) => void;
 }
 export class DefaultShapeDecoration implements IShapeDecoration {
-  
+
+  private dashSroke(ctx: CanvasRenderingContext2D, segments: Iterable<number>) {
+    ctx.strokeStyle = 'white'
+    ctx.setLineDash([])
+    ctx.stroke()
+    ctx.strokeStyle = 'black'
+    ctx.setLineDash(segments)
+    ctx.stroke()
+  }
+
   // debug(shape: Shape, ctx: CanvasRenderingContext2D){
   //   const { x, y, w, h } = shape.boundingRect()
   //   ctx.fillStyle = "#00FF0033"
@@ -16,7 +25,6 @@ export class DefaultShapeDecoration implements IShapeDecoration {
   // }
 
   locked(shape: Shape, ctx: CanvasRenderingContext2D) {
-    // 虚线会损耗性能
     const lineWidth = 2
     ctx.lineWidth = lineWidth
     let { x, y, w, h } = shape.selectorRect()
@@ -24,29 +32,17 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     ctx.rect(x, y, w, h)
     ctx.closePath()
 
-    ctx.strokeStyle = '#ffffff88'
-    ctx.setLineDash([])
-    ctx.stroke()
-    ctx.strokeStyle = '#00000088'
-    ctx.setLineDash([lineWidth * 8])
-    ctx.stroke()
+    this.dashSroke(ctx, [lineWidth * 8])
   }
 
   selected(shape: Shape, ctx: CanvasRenderingContext2D) {
-    // 虚线会损耗性能
     const lineWidth = 1
     ctx.lineWidth = lineWidth
     let { x, y, w, h } = shape.selectorRect()
     ctx.beginPath()
     ctx.rect(x, y, w, h)
     ctx.closePath()
-
-    ctx.strokeStyle = '#ffffff'
-    ctx.setLineDash([])
-    ctx.stroke()
-    ctx.strokeStyle = '#000000'
-    ctx.setLineDash([lineWidth * 4])
-    ctx.stroke()
+    this.dashSroke(ctx, [lineWidth * 4])
   }
 
   resizable(shape: Shape, ctx: CanvasRenderingContext2D) {
