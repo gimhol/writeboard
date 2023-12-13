@@ -1799,17 +1799,17 @@ class Board {
         return this._whoami;
     }
     get width() {
-        return this._width;
+        return this._viewport.w;
     }
     set width(v) {
-        this._width = v;
+        this._viewport.w = v;
         this._layers.forEach(l => l.width = v);
     }
     get height() {
-        return this._height;
+        return this._viewport.h;
     }
     set height(v) {
-        this._height = v;
+        this._viewport.h = v;
         this._layers.forEach(l => l.height = v);
     }
     addLayer(layer) {
@@ -1880,8 +1880,8 @@ class Board {
         this._selects = [];
         this._whoami = 'local';
         this._editingLayerId = '';
-        this._width = 512;
-        this._height = 512;
+        this._viewport = new utils_1.Rect(0, 0, 600, 600);
+        this._world = new utils_1.Rect(0, 0, 600, 600);
         this.pointerdown = (e) => {
             var _a;
             if (e.button !== 0) {
@@ -1915,9 +1915,16 @@ class Board {
         this._factory = factory;
         this._shapesMgr = this._factory.newShapesMgr();
         this._element = (_a = options.element) !== null && _a !== void 0 ? _a : document.createElement('div');
-        options.width && (this._width = options.width);
-        options.height && (this._height = options.height);
-        options.toolType && (this._toolType = options.toolType);
+        if (options.width) {
+            this._viewport.w = options.width;
+            this._world.w = options.width;
+        }
+        if (options.height) {
+            this._viewport.h = options.height;
+            this._world.h = options.height;
+        }
+        if (options.toolType)
+            this._toolType = options.toolType;
         const layers = (_b = options.layers) !== null && _b !== void 0 ? _b : [];
         if (!layers.length) {
             layers.push({
@@ -2149,8 +2156,8 @@ class Board {
         const sh = ele.height / h;
         const { pressure = 0.5 } = ev;
         return {
-            x: Math.floor(sw * (ev.clientX - left)),
-            y: Math.floor(sh * (ev.clientY - top)),
+            x: Math.floor(sw * (ev.clientX - left - this._world.x)),
+            y: Math.floor(sh * (ev.clientY - top - this._world.y)),
             p: pressure
         };
     }
@@ -2172,14 +2179,20 @@ class Board {
         });
         this._shapesMgr.shapes().forEach(v => {
             const br = v.boundingRect();
+            if (!utils_1.Rect.hit(br, dirty))
+                return;
             const layer = this._layers.get(v.data.layer);
-            if (utils_1.Rect.hit(br, dirty) && layer)
-                v.render(layer.octx);
+            if (!layer)
+                return;
+            v.render(layer.octx);
         });
         (_a = this.tool) === null || _a === void 0 ? void 0 : _a.render(this.layer().octx);
         this._layers.forEach(layer => {
             const { ctx, offscreen } = layer;
+            ctx.save();
+            ctx.translate(this._viewport.x + this._world.x, this._viewport.y + this._world.y);
             ctx.drawImage(offscreen, dirty.x, dirty.y, dirty.w, dirty.h, dirty.x, dirty.y, dirty.w, dirty.h);
+            ctx.restore();
         });
         delete this._dirty;
     }

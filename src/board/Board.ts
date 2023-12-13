@@ -3,16 +3,16 @@ import { IFactory, IShapesMgr } from "../mgr"
 import { TextTool } from "../shape"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
-import { IDot, IRect, Rect } from "../utils"
+import { IDot, IRect, Numbers, Rect } from "../utils"
 import { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 
 export interface BoardOptions {
   element?: HTMLElement;
-  layers?: ILayerInits[]
-  width?: number
-  height?: number
-  toolType?: ToolType
+  layers?: ILayerInits[];
+  width?: number;
+  height?: number;
+  toolType?: ToolType;
 }
 const Tag = '[Board]'
 
@@ -28,23 +28,25 @@ export class Board {
   private _element: HTMLElement;
   private _whoami = 'local'
   private _editingLayerId: string = '';
-  private _width = 512;
-  private _height = 512;
+
+  private _viewport = new Rect(0, 0, 600, 600)
+  private _world = new Rect(0, 0, 600, 600)
+
   get whoami() {
     return this._whoami
   }
   get width() {
-    return this._width;
+    return this._viewport.w;
   }
   set width(v: number) {
-    this._width = v;
+    this._viewport.w = v;
     this._layers.forEach(l => l.width = v);
   }
   get height() {
-    return this._height;
+    return this._viewport.h;
   }
   set height(v: number) {
-    this._height = v;
+    this._viewport.h = v;
     this._layers.forEach(l => l.height = v);
   }
 
@@ -113,9 +115,15 @@ export class Board {
     this._shapesMgr = this._factory.newShapesMgr();
     this._element = options.element ?? document.createElement('div');
 
-    options.width && (this._width = options.width)
-    options.height && (this._height = options.height)
-    options.toolType && (this._toolType = options.toolType)
+    if (options.width) {
+      this._viewport.w = options.width
+      this._world.w = options.width
+    }
+    if (options.height) {
+      this._viewport.h = options.height
+      this._world.h = options.height
+    }
+    if (options.toolType) this._toolType = options.toolType
 
     const layers: ILayerInits[] = options.layers ?? []
     if (!layers.length) {
@@ -382,8 +390,8 @@ export class Board {
     const sh = ele.height / h
     const { pressure = 0.5 } = ev as any
     return {
-      x: Math.floor(sw * (ev.clientX - left)),
-      y: Math.floor(sh * (ev.clientY - top)),
+      x: Math.floor(sw * (ev.clientX - left - this._world.x)),
+      y: Math.floor(sh * (ev.clientY - top - this._world.y)),
       p: pressure
     }
   }
@@ -424,6 +432,7 @@ export class Board {
     this._dirty = this._dirty ? Rect.bounds(this._dirty, rect) : rect
     requested && requestAnimationFrame(() => this.render())
   }
+
   render() {
     const dirty = this._dirty
     if (!dirty)
@@ -436,19 +445,27 @@ export class Board {
 
     this._shapesMgr.shapes().forEach(v => {
       const br = v.boundingRect();
+      if (!Rect.hit(br, dirty)) return;
       const layer = this._layers.get(v.data.layer);
-      if (Rect.hit(br, dirty) && layer) v.render(layer.octx)
+      if (!layer) return;
+      v.render(layer.octx)
     })
 
     this.tool?.render(this.layer().octx)
 
     this._layers.forEach(layer => {
       const { ctx, offscreen } = layer
+      ctx.save()
+      ctx.translate(
+        this._viewport.x + this._world.x,
+        this._viewport.y + this._world.y
+      )
       ctx.drawImage(
         offscreen,
         dirty.x, dirty.y, dirty.w, dirty.h,
         dirty.x, dirty.y, dirty.w, dirty.h
       )
+      ctx.restore()
     })
     delete this._dirty
   }
