@@ -6352,6 +6352,7 @@ class SelectorTool {
                     this.cursor = '';
                     break;
             }
+            return;
         }
         this.cursor = '';
     }
