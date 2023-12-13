@@ -6353,6 +6353,7 @@ class SelectorTool {
                     break;
             }
         }
+        this.cursor = '';
     }
     pointerDraw(dot) {
         var _a;
