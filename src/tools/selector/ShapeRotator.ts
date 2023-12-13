@@ -4,6 +4,7 @@ import { Degrees, Numbers } from "../../utils/Numbers";
 import { Rect } from "../../utils/Rect";
 
 export class ShapeRotator extends Shape<ShapeData> {
+  get target() { return this._target }
   private _target: Shape | undefined
   private _ctrlDot = new Rect(0, 0, 0, 0)
   private _oY: number = 0;
@@ -54,7 +55,7 @@ export class ShapeRotator extends Shape<ShapeData> {
 
     const { x, y, w, h } = this._ctrlDot
     const mx = Math.floor(x + w / 2) - 0.5
-    const t = Math.floor(y) - 0.5
+    const t = Math.floor(y) + 0.5
     const l = Math.floor(x) - 0.5
 
     ctx.strokeStyle = "black"

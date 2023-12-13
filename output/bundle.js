@@ -2199,7 +2199,7 @@ class Board {
 }
 exports.Board = Board;
 
-},{"../event":23,"../shape":55,"../tools":90,"../utils":107,"./Layer":18}],18:[function(require,module,exports){
+},{"../event":23,"../shape":55,"../tools":90,"../utils":108,"./Layer":18}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layer = exports.LayerInfo = void 0;
@@ -2420,7 +2420,8 @@ var Events;
             x: data.x,
             y: data.y,
             w: data.w,
-            h: data.h
+            h: data.h,
+            r: data.r
         };
     }
     Events.pickShapeGeoData = pickShapeGeoData;
@@ -3028,7 +3029,7 @@ __exportStar(require("./shape"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./utils"), exports);
 
-},{"./board":20,"./features":29,"./mgr":37,"./shape":55,"./tools":90,"./utils":107}],33:[function(require,module,exports){
+},{"./board":20,"./features":29,"./mgr":37,"./shape":55,"./tools":90,"./utils":108}],33:[function(require,module,exports){
 "use strict";
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
@@ -3151,7 +3152,7 @@ class DefaultFactory {
 exports.DefaultFactory = DefaultFactory;
 Gaia_1.Gaia.registerFactory(FactoryEnum_1.FactoryEnum.Default, () => new DefaultFactory(), { name: 'bulit-in Factory', desc: 'bulit-in Factory' });
 
-},{"../board":20,"../board/ShapeDecoration":19,"../fonts/builtInFontFamilies":30,"../fonts/checker":31,"../shape/base/Data":39,"../shape/base/Shape":40,"../tools/base/InvalidTool":86,"../utils/helper":106,"./FactoryEnum":34,"./Gaia":35,"./ShapesMgr":36}],34:[function(require,module,exports){
+},{"../board":20,"../board/ShapeDecoration":19,"../fonts/builtInFontFamilies":30,"../fonts/checker":31,"../shape/base/Data":39,"../shape/base/Shape":40,"../tools/base/InvalidTool":86,"../utils/helper":107,"./FactoryEnum":34,"./Gaia":35,"./ShapesMgr":36}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFactoryName = exports.FactoryEnum = void 0;
@@ -3415,8 +3416,10 @@ class ShapeData {
         this.w = 0;
         this.h = 0;
         this.z = 0;
+        /** layerId */
         this.l = '';
-        this.r = void 0; //Math.PI/4
+        /** rotation */
+        this.r = void 0;
         this.style = {};
         this.status = { v: 1 };
     }
@@ -3613,7 +3616,7 @@ class ShapeData {
 }
 exports.ShapeData = ShapeData;
 
-},{"../../utils":107,"../../utils/helper":106,"../ShapeEnum":38}],40:[function(require,module,exports){
+},{"../../utils":108,"../../utils/helper":107,"../ShapeEnum":38}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Shape = exports.Resizable = exports.ShapeEventEnum = exports.ResizeDirection = void 0;
@@ -4125,7 +4128,7 @@ class Shape {
 }
 exports.Shape = Shape;
 
-},{"../../utils/Rect":102,"../../utils/Vector":105,"../../utils/helper":106}],41:[function(require,module,exports){
+},{"../../utils/Rect":102,"../../utils/Vector":106,"../../utils/helper":107}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeNeedPath = void 0;
@@ -4371,7 +4374,7 @@ class ImgData extends base_1.ShapeData {
 }
 exports.ImgData = ImgData;
 
-},{"../../utils/helper":106,"../ShapeEnum":38,"../base":42}],52:[function(require,module,exports){
+},{"../../utils/helper":107,"../ShapeEnum":38,"../base":42}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeImg = void 0;
@@ -5421,7 +5424,7 @@ class TextData extends base_1.ShapeData {
 }
 exports.TextData = TextData;
 
-},{"../../utils/helper":106,"../ShapeEnum":38,"../base":42}],77:[function(require,module,exports){
+},{"../../utils/helper":107,"../ShapeEnum":38,"../base":42}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeText = void 0;
@@ -6148,12 +6151,13 @@ const Data_1 = require("../../shape/base/Data");
 const Shape_1 = require("../../shape/rect/Shape");
 const utils_1 = require("../../utils");
 const RectHelper_1 = require("../../utils/RectHelper");
+const Throttle_1 = require("../../utils/Throttle");
 const Vector_1 = require("../../utils/Vector");
 const ToolEnum_1 = require("../ToolEnum");
 const ShapeRotator_1 = require("./ShapeRotator");
 var SelectorStatus;
 (function (SelectorStatus) {
-    SelectorStatus[SelectorStatus["Invalid"] = 0] = "Invalid";
+    SelectorStatus[SelectorStatus["Idle"] = 0] = "Idle";
     SelectorStatus[SelectorStatus["ReadyForDragging"] = 1] = "ReadyForDragging";
     SelectorStatus[SelectorStatus["Dragging"] = 2] = "Dragging";
     SelectorStatus[SelectorStatus["ReadyForSelecting"] = 3] = "ReadyForSelecting";
@@ -6172,11 +6176,14 @@ class SelectorTool {
         this._rotator.board = v;
     }
     get rect() { return this._rectHelper; }
+    set cursor(v) {
+        this.board.element.style.cursor = v;
+    }
     constructor() {
         this._doubleClickTimer = 0;
         this._selector = new Shape_1.ShapeRect(new Data_1.ShapeData);
         this._rectHelper = new RectHelper_1.RectHelper();
-        this._status = SelectorStatus.Invalid;
+        this._status = SelectorStatus.Idle;
         this._prevPos = { x: 0, y: 0 };
         this._resizer = {
             direction: base_1.ResizeDirection.None,
@@ -6187,6 +6194,21 @@ class SelectorTool {
         this._rotator = new ShapeRotator_1.ShapeRotator();
         this._windowPointerDown = () => this.deselect();
         this._shapes = [];
+        this._emitGeoEvent = (0, Throttle_1.throttle)(1000 / 30, () => {
+            const { board, _shapes } = this;
+            if (!board || !_shapes.length)
+                return;
+            board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
+                operator: board.whoami,
+                tool: this.type,
+                shapeDatas: this._shapes.map(v => {
+                    const ret = [
+                        Events_1.Events.pickShapeGeoData(v.shape.data), v.prevData
+                    ];
+                    return ret;
+                })
+            });
+        });
         this._waiting = false;
         this._selector.data.lineWidth = 2;
         this._selector.data.strokeStyle = '#003388FF';
@@ -6223,6 +6245,7 @@ class SelectorTool {
                 y: v.data.y,
                 w: v.data.w,
                 h: v.data.h,
+                r: v.data.r,
             };
             if (startX === void 0) {
                 x = x === void 0 ? v.data.x : Math.min(x, v.data.x);
@@ -6251,14 +6274,15 @@ class SelectorTool {
     }
     pointerDown(dot) {
         const { board, _status } = this;
-        if (!board || _status !== SelectorStatus.Invalid) {
-            return;
-        }
-        if (this._rotator.pointerDown(dot)) {
-            this._status = SelectorStatus.ReadyForRotating;
+        if (!board || _status !== SelectorStatus.Idle) {
             return;
         }
         const { x, y } = dot;
+        if (this._rotator.pointerDown(dot)) {
+            this._status = SelectorStatus.ReadyForRotating;
+            this.connect([this._rotator.target], x, y);
+            return;
+        }
         this._rectHelper.start(x, y);
         this.updateGeo();
         const shape = board.hits({ x, y, w: 0, h: 0 })[0]; // 点击位置的全部图形
@@ -6332,9 +6356,6 @@ class SelectorTool {
         }
         this.connect(board.selects, x, y);
     }
-    set cursor(v) {
-        this.board.element.style.cursor = v;
-    }
     pointerMove(dot) {
         if (this._rotator.hit(dot)) {
             this.cursor = 'crosshair';
@@ -6385,6 +6406,7 @@ class SelectorTool {
                 this._status = SelectorStatus.Rotating;
             case SelectorStatus.Rotating:
                 this._rotator.pointerDraw(dot);
+                this.emitGeoEvent(false);
                 break;
             case SelectorStatus.ReadyForSelecting: // let it fall-through
                 if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
@@ -6482,6 +6504,8 @@ class SelectorTool {
                 }
                 break;
             }
+            case SelectorStatus.Rotating:
+            case SelectorStatus.Resizing:
             case SelectorStatus.Dragging: {
                 this.emitGeoEvent(true);
                 break;
@@ -6489,7 +6513,7 @@ class SelectorTool {
         }
         this._selector.visible = false;
         this._rectHelper.clear();
-        this._status = SelectorStatus.Invalid;
+        this._status = SelectorStatus.Idle;
     }
     doubleClick() {
         const { board } = this;
@@ -6507,23 +6531,10 @@ class SelectorTool {
         }
     }
     emitGeoEvent(immediate) {
-        if (this._waiting && !immediate)
-            return;
-        this._waiting = true;
+        this._emitGeoEvent();
         const board = this.board;
         if (!board)
             return;
-        board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
-            operator: board.whoami,
-            tool: this.type,
-            shapeDatas: this._shapes.map(v => {
-                const ret = [
-                    Events_1.Events.pickShapeGeoData(v.shape.data), v.prevData
-                ];
-                return ret;
-            })
-        });
-        setTimeout(() => { this._waiting = false; }, 1000 / 30);
         if (immediate) {
             board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
                 operator: board.whoami,
@@ -6548,7 +6559,7 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":23,"../../event/Events":22,"../../mgr/Gaia":35,"../../shape":55,"../../shape/base":42,"../../shape/base/Data":39,"../../shape/rect/Shape":73,"../../utils":107,"../../utils/RectHelper":103,"../../utils/Vector":105,"../ToolEnum":85,"./ShapeRotator":92}],92:[function(require,module,exports){
+},{"../../event":23,"../../event/Events":22,"../../mgr/Gaia":35,"../../shape":55,"../../shape/base":42,"../../shape/base/Data":39,"../../shape/rect/Shape":73,"../../utils":108,"../../utils/RectHelper":103,"../../utils/Throttle":105,"../../utils/Vector":106,"../ToolEnum":85,"./ShapeRotator":92}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRotator = void 0;
@@ -6556,6 +6567,7 @@ const shape_1 = require("../../shape");
 const Numbers_1 = require("../../utils/Numbers");
 const Rect_1 = require("../../utils/Rect");
 class ShapeRotator extends shape_1.Shape {
+    get target() { return this._target; }
     get _distance() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotator.distance) || 30; }
     get _width() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotator.size) || 10; }
     constructor() {
@@ -6601,7 +6613,7 @@ class ShapeRotator extends shape_1.Shape {
         this.beginDraw(ctx);
         const { x, y, w, h } = this._ctrlDot;
         const mx = Math.floor(x + w / 2) - 0.5;
-        const t = Math.floor(y) - 0.5;
+        const t = Math.floor(y) + 0.5;
         const l = Math.floor(x) - 0.5;
         ctx.strokeStyle = "black";
         ctx.fillStyle = "white";
@@ -7285,7 +7297,7 @@ class RectHelper {
 }
 exports.RectHelper = RectHelper;
 
-},{"./Vector":105}],104:[function(require,module,exports){
+},{"./Vector":106}],104:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RotatedRect = void 0;
@@ -7390,7 +7402,24 @@ class RotatedRect {
 }
 exports.RotatedRect = RotatedRect;
 
-},{"./Rect":102,"./Vector":105}],105:[function(require,module,exports){
+},{"./Rect":102,"./Vector":106}],105:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.throttle = void 0;
+function throttle(interval, cb) {
+    let _waiting = false;
+    let ret = function () {
+        if (_waiting)
+            return;
+        _waiting = true;
+        setTimeout(() => _waiting = false, interval);
+        cb();
+    };
+    return Object.assign(ret, { cb });
+}
+exports.throttle = throttle;
+
+},{}],106:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Vector = void 0;
@@ -7432,7 +7461,7 @@ class Vector {
 }
 exports.Vector = Vector;
 
-},{}],106:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isStr = exports.isNum = void 0;
@@ -7441,7 +7470,7 @@ exports.isNum = isNum;
 const isStr = (x) => typeof x === 'string';
 exports.isStr = isStr;
 
-},{}],107:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7474,4 +7503,4 @@ __exportStar(require("./RotatedRect"), exports);
 __exportStar(require("./Numbers"), exports);
 __exportStar(require("./Arrays"), exports);
 
-},{"./Arrays":94,"./BinaryRange":95,"./BinaryTree":96,"./Dot":98,"./ITree":99,"./Numbers":100,"./QuadTree":101,"./Rect":102,"./RotatedRect":104,"./Vector":105}]},{},[16]);
+},{"./Arrays":94,"./BinaryRange":95,"./BinaryTree":96,"./Dot":98,"./ITree":99,"./Numbers":100,"./QuadTree":101,"./Rect":102,"./RotatedRect":104,"./Vector":106}]},{},[16]);

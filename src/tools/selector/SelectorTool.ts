@@ -9,12 +9,13 @@ import { ShapeRect } from "../../shape/rect/Shape"
 import { Arrays, Degrees } from "../../utils"
 import { IDot } from "../../utils/Dot"
 import { RectHelper } from "../../utils/RectHelper"
+import { throttle } from "../../utils/Throttle"
 import { IVector, Vector } from "../../utils/Vector"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { ITool } from "../base/Tool"
 import { ShapeRotator } from "./ShapeRotator"
 export enum SelectorStatus {
-  Invalid = 0,
+  Idle = 0,
   ReadyForDragging,
   Dragging,
   ReadyForSelecting,
@@ -31,7 +32,7 @@ export class SelectorTool implements ITool {
   private _doubleClickTimer = 0;
   private _selector = new ShapeRect(new ShapeData)
   private _rectHelper = new RectHelper()
-  private _status = SelectorStatus.Invalid
+  private _status = SelectorStatus.Idle
   private _prevPos: IVector = { x: 0, y: 0 }
   private _resizer = {
     direction: ResizeDirection.None,
@@ -54,6 +55,11 @@ export class SelectorTool implements ITool {
     this._rotator.board = v!!;
   }
   get rect(): RectHelper { return this._rectHelper }
+
+  set cursor(v: string) {
+    this.board.element.style.cursor = v;
+  }
+
   constructor() {
     this._selector.data.lineWidth = 2
     this._selector.data.strokeStyle = '#003388FF'
@@ -90,6 +96,7 @@ export class SelectorTool implements ITool {
         y: v.data.y,
         w: v.data.w,
         h: v.data.h,
+        r: v.data.r,
       }
       if (startX === void 0) {
         x = x === void 0 ? v.data.x : Math.min(x, v.data.x);
@@ -124,16 +131,17 @@ export class SelectorTool implements ITool {
 
   pointerDown(dot: IDot): void {
     const { board, _status } = this
-    if (!board || _status !== SelectorStatus.Invalid) {
+    if (!board || _status !== SelectorStatus.Idle) {
       return;
     }
 
+    const { x, y } = dot
     if (this._rotator.pointerDown(dot)) {
       this._status = SelectorStatus.ReadyForRotating;
+      this.connect([this._rotator.target!], x, y);
       return
     }
 
-    const { x, y } = dot
     this._rectHelper.start(x, y)
     this.updateGeo()
     const shape: Shape | undefined = board.hits({ x, y, w: 0, h: 0 })[0]; // 点击位置的全部图形
@@ -205,9 +213,7 @@ export class SelectorTool implements ITool {
     }
     this.connect(board.selects, x, y);
   }
-  set cursor(v: string) {
-    this.board.element.style.cursor = v;
-  }
+
   pointerMove(dot: IDot): void {
     if (this._rotator.hit(dot)) {
       this.cursor = 'crosshair';
@@ -242,6 +248,7 @@ export class SelectorTool implements ITool {
         this._status = SelectorStatus.Rotating;
       case SelectorStatus.Rotating:
         this._rotator.pointerDraw(dot);
+        this.emitGeoEvent(false);
         break;
       case SelectorStatus.ReadyForSelecting: // let it fall-through
         if (Vector.manhattan(this._prevPos, dot) < 5) { return; }
@@ -338,14 +345,16 @@ export class SelectorTool implements ITool {
         }
         break;
       }
+      case SelectorStatus.Rotating:
+      case SelectorStatus.Resizing:
       case SelectorStatus.Dragging: {
-        this.emitGeoEvent(true)
+        this.emitGeoEvent.enforce(true)
         break;
       }
     }
     this._selector.visible = false
     this._rectHelper.clear()
-    this._status = SelectorStatus.Invalid
+    this._status = SelectorStatus.Idle
   }
 
   doubleClick() {
@@ -362,38 +371,29 @@ export class SelectorTool implements ITool {
       textTool.connect(this._shapes[0].shape);
     }
   }
-  private _waiting = false
-  emitGeoEvent(immediate: boolean): void {
-    if (this._waiting && !immediate)
-      return
-    this._waiting = true
-    const board = this.board
-    if (!board) return
-    board.emitEvent(EventEnum.ShapesGeoChanging, {
-      operator: board.whoami,
-      tool: this.type,
-      shapeDatas: this._shapes.map(v => {
-        const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
-          Events.pickShapeGeoData(v.shape.data), v.prevData
-        ]
-        return ret
-      })
-    });
-    setTimeout(() => { this._waiting = false }, 1000 / 30)
 
-    if (immediate) {
+  private emitGeoEvent = throttle(1000 / 30, (isLast: boolean) => {
+    const { board, _shapes } = this;
+    if (!board || !_shapes.length) return;
+    if (isLast) {
       board.emitEvent(EventEnum.ShapesGeoChanged, {
         operator: board.whoami,
         tool: this.type,
-        shapeDatas: this._shapes.map(v => {
-          const ret: [Events.IShapeGeoData, Events.IShapeGeoData] = [
-            Events.pickShapeGeoData(v.shape.data), v.startData
-          ]
-          return ret
-        })
+        shapeDatas: this._shapes.map(v => [
+          Events.pickShapeGeoData(v.shape.data), v.startData
+        ] as const)
+      });
+    } else {
+      board.emitEvent(EventEnum.ShapesGeoChanging, {
+        operator: board.whoami,
+        tool: this.type,
+        shapeDatas: this._shapes.map(v => [
+          Events.pickShapeGeoData(v.shape.data), v.prevData
+        ] as const)
       });
     }
-  }
+  })
+
   private updateGeo() {
     const { x, y, w, h } = this._rectHelper.gen()
     this._selector.geo(x, y, w, h)

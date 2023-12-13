@@ -67,7 +67,11 @@ export interface IShapeData {
   w: number;
   h: number;
   z: number;
+
+  /** layerId */
   l: string;
+
+  /** rotation */
   r?: number;
   style?: IShapeStyle;
   status?: IShapeStatus;
@@ -80,8 +84,12 @@ export class ShapeData implements IShapeData {
   w = 0
   h = 0
   z = 0
+  
+  /** layerId */
   l = ''
-  r: number | undefined = void 0//Math.PI/4
+
+  /** rotation */
+  r: number | undefined = void 0
   style?: Partial<IShapeStyle> = {}
   status?: Partial<IShapeStatus> = { v: 1 }
 

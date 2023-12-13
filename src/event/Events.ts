@@ -17,7 +17,7 @@ export namespace Events {
   }
   export interface IAnyShagesDetail extends IOperatorDetail {
     tool: ToolType,
-    shapeDatas: [Partial<IShapeData>, Partial<IShapeData>][];
+    shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[];
   }
   export interface ILayerDetail extends IOperatorDetail {
     layer: Layer
@@ -28,6 +28,7 @@ export namespace Events {
     y?: number;
     w?: number;
     h?: number;
+    r?: number;
   }
   export function pickShapePosData(data: IShapeData): IShapeGeoData {
     return {
@@ -42,7 +43,8 @@ export namespace Events {
       x: data.x,
       y: data.y,
       w: data.w,
-      h: data.h
+      h: data.h,
+      r: data.r
     }
   }
   export interface IToolChangedDetail {
