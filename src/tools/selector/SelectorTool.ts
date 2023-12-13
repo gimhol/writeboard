@@ -229,6 +229,7 @@ export class SelectorTool implements ITool {
         case 1: case 5: this.cursor = 'ne-resize'; break;
         default: this.cursor = ''; break;
       }
+      return
     }
     this.cursor = '';
   }
