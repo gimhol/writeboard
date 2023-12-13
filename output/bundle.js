@@ -4385,12 +4385,14 @@ class ShapeImg extends base_1.Shape {
         this._loaded = false;
         this._error = '';
         this.onLoad = () => {
+            this.beginDirty();
             this._loaded = true;
-            this.markDirty();
+            this.endDirty();
         };
         this.onError = (e) => {
+            this.beginDirty();
             this._error = 'fail to load: ' + e.target.src;
-            this.markDirty();
+            this.endDirty();
         };
         this._resizable = base_1.Resizable.All;
     }
@@ -4594,7 +4596,8 @@ class ShapeLines extends base_1.Shape {
         this.updateSrcGeo();
     }
     merge(data) {
-        this.markDirty();
+        const prev = this.data.copy();
+        this.beginDirty(prev);
         const startIdx = this.data.coords.length;
         this.data.merge(data);
         const endIdx = this.data.coords.length - 1;
@@ -4607,7 +4610,7 @@ class ShapeLines extends base_1.Shape {
             }
         }
         this.updateSrcGeo();
-        this.markDirty();
+        this.endDirty(prev);
     }
     /**
      * 计算原始矩形
@@ -4647,7 +4650,7 @@ class ShapeLines extends base_1.Shape {
         const geo = this.updateSrcGeo();
         this.updatePath(dot.x, dot.y, type);
         this.geo(geo.x, geo.y, geo.w, geo.h);
-        this.markDirty();
+        this.endDirty();
     }
     editDot(dot) {
         this.data.coords[this.data.coords.length - 2] = dot.x;
@@ -4660,7 +4663,7 @@ class ShapeLines extends base_1.Shape {
         }
         const geo = this.updateSrcGeo();
         this.geo(geo.x, geo.y, geo.w, geo.h);
-        this.markDirty();
+        this.endDirty();
     }
     render(ctx) {
         if (!this.visible) {
@@ -5050,7 +5053,8 @@ class ShapePen extends base_1.Shape {
         }
     }
     merge(data) {
-        this.markDirty();
+        const prev = this.data.copy();
+        this.beginDirty(prev);
         const startIdx = this.data.coords.length;
         this.data.merge(data);
         const endIdx = this.data.coords.length - 1;
@@ -5068,7 +5072,7 @@ class ShapePen extends base_1.Shape {
                     this.updatePath(x, y);
             }
         }
-        this.markDirty();
+        this.endDirty(prev);
     }
     /**
      * 根据新加入的点，计算原始矩形
@@ -5141,7 +5145,7 @@ class ShapePen extends base_1.Shape {
         const geo = this.updateSrcGeo(dot.x, dot.y);
         this.updatePath(dot.x, dot.y, type);
         this.geo(geo.x, geo.y, geo.w, geo.h);
-        this.markDirty();
+        this.endDirty();
     }
     render(ctx) {
         if (!this.visible)
@@ -5449,22 +5453,24 @@ class ShapeText extends base_1.Shape {
     }
     get fontSize() { return this.data.font_size; }
     set fontSize(v) {
-        this.markDirty();
+        const prev = {};
+        this.beginDirty(prev);
         this.data.font_size = v;
         this._calculateLines();
         this._calculateSectionRects();
-        this.markDirty();
+        this.endDirty(prev);
     }
     merge(data) {
-        this.markDirty();
+        const prev = this.data.copy();
+        this.beginDirty(prev);
         this.data.merge(data);
         this._calculateLines();
         this._calculateSectionRects();
-        this.markDirty();
+        this.endDirty(prev);
     }
     _setCursorVisible(v = !this._cursorVisible) {
         this._cursorVisible = v;
-        this.markDirty();
+        this.endDirty();
     }
     _setCursorFlashing(v) {
         if (v)
@@ -5494,7 +5500,7 @@ class ShapeText extends base_1.Shape {
             return;
         this.data.text = v;
         this._calculateLines();
-        dirty && this.markDirty();
+        dirty && this.endDirty();
     }
     setSelection(v = { start: -1, end: -1 }, dirty = true) {
         if (this._selection.equal(v))
@@ -5503,7 +5509,7 @@ class ShapeText extends base_1.Shape {
         this._selection.end = v.end;
         this._setCursorFlashing(v.start === v.end && v.start >= 0);
         this._calculateSectionRects();
-        dirty && this.markDirty();
+        dirty && this.endDirty();
     }
     _calculateLines() {
         this._applyStyle(measurer);
@@ -6566,7 +6572,7 @@ class ShapeRotater extends shape_1.Shape {
             this.visible = shape.selected;
             const w = this._width;
             const d = this._distance;
-            this.markDirty();
+            this.beginDirty();
             this.data.w = w;
             this.data.h = shape.h + d * 2;
             this.data.x = mx - this.halfW;
@@ -6575,7 +6581,7 @@ class ShapeRotater extends shape_1.Shape {
             const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotater.size) || 10;
             this._ctrlDot.w = s;
             this._ctrlDot.h = s;
-            this.markDirty();
+            this.endDirty();
         };
         this._listener = (e) => this._update(e.detail.shape);
         this.data.ghost = true;

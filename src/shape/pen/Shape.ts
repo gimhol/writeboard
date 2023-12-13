@@ -29,7 +29,8 @@ export class ShapePen extends Shape<PenData> {
     }
   }
   override merge(data: Partial<PenData>) {
-    this.markDirty()
+    const prev = this.data.copy()
+    this.beginDirty(prev)
     const startIdx = this.data.coords.length
     this.data.merge(data)
     const endIdx = this.data.coords.length - 1
@@ -47,7 +48,7 @@ export class ShapePen extends Shape<PenData> {
           this.updatePath(x, y)
       }
     }
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   /**
@@ -120,7 +121,7 @@ export class ShapePen extends Shape<PenData> {
     const geo = this.updateSrcGeo(dot.x, dot.y)
     this.updatePath(dot.x, dot.y, type)
     this.geo(geo.x, geo.y, geo.w, geo.h)
-    this.markDirty()
+    this.endDirty()
   }
 
   render(ctx: CanvasRenderingContext2D): void {

@@ -8,7 +8,7 @@ import { IDot } from "../../utils/Dot"
 export class ShapeLines extends Shape<LinesData> {
   private _srcGeo: IRect | null = null
   private _path2D = new Path2D();
-  
+
   constructor(v: LinesData) {
     super(v);
     let x, y: number
@@ -21,7 +21,8 @@ export class ShapeLines extends Shape<LinesData> {
   }
 
   override merge(data: Partial<LinesData>) {
-    this.markDirty()
+    const prev = this.data.copy()
+    this.beginDirty(prev)
     const startIdx = this.data.coords.length
     this.data.merge(data)
     const endIdx = this.data.coords.length - 1
@@ -34,7 +35,7 @@ export class ShapeLines extends Shape<LinesData> {
       }
     }
     this.updateSrcGeo()
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   /**
@@ -76,7 +77,7 @@ export class ShapeLines extends Shape<LinesData> {
     const geo = this.updateSrcGeo()
     this.updatePath(dot.x, dot.y, type)
     this.geo(geo.x, geo.y, geo.w, geo.h)
-    this.markDirty()
+    this.endDirty()
   }
 
   editDot(dot: IDot): void {
@@ -90,7 +91,7 @@ export class ShapeLines extends Shape<LinesData> {
     }
     const geo = this.updateSrcGeo();
     this.geo(geo.x, geo.y, geo.w, geo.h);
-    this.markDirty();
+    this.endDirty();
   }
 
   render(ctx: CanvasRenderingContext2D): void {

@@ -22,8 +22,8 @@ export enum ShapeEventEnum {
 }
 
 export interface ShapeEventMap {
-  [ShapeEventEnum.StartDirty]: CustomEvent<{ shape: Shape, prev: Partial<IShapeData> }>;
-  [ShapeEventEnum.EndDirty]: CustomEvent<{ shape: Shape, prev: Partial<IShapeData> }>;
+  [ShapeEventEnum.StartDirty]: CustomEvent<{ shape: Shape, prev?: Partial<IShapeData> }>;
+  [ShapeEventEnum.EndDirty]: CustomEvent<{ shape: Shape, prev?: Partial<IShapeData> }>;
 }
 
 export type ShapeEventListener<K extends keyof ShapeEventMap> = (this: HTMLObjectElement, ev: ShapeEventMap[K]) => any
@@ -212,17 +212,17 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.endDirty(prev)
   }
 
-  beginDirty(prev: Partial<IShapeData>): void {
+  beginDirty(prev?: Partial<IShapeData>): void {
     this.dispatchEvent(ShapeEventEnum.StartDirty, { shape: this, prev })
     this.markDirty()
   }
 
-  endDirty(prev: Partial<IShapeData>): void {
+  endDirty(prev?: Partial<IShapeData>): void {
     this.markDirty()
     this.dispatchEvent(ShapeEventEnum.EndDirty, { shape: this, prev })
   }
 
-  markDirty(rect: IRect = this.boundingRect()): void {
+  private markDirty(rect: IRect = this.boundingRect()): void {
     this.board?.markDirty(rect)
   }
 

@@ -24,7 +24,7 @@ export class ShapeRotater extends Shape<ShapeData> {
     this.visible = shape.selected
     const w = this._width
     const d = this._distance
-    this.markDirty()
+    this.beginDirty()
     this.data.w = w
     this.data.h = shape.h + d * 2
     this.data.x = mx - this.halfW
@@ -34,7 +34,7 @@ export class ShapeRotater extends Shape<ShapeData> {
     const s = this.board?.factory.rotater.size || 10
     this._ctrlDot.w = s;
     this._ctrlDot.h = s;
-    this.markDirty()
+    this.endDirty()
   }
 
   private _listener = (e: ShapeEventMap[ShapeEventEnum.EndDirty]) => this._update(e.detail.shape)

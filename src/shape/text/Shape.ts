@@ -38,25 +38,27 @@ export class ShapeText extends Shape<TextData> {
   get fontSize(): number { return this.data.font_size }
 
   set fontSize(v) {
-    this.markDirty()
+    const prev = { }
+    this.beginDirty(prev)
     this.data.font_size = v;
     this._calculateLines()
     this._calculateSectionRects()
-    this.markDirty()
+    this.endDirty(prev)
   }
 
   override merge(data: Partial<TextData>) {
-    this.markDirty()
+    const prev = this.data.copy()
+    this.beginDirty(prev)
     this.data.merge(data)
     this._calculateLines()
     this._calculateSectionRects()
-    this.markDirty()
+    this.endDirty(prev)
   }
   private _cursorFlashingTimer: number | undefined
   private _cursorVisible = false
   private _setCursorVisible(v: boolean = !this._cursorVisible) {
     this._cursorVisible = v
-    this.markDirty()
+    this.endDirty()
   }
   private _setCursorFlashing(v: boolean) {
     if (v) this._cursorVisible = true
@@ -84,7 +86,7 @@ export class ShapeText extends Shape<TextData> {
       return
     this.data.text = v
     this._calculateLines()
-    dirty && this.markDirty()
+    dirty && this.endDirty()
   }
 
   setSelection(v: ITextSelection = { start: -1, end: -1 }, dirty: boolean = true) {
@@ -94,7 +96,7 @@ export class ShapeText extends Shape<TextData> {
     this._selection.end = v.end
     this._setCursorFlashing(v.start === v.end && v.start >= 0)
     this._calculateSectionRects()
-    dirty && this.markDirty()
+    dirty && this.endDirty()
   }
 
   private _calculateLines() {

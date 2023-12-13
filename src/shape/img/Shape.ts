@@ -34,13 +34,15 @@ export class ShapeImg extends Shape<ImgData> {
   }
 
   onLoad = () => {
+    this.beginDirty();
     this._loaded = true;
-    this.markDirty();
+    this.endDirty()
   }
 
   onError = (e: ErrorEvent) => {
+    this.beginDirty();
     this._error = 'fail to load: ' + (e.target as any).src;
-    this.markDirty();
+    this.endDirty();
   }
 
   render(ctx: CanvasRenderingContext2D): void {
