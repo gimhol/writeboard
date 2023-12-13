@@ -144,7 +144,8 @@ export class SelectorTool implements ITool {
 
     this._rectHelper.start(x, y)
     this.updateGeo()
-    const shape: Shape | undefined = board.hits({ x, y, w: 0, h: 0 })[0]; // 点击位置的全部图形
+    const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
+    const shape = Arrays.firstOf(shapes, it => (it.selected && !it.locked) ? it : null) || shapes[0]
 
     if (!shape || shape.locked) {
       // 点击的位置无任何未锁定图形，则框选图形, 并取消选择以选择的图形
@@ -219,7 +220,7 @@ export class SelectorTool implements ITool {
       this.cursor = 'crosshair';
       return;
     }
-    const result = Arrays.find(this.board.selects, it => {
+    const result = Arrays.firstOf(this.board.selects, it => {
       const { x, y } = it.map2me(dot.x, dot.y).plus(it.data)
       const [direction] = it.resizeDirection(x, y)
       if (direction != ResizeDirection.None) return [direction, it] as const

@@ -6194,22 +6194,29 @@ class SelectorTool {
         this._rotator = new ShapeRotator_1.ShapeRotator();
         this._windowPointerDown = () => this.deselect();
         this._shapes = [];
-        this._emitGeoEvent = (0, Throttle_1.throttle)(1000 / 30, () => {
+        this.emitGeoEvent = (0, Throttle_1.throttle)(1000 / 30, (isLast) => {
             const { board, _shapes } = this;
             if (!board || !_shapes.length)
                 return;
-            board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
-                operator: board.whoami,
-                tool: this.type,
-                shapeDatas: this._shapes.map(v => {
-                    const ret = [
+            if (isLast) {
+                board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
+                    operator: board.whoami,
+                    tool: this.type,
+                    shapeDatas: this._shapes.map(v => [
+                        Events_1.Events.pickShapeGeoData(v.shape.data), v.startData
+                    ])
+                });
+            }
+            else {
+                board.emitEvent(event_1.EventEnum.ShapesGeoChanging, {
+                    operator: board.whoami,
+                    tool: this.type,
+                    shapeDatas: this._shapes.map(v => [
                         Events_1.Events.pickShapeGeoData(v.shape.data), v.prevData
-                    ];
-                    return ret;
-                })
-            });
+                    ])
+                });
+            }
         });
-        this._waiting = false;
         this._selector.data.lineWidth = 2;
         this._selector.data.strokeStyle = '#003388FF';
         this._selector.data.fillStyle = '#00338855';
@@ -6285,7 +6292,8 @@ class SelectorTool {
         }
         this._rectHelper.start(x, y);
         this.updateGeo();
-        const shape = board.hits({ x, y, w: 0, h: 0 })[0]; // 点击位置的全部图形
+        const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
+        const shape = utils_1.Arrays.firstOf(shapes, it => (it.selected && !it.locked) ? it : null) || shapes[0];
         if (!shape || shape.locked) {
             // 点击的位置无任何未锁定图形，则框选图形, 并取消选择以选择的图形
             this._status = SelectorStatus.ReadyForSelecting;
@@ -6361,7 +6369,7 @@ class SelectorTool {
             this.cursor = 'crosshair';
             return;
         }
-        const result = utils_1.Arrays.find(this.board.selects, it => {
+        const result = utils_1.Arrays.firstOf(this.board.selects, it => {
             const { x, y } = it.map2me(dot.x, dot.y).plus(it.data);
             const [direction] = it.resizeDirection(x, y);
             if (direction != base_1.ResizeDirection.None)
@@ -6507,7 +6515,7 @@ class SelectorTool {
             case SelectorStatus.Rotating:
             case SelectorStatus.Resizing:
             case SelectorStatus.Dragging: {
-                this.emitGeoEvent(true);
+                this.emitGeoEvent.enforce(true);
                 break;
             }
         }
@@ -6528,24 +6536,6 @@ class SelectorTool {
             textTool.selectorCallback = () => board.setToolType(ToolEnum_1.ToolEnum.Selector);
             textTool.editor.addEventListener('blur', textTool.selectorCallback, { once: true });
             textTool.connect(this._shapes[0].shape);
-        }
-    }
-    emitGeoEvent(immediate) {
-        this._emitGeoEvent();
-        const board = this.board;
-        if (!board)
-            return;
-        if (immediate) {
-            board.emitEvent(event_1.EventEnum.ShapesGeoChanged, {
-                operator: board.whoami,
-                tool: this.type,
-                shapeDatas: this._shapes.map(v => {
-                    const ret = [
-                        Events_1.Events.pickShapeGeoData(v.shape.data), v.startData
-                    ];
-                    return ret;
-                })
-            });
         }
     }
     updateGeo() {
@@ -6674,16 +6664,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Arrays = void 0;
 var Arrays;
 (function (Arrays) {
-    function find(arr, func) {
+    function firstOf(arr, transform) {
         for (let i = 0, len = arr.length; i < len; i++) {
-            const result = func(arr[i]);
+            const result = transform(arr[i]);
             if (result !== null && result !== void 0) {
                 return result;
             }
         }
         return null;
     }
-    Arrays.find = find;
+    Arrays.firstOf = firstOf;
 })(Arrays = exports.Arrays || (exports.Arrays = {}));
 
 },{}],95:[function(require,module,exports){
@@ -7408,14 +7398,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.throttle = void 0;
 function throttle(interval, cb) {
     let _waiting = false;
-    let ret = function () {
+    let _result = void 0;
+    let ret = function (...args) {
         if (_waiting)
-            return;
+            return _result;
         _waiting = true;
+        _result = cb(...args);
         setTimeout(() => _waiting = false, interval);
-        cb();
+        return _result;
     };
-    return Object.assign(ret, { cb });
+    return Object.assign(ret, { enforce: cb });
 }
 exports.throttle = throttle;
 

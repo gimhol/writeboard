@@ -107,7 +107,7 @@ export class Player {
     const shapes = shapeDatas?.map(data => this.actor!.find(data.i)!).filter(v => v);
     shapes && this.actor!.remove(shapes, false);
   }
-  private _changeShapes(shapeDatas: [Partial<IShapeData>, Partial<IShapeData>][], which: 0 | 1) {
+  private _changeShapes(shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[], which: 0 | 1) {
     shapeDatas.forEach((currAndPrev) => {
       const data = currAndPrev[which];
       const id = data.i;

@@ -64,7 +64,7 @@ export class ActionQueue {
   private _actions: [() => void, () => void][] = [];
   private _cancellers: (() => void)[] = []
 }
-const _changeShapes = (board: Board, shapeDatas: [Partial<IShapeData>, Partial<IShapeData>][], which: 0 | 1) => {
+const _changeShapes = (board: Board, shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[], which: 0 | 1) => {
   shapeDatas.forEach((currAndPrev) => {
     const data = currAndPrev[which];
     const id = data.i;
