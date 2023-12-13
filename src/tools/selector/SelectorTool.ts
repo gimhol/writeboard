@@ -71,7 +71,7 @@ export class SelectorTool implements ITool {
     this.board.element.style.cursor = ''
     document.removeEventListener('pointerdown', this._windowPointerDown)
     this.deselect();
-    this._rotater.follow(null)
+    this._rotater.unfollow()
   }
   deselect() {
     const { board } = this;
@@ -126,6 +126,11 @@ export class SelectorTool implements ITool {
     const { board, _status } = this
     if (!board || _status !== SelectorStatus.Invalid) {
       return;
+    }
+
+    if (this._rotater.pointerDown(dot)) {
+      this._status = SelectorStatus.ReadyForRotating;
+      return
     }
 
     const { x, y } = dot
@@ -200,19 +205,14 @@ export class SelectorTool implements ITool {
     }
     this.connect(board.selects, x, y);
   }
-
+  set cursor(v: string) {
+    this.board.element.style.cursor = v;
+  }
   pointerMove(dot: IDot): void {
-    let cursor: string = '';
-
-    if (this._rotater.visible) {
-      const { x, y } = this._rotater.map2me(dot.x, dot.y)
-      const a = this._rotater.cursor(x, y)
-      if (a) {
-        this.board.element.style.cursor = a;
-        return
-      }
+    if (this._rotater.hit(dot)) {
+      this.cursor = 'crosshair';
+      return;
     }
-
     const result = Arrays.find(this.board.selects, it => {
       const { x, y } = it.map2me(dot.x, dot.y).plus(it.data)
       const [direction] = it.resizeDirection(x, y)
@@ -223,19 +223,25 @@ export class SelectorTool implements ITool {
       let { rotation: deg } = shape;
       deg = Degrees.normalized(deg + (direction - 1) * Math.PI / 4);
       switch (Math.floor((25 + Degrees.angle(deg)) / 45) % 8) {
-        case 0: case 4: cursor = 'ns-resize'; break;
-        case 2: case 6: cursor = 'ew-resize'; break;
-        case 3: case 7: cursor = 'nw-resize'; break;
-        case 1: case 5: cursor = 'ne-resize'; break;
+        case 0: case 4: this.cursor = 'ns-resize'; break;
+        case 2: case 6: this.cursor = 'ew-resize'; break;
+        case 3: case 7: this.cursor = 'nw-resize'; break;
+        case 1: case 5: this.cursor = 'ne-resize'; break;
+        default: this.cursor = ''; break;
       }
     }
-    this.board.element.style.cursor = cursor;
+    this.cursor = '';
   }
 
   pointerDraw(dot: IDot): void {
     const board = this.board
     if (!board) return
     switch (this._status) {
+      case SelectorStatus.ReadyForRotating: // let it fall-through
+        this._status = SelectorStatus.Rotating;
+      case SelectorStatus.Rotating:
+        this._rotater.pointerDraw(dot);
+        break;
       case SelectorStatus.ReadyForSelecting: // let it fall-through
         if (Vector.manhattan(this._prevPos, dot) < 5) { return; }
         this._status = SelectorStatus.Selecting;
@@ -319,18 +325,22 @@ export class SelectorTool implements ITool {
   }
 
   pointerUp(): void {
-    if (this._status === SelectorStatus.ReadyForDragging) {
-      // 双击判定
-      if (!this._doubleClickTimer) {
-        this._doubleClickTimer = setTimeout(() => this._doubleClickTimer = 0, 500);
-      } else {
-        clearTimeout(this._doubleClickTimer);
-        this._doubleClickTimer = 0;
-        this.doubleClick();
+    switch (this._status) {
+      case SelectorStatus.ReadyForDragging: {
+        // 双击判定
+        if (!this._doubleClickTimer) {
+          this._doubleClickTimer = setTimeout(() => this._doubleClickTimer = 0, 500);
+        } else {
+          clearTimeout(this._doubleClickTimer);
+          this._doubleClickTimer = 0;
+          this.doubleClick();
+        }
+        break;
       }
-    }
-    if (this._status === SelectorStatus.Dragging) {
-      this.emitGeoEvent(true)
+      case SelectorStatus.Dragging: {
+        this.emitGeoEvent(true)
+        break;
+      }
     }
     this._selector.visible = false
     this._rectHelper.clear()

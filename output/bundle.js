@@ -3047,9 +3047,8 @@ class DefaultFactory {
         this._z = 0;
         this._time = 0;
         this._shapeTemplates = {};
-        this.resizer = {
-            size: 10
-        };
+        this.resizer = { size: 10 };
+        this.rotater = { size: 10, distance: 30 };
         this._shapeDecoration = new ShapeDecoration_1.DefaultShapeDecoration;
     }
     get type() {
@@ -6186,7 +6185,7 @@ class SelectorTool {
         this.board.element.style.cursor = '';
         document.removeEventListener('pointerdown', this._windowPointerDown);
         this.deselect();
-        this._rotater.follow(null);
+        this._rotater.unfollow();
     }
     deselect() {
         const { board } = this;
@@ -6234,6 +6233,10 @@ class SelectorTool {
     pointerDown(dot) {
         const { board, _status } = this;
         if (!board || _status !== SelectorStatus.Invalid) {
+            return;
+        }
+        if (this._rotater.pointerDown(dot)) {
+            this._status = SelectorStatus.ReadyForRotating;
             return;
         }
         const { x, y } = dot;
@@ -6310,15 +6313,13 @@ class SelectorTool {
         }
         this.connect(board.selects, x, y);
     }
+    set cursor(v) {
+        this.board.element.style.cursor = v;
+    }
     pointerMove(dot) {
-        let cursor = '';
-        if (this._rotater.visible) {
-            const { x, y } = this._rotater.map2me(dot.x, dot.y);
-            const a = this._rotater.cursor(x, y);
-            if (a) {
-                this.board.element.style.cursor = a;
-                return;
-            }
+        if (this._rotater.hit(dot)) {
+            this.cursor = 'crosshair';
+            return;
         }
         const result = utils_1.Arrays.find(this.board.selects, it => {
             const { x, y } = it.map2me(dot.x, dot.y).plus(it.data);
@@ -6333,23 +6334,25 @@ class SelectorTool {
             switch (Math.floor((25 + utils_1.Degrees.angle(deg)) / 45) % 8) {
                 case 0:
                 case 4:
-                    cursor = 'ns-resize';
+                    this.cursor = 'ns-resize';
                     break;
                 case 2:
                 case 6:
-                    cursor = 'ew-resize';
+                    this.cursor = 'ew-resize';
                     break;
                 case 3:
                 case 7:
-                    cursor = 'nw-resize';
+                    this.cursor = 'nw-resize';
                     break;
                 case 1:
                 case 5:
-                    cursor = 'ne-resize';
+                    this.cursor = 'ne-resize';
+                    break;
+                default:
+                    this.cursor = '';
                     break;
             }
         }
-        this.board.element.style.cursor = cursor;
     }
     pointerDraw(dot) {
         var _a;
@@ -6357,6 +6360,11 @@ class SelectorTool {
         if (!board)
             return;
         switch (this._status) {
+            case SelectorStatus.ReadyForRotating: // let it fall-through
+                this._status = SelectorStatus.Rotating;
+            case SelectorStatus.Rotating:
+                this._rotater.pointerDraw(dot);
+                break;
             case SelectorStatus.ReadyForSelecting: // let it fall-through
                 if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
                     return;
@@ -6440,19 +6448,23 @@ class SelectorTool {
         }
     }
     pointerUp() {
-        if (this._status === SelectorStatus.ReadyForDragging) {
-            // 双击判定
-            if (!this._doubleClickTimer) {
-                this._doubleClickTimer = setTimeout(() => this._doubleClickTimer = 0, 500);
+        switch (this._status) {
+            case SelectorStatus.ReadyForDragging: {
+                // 双击判定
+                if (!this._doubleClickTimer) {
+                    this._doubleClickTimer = setTimeout(() => this._doubleClickTimer = 0, 500);
+                }
+                else {
+                    clearTimeout(this._doubleClickTimer);
+                    this._doubleClickTimer = 0;
+                    this.doubleClick();
+                }
+                break;
             }
-            else {
-                clearTimeout(this._doubleClickTimer);
-                this._doubleClickTimer = 0;
-                this.doubleClick();
+            case SelectorStatus.Dragging: {
+                this.emitGeoEvent(true);
+                break;
             }
-        }
-        if (this._status === SelectorStatus.Dragging) {
-            this.emitGeoEvent(true);
         }
         this._selector.visible = false;
         this._rectHelper.clear();
@@ -6521,77 +6533,96 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShapeRotater = void 0;
 const shape_1 = require("../../shape");
 const Numbers_1 = require("../../utils/Numbers");
+const Rect_1 = require("../../utils/Rect");
 class ShapeRotater extends shape_1.Shape {
+    get _distance() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotater.distance) || 30; }
+    get _width() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotater.size) || 10; }
     constructor() {
         super(new shape_1.ShapeData);
-        this._prevShape = null;
-        this.update = (shape) => {
+        this._ctrlDot = new Rect_1.Rect(0, 0, 0, 0);
+        this._startX = 0;
+        this._startY = 0;
+        this._startRotation = 0;
+        this._oY = 0;
+        this._oX = 0;
+        this._update = (shape) => {
+            var _a;
             const { x: mx, y: my } = shape.rotatedMid;
             this.visible = shape.selected;
+            const w = this._width;
+            const d = this._distance;
             this.markDirty();
-            this.data.w = 30;
-            this.data.h = shape.h + 60;
+            this.data.w = w;
+            this.data.h = shape.h + d * 2;
             this.data.x = mx - this.halfW;
             this.data.y = my - this.halfH;
             this.data.rotation = shape.rotation;
+            const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotater.size) || 10;
+            this._ctrlDot.w = s;
+            this._ctrlDot.h = s;
             this.markDirty();
         };
-        this.listener = (e) => this.update(e.detail.shape);
+        this._listener = (e) => this._update(e.detail.shape);
         this.data.ghost = true;
         this.data.visible = false;
     }
     follow(shape) {
+        this.unfollow();
+        shape.addEventListener(shape_1.ShapeEventEnum.EndDirty, this._listener);
+        this._update(shape);
+        this._target = shape;
+    }
+    unfollow() {
         var _a;
-        (_a = this._prevShape) === null || _a === void 0 ? void 0 : _a.addEventListener(shape_1.ShapeEventEnum.EndDirty, this.listener);
-        shape === null || shape === void 0 ? void 0 : shape.addEventListener(shape_1.ShapeEventEnum.EndDirty, this.listener);
-        if (shape)
-            this.update(shape);
-        this._prevShape = shape;
+        (_a = this._target) === null || _a === void 0 ? void 0 : _a.removeEventListener(shape_1.ShapeEventEnum.EndDirty, this._listener);
+        delete this._target;
     }
     render(ctx) {
-        var _a;
         if (!this.visible)
             return;
         this.beginDraw(ctx);
-        const { x, y, w } = this.drawingRect();
-        const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
-        const mx = Math.floor(x + w / 2);
-        const l = Math.floor(mx - s / 2);
+        const { x, y, w, h } = this._ctrlDot;
+        const mx = Math.floor(x + w / 2) - 0.5;
+        const t = Math.floor(y) - 0.5;
+        const l = Math.floor(x) - 0.5;
         ctx.strokeStyle = "black";
         ctx.fillStyle = "white";
         ctx.lineWidth = 1;
-        ctx.fillRect(l, y, s, s);
-        ctx.strokeRect(l + 0.5, y + 0.5, s, s);
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeRect(l, t, w, h);
         ctx.beginPath();
-        ctx.moveTo(mx + 0.5, y + s);
-        ctx.lineTo(mx + 0.5, 30);
+        ctx.moveTo(mx, y + h);
+        ctx.lineTo(mx, this._distance);
         ctx.stroke();
         this.endDraw(ctx);
         super.render(ctx);
     }
-    cursor(x, y) {
-        var _a;
-        const { w, h } = this.drawingRect();
-        const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
-        if (x < w / 2 - 10 || x > w / 2 + 10 || y < 0 || y > s * 2)
-            return null;
-        const d = Numbers_1.Degrees.normalized(this.rotation * Math.PI / 4 + Math.PI / 0.25);
-        switch (Math.floor((115 + Numbers_1.Degrees.angle(d)) / 45) % 8) {
-            case 0:
-            case 4: return 'ns-resize';
-            case 2:
-            case 6: return 'ew-resize';
-            case 3:
-            case 7: return 'nw-resize';
-            case 1:
-            case 5: return 'ne-resize';
+    pointerDown(dot) {
+        const ret = this.visible && !!this._target && this.hit(dot);
+        if (ret) {
+            this._startX = dot.x;
+            this._startY = dot.y;
+            this._startRotation = this._target.rotation;
+            this._oX = this._target.midX;
+            this._oY = this._target.midY;
         }
-        return null;
+        return ret;
+    }
+    pointerDraw(dot) {
+        var _a;
+        const dx = this._oX - dot.x;
+        const dy = this._oY - dot.y;
+        if (Numbers_1.Numbers.equals(dx + dy, 0))
+            return;
+        (_a = this._target) === null || _a === void 0 ? void 0 : _a.rotateTo(Math.atan2(dy, dx) - Math.PI / 2);
+    }
+    hit(dot) {
+        return this._ctrlDot.hit(this.map2me(dot.x, dot.y));
     }
 }
 exports.ShapeRotater = ShapeRotater;
 
-},{"../../shape":55,"../../utils/Numbers":100}],93:[function(require,module,exports){
+},{"../../shape":55,"../../utils/Numbers":100,"../../utils/Rect":102}],93:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
