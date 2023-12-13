@@ -2,8 +2,10 @@ import { Board } from "../../board/Board";
 import { IRect, Rect } from "../../utils/Rect";
 import { IVector, Vector } from "../../utils/Vector";
 import { isNum } from "../../utils/helper";
-import { ShapeEnum, ShapeType } from "../ShapeEnum";
+import { ShapeType } from "../ShapeEnum";
 import { IShapeData, ShapeData } from "./Data";
+import { ShapeEventMap, ShapeEventEnum, ShapeEventListener } from "./ShapeEvent";
+
 export enum ResizeDirection {
   None = 0,
   Top = 1,
@@ -15,18 +17,6 @@ export enum ResizeDirection {
   Left = 7,
   TopLeft = 8,
 }
-
-export enum ShapeEventEnum {
-  StartDirty = 'start_dirty',
-  EndDirty = 'end_dirty',
-}
-
-export interface ShapeEventMap {
-  [ShapeEventEnum.StartDirty]: CustomEvent<{ shape: Shape, prev?: Partial<IShapeData> }>;
-  [ShapeEventEnum.EndDirty]: CustomEvent<{ shape: Shape, prev?: Partial<IShapeData> }>;
-}
-
-export type ShapeEventListener<K extends keyof ShapeEventMap> = (this: HTMLObjectElement, ev: ShapeEventMap[K]) => any
 
 /**
  * 表示图形能以何种方式被拉伸
@@ -89,7 +79,12 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @memberof Shape
    */
   get board(): Board | undefined { return this._board }
-  set board(v: Board | undefined) { this._board = v }
+  set board(v: Board | undefined) {
+    if (v === this._board) return;
+    const prev = this._board
+    this._board = v
+    this.dispatchEvent(ShapeEventEnum.BoardChanged, { shape: this, prev })
+  }
 
   /**
    * 图形是否可见，
@@ -99,10 +94,10 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get visible(): boolean { return !!this._data.visible }
+  get visible(): boolean { return this._data.visible }
   set visible(v: boolean) {
-    if (!!this._data.visible === v) return
-    const prev: Partial<IShapeData> = { status: { v: v ? 0 : 1 } }
+    if (this._data.visible === v) return
+    const prev: Partial<IShapeData> = { status: { v: v ? 0 : (void 0) } }
     this.beginDirty(prev)
     this._data.visible = v
     this.endDirty(prev)
@@ -116,10 +111,10 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get editing(): boolean { return !!this._data.editing }
+  get editing(): boolean { return this._data.editing }
   set editing(v: boolean) {
     if (this._data.editing === v) return
-    const prev: Partial<IShapeData> = { status: { e: v ? 0 : 1 } }
+    const prev: Partial<IShapeData> = { status: { e: v ? (void 0) : 1 } }
     this.beginDirty(prev)
     this._data.editing = v
     this.endDirty(prev)
@@ -133,10 +128,10 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get selected(): boolean { return !!this._data.selected }
+  get selected(): boolean { return this._data.selected }
   set selected(v: boolean) {
     if (this._data.selected === v) return
-    const prev: Partial<IShapeData> = { status: { s: v ? 0 : 1 } }
+    const prev: Partial<IShapeData> = { status: { s: v ? (void 0) : 1 } }
     this.beginDirty(prev)
     this._data.selected = v
     this.endDirty(prev)
@@ -165,7 +160,7 @@ export class Shape<D extends ShapeData = ShapeData> {
   get locked(): boolean { return this._data.locked }
   set locked(v: boolean) {
     if (this._data.locked === v) return
-    const prev: Partial<IShapeData> = { status: { f: v ? 0 : 1 } }
+    const prev: Partial<IShapeData> = { status: { f: v ? (void 0) : 1 } }
     this.beginDirty(prev)
     this._data.locked = v
     this.endDirty(prev)
@@ -183,7 +178,7 @@ export class Shape<D extends ShapeData = ShapeData> {
   get ghost(): boolean { return this._data.ghost }
   set ghost(v: boolean) {
     if (this._data.ghost === v) return
-    const prev: Partial<IShapeData> = { status: { g: v ? 0 : 1 } }
+    const prev: Partial<IShapeData> = { status: { g: v ? (void 0) : 1 } }
     this.beginDirty(prev)
     this._data.ghost = v
     this.endDirty(prev)
@@ -205,7 +200,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.endDirty(prev)
   }
 
-  merge(data: Partial<ShapeData>): void {
+  merge(data: Partial<IShapeData>): void {
     const prev = this.data.copy()
     this.beginDirty(prev)
     this.data.merge(data)

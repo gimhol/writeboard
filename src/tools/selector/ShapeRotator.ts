@@ -1,4 +1,5 @@
-import { Shape, ShapeData, ShapeEventEnum, ShapeEventMap } from "../../shape";
+import { Shape, ShapeData } from "../../shape";
+import { ShapeEventMap, ShapeEventEnum } from "../../shape/base/ShapeEvent";
 import { IDot } from "../../utils";
 import { Degrees, Numbers } from "../../utils/Numbers";
 import { Rect } from "../../utils/Rect";
@@ -18,11 +19,14 @@ export class ShapeRotator extends Shape<ShapeData> {
   }
 
   private _update = (shape: Shape) => {
+    this.beginDirty()
     const { x: mx, y: my } = shape.rotatedMid
-    this.visible = shape.selected && !shape.locked
     const w = this._width
     const d = this._distance
-    this.beginDirty()
+
+    this.data.visible = shape.selected && !shape.locked && !!shape.board
+    
+    console.log(this.data.visible)
     this.data.w = w
     this.data.h = shape.h + d * 2
     this.data.x = mx - this.halfW
@@ -35,42 +39,40 @@ export class ShapeRotator extends Shape<ShapeData> {
   }
 
   private _listener = (e: ShapeEventMap[ShapeEventEnum.EndDirty]) => this._update(e.detail.shape)
+  private _listener2 = (e: ShapeEventMap[ShapeEventEnum.BoardChanged]) => this._update(e.detail.shape)
 
   follow(shape: Shape) {
     this.unfollow()
     shape.addEventListener(ShapeEventEnum.EndDirty, this._listener);
+    shape.addEventListener(ShapeEventEnum.BoardChanged, this._listener2);
     this._update(shape)
     this._target = shape
   }
 
   unfollow() {
     this._target?.removeEventListener(ShapeEventEnum.EndDirty, this._listener)
+    this._target?.removeEventListener(ShapeEventEnum.BoardChanged, this._listener2)
     delete this._target
   }
 
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible) return;
     this.beginDraw(ctx)
-
     const { x, y, w, h } = this._ctrlDot
     const mx = Math.floor(x + w / 2) - 0.5
     const t = Math.floor(y) + 0.5
     const l = Math.floor(x) - 0.5
-
     ctx.strokeStyle = "black"
     ctx.fillStyle = "white"
     ctx.lineWidth = 1
-
     ctx.fillRect(x, y, w, h)
     ctx.strokeRect(l, t, w, h)
-
     ctx.beginPath();
     ctx.moveTo(mx, y + h)
     ctx.lineTo(mx, this._distance)
     ctx.stroke()
-
     this.endDraw(ctx)
-    super.render(ctx);
+    // super.render(ctx);
   }
 
   pointerDown(dot: IDot): boolean {
