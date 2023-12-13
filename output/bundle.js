@@ -6568,7 +6568,7 @@ class ShapeRotator extends shape_1.Shape {
         this._update = (shape) => {
             var _a;
             const { x: mx, y: my } = shape.rotatedMid;
-            this.visible = shape.selected;
+            this.visible = shape.selected && !shape.locked;
             const w = this._width;
             const d = this._distance;
             this.beginDirty();

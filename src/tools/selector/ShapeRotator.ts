@@ -19,7 +19,7 @@ export class ShapeRotator extends Shape<ShapeData> {
 
   private _update = (shape: Shape) => {
     const { x: mx, y: my } = shape.rotatedMid
-    this.visible = shape.selected
+    this.visible = shape.selected && !shape.locked
     const w = this._width
     const d = this._distance
     this.beginDirty()
@@ -28,7 +28,6 @@ export class ShapeRotator extends Shape<ShapeData> {
     this.data.x = mx - this.halfW
     this.data.y = my - this.halfH
     this.data.rotation = shape.rotation
-
     const s = this.board?.factory.rotator.size || 10
     this._ctrlDot.w = s;
     this._ctrlDot.h = s;
