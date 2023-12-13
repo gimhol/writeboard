@@ -12,7 +12,7 @@ import { RectHelper } from "../../utils/RectHelper"
 import { IVector, Vector } from "../../utils/Vector"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { ITool } from "../base/Tool"
-import { ShapeRotater } from "./ShapeRotater"
+import { ShapeRotator } from "./ShapeRotator"
 export enum SelectorStatus {
   Invalid = 0,
   ReadyForDragging,
@@ -39,7 +39,7 @@ export class SelectorTool implements ITool {
     offset: { x: 0, y: 0 },
     shape: <Shape | null>null
   }
-  private _rotater = new ShapeRotater()
+  private _rotator = new ShapeRotator()
   private _windowPointerDown = () => this.deselect();
 
   private _shapes: {
@@ -51,7 +51,7 @@ export class SelectorTool implements ITool {
   get board(): Board { return this._selector.board!!; }
   set board(v: Board) {
     this._selector.board = v!!;
-    this._rotater.board = v!!;
+    this._rotator.board = v!!;
   }
   get rect(): RectHelper { return this._rectHelper }
   constructor() {
@@ -61,7 +61,7 @@ export class SelectorTool implements ITool {
   }
   render(ctx: CanvasRenderingContext2D): void {
     this._selector.render(ctx)
-    this._rotater.render(ctx)
+    this._rotator.render(ctx)
   }
   start(): void {
     this.board.element.style.cursor = ''
@@ -71,7 +71,7 @@ export class SelectorTool implements ITool {
     this.board.element.style.cursor = ''
     document.removeEventListener('pointerdown', this._windowPointerDown)
     this.deselect();
-    this._rotater.unfollow()
+    this._rotator.unfollow()
   }
   deselect() {
     const { board } = this;
@@ -128,7 +128,7 @@ export class SelectorTool implements ITool {
       return;
     }
 
-    if (this._rotater.pointerDown(dot)) {
+    if (this._rotator.pointerDown(dot)) {
       this._status = SelectorStatus.ReadyForRotating;
       return
     }
@@ -146,7 +146,7 @@ export class SelectorTool implements ITool {
     } else if (!shape.selected) {
       // 点击位置存在图形，且图形未被选择，则选择点中的图形。
       this._status = SelectorStatus.ReadyForDragging;
-      this._rotater.follow(shape)
+      this._rotator.follow(shape)
       board.setSelects([shape], true)
     } else {
       // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
@@ -209,7 +209,7 @@ export class SelectorTool implements ITool {
     this.board.element.style.cursor = v;
   }
   pointerMove(dot: IDot): void {
-    if (this._rotater.hit(dot)) {
+    if (this._rotator.hit(dot)) {
       this.cursor = 'crosshair';
       return;
     }
@@ -241,7 +241,7 @@ export class SelectorTool implements ITool {
       case SelectorStatus.ReadyForRotating: // let it fall-through
         this._status = SelectorStatus.Rotating;
       case SelectorStatus.Rotating:
-        this._rotater.pointerDraw(dot);
+        this._rotator.pointerDraw(dot);
         break;
       case SelectorStatus.ReadyForSelecting: // let it fall-through
         if (Vector.manhattan(this._prevPos, dot) < 5) { return; }

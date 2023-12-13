@@ -3061,7 +3061,7 @@ class DefaultFactory {
         this._time = 0;
         this._shapeTemplates = {};
         this.resizer = { size: 10 };
-        this.rotater = { size: 10, distance: 30 };
+        this.rotator = { size: 10, distance: 30 };
         this._shapeDecoration = new ShapeDecoration_1.DefaultShapeDecoration;
     }
     get type() {
@@ -6150,7 +6150,7 @@ const utils_1 = require("../../utils");
 const RectHelper_1 = require("../../utils/RectHelper");
 const Vector_1 = require("../../utils/Vector");
 const ToolEnum_1 = require("../ToolEnum");
-const ShapeRotater_1 = require("./ShapeRotater");
+const ShapeRotator_1 = require("./ShapeRotator");
 var SelectorStatus;
 (function (SelectorStatus) {
     SelectorStatus[SelectorStatus["Invalid"] = 0] = "Invalid";
@@ -6169,7 +6169,7 @@ class SelectorTool {
     get board() { return this._selector.board; }
     set board(v) {
         this._selector.board = v;
-        this._rotater.board = v;
+        this._rotator.board = v;
     }
     get rect() { return this._rectHelper; }
     constructor() {
@@ -6184,7 +6184,7 @@ class SelectorTool {
             offset: { x: 0, y: 0 },
             shape: null
         };
-        this._rotater = new ShapeRotater_1.ShapeRotater();
+        this._rotator = new ShapeRotator_1.ShapeRotator();
         this._windowPointerDown = () => this.deselect();
         this._shapes = [];
         this._waiting = false;
@@ -6194,7 +6194,7 @@ class SelectorTool {
     }
     render(ctx) {
         this._selector.render(ctx);
-        this._rotater.render(ctx);
+        this._rotator.render(ctx);
     }
     start() {
         this.board.element.style.cursor = '';
@@ -6204,7 +6204,7 @@ class SelectorTool {
         this.board.element.style.cursor = '';
         document.removeEventListener('pointerdown', this._windowPointerDown);
         this.deselect();
-        this._rotater.unfollow();
+        this._rotator.unfollow();
     }
     deselect() {
         const { board } = this;
@@ -6254,7 +6254,7 @@ class SelectorTool {
         if (!board || _status !== SelectorStatus.Invalid) {
             return;
         }
-        if (this._rotater.pointerDown(dot)) {
+        if (this._rotator.pointerDown(dot)) {
             this._status = SelectorStatus.ReadyForRotating;
             return;
         }
@@ -6271,7 +6271,7 @@ class SelectorTool {
         else if (!shape.selected) {
             // 点击位置存在图形，且图形未被选择，则选择点中的图形。
             this._status = SelectorStatus.ReadyForDragging;
-            this._rotater.follow(shape);
+            this._rotator.follow(shape);
             board.setSelects([shape], true);
         }
         else {
@@ -6336,7 +6336,7 @@ class SelectorTool {
         this.board.element.style.cursor = v;
     }
     pointerMove(dot) {
-        if (this._rotater.hit(dot)) {
+        if (this._rotator.hit(dot)) {
             this.cursor = 'crosshair';
             return;
         }
@@ -6384,7 +6384,7 @@ class SelectorTool {
             case SelectorStatus.ReadyForRotating: // let it fall-through
                 this._status = SelectorStatus.Rotating;
             case SelectorStatus.Rotating:
-                this._rotater.pointerDraw(dot);
+                this._rotator.pointerDraw(dot);
                 break;
             case SelectorStatus.ReadyForSelecting: // let it fall-through
                 if (Vector_1.Vector.manhattan(this._prevPos, dot) < 5) {
@@ -6548,22 +6548,19 @@ Gaia_1.Gaia.registerTool(ToolEnum_1.ToolEnum.Selector, () => new SelectorTool, {
     desc: 'pick shapes'
 });
 
-},{"../../event":23,"../../event/Events":22,"../../mgr/Gaia":35,"../../shape":55,"../../shape/base":42,"../../shape/base/Data":39,"../../shape/rect/Shape":73,"../../utils":107,"../../utils/RectHelper":103,"../../utils/Vector":105,"../ToolEnum":85,"./ShapeRotater":92}],92:[function(require,module,exports){
+},{"../../event":23,"../../event/Events":22,"../../mgr/Gaia":35,"../../shape":55,"../../shape/base":42,"../../shape/base/Data":39,"../../shape/rect/Shape":73,"../../utils":107,"../../utils/RectHelper":103,"../../utils/Vector":105,"../ToolEnum":85,"./ShapeRotator":92}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShapeRotater = void 0;
+exports.ShapeRotator = void 0;
 const shape_1 = require("../../shape");
 const Numbers_1 = require("../../utils/Numbers");
 const Rect_1 = require("../../utils/Rect");
-class ShapeRotater extends shape_1.Shape {
-    get _distance() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotater.distance) || 30; }
-    get _width() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotater.size) || 10; }
+class ShapeRotator extends shape_1.Shape {
+    get _distance() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotator.distance) || 30; }
+    get _width() { var _a; return ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotator.size) || 10; }
     constructor() {
         super(new shape_1.ShapeData);
         this._ctrlDot = new Rect_1.Rect(0, 0, 0, 0);
-        this._startX = 0;
-        this._startY = 0;
-        this._startRotation = 0;
         this._oY = 0;
         this._oX = 0;
         this._update = (shape) => {
@@ -6578,7 +6575,7 @@ class ShapeRotater extends shape_1.Shape {
             this.data.x = mx - this.halfW;
             this.data.y = my - this.halfH;
             this.data.rotation = shape.rotation;
-            const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotater.size) || 10;
+            const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotator.size) || 10;
             this._ctrlDot.w = s;
             this._ctrlDot.h = s;
             this.endDirty();
@@ -6621,9 +6618,6 @@ class ShapeRotater extends shape_1.Shape {
     pointerDown(dot) {
         const ret = this.visible && !!this._target && this.hit(dot);
         if (ret) {
-            this._startX = dot.x;
-            this._startY = dot.y;
-            this._startRotation = this._target.rotation;
             this._oX = this._target.midX;
             this._oY = this._target.midY;
         }
@@ -6641,7 +6635,7 @@ class ShapeRotater extends shape_1.Shape {
         return this._ctrlDot.hit(this.map2me(dot.x, dot.y));
     }
 }
-exports.ShapeRotater = ShapeRotater;
+exports.ShapeRotator = ShapeRotator;
 
 },{"../../shape":55,"../../utils/Numbers":100,"../../utils/Rect":102}],93:[function(require,module,exports){
 "use strict";

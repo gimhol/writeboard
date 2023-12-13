@@ -3,16 +3,13 @@ import { IDot } from "../../utils";
 import { Degrees, Numbers } from "../../utils/Numbers";
 import { Rect } from "../../utils/Rect";
 
-export class ShapeRotater extends Shape<ShapeData> {
+export class ShapeRotator extends Shape<ShapeData> {
   private _target: Shape | undefined
   private _ctrlDot = new Rect(0, 0, 0, 0)
-  private _startX: number = 0;
-  private _startY: number = 0;
-  private _startRotation: number = 0;
   private _oY: number = 0;
   private _oX: number = 0;
-  private get _distance() { return this.board?.factory.rotater.distance || 30 }
-  private get _width() { return this.board?.factory.rotater.size || 10 }
+  private get _distance() { return this.board?.factory.rotator.distance || 30 }
+  private get _width() { return this.board?.factory.rotator.size || 10 }
   constructor() {
     super(new ShapeData);
     this.data.ghost = true
@@ -31,7 +28,7 @@ export class ShapeRotater extends Shape<ShapeData> {
     this.data.y = my - this.halfH
     this.data.rotation = shape.rotation
 
-    const s = this.board?.factory.rotater.size || 10
+    const s = this.board?.factory.rotator.size || 10
     this._ctrlDot.w = s;
     this._ctrlDot.h = s;
     this.endDirty()
@@ -79,9 +76,6 @@ export class ShapeRotater extends Shape<ShapeData> {
   pointerDown(dot: IDot): boolean {
     const ret = this.visible && !!this._target && this.hit(dot)
     if (ret) {
-      this._startX = dot.x;
-      this._startY = dot.y;
-      this._startRotation = this._target!.rotation;
       this._oX = this._target!.midX;
       this._oY = this._target!.midY;
     }

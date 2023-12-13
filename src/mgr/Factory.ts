@@ -17,14 +17,14 @@ import { DefaultShapeDecoration, IShapeDecoration } from "../board/ShapeDecorati
 export interface IResizerInfo {
   size: number;
 }
-export interface IRotaterInfo {
+export interface IRotatorInfo {
   size: number;
   distance: number;
 }
 export interface IFactory {
   get type(): FactoryType;
   get resizer(): IResizerInfo;
-  get rotater(): IRotaterInfo;
+  get rotator(): IRotatorInfo;
   shapeTemplate(shapeType: ShapeType): ShapeData;
   setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
   newWhiteBoard(options: BoardOptions): Board;
@@ -53,7 +53,7 @@ export class DefaultFactory implements IFactory {
     return FactoryEnum.Default
   }
   resizer: IResizerInfo = { size: 10 };
-  rotater: IRotaterInfo = { size: 10, distance: 30 };
+  rotator: IRotatorInfo = { size: 10, distance: 30 };
   shapeTemplate(type: ShapeType): ShapeData {
     const ret = this._shapeTemplates[type] || this.newShapeData(type)
     this._shapeTemplates[type] = ret
