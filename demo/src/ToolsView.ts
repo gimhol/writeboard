@@ -1,4 +1,4 @@
-import { ToolEnum, ToolType } from "../../dist";
+import { ToolEnum, ToolType } from "../../dist/cjs";
 import { SizeType } from "./G/BaseView/SizeType";
 import { View } from "./G/BaseView/View";
 import { IconButton, IconButtonInits } from "./G/CompoundView/IconButton";

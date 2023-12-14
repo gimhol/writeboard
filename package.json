@@ -8,17 +8,24 @@
     "start": "gulp",
     "tsc": "tsc -p ./tsconfig.json",
     "tsc-demo": "tsc -p ./demo/tsconfig.json",
-    "browserify": "browserify ./demo/dist/index.js -o ./output/bundle.js"
+    "browserify": "browserify ./demo/dist/index.js -o ./output/bundle.js",
+    "rollup": "npm run rollup:cjs",
+    "rollup:cjs": "rollup -c --environment output_format:cjs",
+    "rollup:es": "rollup -c --environment output_format:es"
   },
+  "type": "module",
   "author": "Gim",
   "license": "Apache License 2.0",
   "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.5",
     "browserify": "^17.0.0",
     "comment-json": "^4.2.3",
     "copyfiles": "^2.4.1",
     "gulp": "^4.0.2",
     "gulp-connect": "^5.7.0",
     "mocha": "^10.2.0",
+    "rollup": "^4.9.0",
+    "tslib": "^2.6.2",
     "typescript": "^4.9.4"
   },
   "repository": {

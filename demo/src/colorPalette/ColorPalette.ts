@@ -1,4 +1,4 @@
-import { Rect } from "../../../dist/utils/Rect";
+import { Rect } from "../../../dist/cjs";
 import { AlphaRow } from "./AlphaRow";
 import { RGBA } from "./Color";
 import { ColorCol } from "./ColorCol";

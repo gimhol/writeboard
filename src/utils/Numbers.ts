@@ -17,7 +17,6 @@ export namespace Degrees {
   export function angle(v: null): null
   export function angle(v: undefined): undefined
   export function angle(v?: number | null): number | undefined | null {
-    if (!v) return v
-    return 180 * v / Math.PI
+    return v ? 180 * v / Math.PI : v
   }
 }

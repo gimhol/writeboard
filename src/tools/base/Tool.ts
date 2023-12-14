@@ -1,6 +1,7 @@
-import { ToolType } from "../ToolEnum";
-import { Board } from "../../board/Board";
-import { IDot } from "../../utils/Dot";
+import type { ToolType } from "../ToolEnum";
+import type { Board } from "../../board/Board";
+import type { IDot } from "../../utils/Dot";
+
 export interface ITool {
   get type(): ToolType
   get board(): Board | undefined

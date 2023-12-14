@@ -1,4 +1,4 @@
-import { Board, Shape, ShapeData, ShapeEnum, ShapePen } from "../../dist";
+import { Board, Shape, ShapeData, ShapeEnum, ShapePen } from "../../dist/cjs";
 import { Button } from "./G/BaseView/Button";
 import { View } from "./G/BaseView/View";
 import { Subwin } from "./G/CompoundView/SubWin";

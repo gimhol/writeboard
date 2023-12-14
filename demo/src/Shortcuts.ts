@@ -1,5 +1,5 @@
-import { ActionQueue, Board, SelectorTool, ToolEnum } from "../../dist";
-import { FClipboard } from "../../dist/features";
+import { ActionQueue, Board, SelectorTool, ToolEnum } from "../../dist/cjs";
+import { FClipboard } from "../../dist/cjs";
 
 /**
  * 处理键盘输入产生的事件
@@ -114,7 +114,7 @@ export class ShortcutsKeeper {
       default: return true;
     }
     const selector = board.tool as SelectorTool;
-    selector.connect(selects).moveBy(diffX, diffY).emitGeoEvent(true);
+    selector.connect(selects).moveBy(diffX, diffY).emitGeoEvent.enforce(true);
 
     board.toolType = toolType;
     board.setSelects(selects, true); // 切回其他工具时，会自动取消选择，这里重新选择已选择的图形

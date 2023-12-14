@@ -1,6 +1,6 @@
-const gulp = require('gulp')
-const connect = require('gulp-connect');
-const child_process = require('child_process')
+import gulp from "gulp";
+import connect from "gulp-connect";
+import child_process from "child_process";
 
 const taskNames = {
   tsc: 'tsc',
@@ -24,7 +24,7 @@ gulp.task(taskNames.reload_web, function () {
 })
 
 gulp.task(taskNames.tsc, (done) => {
-  const childProcess = child_process.exec('npm run tsc');
+  const childProcess = child_process.exec('npm run rollup');
   childProcess.stdout?.pipe(process.stdout);
   childProcess.stderr?.pipe(process.stderr);
   childProcess.on('exit', done);
@@ -44,7 +44,7 @@ gulp.task(taskNames.browserify, (done) => {
 gulp.task(taskNames.copy_public, () => {
   return gulp.src('./demo/public/**/*').pipe(gulp.dest('output'))
 })
-exports.default = function (done) {
+export default function (done) {
   gulp.watch('./demo/src/**/*.ts', gulp.series(taskNames.tsc_demo, taskNames.browserify));
   gulp.watch('./demo/public/**/*.*', gulp.series(taskNames.copy_public));
   gulp.watch('./src/**/*.ts', gulp.series(taskNames.tsc, taskNames.browserify));

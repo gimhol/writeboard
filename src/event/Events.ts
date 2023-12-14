@@ -1,8 +1,8 @@
-import { Layer } from "../board";
-import { Shape, ShapeType } from "../shape";
-import { IShapeData } from "../shape/base/Data";
-import { ToolType } from "../tools/ToolEnum";
-import { EventEnum } from "./EventType";
+import type { Layer } from "../board/Layer";
+import type { ShapeType } from "../shape/ShapeEnum";
+import type { IShapeData } from "../shape/base/Data";
+import type { ToolType } from "../tools/ToolEnum";
+import type { EventEnum } from "./EventType";
 
 export namespace Events {
   export interface IOperatorDetail {

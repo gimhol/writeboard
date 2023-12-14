@@ -1,4 +1,4 @@
-import { Board } from "../../dist";
+import { Board } from "../../dist/cjs";
 import { Button } from "./G/BaseView/Button";
 import { CssDisplay, CssFlexDirection } from "./G/BaseView/StyleType";
 import { View } from "./G/BaseView/View";

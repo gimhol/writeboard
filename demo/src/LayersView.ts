@@ -1,4 +1,4 @@
-import { ILayerInfoInit } from "../../dist";
+import { ILayerInfoInit } from "../../dist/cjs";
 import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
 import { InputStyleNames, TextInput } from "./G/BaseView/TextInput";

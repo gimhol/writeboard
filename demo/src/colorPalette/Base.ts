@@ -1,5 +1,4 @@
-import { IRect, Rect } from "../../../dist/utils/Rect";
-import { Vector } from "../../../dist/utils/Vector";
+import { IRect, Rect, Vector } from "../../../dist/cjs";
 import { clampI } from "./Color";
 
 export class Base {

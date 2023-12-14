@@ -373,7 +373,7 @@ export class SelectorTool implements ITool {
     }
   }
 
-  private emitGeoEvent = throttle(1000 / 30, (isLast: boolean) => {
+  emitGeoEvent = throttle(1000 / 30, (isLast: boolean) => {
     const { board, _shapes } = this;
     if (!board || !_shapes.length) return;
     if (isLast) {

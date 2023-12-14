@@ -4,8 +4,7 @@ import {
   ShapeEnum,
   ShapeImg,
   ToolEnum
-} from "../../dist";
-import { EventEnum } from "../../dist/event";
+} from "../../dist/cjs";
 import ColorView from "./ColorView";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";

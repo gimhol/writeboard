@@ -1,12 +1,12 @@
-import { Board } from "../../board/Board"
-import { Events as Event, EventEnum, Events } from "../../event"
+import type { Board } from "../../board/Board"
+import { Events } from "../../event/Events"
+import { EventEnum } from "../../event/EventType"
 import { Shape } from "../../shape/base/Shape"
 import type { ShapeType } from "../../shape/ShapeEnum"
 import type { IDot } from "../../utils/Dot"
 import { RectHelper } from "../../utils/RectHelper"
-import { ToolEnum, type ToolType } from "../ToolEnum"
+import type { ToolType } from "../ToolEnum"
 import type { ITool } from "./Tool"
-const Tag = '[SimpleTool]'
 
 type FnKeys = 'Control' | 'Alt' | 'Shift';
 export class SimpleTool implements ITool {
@@ -98,14 +98,14 @@ export class SimpleTool implements ITool {
 
     switch (state) {
       case 0: {
-        this._prevData = Event.pickShapeGeoData(shape.data)
+        this._prevData = Events.pickShapeGeoData(shape.data)
         this._startData = this._prevData;
         this.applyRect();
         break;
       }
       case 1: {
         this.applyRect();
-        const curr = Event.pickShapeGeoData(shape.data);
+        const curr = Events.pickShapeGeoData(shape.data);
         board.emitEvent(EventEnum.ShapesGeoChanging, {
           operator: board.whoami,
           tool: this.type,
@@ -116,7 +116,7 @@ export class SimpleTool implements ITool {
       }
       case 2: {
         this.applyRect();
-        const curr = Event.pickShapeGeoData(shape.data);
+        const curr = Events.pickShapeGeoData(shape.data);
         board.emitEvent(EventEnum.ShapesGeoChanging, {
           operator: board.whoami,
           tool: this.type,
@@ -136,8 +136,8 @@ export class SimpleTool implements ITool {
       }
     }
   }
-  protected _startData: Event.IShapeGeoData | undefined
-  protected _prevData: Event.IShapeGeoData | undefined
+  protected _startData: Events.IShapeGeoData | undefined
+  protected _prevData: Events.IShapeGeoData | undefined
   protected _curShape: Shape | undefined
   protected _board: Board | undefined
   protected _rect = new RectHelper()
