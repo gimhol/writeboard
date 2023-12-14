@@ -4,9 +4,7 @@ import { Events } from "../../event/Events"
 import { Gaia } from "../../mgr/Gaia"
 import { ShapeText, TextTool } from "../../shape"
 import { ResizeDirection, Shape } from "../../shape/base"
-import { ShapeData } from "../../shape/base/Data"
-import { ShapeRect } from "../../shape/rect/Shape"
-import { Arrays, Degrees } from "../../utils"
+import { Arrays, Degrees, Rect } from "../../utils"
 import { IDot } from "../../utils/Dot"
 import { RectHelper } from "../../utils/RectHelper"
 import { throttle } from "../../utils/Throttle"
@@ -14,6 +12,7 @@ import { IVector, Vector } from "../../utils/Vector"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { ITool } from "../base/Tool"
 import { ShapeRotator } from "./ShapeRotator"
+import { ShapePicking, ShapeSelector } from "./ShapeSelector"
 export enum SelectorStatus {
   Idle = 0,
   ReadyForDragging,
@@ -25,12 +24,11 @@ export enum SelectorStatus {
   ReadyForRotating,
   Rotating,
 }
-const Tag = '[SelectorTool]'
-
 export class SelectorTool implements ITool {
   get type(): ToolType { return ToolEnum.Selector }
   private _doubleClickTimer = 0;
-  private _selector = new ShapeRect(new ShapeData)
+  private _picking = new ShapePicking()
+  private _selector = new ShapeSelector()
   private _rectHelper = new RectHelper()
   private _status = SelectorStatus.Idle
   private _prevPos: IVector = { x: 0, y: 0 }
@@ -51,23 +49,28 @@ export class SelectorTool implements ITool {
 
   get board(): Board { return this._selector.board!!; }
   set board(v: Board) {
-    this._selector.board = v!!;
-    this._rotator.board = v!!;
+    this._selector.board = v;
+    this._rotator.board = v;
+    this._picking.board = v;
+    v.addEventListener(EventEnum.ShapesSelected, this.onSelectChanged)
+    v.addEventListener(EventEnum.ShapesDeselected, this.onSelectChanged)
   }
+  private onSelectChanged = () => {
+    this._picking.follow([]);
+    this._picking.rotateTo(0);
+    this._picking.follow(this.board.selects) && this._rotator.follow(this._picking);
+  }
+
   get rect(): RectHelper { return this._rectHelper }
 
   set cursor(v: string) {
     this.board.element.style.cursor = v;
   }
 
-  constructor() {
-    this._selector.data.lineWidth = 2
-    this._selector.data.strokeStyle = '#003388FF'
-    this._selector.data.fillStyle = '#00338855'
-  }
   render(ctx: CanvasRenderingContext2D): void {
     this._selector.render(ctx)
     this._rotator.render(ctx)
+    this._picking.render(ctx)
   }
   start(): void {
     this.board.element.style.cursor = ''
@@ -122,23 +125,35 @@ export class SelectorTool implements ITool {
   moveBy(diffX: number, diffY: number): this {
     this._prevPos.x += diffX;
     this._prevPos.y += diffY;
-    this._shapes.forEach(v => {
+    for (let i = 0, len = this._shapes.length; i < len; ++i) {
+      const v = this._shapes[i]
+      const {
+        rotatedTopLeft: a, rotatedTopRight: b,
+        rotatedBottomLeft: c, rotatedBottomRight: d,
+        locked,
+      } = v.shape
+      if (locked) continue;
       v.prevData = Events.pickShapePosData(v.shape.data)
-      !v.shape.locked && v.shape.moveBy(diffX, diffY)
-    })
+      v.shape.moveBy(diffX, diffY)
+    }
+    this._picking.follow(this._shapes.map(v => v.shape)) &&
+      this._rotator.follow(this._picking)
     return this;
   }
 
   pointerDown(dot: IDot): void {
     const { board, _status } = this
-    if (!board || _status !== SelectorStatus.Idle) {
-      return;
-    }
+    if (_status !== SelectorStatus.Idle) return;
 
     const { x, y } = dot
     if (this._rotator.pointerDown(dot)) {
       this._status = SelectorStatus.ReadyForRotating;
       this.connect([this._rotator.target!], x, y);
+      return
+    }
+    if (this._picking.hit(dot)) {
+      this._status = SelectorStatus.ReadyForDragging;
+      this.connect(board.selects, x, y);
       return
     }
 
@@ -220,25 +235,41 @@ export class SelectorTool implements ITool {
       this.cursor = 'crosshair';
       return;
     }
+
+    const temp = this._picking.hit(dot)
+    if (temp) {
+      this.cursor = this.getReiszerCursor(temp[0], this._picking);
+      return;
+    }
+
     const result = Arrays.firstOf(this.board.selects, it => {
       const { x, y } = it.map2me(dot.x, dot.y).plus(it.data)
+      if (it.locked) return null;
+      const hit = it.getGeo().hit({ x, y })
+      if (!hit) return null;
       const [direction] = it.resizeDirection(x, y)
-      if (direction != ResizeDirection.None) return [direction, it] as const
+      return [direction, it] as const
     })
-    if (result) {
-      const [direction, shape] = result;
-      let { rotation: deg } = shape;
-      deg = Degrees.normalized(deg + (direction - 1) * Math.PI / 4);
-      switch (Math.floor((25 + Degrees.angle(deg)) / 45) % 8) {
-        case 0: case 4: this.cursor = 'ns-resize'; break;
-        case 2: case 6: this.cursor = 'ew-resize'; break;
-        case 3: case 7: this.cursor = 'nw-resize'; break;
-        case 1: case 5: this.cursor = 'ne-resize'; break;
-        default: this.cursor = ''; break;
-      }
-      return
+    this.cursor = result ? this.getReiszerCursor(...result) : ''
+  }
+
+  private getReiszerCursor(direction: ResizeDirection, shape: Shape) {
+    const { rotation } = shape;
+    if (!direction) return 'move';
+    const deg = Math.floor(
+      (
+        25 + Degrees.angle(
+          Degrees.normalized(rotation + (direction - 1) * Math.PI * 0.25)
+        )
+      ) / 45
+    ) % 8;
+    switch (deg) {
+      case 0: case 4: return 'ns-resize';
+      case 2: case 6: return 'ew-resize';
+      case 3: case 7: return 'nw-resize';
+      case 1: case 5: return 'ne-resize';
     }
-    this.cursor = '';
+    return '';
   }
 
   pointerDraw(dot: IDot): void {

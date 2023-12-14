@@ -2013,7 +2013,7 @@ class Rect {
     set bottom(v) {
         this.h = v - this.y;
     }
-    constructor(x, y, w, h) {
+    constructor(x = 0, y = 0, w = 0, h = 0) {
         this.x = x;
         this.y = y;
         this.w = w;
@@ -2999,22 +2999,15 @@ class Shape {
     get rotatedMidRight() { return this.map2world(this.w, this.halfH); }
     get rotatedMid() { return this.map2world(this.halfW, this.halfH); }
     get rotation() { return this.data.rotation; }
-    rotateBy(d, ox = void 0, oy = void 0) {
+    rotateBy(d) {
         const r = this._data.rotation + d;
-        this.rotateTo(r, ox, oy);
+        this.rotateTo(r);
     }
-    rotateTo(r, ox = void 0, oy = void 0) {
+    rotateTo(r) {
         if (r == this._data.rotation)
             return;
         const prev = { x: this._data.x, y: this._data.y, r: this._data.r };
         this.beginDirty(prev);
-        const { w, h, midX: mx, midY: my } = this;
-        ox = ox !== null && ox !== void 0 ? ox : mx;
-        oy = oy !== null && oy !== void 0 ? oy : my;
-        const mx1 = (mx - ox) * Math.cos(r) - (my - oy) * Math.sin(r) + ox;
-        const my1 = (mx - ox) * Math.sin(r) + (my - oy) * Math.cos(r) + oy;
-        this._data.x = mx1 - w / 2;
-        this._data.y = my1 - h / 2;
         this._data.rotation = r % (Math.PI * 2);
         this.endDirty(prev);
     }
@@ -5050,6 +5043,73 @@ class ShapeRotator extends Shape {
     }
 }
 
+class ShapeSelector extends ShapeRect {
+    constructor() {
+        super(new ShapeData);
+        this.data.lineWidth = 2;
+        this.data.strokeStyle = '#003388FF';
+        this.data.fillStyle = '#00338855';
+        this.data.ghost = true;
+    }
+}
+class ShapePicking extends ShapeRect {
+    constructor() {
+        super(new ShapeData);
+        this._targets = [];
+        this._rotations = [];
+        this.data.selected = true;
+    }
+    hit(dot) {
+        if (!this.visible)
+            return null;
+        const d = this.map2me(dot.x, dot.y).plus(this.data);
+        if (!this.getGeo().hit(d))
+            return null;
+        return this.resizeDirection(d.x, d.y);
+    }
+    follow(shapes) {
+        let count = 0;
+        const geo = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        this._targets = [];
+        this._rotations = [];
+        for (let i = 0, len = shapes.length; i < len; ++i) {
+            const v = shapes[i];
+            const { rotatedTopLeft: a, rotatedTopRight: b, rotatedBottomLeft: c, rotatedBottomRight: d, locked, } = v;
+            if (locked)
+                continue;
+            this._targets.push(v);
+            this._rotations.push({ mx: v.midX, my: v.midY, r: v.rotation });
+            geo.left = Math.min(geo.left, a.x, b.x, c.x, d.x);
+            geo.right = Math.max(geo.right, a.x, b.x, c.x, d.x);
+            geo.top = Math.min(geo.top, a.y, b.y, c.y, d.y);
+            geo.bottom = Math.max(geo.bottom, a.y, b.y, c.y, d.y);
+            ++count;
+        }
+        this.setGeo(geo);
+        this.visible = count > 1;
+        return count > 1;
+    }
+    rotateTo(r) {
+        super.rotateTo(r);
+        const { midX, midY } = this;
+        for (let i = 0, len = this._targets.length; i < len; ++i) {
+            const d = this._rotations[i];
+            const t = this._targets[i];
+            t.rotateTo(d.r + r);
+            const dx = midX - d.mx;
+            const dy = midY - d.my;
+            if (exports.Numbers.equals(dx, 0) && exports.Numbers.equals(dy, 0))
+                continue;
+            const rr = r - Math.atan2(dy, dx);
+            const cr = Math.cos(rr);
+            const sr = Math.sin(rr);
+            t.move(dx * cr - dy * sr + midX - t.w / 2, dx * sr + dy * cr + midY - t.h / 2);
+        }
+        // console.log(Numbers.equals(x, this.midX), Numbers.equals(y, this.midY))
+        // this._targets.forEach(v => !v.locked && v.rotateTo(r, x, y))
+    }
+}
+
 exports.SelectorStatus = void 0;
 (function (SelectorStatus) {
     SelectorStatus[SelectorStatus["Idle"] = 0] = "Idle";
@@ -5063,19 +5123,10 @@ exports.SelectorStatus = void 0;
     SelectorStatus[SelectorStatus["Rotating"] = 8] = "Rotating";
 })(exports.SelectorStatus || (exports.SelectorStatus = {}));
 class SelectorTool {
-    get type() { return exports.ToolEnum.Selector; }
-    get board() { return this._selector.board; }
-    set board(v) {
-        this._selector.board = v;
-        this._rotator.board = v;
-    }
-    get rect() { return this._rectHelper; }
-    set cursor(v) {
-        this.board.element.style.cursor = v;
-    }
     constructor() {
         this._doubleClickTimer = 0;
-        this._selector = new ShapeRect(new ShapeData);
+        this._picking = new ShapePicking();
+        this._selector = new ShapeSelector();
         this._rectHelper = new RectHelper();
         this._status = exports.SelectorStatus.Idle;
         this._prevPos = { x: 0, y: 0 };
@@ -5088,6 +5139,11 @@ class SelectorTool {
         this._rotator = new ShapeRotator();
         this._windowPointerDown = () => this.deselect();
         this._shapes = [];
+        this.onSelectChanged = () => {
+            this._picking.follow([]);
+            this._picking.rotateTo(0);
+            this._picking.follow(this.board.selects) && this._rotator.follow(this._picking);
+        };
         this.emitGeoEvent = throttle(1000 / 30, (isLast) => {
             const { board, _shapes } = this;
             if (!board || !_shapes.length)
@@ -5111,13 +5167,24 @@ class SelectorTool {
                 });
             }
         });
-        this._selector.data.lineWidth = 2;
-        this._selector.data.strokeStyle = '#003388FF';
-        this._selector.data.fillStyle = '#00338855';
+    }
+    get type() { return exports.ToolEnum.Selector; }
+    get board() { return this._selector.board; }
+    set board(v) {
+        this._selector.board = v;
+        this._rotator.board = v;
+        this._picking.board = v;
+        v.addEventListener(exports.EventEnum.ShapesSelected, this.onSelectChanged);
+        v.addEventListener(exports.EventEnum.ShapesDeselected, this.onSelectChanged);
+    }
+    get rect() { return this._rectHelper; }
+    set cursor(v) {
+        this.board.element.style.cursor = v;
     }
     render(ctx) {
         this._selector.render(ctx);
         this._rotator.render(ctx);
+        this._picking.render(ctx);
     }
     start() {
         this.board.element.style.cursor = '';
@@ -5167,21 +5234,31 @@ class SelectorTool {
     moveBy(diffX, diffY) {
         this._prevPos.x += diffX;
         this._prevPos.y += diffY;
-        this._shapes.forEach(v => {
+        for (let i = 0, len = this._shapes.length; i < len; ++i) {
+            const v = this._shapes[i];
+            const { rotatedTopLeft: a, rotatedTopRight: b, rotatedBottomLeft: c, rotatedBottomRight: d, locked, } = v.shape;
+            if (locked)
+                continue;
             v.prevData = exports.Events.pickShapePosData(v.shape.data);
-            !v.shape.locked && v.shape.moveBy(diffX, diffY);
-        });
+            v.shape.moveBy(diffX, diffY);
+        }
+        this._picking.follow(this._shapes.map(v => v.shape)) &&
+            this._rotator.follow(this._picking);
         return this;
     }
     pointerDown(dot) {
         const { board, _status } = this;
-        if (!board || _status !== exports.SelectorStatus.Idle) {
+        if (_status !== exports.SelectorStatus.Idle)
             return;
-        }
         const { x, y } = dot;
         if (this._rotator.pointerDown(dot)) {
             this._status = exports.SelectorStatus.ReadyForRotating;
             this.connect([this._rotator.target], x, y);
+            return;
+        }
+        if (this._picking.hit(dot)) {
+            this._status = exports.SelectorStatus.ReadyForDragging;
+            this.connect(board.selects, x, y);
             return;
         }
         this._rectHelper.start(x, y);
@@ -5263,40 +5340,39 @@ class SelectorTool {
             this.cursor = 'crosshair';
             return;
         }
-        const result = exports.Arrays.firstOf(this.board.selects, it => {
-            const { x, y } = it.map2me(dot.x, dot.y).plus(it.data);
-            const [direction] = it.resizeDirection(x, y);
-            if (direction != exports.ResizeDirection.None)
-                return [direction, it];
-        });
-        if (result) {
-            const [direction, shape] = result;
-            let { rotation: deg } = shape;
-            deg = exports.Degrees.normalized(deg + (direction - 1) * Math.PI / 4);
-            switch (Math.floor((25 + exports.Degrees.angle(deg)) / 45) % 8) {
-                case 0:
-                case 4:
-                    this.cursor = 'ns-resize';
-                    break;
-                case 2:
-                case 6:
-                    this.cursor = 'ew-resize';
-                    break;
-                case 3:
-                case 7:
-                    this.cursor = 'nw-resize';
-                    break;
-                case 1:
-                case 5:
-                    this.cursor = 'ne-resize';
-                    break;
-                default:
-                    this.cursor = '';
-                    break;
-            }
+        const temp = this._picking.hit(dot);
+        if (temp) {
+            this.cursor = this.getReiszerCursor(temp[0], this._picking);
             return;
         }
-        this.cursor = '';
+        const result = exports.Arrays.firstOf(this.board.selects, it => {
+            const { x, y } = it.map2me(dot.x, dot.y).plus(it.data);
+            if (it.locked)
+                return null;
+            const hit = it.getGeo().hit({ x, y });
+            if (!hit)
+                return null;
+            const [direction] = it.resizeDirection(x, y);
+            return [direction, it];
+        });
+        this.cursor = result ? this.getReiszerCursor(...result) : '';
+    }
+    getReiszerCursor(direction, shape) {
+        const { rotation } = shape;
+        if (!direction)
+            return 'move';
+        const deg = Math.floor((25 + exports.Degrees.angle(exports.Degrees.normalized(rotation + (direction - 1) * Math.PI * 0.25))) / 45) % 8;
+        switch (deg) {
+            case 0:
+            case 4: return 'ns-resize';
+            case 2:
+            case 6: return 'ew-resize';
+            case 3:
+            case 7: return 'nw-resize';
+            case 1:
+            case 5: return 'ne-resize';
+        }
+        return '';
     }
     pointerDraw(dot) {
         var _a;

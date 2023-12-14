@@ -1,5 +1,5 @@
 import { Shape, ShapeData } from "../../shape";
-import { ShapeEventMap, ShapeEventEnum } from "../../shape/base/ShapeEvent";
+import { ShapeEventEnum, ShapeEventMap } from "../../shape/base/ShapeEvent";
 import { IDot } from "../../utils";
 import { Degrees, Numbers } from "../../utils/Numbers";
 import { Rect } from "../../utils/Rect";
@@ -25,7 +25,7 @@ export class ShapeRotator extends Shape<ShapeData> {
     const d = this._distance
 
     this.data.visible = shape.selected && !shape.locked && !!shape.board
-    
+
     console.log(this.data.visible)
     this.data.w = w
     this.data.h = shape.h + d * 2

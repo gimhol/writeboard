@@ -280,23 +280,15 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   get rotation() { return this.data.rotation }
 
-  rotateBy(d: number, ox: number | undefined = void 0, oy: number | undefined = void 0): void {
+  rotateBy(d: number): void {
     const r = this._data.rotation + d
-    this.rotateTo(r, ox, oy);
+    this.rotateTo(r);
   }
 
-  rotateTo(r: number, ox: number | undefined = void 0, oy: number | undefined = void 0): void {
+  rotateTo(r: number): void {
     if (r == this._data.rotation) return
-
     const prev: Partial<IShapeData> = { x: this._data.x, y: this._data.y, r: this._data.r }
     this.beginDirty(prev)
-    const { w, h, midX: mx, midY: my } = this;
-    ox = ox ?? mx;
-    oy = oy ?? my;
-    const mx1 = (mx - ox) * Math.cos(r) - (my - oy) * Math.sin(r) + ox;
-    const my1 = (mx - ox) * Math.sin(r) + (my - oy) * Math.cos(r) + oy;
-    this._data.x = mx1 - w / 2
-    this._data.y = my1 - h / 2
     this._data.rotation = r % (Math.PI * 2);
     this.endDirty(prev)
   }

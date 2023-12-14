@@ -9,7 +9,6 @@
     "tsc": "tsc -p ./tsconfig.json",
     "tsc-demo": "tsc -p ./demo/tsconfig.json",
     "browserify": "browserify ./demo/dist/index.js -o ./output/bundle.js",
-    "rollup": "npm run rollup:cjs",
     "rollup:cjs": "rollup -c --environment output_format:cjs",
     "rollup:es": "rollup -c --environment output_format:es"
   },

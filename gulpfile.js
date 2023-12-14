@@ -24,7 +24,7 @@ gulp.task(taskNames.reload_web, function () {
 })
 
 gulp.task(taskNames.tsc, (done) => {
-  const childProcess = child_process.exec('npm run rollup');
+  const childProcess = child_process.exec('npm run rollup:cjs');
   childProcess.stdout?.pipe(process.stdout);
   childProcess.stderr?.pipe(process.stderr);
   childProcess.on('exit', done);
@@ -50,5 +50,11 @@ export default function (done) {
   gulp.watch('./src/**/*.ts', gulp.series(taskNames.tsc, taskNames.browserify));
   gulp.watch('./output/**/*.*', gulp.series(taskNames.reload_web));
 
-  gulp.series(taskNames.tsc, taskNames.tsc_demo, taskNames.browserify, taskNames.copy_public, taskNames.start_server)(done)
+  gulp.series(
+    taskNames.tsc,
+    taskNames.tsc_demo,
+    taskNames.browserify,
+    taskNames.copy_public,
+    taskNames.start_server
+  )(done)
 }
