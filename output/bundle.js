@@ -1786,20 +1786,6 @@ function main() {
 },{"../../dist/cjs":17,"./G/BaseView/Button":1,"./G/BaseView/SizeType":2,"./G/BaseView/Styles":4,"./G/BaseView/View":5,"./G/CompoundView/Menu":8,"./G/Helper/ButtonGroup":10,"./Shiftable":14,"./Shortcuts":15}],17:[function(require,module,exports){
 'use strict';
 
-const warn = (func) => console.warn('[InvalidTool]', func);
-class InvalidTool {
-    start() { warn('start'); }
-    end() { warn('end'); }
-    get type() { return ''; }
-    get board() { warn('get board'); return; }
-    set board(_) { warn('set board'); }
-    pointerMove() { warn('pointerMove'); }
-    pointerDown() { warn('pointerDown'); }
-    pointerDraw() { warn('pointerDraw'); }
-    pointerUp() { warn('pointerUp'); }
-    render() { warn('render'); }
-}
-
 exports.Events = void 0;
 (function (Events) {
     function pickShapePosData(data) {
@@ -1839,378 +1825,6 @@ exports.EventEnum = void 0;
     EventEnum["ShapesSelected"] = "SHAPES_SELECTED";
     EventEnum["ShapesDeselected"] = "SHAPES_DESELECTED";
 })(exports.EventEnum || (exports.EventEnum = {}));
-
-class Vector {
-    constructor(x, y) {
-        this.x = 0;
-        this.y = 0;
-        this.x = x;
-        this.y = y;
-    }
-    plus(o) { return this.add(o.x, o.y); }
-    add(x, y) {
-        this.x += x;
-        this.y += y;
-        return this;
-    }
-    static mid(v0, v1, factor = 0.5) {
-        return {
-            x: v0.x + (v1.x - v0.x) * factor,
-            y: v0.y + (v1.y - v0.y) * factor,
-        };
-    }
-    static pure(x, y) {
-        return { x, y };
-    }
-    static distance(a, b) {
-        return Math.sqrt(Math.pow(a.x - b.x, 2) +
-            Math.pow(a.y - b.y, 2));
-    }
-    static manhattan(a, b) {
-        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-    }
-    static dot(a, b) {
-        return Math.abs(a.x * b.x + a.y * b.y);
-    }
-    static multiply(a, n) {
-        return { x: a.x * n, y: a.y * n };
-    }
-}
-
-var GenMode;
-(function (GenMode) {
-    GenMode[GenMode["FromCorner"] = 0] = "FromCorner";
-    GenMode[GenMode["FromCenter"] = 1] = "FromCenter";
-})(GenMode || (GenMode = {}));
-var LockMode;
-(function (LockMode) {
-    LockMode[LockMode["Default"] = 0] = "Default";
-    LockMode[LockMode["Square"] = 1] = "Square";
-    LockMode[LockMode["Circle"] = 2] = "Circle";
-})(LockMode || (LockMode = {}));
-class RectHelper {
-    constructor() {
-        this._from = Vector.pure(NaN, NaN);
-        this._to = Vector.pure(NaN, NaN);
-    }
-    get ok() { return isNaN(this._from.x) || isNaN(this._to.x); }
-    get from() { return this._from; }
-    get to() { return this._to; }
-    start(x, y) {
-        this._from.x = x;
-        this._from.y = y;
-        this._to.x = x;
-        this._to.y = y;
-    }
-    end(x, y) {
-        this._to.x = x;
-        this._to.y = y;
-    }
-    clear() {
-        this._from = Vector.pure(NaN, NaN);
-        this._to = Vector.pure(NaN, NaN);
-    }
-    gen() {
-        const { x: x0, y: y0 } = this._from;
-        const { x: x1, y: y1 } = this._to;
-        const x = Math.min(x0, x1);
-        const y = Math.min(y0, y1);
-        return {
-            x, y,
-            w: Math.max(x0, x1) - x,
-            h: Math.max(y0, y1) - y
-        };
-    }
-}
-
-class SimpleTool {
-    get type() { return this._type; }
-    constructor(type, shapeType) {
-        this._keys = new Map();
-        this.keydown = (e) => {
-            switch (e.key) {
-                case 'Control':
-                case 'Alt':
-                case 'Shift':
-                    this._keys.set(e.key, true);
-                    this.applyRect();
-                    return;
-            }
-        };
-        this.keyup = (e) => {
-            switch (e.key) {
-                case 'Control':
-                case 'Alt':
-                case 'Shift':
-                    this._keys.set(e.key, false);
-                    this.applyRect();
-                    return;
-            }
-        };
-        this._rect = new RectHelper();
-        this._type = type;
-        this._shapeType = shapeType;
-    }
-    holdingKey(...keys) {
-        for (let i = 0; i < keys.length; ++i) {
-            if (!this._keys.get(keys[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-    start() {
-        window.addEventListener('keydown', this.keydown);
-        window.addEventListener('keyup', this.keyup);
-    }
-    end() {
-        window.removeEventListener('keydown', this.keydown);
-        window.removeEventListener('keyup', this.keyup);
-        delete this._curShape;
-    }
-    render() { }
-    get board() {
-        return this._board;
-    }
-    set board(v) {
-        this._board = v;
-    }
-    pointerMove(dot) { }
-    pointerDown(dot) {
-        const { x, y } = dot;
-        const board = this.board;
-        if (!board)
-            return;
-        this._curShape = board.factory.newShape(this._shapeType);
-        this._curShape.data.layer = board.layer().id;
-        const shape = this._curShape;
-        if (!shape)
-            return;
-        board.add(shape, true);
-        this._rect.start(x, y);
-        this.updateGeo(0);
-    }
-    pointerDraw(dot) {
-        const { x, y } = dot;
-        this._rect.end(x, y);
-        this.updateGeo(1);
-    }
-    pointerUp(dot) {
-        const { x, y } = dot;
-        this._rect.end(x, y);
-        this.updateGeo(2);
-        delete this._curShape;
-    }
-    applyRect() {
-        var _a;
-        const { x, y, w, h } = this._rect.gen();
-        (_a = this._curShape) === null || _a === void 0 ? void 0 : _a.geo(x, y, w, h);
-    }
-    updateGeo(state) {
-        const shape = this._curShape;
-        const board = this.board;
-        if (!shape || !board)
-            return;
-        switch (state) {
-            case 0: {
-                this._prevData = exports.Events.pickShapeGeoData(shape.data);
-                this._startData = this._prevData;
-                this.applyRect();
-                break;
-            }
-            case 1: {
-                this.applyRect();
-                const curr = exports.Events.pickShapeGeoData(shape.data);
-                board.emitEvent(exports.EventEnum.ShapesGeoChanging, {
-                    operator: board.whoami,
-                    tool: this.type,
-                    shapeDatas: [[curr, this._prevData]]
-                });
-                this._prevData = curr;
-                break;
-            }
-            case 2: {
-                this.applyRect();
-                const curr = exports.Events.pickShapeGeoData(shape.data);
-                board.emitEvent(exports.EventEnum.ShapesGeoChanging, {
-                    operator: board.whoami,
-                    tool: this.type,
-                    shapeDatas: [[curr, this._prevData]]
-                });
-                board.emitEvent(exports.EventEnum.ShapesGeoChanged, {
-                    operator: board.whoami,
-                    tool: this.type,
-                    shapeDatas: [[curr, this._startData]]
-                });
-                board.emitEvent(exports.EventEnum.ShapesDone, {
-                    operator: board.whoami,
-                    shapeDatas: [shape.data.copy()]
-                });
-                this._prevData = curr;
-                break;
-            }
-        }
-    }
-}
-
-exports.ToolEnum = void 0;
-(function (ToolEnum) {
-    ToolEnum["Invalid"] = "";
-    ToolEnum["Selector"] = "TOOL_SELECTOR";
-    ToolEnum["Pen"] = "TOOL_PEN";
-    ToolEnum["Rect"] = "TOOL_RECT";
-    ToolEnum["Oval"] = "TOOL_OVAL";
-    ToolEnum["Text"] = "TOOL_TEXT";
-    ToolEnum["Polygon"] = "TOOL_POLYGON";
-    ToolEnum["Tick"] = "TOOL_TICK";
-    ToolEnum["Cross"] = "TOOL_CROSS";
-    ToolEnum["HalfTick"] = "TOOL_HALFTICK";
-    ToolEnum["Lines"] = "TOOL_Lines";
-    ToolEnum["Img"] = "TOOL_Img";
-})(exports.ToolEnum || (exports.ToolEnum = {}));
-function getToolName(type) {
-    switch (type) {
-        case exports.ToolEnum.Invalid: return 'ToolEnum.Invalid';
-        case exports.ToolEnum.Pen: return 'ToolEnum.Pen';
-        case exports.ToolEnum.Rect: return 'ToolEnum.Rect';
-        case exports.ToolEnum.Oval: return 'ToolEnum.Oval';
-        case exports.ToolEnum.Text: return 'ToolEnum.Text';
-        case exports.ToolEnum.Polygon: return 'ToolEnum.Polygon';
-        case exports.ToolEnum.Tick: return 'ToolEnum.Tick';
-        case exports.ToolEnum.Cross: return 'ToolEnum.Cross';
-        case exports.ToolEnum.HalfTick: return 'ToolEnum.HalfTick';
-        case exports.ToolEnum.Lines: return 'ToolEnum.Lines';
-        case exports.ToolEnum.Lines: return 'ToolEnum.Img';
-        default: return type;
-    }
-}
-
-exports.ShapeEnum = void 0;
-(function (ShapeEnum) {
-    ShapeEnum[ShapeEnum["Invalid"] = 0] = "Invalid";
-    ShapeEnum[ShapeEnum["Pen"] = 1] = "Pen";
-    ShapeEnum[ShapeEnum["Rect"] = 2] = "Rect";
-    ShapeEnum[ShapeEnum["Oval"] = 3] = "Oval";
-    ShapeEnum[ShapeEnum["Text"] = 4] = "Text";
-    ShapeEnum[ShapeEnum["Polygon"] = 5] = "Polygon";
-    ShapeEnum[ShapeEnum["Tick"] = 6] = "Tick";
-    ShapeEnum[ShapeEnum["Cross"] = 7] = "Cross";
-    ShapeEnum[ShapeEnum["HalfTick"] = 8] = "HalfTick";
-    ShapeEnum[ShapeEnum["Lines"] = 9] = "Lines";
-    ShapeEnum[ShapeEnum["Img"] = 10] = "Img";
-})(exports.ShapeEnum || (exports.ShapeEnum = {}));
-function getShapeName(type) {
-    switch (type) {
-        case exports.ShapeEnum.Invalid: return 'ShapeEnum.Invalid';
-        case exports.ShapeEnum.Pen: return 'ShapeEnum.Pen';
-        case exports.ShapeEnum.Rect: return 'ShapeEnum.Rect';
-        case exports.ShapeEnum.Oval: return 'ShapeEnum.Oval';
-        case exports.ShapeEnum.Text: return 'ShapeEnum.Text';
-        case exports.ShapeEnum.Polygon: return 'ShapeEnum.Polygon';
-        case exports.ShapeEnum.Tick: return 'ShapeEnum.Tick';
-        case exports.ShapeEnum.Cross: return 'ShapeEnum.Cross';
-        case exports.ShapeEnum.HalfTick: return 'ShapeEnum.HalfTick';
-        case exports.ShapeEnum.Lines: return 'ShapeEnum.Lines';
-        case exports.ShapeEnum.Img: return 'ShapeEnum.Img';
-        default: return type;
-    }
-}
-
-const Tag$2 = '[Gaia]';
-class Gaia {
-    static registerFactory(type, creator, info) {
-        if (this._factorys.has(type)) {
-            console.warn(Tag$2, `registerFactory(), factory '${type}' already exists!`);
-        }
-        else if (this._factoryInfos.has(type)) {
-            console.warn(Tag$2, `registerFactory(), factory info '${type}' already exists!`);
-        }
-        this._factorys.set(type, creator);
-        this._factoryInfos.set(type, info);
-    }
-    static listFactories() {
-        return Array.from(this._factoryInfos.keys());
-    }
-    static factory(type) {
-        return this._factorys.get(type);
-    }
-    static registerTool(type, creator, info) {
-        if (this._tools.has(type)) {
-            console.warn(Tag$2, `registerTool(), tool '${type}' already exists!`);
-        }
-        else if (this._toolInfos.has(type)) {
-            console.warn(Tag$2, `registerTool(), tool info '${type}' already exists!`);
-        }
-        this._tools.set(type, creator);
-        this._toolInfos.set(type, {
-            shape: info === null || info === void 0 ? void 0 : info.shape,
-            name: (info === null || info === void 0 ? void 0 : info.name) || getToolName(type),
-            desc: (info === null || info === void 0 ? void 0 : info.desc) || getToolName(type),
-        });
-    }
-    static listTools() {
-        return Array.from(this._tools.keys());
-    }
-    static tool(type) {
-        return this._tools.get(type);
-    }
-    static toolInfo(type) {
-        return this._toolInfos.get(type);
-    }
-    static editToolInfo(type, func) {
-        let info = this._toolInfos.get(type);
-        if (!info) {
-            return;
-        }
-        info = func(info);
-        this._toolInfos.set(type, info);
-    }
-    static registerShape(type, dataCreator, shapeCreator, info) {
-        if (this._shapeInfos.has(type)) {
-            console.warn(Tag$2, `registerShape(), shape info '${type}' already exists!`);
-        }
-        else if (this._shapeDatas.has(type)) {
-            console.warn(Tag$2, `registerShape(), shape data'${type}' already exists!`);
-        }
-        else if (this._shapes.has(type)) {
-            console.warn(Tag$2, `registerShape(), shape '${type}' already exists!`);
-        }
-        this._shapeInfos.set(type, {
-            name: (info === null || info === void 0 ? void 0 : info.name) || getShapeName(type),
-            desc: (info === null || info === void 0 ? void 0 : info.desc) || getShapeName(type),
-            type
-        });
-        this._shapeDatas.set(type, dataCreator);
-        this._shapes.set(type, shapeCreator);
-    }
-    static listShapes() {
-        return Array.from(this._shapes.keys());
-    }
-    static shapeInfo(type) {
-        return this._shapeInfos.get(type);
-    }
-    static shapeData(type) {
-        return this._shapeDatas.get(type);
-    }
-    static shape(type) {
-        return this._shapes.get(type);
-    }
-    static registAction(eventType, handler) {
-        this._actionHandler.set(eventType, handler);
-    }
-    static listActions() { return Array.from(this._actionHandler.keys()); }
-    static action(eventType) {
-        return this._actionHandler.get(eventType);
-    }
-}
-Gaia._tools = new Map();
-Gaia._toolInfos = new Map();
-Gaia._shapeDatas = new Map();
-Gaia._shapes = new Map();
-Gaia._shapeInfos = new Map();
-Gaia._factorys = new Map();
-Gaia._factoryInfos = new Map();
-Gaia._actionHandler = new Map();
 
 class BinaryRange {
     constructor(f, t) {
@@ -2690,6 +2304,43 @@ class QuadTree {
     }
 }
 
+class Vector {
+    constructor(x, y) {
+        this.x = 0;
+        this.y = 0;
+        this.x = x;
+        this.y = y;
+    }
+    plus(o) { return this.add(o.x, o.y); }
+    add(x, y) {
+        this.x += x;
+        this.y += y;
+        return this;
+    }
+    static mid(v0, v1, factor = 0.5) {
+        return {
+            x: v0.x + (v1.x - v0.x) * factor,
+            y: v0.y + (v1.y - v0.y) * factor,
+        };
+    }
+    static pure(x, y) {
+        return { x, y };
+    }
+    static distance(a, b) {
+        return Math.sqrt(Math.pow(a.x - b.x, 2) +
+            Math.pow(a.y - b.y, 2));
+    }
+    static manhattan(a, b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+    static dot(a, b) {
+        return Math.abs(a.x * b.x + a.y * b.y);
+    }
+    static multiply(a, n) {
+        return { x: a.x * n, y: a.y * n };
+    }
+}
+
 class RotatedRect {
     get axisX() { return this._axisX; }
     get axisY() { return this._axisY; }
@@ -2834,6 +2485,37 @@ function getValue(v, prev) {
 
 const isNum = (x) => typeof x === 'number';
 const isStr = (x) => typeof x === 'string';
+
+exports.ShapeEnum = void 0;
+(function (ShapeEnum) {
+    ShapeEnum[ShapeEnum["Invalid"] = 0] = "Invalid";
+    ShapeEnum[ShapeEnum["Pen"] = 1] = "Pen";
+    ShapeEnum[ShapeEnum["Rect"] = 2] = "Rect";
+    ShapeEnum[ShapeEnum["Oval"] = 3] = "Oval";
+    ShapeEnum[ShapeEnum["Text"] = 4] = "Text";
+    ShapeEnum[ShapeEnum["Polygon"] = 5] = "Polygon";
+    ShapeEnum[ShapeEnum["Tick"] = 6] = "Tick";
+    ShapeEnum[ShapeEnum["Cross"] = 7] = "Cross";
+    ShapeEnum[ShapeEnum["HalfTick"] = 8] = "HalfTick";
+    ShapeEnum[ShapeEnum["Lines"] = 9] = "Lines";
+    ShapeEnum[ShapeEnum["Img"] = 10] = "Img";
+})(exports.ShapeEnum || (exports.ShapeEnum = {}));
+function getShapeName(type) {
+    switch (type) {
+        case exports.ShapeEnum.Invalid: return 'ShapeEnum.Invalid';
+        case exports.ShapeEnum.Pen: return 'ShapeEnum.Pen';
+        case exports.ShapeEnum.Rect: return 'ShapeEnum.Rect';
+        case exports.ShapeEnum.Oval: return 'ShapeEnum.Oval';
+        case exports.ShapeEnum.Text: return 'ShapeEnum.Text';
+        case exports.ShapeEnum.Polygon: return 'ShapeEnum.Polygon';
+        case exports.ShapeEnum.Tick: return 'ShapeEnum.Tick';
+        case exports.ShapeEnum.Cross: return 'ShapeEnum.Cross';
+        case exports.ShapeEnum.HalfTick: return 'ShapeEnum.HalfTick';
+        case exports.ShapeEnum.Lines: return 'ShapeEnum.Lines';
+        case exports.ShapeEnum.Img: return 'ShapeEnum.Img';
+        default: return type;
+    }
+}
 
 class ShapeStatus {
     /** 是否可见 */
@@ -3608,6 +3290,134 @@ class OvalData extends ShapeData {
     }
 }
 
+exports.ToolEnum = void 0;
+(function (ToolEnum) {
+    ToolEnum["Invalid"] = "";
+    ToolEnum["Selector"] = "TOOL_SELECTOR";
+    ToolEnum["Pen"] = "TOOL_PEN";
+    ToolEnum["Rect"] = "TOOL_RECT";
+    ToolEnum["Oval"] = "TOOL_OVAL";
+    ToolEnum["Text"] = "TOOL_TEXT";
+    ToolEnum["Polygon"] = "TOOL_POLYGON";
+    ToolEnum["Tick"] = "TOOL_TICK";
+    ToolEnum["Cross"] = "TOOL_CROSS";
+    ToolEnum["HalfTick"] = "TOOL_HALFTICK";
+    ToolEnum["Lines"] = "TOOL_Lines";
+    ToolEnum["Img"] = "TOOL_Img";
+})(exports.ToolEnum || (exports.ToolEnum = {}));
+function getToolName(type) {
+    switch (type) {
+        case exports.ToolEnum.Invalid: return 'ToolEnum.Invalid';
+        case exports.ToolEnum.Pen: return 'ToolEnum.Pen';
+        case exports.ToolEnum.Rect: return 'ToolEnum.Rect';
+        case exports.ToolEnum.Oval: return 'ToolEnum.Oval';
+        case exports.ToolEnum.Text: return 'ToolEnum.Text';
+        case exports.ToolEnum.Polygon: return 'ToolEnum.Polygon';
+        case exports.ToolEnum.Tick: return 'ToolEnum.Tick';
+        case exports.ToolEnum.Cross: return 'ToolEnum.Cross';
+        case exports.ToolEnum.HalfTick: return 'ToolEnum.HalfTick';
+        case exports.ToolEnum.Lines: return 'ToolEnum.Lines';
+        case exports.ToolEnum.Lines: return 'ToolEnum.Img';
+        default: return type;
+    }
+}
+
+const Tag$2 = '[Gaia]';
+class Gaia {
+    static registerFactory(type, creator, info) {
+        if (this._factorys.has(type)) {
+            console.warn(Tag$2, `registerFactory(), factory '${type}' already exists!`);
+        }
+        else if (this._factoryInfos.has(type)) {
+            console.warn(Tag$2, `registerFactory(), factory info '${type}' already exists!`);
+        }
+        this._factorys.set(type, creator);
+        this._factoryInfos.set(type, info);
+    }
+    static listFactories() {
+        return Array.from(this._factoryInfos.keys());
+    }
+    static factory(type) {
+        return this._factorys.get(type);
+    }
+    static registerTool(type, creator, info) {
+        if (this._tools.has(type)) {
+            console.warn(Tag$2, `registerTool(), tool '${type}' already exists!`);
+        }
+        else if (this._toolInfos.has(type)) {
+            console.warn(Tag$2, `registerTool(), tool info '${type}' already exists!`);
+        }
+        this._tools.set(type, creator);
+        this._toolInfos.set(type, {
+            shape: info === null || info === void 0 ? void 0 : info.shape,
+            name: (info === null || info === void 0 ? void 0 : info.name) || getToolName(type),
+            desc: (info === null || info === void 0 ? void 0 : info.desc) || getToolName(type),
+        });
+    }
+    static listTools() {
+        return Array.from(this._tools.keys());
+    }
+    static tool(type) {
+        return this._tools.get(type);
+    }
+    static toolInfo(type) {
+        return this._toolInfos.get(type);
+    }
+    static editToolInfo(type, func) {
+        let info = this._toolInfos.get(type);
+        if (!info) {
+            return;
+        }
+        info = func(info);
+        this._toolInfos.set(type, info);
+    }
+    static registerShape(type, dataCreator, shapeCreator, info) {
+        if (this._shapeInfos.has(type)) {
+            console.warn(Tag$2, `registerShape(), shape info '${type}' already exists!`);
+        }
+        else if (this._shapeDatas.has(type)) {
+            console.warn(Tag$2, `registerShape(), shape data'${type}' already exists!`);
+        }
+        else if (this._shapes.has(type)) {
+            console.warn(Tag$2, `registerShape(), shape '${type}' already exists!`);
+        }
+        this._shapeInfos.set(type, {
+            name: (info === null || info === void 0 ? void 0 : info.name) || getShapeName(type),
+            desc: (info === null || info === void 0 ? void 0 : info.desc) || getShapeName(type),
+            type
+        });
+        this._shapeDatas.set(type, dataCreator);
+        this._shapes.set(type, shapeCreator);
+    }
+    static listShapes() {
+        return Array.from(this._shapes.keys());
+    }
+    static shapeInfo(type) {
+        return this._shapeInfos.get(type);
+    }
+    static shapeData(type) {
+        return this._shapeDatas.get(type);
+    }
+    static shape(type) {
+        return this._shapes.get(type);
+    }
+    static registAction(eventType, handler) {
+        this._actionHandler.set(eventType, handler);
+    }
+    static listActions() { return Array.from(this._actionHandler.keys()); }
+    static action(eventType) {
+        return this._actionHandler.get(eventType);
+    }
+}
+Gaia._tools = new Map();
+Gaia._toolInfos = new Map();
+Gaia._shapeDatas = new Map();
+Gaia._shapes = new Map();
+Gaia._shapeInfos = new Map();
+Gaia._factorys = new Map();
+Gaia._factoryInfos = new Map();
+Gaia._actionHandler = new Map();
+
 class ShapeOval extends ShapeNeedPath {
     path(ctx) {
         const { x, y, w, h } = this.drawingRect();
@@ -3622,6 +3432,182 @@ class ShapeOval extends ShapeNeedPath {
     }
 }
 Gaia.registerShape(exports.ShapeEnum.Oval, () => new OvalData, d => new ShapeOval(d));
+
+var GenMode;
+(function (GenMode) {
+    GenMode[GenMode["FromCorner"] = 0] = "FromCorner";
+    GenMode[GenMode["FromCenter"] = 1] = "FromCenter";
+})(GenMode || (GenMode = {}));
+var LockMode;
+(function (LockMode) {
+    LockMode[LockMode["Default"] = 0] = "Default";
+    LockMode[LockMode["Square"] = 1] = "Square";
+    LockMode[LockMode["Circle"] = 2] = "Circle";
+})(LockMode || (LockMode = {}));
+class RectHelper {
+    constructor() {
+        this._from = Vector.pure(NaN, NaN);
+        this._to = Vector.pure(NaN, NaN);
+    }
+    get ok() { return isNaN(this._from.x) || isNaN(this._to.x); }
+    get from() { return this._from; }
+    get to() { return this._to; }
+    start(x, y) {
+        this._from.x = x;
+        this._from.y = y;
+        this._to.x = x;
+        this._to.y = y;
+    }
+    end(x, y) {
+        this._to.x = x;
+        this._to.y = y;
+    }
+    clear() {
+        this._from = Vector.pure(NaN, NaN);
+        this._to = Vector.pure(NaN, NaN);
+    }
+    gen() {
+        const { x: x0, y: y0 } = this._from;
+        const { x: x1, y: y1 } = this._to;
+        const x = Math.min(x0, x1);
+        const y = Math.min(y0, y1);
+        return {
+            x, y,
+            w: Math.max(x0, x1) - x,
+            h: Math.max(y0, y1) - y
+        };
+    }
+}
+
+class SimpleTool {
+    get type() { return this._type; }
+    constructor(type, shapeType) {
+        this._keys = new Map();
+        this.keydown = (e) => {
+            switch (e.key) {
+                case 'Control':
+                case 'Alt':
+                case 'Shift':
+                    this._keys.set(e.key, true);
+                    this.applyRect();
+                    return;
+            }
+        };
+        this.keyup = (e) => {
+            switch (e.key) {
+                case 'Control':
+                case 'Alt':
+                case 'Shift':
+                    this._keys.set(e.key, false);
+                    this.applyRect();
+                    return;
+            }
+        };
+        this._rect = new RectHelper();
+        this._type = type;
+        this._shapeType = shapeType;
+    }
+    holdingKey(...keys) {
+        for (let i = 0; i < keys.length; ++i) {
+            if (!this._keys.get(keys[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    start() {
+        window.addEventListener('keydown', this.keydown);
+        window.addEventListener('keyup', this.keyup);
+    }
+    end() {
+        window.removeEventListener('keydown', this.keydown);
+        window.removeEventListener('keyup', this.keyup);
+        delete this._curShape;
+    }
+    render() { }
+    get board() {
+        return this._board;
+    }
+    set board(v) {
+        this._board = v;
+    }
+    pointerMove(dot) { }
+    pointerDown(dot) {
+        const { x, y } = dot;
+        const board = this.board;
+        if (!board)
+            return;
+        this._curShape = board.factory.newShape(this._shapeType);
+        this._curShape.data.layer = board.layer().id;
+        const shape = this._curShape;
+        if (!shape)
+            return;
+        board.add(shape, true);
+        this._rect.start(x, y);
+        this.updateGeo(0);
+    }
+    pointerDraw(dot) {
+        const { x, y } = dot;
+        this._rect.end(x, y);
+        this.updateGeo(1);
+    }
+    pointerUp(dot) {
+        const { x, y } = dot;
+        this._rect.end(x, y);
+        this.updateGeo(2);
+        delete this._curShape;
+    }
+    applyRect() {
+        var _a;
+        const { x, y, w, h } = this._rect.gen();
+        (_a = this._curShape) === null || _a === void 0 ? void 0 : _a.geo(x, y, w, h);
+    }
+    updateGeo(state) {
+        const shape = this._curShape;
+        const board = this.board;
+        if (!shape || !board)
+            return;
+        switch (state) {
+            case 0: {
+                this._prevData = exports.Events.pickShapeGeoData(shape.data);
+                this._startData = this._prevData;
+                this.applyRect();
+                break;
+            }
+            case 1: {
+                this.applyRect();
+                const curr = exports.Events.pickShapeGeoData(shape.data);
+                board.emitEvent(exports.EventEnum.ShapesGeoChanging, {
+                    operator: board.whoami,
+                    tool: this.type,
+                    shapeDatas: [[curr, this._prevData]]
+                });
+                this._prevData = curr;
+                break;
+            }
+            case 2: {
+                this.applyRect();
+                const curr = exports.Events.pickShapeGeoData(shape.data);
+                board.emitEvent(exports.EventEnum.ShapesGeoChanging, {
+                    operator: board.whoami,
+                    tool: this.type,
+                    shapeDatas: [[curr, this._prevData]]
+                });
+                board.emitEvent(exports.EventEnum.ShapesGeoChanged, {
+                    operator: board.whoami,
+                    tool: this.type,
+                    shapeDatas: [[curr, this._startData]]
+                });
+                board.emitEvent(exports.EventEnum.ShapesDone, {
+                    operator: board.whoami,
+                    shapeDatas: [shape.data.copy()]
+                });
+                this._prevData = curr;
+                break;
+            }
+        }
+    }
+}
 
 class OvalTool extends SimpleTool {
     constructor() {
@@ -4949,6 +4935,20 @@ class ShapeImg extends Shape {
 Gaia.registerShape(exports.ShapeEnum.Img, () => new ImgData, d => new ShapeImg(d));
 
 Gaia.registerTool(exports.ToolEnum.Img, () => new SimpleTool(exports.ToolEnum.Img, exports.ShapeEnum.Img), { name: 'Image', desc: 'Image drawer', shape: exports.ShapeEnum.Img });
+
+const warn = (func) => console.warn('[InvalidTool]', func);
+class InvalidTool {
+    start() { warn('start'); }
+    end() { warn('end'); }
+    get type() { return ''; }
+    get board() { warn('get board'); return; }
+    set board(_) { warn('set board'); }
+    pointerMove() { warn('pointerMove'); }
+    pointerDown() { warn('pointerDown'); }
+    pointerDraw() { warn('pointerDraw'); }
+    pointerUp() { warn('pointerUp'); }
+    render() { warn('render'); }
+}
 
 function throttle(interval, cb) {
     let _waiting = false;
