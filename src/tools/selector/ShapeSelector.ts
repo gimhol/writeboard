@@ -13,71 +13,96 @@ export class ShapeSelector extends ShapeRect {
   }
 }
 
+interface Target {
+  shape: Shape;
+  midX: number;
+  midY: number;
+  rotation: number;
+  distance: number;
+  degree: number;
+}
 export class ShapePicking extends ShapeRect {
-  private _targets: Shape<ShapeData>[] = [];
-  private _rotations: { mx: number, my: number, r: number }[] = [];
-
+  private _targets: Target[] = [];
+  private _geo = new Rect(
+    Number.MAX_VALUE,
+    Number.MAX_VALUE,
+    -Number.MAX_VALUE,
+    -Number.MAX_VALUE,
+  )
   constructor() {
     super(new ShapeData);
     this.data.selected = true;
   }
+
   hit(dot: IDot): [ResizeDirection, Rect | undefined] | null {
     if (!this.visible) return null;
     const d = this.map2me(dot.x, dot.y).plus(this.data)
     if (!this.getGeo().hit(d)) return null
     return this.resizeDirection(d.x, d.y);
   }
-  follow(shapes: Shape[]): boolean {
-    let count = 0;
-    const geo = new Rect(
-      Number.MAX_VALUE,
-      Number.MAX_VALUE,
-      -Number.MAX_VALUE,
-      -Number.MAX_VALUE,
-    );
+
+  reset(): void {
+    this._targets = [];
+    this.visible = false;
+    this.rotateTo(0)
+    this._geo.set({
+      x: Number.MAX_VALUE,
+      y: Number.MAX_VALUE,
+      w: -Number.MAX_VALUE,
+      h: -Number.MAX_VALUE,
+    })
+  }
+
+  setTargets(shapes: Shape[]): void {
+    this.reset();
+    const geo = this._geo;
     this._targets = []
-    this._rotations = []
     for (let i = 0, len = shapes.length; i < len; ++i) {
-      const v = shapes[i]
+      const shape = shapes[i]
       const {
         rotatedTopLeft: a, rotatedTopRight: b,
         rotatedBottomLeft: c, rotatedBottomRight: d,
         locked,
-      } = v
+      } = shape;
       if (locked) continue;
-      this._targets.push(v);
-      this._rotations.push({ mx: v.midX, my: v.midY, r: v.rotation });
+      this._targets.push({
+        shape,
+        midX: shape.midX,
+        midY: shape.midY,
+        rotation: shape.rotation,
+        degree: 0,
+        distance: 0,
+      });
       geo.left = Math.min(geo.left, a.x, b.x, c.x, d.x)
       geo.right = Math.max(geo.right, a.x, b.x, c.x, d.x)
       geo.top = Math.min(geo.top, a.y, b.y, c.y, d.y)
       geo.bottom = Math.max(geo.bottom, a.y, b.y, c.y, d.y)
-      ++count;
+    }
+    const { x: mx, y: my } = geo.mid()
+    for (let i = 0, len = this._targets.length; i < len; ++i) {
+      const { midX: x, midY: y } = this._targets[i];
+      const dx = x - mx;
+      const dy = y - my;
+      this._targets[i].distance = Math.sqrt(dx * dx + dy * dy);
+      this._targets[i].degree = Math.atan2(dy, dx);
     }
     this.setGeo(geo);
-    this.visible = count > 1;
-    return count > 1
+    this.visible = true
   }
+
   override rotateTo(r: number): void {
     super.rotateTo(r)
     const { midX, midY } = this;
     for (let i = 0, len = this._targets.length; i < len; ++i) {
-      const d = this._rotations[i];
-      const t = this._targets[i];
+      const { shape, rotation, distance, degree } = this._targets[i];
+      shape.rotateTo(rotation + r);
+      const cr = Math.cos(r + degree);
+      const sr = Math.sin(r + degree);
 
-      t.rotateTo(d.r + r);
-      const dx = midX - d.mx;
-      const dy = midY - d.my;
-      if (Numbers.equals(dx, 0) && Numbers.equals(dy, 0)) continue;
-      const rr = r - Math.atan2(dy, dx);
-      const cr = Math.cos(rr);
-      const sr = Math.sin(rr);
-      t.move(
-        dx * cr - dy * sr + midX - t.w / 2,
-        dx * sr + dy * cr + midY - t.h / 2
+      shape.move(
+        cr * distance + midX - shape.w / 2,
+        sr * distance + midY - shape.h / 2
       )
     }
-
-    // console.log(Numbers.equals(x, this.midX), Numbers.equals(y, this.midY))
-    // this._targets.forEach(v => !v.locked && v.rotateTo(r, x, y))
   }
 }

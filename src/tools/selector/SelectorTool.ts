@@ -56,9 +56,14 @@ export class SelectorTool implements ITool {
     v.addEventListener(EventEnum.ShapesDeselected, this.onSelectChanged)
   }
   private onSelectChanged = () => {
-    this._picking.follow([]);
-    this._picking.rotateTo(0);
-    this._picking.follow(this.board.selects) && this._rotator.follow(this._picking);
+    this._picking.reset();
+    const { selects } = this.board;
+    if (selects.length > 1) {
+      this._picking.setTargets(selects);
+      this._rotator.follow(this._picking);
+    } else {
+      this._picking.reset();
+    }
   }
 
   get rect(): RectHelper { return this._rectHelper }
@@ -136,8 +141,7 @@ export class SelectorTool implements ITool {
       v.prevData = Events.pickShapePosData(v.shape.data)
       v.shape.moveBy(diffX, diffY)
     }
-    this._picking.follow(this._shapes.map(v => v.shape)) &&
-      this._rotator.follow(this._picking)
+    this._picking.moveBy(diffX, diffY)
     return this;
   }
 

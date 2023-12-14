@@ -23,18 +23,19 @@ export class ShapeRotator extends Shape<ShapeData> {
     const { x: mx, y: my } = shape.rotatedMid
     const w = this._width
     const d = this._distance
-
-    this.data.visible = shape.selected && !shape.locked && !!shape.board
-
-    console.log(this.data.visible)
-    this.data.w = w
-    this.data.h = shape.h + d * 2
-    this.data.x = mx - this.halfW
-    this.data.y = my - this.halfH
-    this.data.rotation = shape.rotation
-    const s = this.board?.factory.rotator.size || 10
-    this._ctrlDot.w = s;
-    this._ctrlDot.h = s;
+    const v = shape.visible && shape.selected && !shape.locked && !!shape.board
+    console.log(v)
+    if (v) {
+      this.data.w = w
+      this.data.h = shape.h + d * 2
+      this.data.x = mx - this.halfW
+      this.data.y = my - this.halfH
+      this.data.rotation = shape.rotation
+      const s = this.board?.factory.rotator.size || 10
+      this._ctrlDot.w = s;
+      this._ctrlDot.h = s;
+    }
+    this.data.visible = v
     this.endDirty()
   }
 

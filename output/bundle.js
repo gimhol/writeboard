@@ -4972,16 +4972,19 @@ class ShapeRotator extends Shape {
             const { x: mx, y: my } = shape.rotatedMid;
             const w = this._width;
             const d = this._distance;
-            this.data.visible = shape.selected && !shape.locked && !!shape.board;
-            console.log(this.data.visible);
-            this.data.w = w;
-            this.data.h = shape.h + d * 2;
-            this.data.x = mx - this.halfW;
-            this.data.y = my - this.halfH;
-            this.data.rotation = shape.rotation;
-            const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotator.size) || 10;
-            this._ctrlDot.w = s;
-            this._ctrlDot.h = s;
+            const v = shape.visible && shape.selected && !shape.locked && !!shape.board;
+            console.log(v);
+            if (v) {
+                this.data.w = w;
+                this.data.h = shape.h + d * 2;
+                this.data.x = mx - this.halfW;
+                this.data.y = my - this.halfH;
+                this.data.rotation = shape.rotation;
+                const s = ((_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.rotator.size) || 10;
+                this._ctrlDot.w = s;
+                this._ctrlDot.h = s;
+            }
+            this.data.visible = v;
             this.endDirty();
         };
         this._listener = (e) => this._update(e.detail.shape);
@@ -5056,7 +5059,7 @@ class ShapePicking extends ShapeRect {
     constructor() {
         super(new ShapeData);
         this._targets = [];
-        this._rotations = [];
+        this._geo = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         this.data.selected = true;
     }
     hit(dot) {
@@ -5067,46 +5070,60 @@ class ShapePicking extends ShapeRect {
             return null;
         return this.resizeDirection(d.x, d.y);
     }
-    follow(shapes) {
-        let count = 0;
-        const geo = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+    reset() {
         this._targets = [];
-        this._rotations = [];
+        this.visible = false;
+        this.rotateTo(0);
+        this._geo.set({
+            x: Number.MAX_VALUE,
+            y: Number.MAX_VALUE,
+            w: -Number.MAX_VALUE,
+            h: -Number.MAX_VALUE,
+        });
+    }
+    setTargets(shapes) {
+        this.reset();
+        const geo = this._geo;
+        this._targets = [];
         for (let i = 0, len = shapes.length; i < len; ++i) {
-            const v = shapes[i];
-            const { rotatedTopLeft: a, rotatedTopRight: b, rotatedBottomLeft: c, rotatedBottomRight: d, locked, } = v;
+            const shape = shapes[i];
+            const { rotatedTopLeft: a, rotatedTopRight: b, rotatedBottomLeft: c, rotatedBottomRight: d, locked, } = shape;
             if (locked)
                 continue;
-            this._targets.push(v);
-            this._rotations.push({ mx: v.midX, my: v.midY, r: v.rotation });
+            this._targets.push({
+                shape,
+                midX: shape.midX,
+                midY: shape.midY,
+                rotation: shape.rotation,
+                degree: 0,
+                distance: 0,
+            });
             geo.left = Math.min(geo.left, a.x, b.x, c.x, d.x);
             geo.right = Math.max(geo.right, a.x, b.x, c.x, d.x);
             geo.top = Math.min(geo.top, a.y, b.y, c.y, d.y);
             geo.bottom = Math.max(geo.bottom, a.y, b.y, c.y, d.y);
-            ++count;
+        }
+        const { x: mx, y: my } = geo.mid();
+        for (let i = 0, len = this._targets.length; i < len; ++i) {
+            const { midX: x, midY: y } = this._targets[i];
+            const dx = x - mx;
+            const dy = y - my;
+            this._targets[i].distance = Math.sqrt(dx * dx + dy * dy);
+            this._targets[i].degree = Math.atan2(dy, dx);
         }
         this.setGeo(geo);
-        this.visible = count > 1;
-        return count > 1;
+        this.visible = true;
     }
     rotateTo(r) {
         super.rotateTo(r);
         const { midX, midY } = this;
         for (let i = 0, len = this._targets.length; i < len; ++i) {
-            const d = this._rotations[i];
-            const t = this._targets[i];
-            t.rotateTo(d.r + r);
-            const dx = midX - d.mx;
-            const dy = midY - d.my;
-            if (exports.Numbers.equals(dx, 0) && exports.Numbers.equals(dy, 0))
-                continue;
-            const rr = r - Math.atan2(dy, dx);
-            const cr = Math.cos(rr);
-            const sr = Math.sin(rr);
-            t.move(dx * cr - dy * sr + midX - t.w / 2, dx * sr + dy * cr + midY - t.h / 2);
+            const { shape, rotation, distance, degree } = this._targets[i];
+            shape.rotateTo(rotation + r);
+            const cr = Math.cos(r + degree);
+            const sr = Math.sin(r + degree);
+            shape.move(cr * distance + midX - shape.w / 2, sr * distance + midY - shape.h / 2);
         }
-        // console.log(Numbers.equals(x, this.midX), Numbers.equals(y, this.midY))
-        // this._targets.forEach(v => !v.locked && v.rotateTo(r, x, y))
     }
 }
 
@@ -5140,9 +5157,15 @@ class SelectorTool {
         this._windowPointerDown = () => this.deselect();
         this._shapes = [];
         this.onSelectChanged = () => {
-            this._picking.follow([]);
-            this._picking.rotateTo(0);
-            this._picking.follow(this.board.selects) && this._rotator.follow(this._picking);
+            this._picking.reset();
+            const { selects } = this.board;
+            if (selects.length > 1) {
+                this._picking.setTargets(selects);
+                this._rotator.follow(this._picking);
+            }
+            else {
+                this._picking.reset();
+            }
         };
         this.emitGeoEvent = throttle(1000 / 30, (isLast) => {
             const { board, _shapes } = this;
@@ -5242,8 +5265,7 @@ class SelectorTool {
             v.prevData = exports.Events.pickShapePosData(v.shape.data);
             v.shape.moveBy(diffX, diffY);
         }
-        this._picking.follow(this._shapes.map(v => v.shape)) &&
-            this._rotator.follow(this._picking);
+        this._picking.moveBy(diffX, diffY);
         return this;
     }
     pointerDown(dot) {
