@@ -31,6 +31,7 @@ export class ShapePicking extends ShapeRect {
   constructor() {
     super(new ShapeData);
     this.data.selected = true;
+    this.data.visible = false;
   }
 
   hit(dot: IDot): [ResizeDirection, Rect | undefined] | null {
@@ -43,17 +44,16 @@ export class ShapePicking extends ShapeRect {
   reset(): void {
     this._targets = [];
     this.visible = false;
-    this.rotateTo(0)
-    this._geo.set({
-      x: Number.MAX_VALUE,
-      y: Number.MAX_VALUE,
-      w: -Number.MAX_VALUE,
-      h: -Number.MAX_VALUE,
-    })
+    this._geo.x = Number.MAX_VALUE;
+    this._geo.y = Number.MAX_VALUE;
+    this._geo.w = -Number.MAX_VALUE;
+    this._geo.h = -Number.MAX_VALUE;
+    this.rotateTo(0);
   }
 
-  setTargets(shapes: Shape[]): void {
+  setShapes(shapes: Shape[]): void {
     this.reset();
+    const rotation = this.data.rotation;
     const geo = this._geo;
     this._targets = []
     for (let i = 0, len = shapes.length; i < len; ++i) {
@@ -68,7 +68,7 @@ export class ShapePicking extends ShapeRect {
         shape,
         midX: shape.midX,
         midY: shape.midY,
-        rotation: shape.rotation,
+        rotation: shape.rotation - rotation,
         degree: 0,
         distance: 0,
       });
@@ -83,7 +83,7 @@ export class ShapePicking extends ShapeRect {
       const dx = x - mx;
       const dy = y - my;
       this._targets[i].distance = Math.sqrt(dx * dx + dy * dy);
-      this._targets[i].degree = Math.atan2(dy, dx);
+      this._targets[i].degree = Math.atan2(dy, dx) - rotation;
     }
     this.setGeo(geo);
     this.visible = true
@@ -91,13 +91,13 @@ export class ShapePicking extends ShapeRect {
 
   override rotateTo(r: number): void {
     super.rotateTo(r)
+
     const { midX, midY } = this;
     for (let i = 0, len = this._targets.length; i < len; ++i) {
       const { shape, rotation, distance, degree } = this._targets[i];
-      shape.rotateTo(rotation + r);
+      shape.rotateTo(r + rotation);
       const cr = Math.cos(r + degree);
       const sr = Math.sin(r + degree);
-
       shape.move(
         cr * distance + midX - shape.w / 2,
         sr * distance + midY - shape.h / 2

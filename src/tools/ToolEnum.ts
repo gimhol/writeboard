@@ -15,4 +15,4 @@ export enum ToolEnum {
   Img = "TOOL_Img",
 }
 export type ToolType = ToolEnum | string
-export const getToolName = enumNameGetter<ToolEnum>("ToolEnum", ToolEnum)
+export const getToolName = enumNameGetter<ToolType>("ToolEnum", ToolEnum)

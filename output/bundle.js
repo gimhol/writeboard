@@ -2485,6 +2485,11 @@ function getValue(v, prev) {
 
 const isNum = (x) => typeof x === 'number';
 const isStr = (x) => typeof x === 'string';
+const findKey = (obj, value) => Object.keys(obj).find(k => obj[k] === value);
+const enumNameGetter = (name, e) => (value) => {
+    const k = findKey(e, value);
+    return isStr(k) ? `${name}.${k}` : '' + value;
+};
 
 exports.ShapeEnum = void 0;
 (function (ShapeEnum) {
@@ -2500,22 +2505,7 @@ exports.ShapeEnum = void 0;
     ShapeEnum[ShapeEnum["Lines"] = 9] = "Lines";
     ShapeEnum[ShapeEnum["Img"] = 10] = "Img";
 })(exports.ShapeEnum || (exports.ShapeEnum = {}));
-function getShapeName(type) {
-    switch (type) {
-        case exports.ShapeEnum.Invalid: return 'ShapeEnum.Invalid';
-        case exports.ShapeEnum.Pen: return 'ShapeEnum.Pen';
-        case exports.ShapeEnum.Rect: return 'ShapeEnum.Rect';
-        case exports.ShapeEnum.Oval: return 'ShapeEnum.Oval';
-        case exports.ShapeEnum.Text: return 'ShapeEnum.Text';
-        case exports.ShapeEnum.Polygon: return 'ShapeEnum.Polygon';
-        case exports.ShapeEnum.Tick: return 'ShapeEnum.Tick';
-        case exports.ShapeEnum.Cross: return 'ShapeEnum.Cross';
-        case exports.ShapeEnum.HalfTick: return 'ShapeEnum.HalfTick';
-        case exports.ShapeEnum.Lines: return 'ShapeEnum.Lines';
-        case exports.ShapeEnum.Img: return 'ShapeEnum.Img';
-        default: return type;
-    }
-}
+const getShapeName = enumNameGetter("ShapeType", exports.ShapeEnum);
 
 class ShapeStatus {
     /** 是否可见 */
@@ -3298,22 +3288,7 @@ exports.ToolEnum = void 0;
     ToolEnum["Lines"] = "TOOL_Lines";
     ToolEnum["Img"] = "TOOL_Img";
 })(exports.ToolEnum || (exports.ToolEnum = {}));
-function getToolName(type) {
-    switch (type) {
-        case exports.ToolEnum.Invalid: return 'ToolEnum.Invalid';
-        case exports.ToolEnum.Pen: return 'ToolEnum.Pen';
-        case exports.ToolEnum.Rect: return 'ToolEnum.Rect';
-        case exports.ToolEnum.Oval: return 'ToolEnum.Oval';
-        case exports.ToolEnum.Text: return 'ToolEnum.Text';
-        case exports.ToolEnum.Polygon: return 'ToolEnum.Polygon';
-        case exports.ToolEnum.Tick: return 'ToolEnum.Tick';
-        case exports.ToolEnum.Cross: return 'ToolEnum.Cross';
-        case exports.ToolEnum.HalfTick: return 'ToolEnum.HalfTick';
-        case exports.ToolEnum.Lines: return 'ToolEnum.Lines';
-        case exports.ToolEnum.Lines: return 'ToolEnum.Img';
-        default: return type;
-    }
-}
+const getToolName = enumNameGetter("ToolEnum", exports.ToolEnum);
 
 const Tag$2 = '[Gaia]';
 class Gaia {
@@ -4973,7 +4948,6 @@ class ShapeRotator extends Shape {
             const w = this._width;
             const d = this._distance;
             const v = shape.visible && shape.selected && !shape.locked && !!shape.board;
-            console.log(v);
             if (v) {
                 this.data.w = w;
                 this.data.h = shape.h + d * 2;
@@ -4987,21 +4961,21 @@ class ShapeRotator extends Shape {
             this.data.visible = v;
             this.endDirty();
         };
-        this._listener = (e) => this._update(e.detail.shape);
+        this._listener1 = (e) => this._update(e.detail.shape);
         this._listener2 = (e) => this._update(e.detail.shape);
         this.data.ghost = true;
         this.data.visible = false;
     }
     follow(shape) {
         this.unfollow();
-        shape.addEventListener(ShapeEventEnum.EndDirty, this._listener);
+        shape.addEventListener(ShapeEventEnum.EndDirty, this._listener1);
         shape.addEventListener(ShapeEventEnum.BoardChanged, this._listener2);
         this._update(shape);
         this._target = shape;
     }
     unfollow() {
         var _a, _b;
-        (_a = this._target) === null || _a === void 0 ? void 0 : _a.removeEventListener(ShapeEventEnum.EndDirty, this._listener);
+        (_a = this._target) === null || _a === void 0 ? void 0 : _a.removeEventListener(ShapeEventEnum.EndDirty, this._listener1);
         (_b = this._target) === null || _b === void 0 ? void 0 : _b.removeEventListener(ShapeEventEnum.BoardChanged, this._listener2);
         delete this._target;
     }
@@ -5023,7 +4997,6 @@ class ShapeRotator extends Shape {
         ctx.lineTo(mx, this._distance);
         ctx.stroke();
         this.endDraw(ctx);
-        // super.render(ctx);
     }
     pointerDown(dot) {
         const ret = this.visible && !!this._target && this.hit(dot);
@@ -5061,6 +5034,7 @@ class ShapePicking extends ShapeRect {
         this._targets = [];
         this._geo = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         this.data.selected = true;
+        this.data.visible = true;
     }
     hit(dot) {
         if (!this.visible)
@@ -5073,16 +5047,15 @@ class ShapePicking extends ShapeRect {
     reset() {
         this._targets = [];
         this.visible = false;
-        this.rotateTo(0);
-        this._geo.set({
-            x: Number.MAX_VALUE,
-            y: Number.MAX_VALUE,
-            w: -Number.MAX_VALUE,
-            h: -Number.MAX_VALUE,
-        });
+        this._geo.x = Number.MAX_VALUE;
+        this._geo.y = Number.MAX_VALUE;
+        this._geo.w = -Number.MAX_VALUE;
+        this._geo.h = -Number.MAX_VALUE;
+        this.rotateTo(0.2);
     }
     setTargets(shapes) {
         this.reset();
+        const rotation = this.data.rotation;
         const geo = this._geo;
         this._targets = [];
         for (let i = 0, len = shapes.length; i < len; ++i) {
@@ -5094,7 +5067,7 @@ class ShapePicking extends ShapeRect {
                 shape,
                 midX: shape.midX,
                 midY: shape.midY,
-                rotation: shape.rotation,
+                rotation: shape.rotation - rotation,
                 degree: 0,
                 distance: 0,
             });
@@ -5109,7 +5082,7 @@ class ShapePicking extends ShapeRect {
             const dx = x - mx;
             const dy = y - my;
             this._targets[i].distance = Math.sqrt(dx * dx + dy * dy);
-            this._targets[i].degree = Math.atan2(dy, dx);
+            this._targets[i].degree = Math.atan2(dy, dx) - rotation;
         }
         this.setGeo(geo);
         this.visible = true;
@@ -5119,7 +5092,7 @@ class ShapePicking extends ShapeRect {
         const { midX, midY } = this;
         for (let i = 0, len = this._targets.length; i < len; ++i) {
             const { shape, rotation, distance, degree } = this._targets[i];
-            shape.rotateTo(rotation + r);
+            shape.rotateTo(r + rotation);
             const cr = Math.cos(r + degree);
             const sr = Math.sin(r + degree);
             shape.move(cr * distance + midX - shape.w / 2, sr * distance + midY - shape.h / 2);
@@ -6381,10 +6354,7 @@ exports.FactoryEnum = void 0;
     FactoryEnum[FactoryEnum["Invalid"] = 0] = "Invalid";
     FactoryEnum[FactoryEnum["Default"] = 1] = "Default";
 })(exports.FactoryEnum || (exports.FactoryEnum = {}));
-function getFactoryName(type) {
-    const k = Object.keys(exports.FactoryEnum).find((k) => exports.FactoryEnum[k] === type);
-    return isStr(k) ? `FactoryEnum.${k}` : '' + type;
-}
+const getFactoryName = enumNameGetter("FactoryEnum", exports.FactoryEnum);
 
 exports.FontFamilysChecker = void 0;
 (function (FontFamilysChecker) {

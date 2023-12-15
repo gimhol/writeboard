@@ -1,7 +1,8 @@
-import { Shape, ShapeData } from "../../shape";
+import { Shape } from "../../shape/base/Shape";
+import { ShapeData } from "../../shape/base/Data";
 import { ShapeEventEnum, ShapeEventMap } from "../../shape/base/ShapeEvent";
-import { IDot } from "../../utils";
-import { Degrees, Numbers } from "../../utils/Numbers";
+import { IDot } from "../../utils/Dot";
+import { Numbers } from "../../utils/Numbers";
 import { Rect } from "../../utils/Rect";
 
 export class ShapeRotator extends Shape<ShapeData> {
@@ -24,7 +25,6 @@ export class ShapeRotator extends Shape<ShapeData> {
     const w = this._width
     const d = this._distance
     const v = shape.visible && shape.selected && !shape.locked && !!shape.board
-    console.log(v)
     if (v) {
       this.data.w = w
       this.data.h = shape.h + d * 2
@@ -39,19 +39,19 @@ export class ShapeRotator extends Shape<ShapeData> {
     this.endDirty()
   }
 
-  private _listener = (e: ShapeEventMap[ShapeEventEnum.EndDirty]) => this._update(e.detail.shape)
+  private _listener1 = (e: ShapeEventMap[ShapeEventEnum.EndDirty]) => this._update(e.detail.shape)
   private _listener2 = (e: ShapeEventMap[ShapeEventEnum.BoardChanged]) => this._update(e.detail.shape)
 
   follow(shape: Shape) {
     this.unfollow()
-    shape.addEventListener(ShapeEventEnum.EndDirty, this._listener);
+    shape.addEventListener(ShapeEventEnum.EndDirty, this._listener1);
     shape.addEventListener(ShapeEventEnum.BoardChanged, this._listener2);
     this._update(shape)
     this._target = shape
   }
 
   unfollow() {
-    this._target?.removeEventListener(ShapeEventEnum.EndDirty, this._listener)
+    this._target?.removeEventListener(ShapeEventEnum.EndDirty, this._listener1)
     this._target?.removeEventListener(ShapeEventEnum.BoardChanged, this._listener2)
     delete this._target
   }
@@ -73,7 +73,6 @@ export class ShapeRotator extends Shape<ShapeData> {
     ctx.lineTo(mx, this._distance)
     ctx.stroke()
     this.endDraw(ctx)
-    // super.render(ctx);
   }
 
   pointerDown(dot: IDot): boolean {
