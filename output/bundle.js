@@ -6382,11 +6382,8 @@ exports.FactoryEnum = void 0;
     FactoryEnum[FactoryEnum["Default"] = 1] = "Default";
 })(exports.FactoryEnum || (exports.FactoryEnum = {}));
 function getFactoryName(type) {
-    switch (type) {
-        case exports.FactoryEnum.Invalid: return 'FactoryEnum.Invalid';
-        case exports.FactoryEnum.Default: return 'FactoryEnum.Default';
-        default: return type;
-    }
+    const k = Object.keys(exports.FactoryEnum).find((k) => exports.FactoryEnum[k] === type);
+    return isStr(k) ? `FactoryEnum.${k}` : '' + type;
 }
 
 exports.FontFamilysChecker = void 0;

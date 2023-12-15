@@ -137,7 +137,9 @@ export class DefaultFactory implements IFactory {
   fontName(fontFamily: string): string {
     return builtInFontNames[fontFamily] ?? fontFamily;
   }
+  
   private _shapeDecoration = new DefaultShapeDecoration
+
   shapeDecoration(_: Shape<ShapeData>): IShapeDecoration {
     return this._shapeDecoration
   }

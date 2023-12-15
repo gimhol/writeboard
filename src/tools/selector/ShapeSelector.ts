@@ -1,5 +1,4 @@
 import { ResizeDirection, Shape, ShapeData, ShapeRect } from "../../shape";
-import { Numbers } from "../../utils";
 import { IDot } from "../../utils/Dot";
 import { Rect } from "../../utils/Rect";
 

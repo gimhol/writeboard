@@ -1,3 +1,5 @@
+import { enumNameGetter } from "../utils/helper"
+
 export enum ShapeEnum {
   Invalid = 0,
   Pen = 1,
@@ -12,19 +14,4 @@ export enum ShapeEnum {
   Img = 10,
 }
 export type ShapeType = ShapeEnum | string
-export function getShapeName(type: ShapeType): string {
-  switch (type) {
-    case ShapeEnum.Invalid: return 'ShapeEnum.Invalid'
-    case ShapeEnum.Pen: return 'ShapeEnum.Pen'
-    case ShapeEnum.Rect: return 'ShapeEnum.Rect'
-    case ShapeEnum.Oval: return 'ShapeEnum.Oval'
-    case ShapeEnum.Text: return 'ShapeEnum.Text'
-    case ShapeEnum.Polygon: return 'ShapeEnum.Polygon'
-    case ShapeEnum.Tick: return 'ShapeEnum.Tick'
-    case ShapeEnum.Cross: return 'ShapeEnum.Cross'
-    case ShapeEnum.HalfTick: return 'ShapeEnum.HalfTick'
-    case ShapeEnum.Lines: return 'ShapeEnum.Lines'
-    case ShapeEnum.Img: return 'ShapeEnum.Img'
-    default: return type
-  }
-}
+export const getShapeName = enumNameGetter<ShapeType>("ShapeType", ShapeEnum)
