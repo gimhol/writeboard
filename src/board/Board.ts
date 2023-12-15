@@ -446,7 +446,7 @@ export class Board {
     this._shapesMgr.shapes().forEach(v => {
       const br = v.boundingRect();
       if (!Rect.hit(br, dirty)) return;
-      const layer = this._layers.get(v.data.layer);
+      const layer = this._layers.get(v.data.layer || '');
       if (!layer) return;
       v.render(layer.octx)
     })

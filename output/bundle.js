@@ -2646,10 +2646,6 @@ class ShapeData {
         this.w = 0;
         this.h = 0;
         this.z = 0;
-        /** layerId */
-        this.l = '';
-        /** rotation */
-        this.r = void 0;
         this.style = new ShapeStyle();
         this.status = new ShapeStatus();
     }
@@ -2751,14 +2747,11 @@ exports.ResizeDirection = void 0;
  */
 exports.Resizable = void 0;
 (function (Resizable) {
-    /**
-     * 图形不能被拉伸
-     */
-    Resizable[Resizable["None"] = 0] = "None";
-    /**
-     * 八方向拉伸
-     */
-    Resizable[Resizable["All"] = 1] = "All";
+    /** 禁止 */ Resizable[Resizable["None"] = 0] = "None";
+    /** 水平 */ Resizable[Resizable["Horizontal"] = 1] = "Horizontal";
+    /** 垂直 */ Resizable[Resizable["Vertical"] = 2] = "Vertical";
+    /** 四角 */ Resizable[Resizable["Corner"] = 4] = "Corner";
+    /** 八向 */ Resizable[Resizable["All"] = 7] = "All";
 })(exports.Resizable || (exports.Resizable = {}));
 /**
  * 一切图形的基类
@@ -5034,7 +5027,7 @@ class ShapePicking extends ShapeRect {
         this._targets = [];
         this._geo = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         this.data.selected = true;
-        this.data.visible = true;
+        this.data.visible = false;
     }
     hit(dot) {
         if (!this.visible)
@@ -5051,9 +5044,9 @@ class ShapePicking extends ShapeRect {
         this._geo.y = Number.MAX_VALUE;
         this._geo.w = -Number.MAX_VALUE;
         this._geo.h = -Number.MAX_VALUE;
-        this.rotateTo(0.2);
+        this.rotateTo(0);
     }
-    setTargets(shapes) {
+    setShapes(shapes) {
         this.reset();
         const rotation = this.data.rotation;
         const geo = this._geo;
@@ -5133,7 +5126,7 @@ class SelectorTool {
             this._picking.reset();
             const { selects } = this.board;
             if (selects.length > 1) {
-                this._picking.setTargets(selects);
+                this._picking.setShapes(selects);
                 this._rotator.follow(this._picking);
             }
             else {
@@ -5966,7 +5959,7 @@ class Board {
             const br = v.boundingRect();
             if (!Rect.hit(br, dirty))
                 return;
-            const layer = this._layers.get(v.data.layer);
+            const layer = this._layers.get(v.data.layer || '');
             if (!layer)
                 return;
             v.render(layer.octx);
@@ -6020,46 +6013,53 @@ class DefaultShapeDecoration {
         ctx.fillStyle = 'white';
         ctx.setLineDash([]);
         const { s, lx, rx, ty, by, mx, my, } = shape.getResizerNumbers(x, y, w, h);
-        // top resizer
-        ctx.beginPath();
-        ctx.rect(mx, ty, s, s);
-        ctx.fill();
-        ctx.stroke();
-        // bottom resizer
-        ctx.beginPath();
-        ctx.rect(mx, by, s, s);
-        ctx.fill();
-        ctx.stroke();
-        // left resizer
-        ctx.beginPath();
-        ctx.rect(lx, my, s, s);
-        ctx.fill();
-        ctx.stroke();
-        // right resizer
-        ctx.beginPath();
-        ctx.rect(rx, my, s, s);
-        ctx.fill();
-        ctx.stroke();
-        // top-left resizer
-        ctx.beginPath();
-        ctx.rect(lx, ty, s, s);
-        ctx.fill();
-        ctx.stroke();
-        // top-right resizer
-        ctx.beginPath();
-        ctx.rect(rx, ty, s, s);
-        ctx.fill();
-        ctx.stroke();
-        // bottom-left resizer
-        ctx.beginPath();
-        ctx.rect(lx, by, s, s);
-        ctx.fill();
-        ctx.stroke();
-        // bottom-right resizer
-        ctx.beginPath();
-        ctx.rect(rx, by, s, s);
-        ctx.fill();
-        ctx.stroke();
+        const { resizable } = shape;
+        if (resizable & exports.Resizable.Vertical) {
+            // top resizer
+            ctx.beginPath();
+            ctx.rect(mx, ty, s, s);
+            ctx.fill();
+            ctx.stroke();
+            // bottom resizer
+            ctx.beginPath();
+            ctx.rect(mx, by, s, s);
+            ctx.fill();
+            ctx.stroke();
+        }
+        if (resizable & exports.Resizable.Horizontal) {
+            // left resizer
+            ctx.beginPath();
+            ctx.rect(lx, my, s, s);
+            ctx.fill();
+            ctx.stroke();
+            // right resizer
+            ctx.beginPath();
+            ctx.rect(rx, my, s, s);
+            ctx.fill();
+            ctx.stroke();
+        }
+        if (resizable & exports.Resizable.Corner) {
+            // top-left resizer
+            ctx.beginPath();
+            ctx.rect(lx, ty, s, s);
+            ctx.fill();
+            ctx.stroke();
+            // top-right resizer
+            ctx.beginPath();
+            ctx.rect(rx, ty, s, s);
+            ctx.fill();
+            ctx.stroke();
+            // bottom-left resizer
+            ctx.beginPath();
+            ctx.rect(lx, by, s, s);
+            ctx.fill();
+            ctx.stroke();
+            // bottom-right resizer
+            ctx.beginPath();
+            ctx.rect(rx, by, s, s);
+            ctx.fill();
+            ctx.stroke();
+        }
     }
 }
 

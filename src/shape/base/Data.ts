@@ -15,10 +15,14 @@ export interface IShapeData {
   z: number;
 
   /** layerId */
-  l: string;
+  l?: string;
 
   /** rotation */
   r?: number;
+
+  /** group id */
+  g?: string;
+
   style?: IShapeStyle;
   status?: IShapeStatus;
 }
@@ -32,10 +36,14 @@ export class ShapeData implements IShapeData {
   z = 0
 
   /** layerId */
-  l = ''
+  l?: string
 
   /** rotation */
-  r: number | undefined = void 0
+  r?: number
+
+  /** group id */
+  g?: string
+
   style = new ShapeStyle();
   status = new ShapeStatus();
 

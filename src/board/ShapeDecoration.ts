@@ -1,4 +1,4 @@
-import { Shape, ShapeData } from "../shape";
+import { Resizable, Shape, ShapeData } from "../shape";
 
 export interface IShapeDecoration {
   ghost?: (shape: Shape, ctx: CanvasRenderingContext2D) => void;
@@ -52,53 +52,59 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     const {
       s, lx, rx, ty, by, mx, my,
     } = shape.getResizerNumbers(x, y, w, h)
+    const { resizable } = shape
 
-    // top resizer
-    ctx.beginPath()
-    ctx.rect(mx, ty, s, s)
-    ctx.fill()
-    ctx.stroke()
+    if (resizable & Resizable.Vertical) {
+      // top resizer
+      ctx.beginPath()
+      ctx.rect(mx, ty, s, s)
+      ctx.fill()
+      ctx.stroke()
 
-    // bottom resizer
-    ctx.beginPath()
-    ctx.rect(mx, by, s, s)
-    ctx.fill()
-    ctx.stroke()
+      // bottom resizer
+      ctx.beginPath()
+      ctx.rect(mx, by, s, s)
+      ctx.fill()
+      ctx.stroke()
+    }
 
-    // left resizer
-    ctx.beginPath()
-    ctx.rect(lx, my, s, s)
-    ctx.fill()
-    ctx.stroke()
+    if (resizable & Resizable.Horizontal) {
+      // left resizer
+      ctx.beginPath()
+      ctx.rect(lx, my, s, s)
+      ctx.fill()
+      ctx.stroke()
 
-    // right resizer
-    ctx.beginPath()
-    ctx.rect(rx, my, s, s)
-    ctx.fill()
-    ctx.stroke()
+      // right resizer
+      ctx.beginPath()
+      ctx.rect(rx, my, s, s)
+      ctx.fill()
+      ctx.stroke()
+    }
+    if (resizable & Resizable.Corner) {
+      // top-left resizer
+      ctx.beginPath()
+      ctx.rect(lx, ty, s, s)
+      ctx.fill()
+      ctx.stroke()
 
-    // top-left resizer
-    ctx.beginPath()
-    ctx.rect(lx, ty, s, s)
-    ctx.fill()
-    ctx.stroke()
+      // top-right resizer
+      ctx.beginPath()
+      ctx.rect(rx, ty, s, s)
+      ctx.fill()
+      ctx.stroke()
 
-    // top-right resizer
-    ctx.beginPath()
-    ctx.rect(rx, ty, s, s)
-    ctx.fill()
-    ctx.stroke()
+      // bottom-left resizer
+      ctx.beginPath()
+      ctx.rect(lx, by, s, s)
+      ctx.fill()
+      ctx.stroke()
 
-    // bottom-left resizer
-    ctx.beginPath()
-    ctx.rect(lx, by, s, s)
-    ctx.fill()
-    ctx.stroke()
-
-    // bottom-right resizer
-    ctx.beginPath()
-    ctx.rect(rx, by, s, s)
-    ctx.fill()
-    ctx.stroke()
+      // bottom-right resizer
+      ctx.beginPath()
+      ctx.rect(rx, by, s, s)
+      ctx.fill()
+      ctx.stroke()
+    }
   }
 }

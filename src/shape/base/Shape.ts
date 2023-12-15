@@ -25,15 +25,11 @@ export enum ResizeDirection {
  * @enum {number}
  */
 export enum Resizable {
-  /**
-   * 图形不能被拉伸
-   */
-  None = 0,
-
-  /**
-   * 八方向拉伸
-   */
-  All = 1,
+  /** 禁止 */ None        = 0b000,
+  /** 水平 */ Horizontal  = 0b001,
+  /** 垂直 */ Vertical    = 0b010,
+  /** 四角 */ Corner      = 0b100,
+  /** 八向 */ All         = 0b111,
 }
 
 /**
