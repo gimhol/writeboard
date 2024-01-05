@@ -3991,7 +3991,6 @@ class TextData extends ShapeData {
         this.fillStyle = '#ff0000';
         this.strokeStyle = '';
         this.lineWidth = 0;
-        this.scaleX = 0.5;
     }
     get text() { return this.s; }
     set text(v) { this.s = v; }
