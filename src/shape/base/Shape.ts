@@ -544,15 +544,16 @@ export class Shape<D extends ShapeData = ShapeData> {
   }
 
   protected beginDraw(ctx: CanvasRenderingContext2D): void {
-    let { x, y, w, h, rotation } = this.data
+    let { x, y, w, h, r, c, d } = this.data
     ctx.save()
     x = Math.floor(x)
     y = Math.floor(y)
     const hw = Math.floor(w / 2)
     const hh = Math.floor(h / 2)
-    if (rotation) {
+    if (r || c || d) {
       ctx.translate(x + hw, y + hh)
-      ctx.rotate(rotation)
+      r && ctx.rotate(r);
+      (c || d) && ctx.scale(c ?? 1, d ?? 1)
       ctx.translate(- hw, - hh)
     } else {
       ctx.translate(x, y)

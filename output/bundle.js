@@ -3230,15 +3230,16 @@ class Shape {
         return [exports.ResizeDirection.None, undefined];
     }
     beginDraw(ctx) {
-        let { x, y, w, h, rotation } = this.data;
+        let { x, y, w, h, r, c, d } = this.data;
         ctx.save();
         x = Math.floor(x);
         y = Math.floor(y);
         const hw = Math.floor(w / 2);
         const hh = Math.floor(h / 2);
-        if (rotation) {
+        if (r || c || d) {
             ctx.translate(x + hw, y + hh);
-            ctx.rotate(rotation);
+            r && ctx.rotate(r);
+            (c || d) && ctx.scale(c !== null && c !== void 0 ? c : 1, d !== null && d !== void 0 ? d : 1);
             ctx.translate(-hw, -hh);
         }
         else {
@@ -3990,6 +3991,7 @@ class TextData extends ShapeData {
         this.fillStyle = '#ff0000';
         this.strokeStyle = '';
         this.lineWidth = 0;
+        this.scaleX = 0.5;
     }
     get text() { return this.s; }
     set text(v) { this.s = v; }
@@ -4251,7 +4253,7 @@ Css.add(`
   padding: 0px;
   margin: 0px;
   transition: none;
-  opacity: 0%;
+  opacity: 00%;
 }`);
 class TextTool {
     set curShape(shape) {
@@ -4301,7 +4303,7 @@ class TextTool {
             this._editor.style.maxHeight = shape.data.h + 'px';
             this._editor.style.paddingLeft = shape.data.t_l + 'px';
             this._editor.style.paddingTop = shape.data.t_t + 'px';
-            this._editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg)`;
+            this._editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg) scale(${shape.data.scaleX},${shape.data.scaleY})`;
         };
         this._updateShapeText = () => {
             const shape = this._curShape;

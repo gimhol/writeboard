@@ -22,7 +22,7 @@ Css.add(`
   padding: 0px;
   margin: 0px;
   transition: none;
-  opacity: 0%;
+  opacity: 00%;
 }`)
 
 export class TextTool implements ITool {
@@ -74,7 +74,7 @@ export class TextTool implements ITool {
     this._editor.style.maxHeight = shape.data.h + 'px'
     this._editor.style.paddingLeft = shape.data.t_l + 'px'
     this._editor.style.paddingTop = shape.data.t_t + 'px'
-    this._editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg)`
+    this._editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg) scale(${shape.data.scaleX},${shape.data.scaleY})`
   }
   private _updateShapeText = () => {
     const shape = this._curShape
