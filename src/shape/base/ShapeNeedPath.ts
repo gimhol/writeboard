@@ -4,7 +4,7 @@ import { ShapeData } from "./Data";
 export class ShapeNeedPath<D extends ShapeData = ShapeData> extends Shape<D> {
   constructor(data: D) {
     super(data);
-    this._resizable = Resizable.All;
+    this._r = Resizable.All;
   }
   path(ctx: CanvasRenderingContext2D) {
     throw new Error("Method 'path' not implemented.");

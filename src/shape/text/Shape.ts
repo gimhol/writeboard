@@ -18,7 +18,7 @@ export class ShapeText extends Shape<TextData> {
   private _selectionRects: IRect[] = [];
   private _offscreen?: HTMLCanvasElement;
 
-  get text() { return this.data.text }
+  get text() { return this.data.s }
   set text(v) { this.setText(v) }
   get selection() { return this._selection }
   set selection(v) { this.setSelection(v) }
@@ -82,9 +82,9 @@ export class ShapeText extends Shape<TextData> {
   }
 
   setText(v: string, dirty: boolean = true) {
-    if (this.data.text === v)
+    if (this.data.s === v)
       return
-    this.data.text = v
+    this.data.s = v
     this._calculateLines()
     dirty && this.endDirty()
   }
@@ -101,7 +101,7 @@ export class ShapeText extends Shape<TextData> {
 
   private _calculateLines() {
     this._applyStyle(measurer)
-    let totalH = this.data.t_t
+    let totalH = this.data.p
     let totalW = 0
     const text = this.text
     this._lines = text.split('\n').map(v => {
@@ -111,10 +111,10 @@ export class ShapeText extends Shape<TextData> {
       const bl = y + tm.fontBoundingBoxAscent
       totalW = Math.max(tm.width, totalW)
       totalH += tm.fontBoundingBoxAscent + tm.fontBoundingBoxDescent
-      return { str, x: this.data.t_l, y, bl, ...tm }
+      return { str, x: this.data.m, y, bl, ...tm }
     })
-    totalH += this.data.t_b
-    totalW += this.data.t_r + this.data.t_l
+    totalH += this.data.q
+    totalW += this.data.n + this.data.m
     this.resize(totalW, totalH)
   }
 

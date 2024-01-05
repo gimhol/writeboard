@@ -1,32 +1,31 @@
 import { isNum, isStr } from "../../utils/helper";
 import { ShapeEnum } from "../ShapeEnum";
-import { ShapeData } from "../base";
+import { IShapeData, ShapeData } from "../base";
 
 export enum ObjectFit {
   Fill = 0,
   Contain = 1,
   Cover = 2,
 }
+export interface IImgData extends IShapeData {
+  /** src */
+  s?: string;
+
+  /** objectFit */
+  f?: ObjectFit;
+}
+
 export class ImgData extends ShapeData {
-  // src: string = 'http://download.niushibang.com/tvzwLPPzgRqnab818f2c19e1b1aefa67e9682fec5a77.jpg';
-  s: string = 'http://download.niushibang.com/niubo/wx/message/93482af6-597e-4d96-b91d-498222adcfaa/1686551265158.png';
+  s?: string;
   f?: ObjectFit;
 
-  get src() {
-    return this.s;
-  }
+  get src() { return this.s ?? ''; }
 
-  set src(v) {
-    this.s = v;
-  }
+  set src(v) { if (!v) { delete this.s } else this.s = v; }
 
-  get objectFit() {
-    return this.f ?? ObjectFit.Fill;
-  }
+  get objectFit() { return this.f ?? ObjectFit.Fill; }
 
-  set objectFit(v) {
-    this.f = v;
-  }
+  set objectFit(v) { this.f = v; }
 
   override get needFill(): boolean {
     return false;
@@ -35,7 +34,7 @@ export class ImgData extends ShapeData {
   override get needStroke(): boolean {
     return false;
   }
-  
+
   constructor() {
     super()
     this.type = ShapeEnum.Img;

@@ -11,7 +11,7 @@ export class ShapeImg extends Shape<ImgData> {
 
   constructor(data: ImgData) {
     super(data);
-    this._resizable = Resizable.All;
+    this._r = Resizable.All;
   }
 
   get img() {

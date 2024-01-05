@@ -3,7 +3,7 @@ import { ToolEnum } from "../../tools/ToolEnum"
 import { Gaia } from "../../mgr/Gaia"
 import { ShapePen } from "./Shape"
 import { ShapeEnum } from "../ShapeEnum"
-import { DotsType, PenData } from "./Data"
+import { ChangeType, PenData } from "./Data"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../../tools/base/Tool"
 import { EventEnum, Events } from "../../event"
@@ -34,7 +34,7 @@ export class PenTool implements ITool {
       const prev = this._prevData
       if (!prev) return
       const curr = shape.data.copy()
-      curr.dotsType = DotsType.Append
+      curr.dotsType = ChangeType.Append
       curr.coords.splice(0, prev.coords.length)
       board.emitEvent(EventEnum.ShapesChanging, {
         operator: board.whoami,

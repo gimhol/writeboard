@@ -25,11 +25,11 @@ export enum ResizeDirection {
  * @enum {number}
  */
 export enum Resizable {
-  /** 禁止 */ None        = 0b000,
-  /** 水平 */ Horizontal  = 0b001,
-  /** 垂直 */ Vertical    = 0b010,
-  /** 四角 */ Corner      = 0b100,
-  /** 八向 */ All         = 0b111,
+  /** 禁止 */ None = 0b000,
+  /** 水平 */ Horizontal = 0b001,
+  /** 垂直 */ Vertical = 0b010,
+  /** 四角 */ Corner = 0b100,
+  /** 八向 */ All = 0b111,
 }
 
 /**
@@ -40,11 +40,11 @@ export enum Resizable {
  * @template D 图形数据类
  */
 export class Shape<D extends ShapeData = ShapeData> {
-  private _data: D;
-  private _board?: Board;
-  protected _resizable: Resizable = Resizable.None;
+  protected _d: D;
+  protected _b?: Board;
+  protected _r: Resizable = Resizable.None;
   constructor(data: D) {
-    this._data = data
+    this._d = data
   }
 
   /**
@@ -54,7 +54,7 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {D}
    * @memberof Shape
    */
-  get data(): D { return this._data as D }
+  get data(): D { return this._d as D }
 
   /**
    * 图形类型
@@ -66,7 +66,7 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {ShapeType}
    * @memberof Shape
    */
-  get type(): ShapeType { return this._data.type }
+  get type(): ShapeType { return this._d.t }
 
   /**
    * 图形属于哪个黑板
@@ -74,11 +74,11 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {(Board | undefined)}
    * @memberof Shape
    */
-  get board(): Board | undefined { return this._board }
+  get board(): Board | undefined { return this._b }
   set board(v: Board | undefined) {
-    if (v === this._board) return;
-    const prev = this._board
-    this._board = v
+    if (v === this._b) return;
+    const prev = this._b
+    this._b = v
     this.dispatchEvent(ShapeEventEnum.BoardChanged, { shape: this, prev })
   }
 
@@ -90,12 +90,12 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get visible(): boolean { return this._data.visible }
+  get visible(): boolean { return this._d.visible }
   set visible(v: boolean) {
-    if (this._data.visible === v) return
-    const prev: Partial<IShapeData> = { status: { v: v ? 0 : (void 0) } }
+    if (this._d.visible === v) return
+    const prev: Partial<IShapeData> = { b: { v: v ? 0 : (void 0) } }
     this.beginDirty(prev)
-    this._data.visible = v
+    this._d.visible = v
     this.endDirty(prev)
   }
 
@@ -107,12 +107,12 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get editing(): boolean { return this._data.editing }
+  get editing(): boolean { return this._d.editing }
   set editing(v: boolean) {
-    if (this._data.editing === v) return
-    const prev: Partial<IShapeData> = { status: { e: v ? (void 0) : 1 } }
+    if (this._d.editing === v) return
+    const prev: Partial<IShapeData> = { b: { e: v ? (void 0) : 1 } }
     this.beginDirty(prev)
-    this._data.editing = v
+    this._d.editing = v
     this.endDirty(prev)
   }
 
@@ -124,12 +124,12 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get selected(): boolean { return this._data.selected }
+  get selected(): boolean { return this._d.selected }
   set selected(v: boolean) {
-    if (this._data.selected === v) return
-    const prev: Partial<IShapeData> = { status: { s: v ? (void 0) : 1 } }
+    if (this._d.selected === v) return
+    const prev: Partial<IShapeData> = { b: { s: v ? (void 0) : 1 } }
     this.beginDirty(prev)
-    this._data.selected = v
+    this._d.selected = v
     this.endDirty(prev)
   }
 
@@ -143,7 +143,7 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {Resizable}
    * @memberof Shape
    */
-  get resizable(): Resizable { return this._resizable; }
+  get resizable(): Resizable { return this._r; }
 
   /**
    * 图形是否被锁定
@@ -153,12 +153,12 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get locked(): boolean { return this._data.locked }
+  get locked(): boolean { return this._d.locked }
   set locked(v: boolean) {
-    if (this._data.locked === v) return
-    const prev: Partial<IShapeData> = { status: { f: v ? (void 0) : 1 } }
+    if (this._d.locked === v) return
+    const prev: Partial<IShapeData> = { b: { f: v ? (void 0) : 1 } }
     this.beginDirty(prev)
-    this._data.locked = v
+    this._d.locked = v
     this.endDirty(prev)
   }
 
@@ -171,12 +171,12 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {boolean}
    * @memberof Shape
    */
-  get ghost(): boolean { return this._data.ghost }
+  get ghost(): boolean { return this._d.ghost }
   set ghost(v: boolean) {
-    if (this._data.ghost === v) return
-    const prev: Partial<IShapeData> = { status: { g: v ? (void 0) : 1 } }
+    if (this._d.ghost === v) return
+    const prev: Partial<IShapeData> = { b: { g: v ? (void 0) : 1 } }
     this.beginDirty(prev)
-    this._data.ghost = v
+    this._d.ghost = v
     this.endDirty(prev)
   }
 
@@ -187,12 +187,12 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @type {number}
    * @memberof Shape
    */
-  get lineWidth(): number { return this._data.lineWidth }
+  get lineWidth(): number { return this._d.lineWidth }
   set lineWidth(v: number) {
-    if (!this._data.needStroke) { return; }
-    const prev: Partial<IShapeData> = { style: { g: this._data.lineWidth } }
+    if (!this._d.needStroke) { return; }
+    const prev: Partial<IShapeData> = { a: { g: this._d.lineWidth } }
     this.beginDirty(prev)
-    this._data.lineWidth = Math.max(0, v);
+    this._d.lineWidth = Math.max(0, v);
     this.endDirty(prev)
   }
 
@@ -225,25 +225,25 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @returns void
    */
   move(x: number, y: number): void {
-    this.geo(x, y, this._data.w, this._data.h)
+    this.geo(x, y, this._d.w, this._d.h)
   }
 
   resize(w: number, h: number): void {
-    this.geo(this._data.x, this._data.y, w, h)
+    this.geo(this._d.x, this._d.y, w, h)
   }
 
-  get x() { return this._data.x }
-  get y() { return this._data.y }
-  get halfW() { return this._data.w / 2 }
-  get halfH() { return this._data.h / 2 }
-  get midX() { return this._data.x + this.halfW }
-  get midY() { return this._data.y + this.halfH }
-  get w() { return this._data.w }
-  get h() { return this._data.h }
-  get left() { return this._data.x }
-  get right() { return this._data.y }
-  get top() { return this._data.w + this._data.x }
-  get bottom() { return this._data.h + this._data.y }
+  get x() { return this._d.x }
+  get y() { return this._d.y }
+  get halfW() { return this._d.w / 2 }
+  get halfH() { return this._d.h / 2 }
+  get midX() { return this._d.x + this.halfW }
+  get midY() { return this._d.y + this.halfH }
+  get w() { return this._d.w }
+  get h() { return this._d.h }
+  get left() { return this._d.x }
+  get right() { return this._d.y }
+  get top() { return this._d.w + this._d.x }
+  get bottom() { return this._d.h + this._d.y }
 
   get topLeft(): IVector { return { x: this.left, y: this.top } }
   get bottomLeft(): IVector { return { x: this.left, y: this.bottom } }
@@ -277,24 +277,24 @@ export class Shape<D extends ShapeData = ShapeData> {
   get rotation() { return this.data.rotation }
 
   rotateBy(d: number): void {
-    const r = this._data.rotation + d
+    const r = this._d.rotation + d
     this.rotateTo(r);
   }
 
   rotateTo(r: number): void {
-    if (r == this._data.rotation) return
-    const prev: Partial<IShapeData> = { x: this._data.x, y: this._data.y, r: this._data.r }
+    if (r == this._d.rotation) return
+    const prev: Partial<IShapeData> = { x: this._d.x, y: this._d.y, r: this._d.r }
     this.beginDirty(prev)
-    this._data.rotation = r % (Math.PI * 2);
+    this._d.rotation = r % (Math.PI * 2);
     this.endDirty(prev)
   }
 
   getGeo(): Rect {
     return new Rect(
-      this._data.x,
-      this._data.y,
-      this._data.w,
-      this._data.h
+      this._d.x,
+      this._d.y,
+      this._d.w,
+      this._d.h
     )
   }
   setGeo(rect: Rect): void {
@@ -303,47 +303,47 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   geo(x: number, y: number, w: number, h: number): void {
     if (
-      x === this._data.x &&
-      y === this._data.y &&
-      w === this._data.w &&
-      h === this._data.h
+      x === this._d.x &&
+      y === this._d.y &&
+      w === this._d.w &&
+      h === this._d.h
     ) return
     const prev: Partial<IShapeData> = {
-      x: this._data.x, y: this._data.y,
-      w: this._data.w, h: this._data.h
+      x: this._d.x, y: this._d.y,
+      w: this._d.w, h: this._d.h
     }
     this.beginDirty(prev)
-    this._data.x = x
-    this._data.y = y
-    this._data.w = w
-    this._data.h = h
+    this._d.x = x
+    this._d.y = y
+    this._d.w = w
+    this._d.h = h
     this.endDirty(prev)
   }
 
   moveBy(x: number, y: number): void {
     this.geo(
-      this._data.x + x,
-      this._data.y + y,
-      this._data.w,
-      this._data.h
+      this._d.x + x,
+      this._d.y + y,
+      this._d.w,
+      this._d.h
     )
   }
 
   resizeBy(w: number, h: number): void {
     this.geo(
-      this._data.x,
-      this._data.y,
-      this._data.w + w,
-      this._data.h + h
+      this._d.x,
+      this._d.y,
+      this._d.w + w,
+      this._d.h + h
     )
   }
 
   geoBy(x: number, y: number, w: number, h: number): void {
     this.geo(
-      this._data.x + x,
-      this._data.y + y,
-      this._data.w + w,
-      this._data.h + h
+      this._d.x + x,
+      this._d.y + y,
+      this._d.w + w,
+      this._d.h + h
     )
   }
 
@@ -367,7 +367,7 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @returns 
    */
   drawingRect(): IRect {
-    const d = this._data
+    const d = this._d
     return {
       x: 0,
       y: 0,
@@ -422,7 +422,7 @@ export class Shape<D extends ShapeData = ShapeData> {
   getResizerNumbers(x: number, y: number, w: number, h: number) {
     const lw = 1
     const hlw = lw / 2
-    const s = this._board?.factory.resizer.size || 10;
+    const s = this._b?.factory.resizer.size || 10;
     return {
       s,
       lx: x,
@@ -497,7 +497,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
   }
   resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
-    if (!this.selected || !this._resizable || this.ghost || this.locked) {
+    if (!this.selected || !this._r || this.ghost || this.locked) {
       return [ResizeDirection.None, undefined];
     }
     const { x: l, y: t } = this.data

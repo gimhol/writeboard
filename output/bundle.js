@@ -2646,13 +2646,41 @@ class ShapeData {
         this.w = 0;
         this.h = 0;
         this.z = 0;
-        this.style = new ShapeStyle();
-        this.status = new ShapeStatus();
     }
+    get style() {
+        if (this.a instanceof ShapeStyle)
+            return this.a;
+        else if (this.a)
+            return this.a = new ShapeStyle().merge(this.a);
+        else
+            return this.a = new ShapeStyle();
+    }
+    ;
+    get status() {
+        if (this.b instanceof ShapeStatus)
+            return this.b;
+        else if (this.b)
+            return this.b = new ShapeStatus().merge(this.b);
+        else
+            return this.b = new ShapeStatus();
+    }
+    ;
     get type() { return this.t; }
     set type(v) { this.t = v; }
     get id() { return this.i; }
     set id(v) { this.i = v; }
+    get scaleX() { var _a; return (_a = this.c) !== null && _a !== void 0 ? _a : 1; }
+    set scaleX(v) { if (v == 1) {
+        delete this.c;
+    }
+    else
+        this.c = v; }
+    get scaleY() { var _a; return (_a = this.d) !== null && _a !== void 0 ? _a : 1; }
+    set scaleY(v) { if (v == 1) {
+        delete this.d;
+    }
+    else
+        this.d = v; }
     get fillStyle() { return this.style.fillStyle; }
     set fillStyle(v) { this.style.fillStyle = v; }
     get strokeStyle() { return this.style.strokeStyle; }
@@ -2706,17 +2734,34 @@ class ShapeData {
             this.h = o.h;
         if (isStr(o.l))
             this.l = o.l;
+        if (isNum(o.c))
+            this.c = o.c;
+        if (isStr(o.d))
+            this.d = o.d;
         this.r = isNum(o.r) ? o.r : void 0;
         const { style, status } = o;
-        if (style)
-            this.style.read(style);
-        if (status)
-            this.status.read(status);
+        const { a = style, b = status } = o;
+        if (a)
+            this.style.read(a);
+        if (b)
+            this.status.read(b);
+        if (a)
+            this.style.read(a);
+        if (b)
+            this.status.read(b);
         return this;
     }
     copy() {
         const ret = new (Object.getPrototypeOf(this).constructor);
         return ret.read(this);
+    }
+    /** 清洗掉可空的字段 */
+    wash() {
+        if (this.a && !Object.keys(this.a).length)
+            delete this.a;
+        if (this.b && !Object.keys(this.b).length)
+            delete this.b;
+        return this;
     }
 }
 
@@ -2762,9 +2807,9 @@ exports.Resizable = void 0;
  */
 class Shape {
     constructor(data) {
-        this._resizable = exports.Resizable.None;
+        this._r = exports.Resizable.None;
         this._relCount = 0;
-        this._data = data;
+        this._d = data;
     }
     /**
      * 图形的数据
@@ -2773,7 +2818,7 @@ class Shape {
      * @type {D}
      * @memberof Shape
      */
-    get data() { return this._data; }
+    get data() { return this._d; }
     /**
      * 图形类型
      *
@@ -2784,19 +2829,19 @@ class Shape {
      * @type {ShapeType}
      * @memberof Shape
      */
-    get type() { return this._data.type; }
+    get type() { return this._d.t; }
     /**
      * 图形属于哪个黑板
      *
      * @type {(Board | undefined)}
      * @memberof Shape
      */
-    get board() { return this._board; }
+    get board() { return this._b; }
     set board(v) {
-        if (v === this._board)
+        if (v === this._b)
             return;
-        const prev = this._board;
-        this._board = v;
+        const prev = this._b;
+        this._b = v;
         this.dispatchEvent(ShapeEventEnum.BoardChanged, { shape: this, prev });
     }
     /**
@@ -2807,13 +2852,13 @@ class Shape {
      * @type {boolean}
      * @memberof Shape
      */
-    get visible() { return this._data.visible; }
+    get visible() { return this._d.visible; }
     set visible(v) {
-        if (this._data.visible === v)
+        if (this._d.visible === v)
             return;
-        const prev = { status: { v: v ? 0 : (void 0) } };
+        const prev = { b: { v: v ? 0 : (void 0) } };
         this.beginDirty(prev);
-        this._data.visible = v;
+        this._d.visible = v;
         this.endDirty(prev);
     }
     /**
@@ -2824,13 +2869,13 @@ class Shape {
      * @type {boolean}
      * @memberof Shape
      */
-    get editing() { return this._data.editing; }
+    get editing() { return this._d.editing; }
     set editing(v) {
-        if (this._data.editing === v)
+        if (this._d.editing === v)
             return;
-        const prev = { status: { e: v ? (void 0) : 1 } };
+        const prev = { b: { e: v ? (void 0) : 1 } };
         this.beginDirty(prev);
-        this._data.editing = v;
+        this._d.editing = v;
         this.endDirty(prev);
     }
     /**
@@ -2841,13 +2886,13 @@ class Shape {
      * @type {boolean}
      * @memberof Shape
      */
-    get selected() { return this._data.selected; }
+    get selected() { return this._d.selected; }
     set selected(v) {
-        if (this._data.selected === v)
+        if (this._d.selected === v)
             return;
-        const prev = { status: { s: v ? (void 0) : 1 } };
+        const prev = { b: { s: v ? (void 0) : 1 } };
         this.beginDirty(prev);
-        this._data.selected = v;
+        this._d.selected = v;
         this.endDirty(prev);
     }
     /**
@@ -2860,7 +2905,7 @@ class Shape {
      * @type {Resizable}
      * @memberof Shape
      */
-    get resizable() { return this._resizable; }
+    get resizable() { return this._r; }
     /**
      * 图形是否被锁定
      *
@@ -2869,13 +2914,13 @@ class Shape {
      * @type {boolean}
      * @memberof Shape
      */
-    get locked() { return this._data.locked; }
+    get locked() { return this._d.locked; }
     set locked(v) {
-        if (this._data.locked === v)
+        if (this._d.locked === v)
             return;
-        const prev = { status: { f: v ? (void 0) : 1 } };
+        const prev = { b: { f: v ? (void 0) : 1 } };
         this.beginDirty(prev);
-        this._data.locked = v;
+        this._d.locked = v;
         this.endDirty(prev);
     }
     /**
@@ -2887,13 +2932,13 @@ class Shape {
      * @type {boolean}
      * @memberof Shape
      */
-    get ghost() { return this._data.ghost; }
+    get ghost() { return this._d.ghost; }
     set ghost(v) {
-        if (this._data.ghost === v)
+        if (this._d.ghost === v)
             return;
-        const prev = { status: { g: v ? (void 0) : 1 } };
+        const prev = { b: { g: v ? (void 0) : 1 } };
         this.beginDirty(prev);
-        this._data.ghost = v;
+        this._d.ghost = v;
         this.endDirty(prev);
     }
     /**
@@ -2903,14 +2948,14 @@ class Shape {
      * @type {number}
      * @memberof Shape
      */
-    get lineWidth() { return this._data.lineWidth; }
+    get lineWidth() { return this._d.lineWidth; }
     set lineWidth(v) {
-        if (!this._data.needStroke) {
+        if (!this._d.needStroke) {
             return;
         }
-        const prev = { style: { g: this._data.lineWidth } };
+        const prev = { a: { g: this._d.lineWidth } };
         this.beginDirty(prev);
-        this._data.lineWidth = Math.max(0, v);
+        this._d.lineWidth = Math.max(0, v);
         this.endDirty(prev);
     }
     merge(data) {
@@ -2939,23 +2984,23 @@ class Shape {
      * @returns void
      */
     move(x, y) {
-        this.geo(x, y, this._data.w, this._data.h);
+        this.geo(x, y, this._d.w, this._d.h);
     }
     resize(w, h) {
-        this.geo(this._data.x, this._data.y, w, h);
+        this.geo(this._d.x, this._d.y, w, h);
     }
-    get x() { return this._data.x; }
-    get y() { return this._data.y; }
-    get halfW() { return this._data.w / 2; }
-    get halfH() { return this._data.h / 2; }
-    get midX() { return this._data.x + this.halfW; }
-    get midY() { return this._data.y + this.halfH; }
-    get w() { return this._data.w; }
-    get h() { return this._data.h; }
-    get left() { return this._data.x; }
-    get right() { return this._data.y; }
-    get top() { return this._data.w + this._data.x; }
-    get bottom() { return this._data.h + this._data.y; }
+    get x() { return this._d.x; }
+    get y() { return this._d.y; }
+    get halfW() { return this._d.w / 2; }
+    get halfH() { return this._d.h / 2; }
+    get midX() { return this._d.x + this.halfW; }
+    get midY() { return this._d.y + this.halfH; }
+    get w() { return this._d.w; }
+    get h() { return this._d.h; }
+    get left() { return this._d.x; }
+    get right() { return this._d.y; }
+    get top() { return this._d.w + this._d.x; }
+    get bottom() { return this._d.h + this._d.y; }
     get topLeft() { return { x: this.left, y: this.top }; }
     get bottomLeft() { return { x: this.left, y: this.bottom }; }
     get topRight() { return { x: this.right, y: this.top }; }
@@ -2983,62 +3028,62 @@ class Shape {
     get rotatedMid() { return this.map2world(this.halfW, this.halfH); }
     get rotation() { return this.data.rotation; }
     rotateBy(d) {
-        const r = this._data.rotation + d;
+        const r = this._d.rotation + d;
         this.rotateTo(r);
     }
     rotateTo(r) {
-        if (r == this._data.rotation)
+        if (r == this._d.rotation)
             return;
-        const prev = { x: this._data.x, y: this._data.y, r: this._data.r };
+        const prev = { x: this._d.x, y: this._d.y, r: this._d.r };
         this.beginDirty(prev);
-        this._data.rotation = r % (Math.PI * 2);
+        this._d.rotation = r % (Math.PI * 2);
         this.endDirty(prev);
     }
     getGeo() {
-        return new Rect(this._data.x, this._data.y, this._data.w, this._data.h);
+        return new Rect(this._d.x, this._d.y, this._d.w, this._d.h);
     }
     setGeo(rect) {
         this.geo(rect.x, rect.y, rect.w, rect.h);
     }
     geo(x, y, w, h) {
-        if (x === this._data.x &&
-            y === this._data.y &&
-            w === this._data.w &&
-            h === this._data.h)
+        if (x === this._d.x &&
+            y === this._d.y &&
+            w === this._d.w &&
+            h === this._d.h)
             return;
         const prev = {
-            x: this._data.x, y: this._data.y,
-            w: this._data.w, h: this._data.h
+            x: this._d.x, y: this._d.y,
+            w: this._d.w, h: this._d.h
         };
         this.beginDirty(prev);
-        this._data.x = x;
-        this._data.y = y;
-        this._data.w = w;
-        this._data.h = h;
+        this._d.x = x;
+        this._d.y = y;
+        this._d.w = w;
+        this._d.h = h;
         this.endDirty(prev);
     }
     moveBy(x, y) {
-        this.geo(this._data.x + x, this._data.y + y, this._data.w, this._data.h);
+        this.geo(this._d.x + x, this._d.y + y, this._d.w, this._d.h);
     }
     resizeBy(w, h) {
-        this.geo(this._data.x, this._data.y, this._data.w + w, this._data.h + h);
+        this.geo(this._d.x, this._d.y, this._d.w + w, this._d.h + h);
     }
     geoBy(x, y, w, h) {
-        this.geo(this._data.x + x, this._data.y + y, this._data.w + w, this._data.h + h);
+        this.geo(this._d.x + x, this._d.y + y, this._d.w + w, this._d.h + h);
     }
     render(ctx) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _c, _e, _f, _g, _h;
         if (!this.visible)
             return;
         const decoration = (_a = this.board) === null || _a === void 0 ? void 0 : _a.factory.shapeDecoration(this);
         const { ghost, locked, resizable, selected } = this;
         this.beginDraw(ctx);
-        ghost && ((_b = decoration === null || decoration === void 0 ? void 0 : decoration.ghost) === null || _b === void 0 ? void 0 : _b.call(decoration, this, ctx));
-        selected && locked && ((_c = decoration === null || decoration === void 0 ? void 0 : decoration.locked) === null || _c === void 0 ? void 0 : _c.call(decoration, this, ctx));
-        selected && !locked && ((_d = decoration === null || decoration === void 0 ? void 0 : decoration.selected) === null || _d === void 0 ? void 0 : _d.call(decoration, this, ctx));
-        selected && !locked && resizable && ((_e = decoration === null || decoration === void 0 ? void 0 : decoration.resizable) === null || _e === void 0 ? void 0 : _e.call(decoration, this, ctx));
+        ghost && ((_c = decoration === null || decoration === void 0 ? void 0 : decoration.ghost) === null || _c === void 0 ? void 0 : _c.call(decoration, this, ctx));
+        selected && locked && ((_e = decoration === null || decoration === void 0 ? void 0 : decoration.locked) === null || _e === void 0 ? void 0 : _e.call(decoration, this, ctx));
+        selected && !locked && ((_f = decoration === null || decoration === void 0 ? void 0 : decoration.selected) === null || _f === void 0 ? void 0 : _f.call(decoration, this, ctx));
+        selected && !locked && resizable && ((_g = decoration === null || decoration === void 0 ? void 0 : decoration.resizable) === null || _g === void 0 ? void 0 : _g.call(decoration, this, ctx));
         this.endDraw(ctx);
-        (_f = decoration === null || decoration === void 0 ? void 0 : decoration.debug) === null || _f === void 0 ? void 0 : _f.call(decoration, this, ctx);
+        (_h = decoration === null || decoration === void 0 ? void 0 : decoration.debug) === null || _h === void 0 ? void 0 : _h.call(decoration, this, ctx);
     }
     /**
      * 绘制矩形
@@ -3046,7 +3091,7 @@ class Shape {
      * @returns
      */
     drawingRect() {
-        const d = this._data;
+        const d = this._d;
         return {
             x: 0,
             y: 0,
@@ -3099,7 +3144,7 @@ class Shape {
         var _a;
         const lw = 1;
         const hlw = lw / 2;
-        const s = ((_a = this._board) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
+        const s = ((_a = this._b) === null || _a === void 0 ? void 0 : _a.factory.resizer.size) || 10;
         return {
             s,
             lx: x,
@@ -3142,7 +3187,7 @@ class Shape {
         };
     }
     resizeDirection(pointerX, pointerY) {
-        if (!this.selected || !this._resizable || this.ghost || this.locked) {
+        if (!this.selected || !this._r || this.ghost || this.locked) {
             return [exports.ResizeDirection.None, undefined];
         }
         const { x: l, y: t } = this.data;
@@ -3225,7 +3270,7 @@ class Shape {
 class ShapeNeedPath extends Shape {
     constructor(data) {
         super(data);
-        this._resizable = exports.Resizable.All;
+        this._r = exports.Resizable.All;
     }
     path(ctx) {
         throw new Error("Method 'path' not implemented.");
@@ -3603,21 +3648,25 @@ class OvalTool extends SimpleTool {
 }
 Gaia.registerTool(exports.ToolEnum.Oval, () => new OvalTool(), { name: 'Oval', desc: 'oval drawer', shape: exports.ShapeEnum.Oval });
 
-exports.DotsType = void 0;
-(function (DotsType) {
-    DotsType[DotsType["Invalid"] = 0] = "Invalid";
-    DotsType[DotsType["All"] = 1] = "All";
-    DotsType[DotsType["Append"] = 2] = "Append";
-    DotsType[DotsType["Subtract"] = 3] = "Subtract";
-})(exports.DotsType || (exports.DotsType = {}));
+exports.ChangeType = void 0;
+(function (ChangeType) {
+    ChangeType[ChangeType["Invalid"] = 0] = "Invalid";
+    ChangeType[ChangeType["All"] = 1] = "All";
+    ChangeType[ChangeType["Append"] = 2] = "Append";
+    ChangeType[ChangeType["Subtract"] = 3] = "Subtract";
+})(exports.ChangeType || (exports.ChangeType = {}));
 class PenData extends ShapeData {
+    get dotsType() { return this.v; }
+    set dotsType(v) { this.v = v; }
+    get coords() { return this.u; }
+    set coords(v) { this.u = v; }
     get needFill() {
         return false;
     }
     constructor() {
         super();
-        this.dotsType = exports.DotsType.All;
-        this.coords = [];
+        this.v = exports.ChangeType.All;
+        this.u = [];
         this.type = exports.ShapeEnum.Pen;
         this.strokeStyle = '#ff0000';
         this.lineCap = 'round';
@@ -3626,26 +3675,28 @@ class PenData extends ShapeData {
     }
     read(other) {
         super.read(other);
-        if (other.dotsType)
-            this.dotsType = other.dotsType;
-        if (Array.isArray(other.coords))
-            this.coords = [...other.coords];
+        const { u = other.coords, v = other.dotsType } = other;
+        if (v)
+            this.dotsType = v;
+        if (Array.isArray(u))
+            this.coords = [...u];
         return this;
     }
     merge(other) {
         super.read(other);
-        if (!Array.isArray(other.coords)) {
+        const { u = other.coords } = other;
+        if (!Array.isArray(u)) {
             return this;
         }
         switch (other.dotsType) {
-            case exports.DotsType.Subtract:
-                this.coords = this.coords.slice(0, -other.coords.length);
+            case exports.ChangeType.Subtract:
+                this.coords = this.coords.slice(0, -u.length);
                 break;
-            case exports.DotsType.Append:
-                this.coords.push(...other.coords);
+            case exports.ChangeType.Append:
+                this.coords.push(...u);
                 break;
             default:
-                this.coords = [...other.coords];
+                this.coords = [...u];
                 break;
         }
         return this;
@@ -3815,7 +3866,7 @@ class PenTool {
             if (!prev)
                 return;
             const curr = shape.data.copy();
-            curr.dotsType = exports.DotsType.Append;
+            curr.dotsType = exports.ChangeType.Append;
             curr.coords.splice(0, prev.coords.length);
             board.emitEvent(exports.EventEnum.ShapesChanging, {
                 operator: board.whoami,
@@ -3867,16 +3918,19 @@ Gaia.registerTool(exports.ToolEnum.Pen, () => new PenTool(), { name: 'Pen', desc
 class PolygonData extends ShapeData {
     constructor() {
         super();
-        this.dots = [];
+        this.u = [];
         this.type = exports.ShapeEnum.Polygon;
         this.fillStyle = '#ff0000';
         this.strokeStyle = '#000000';
         this.lineWidth = 2;
     }
+    get dots() { return this.u; }
+    set dots(v) { this.u = v; }
     read(other) {
         super.read(other);
-        if ('dots' in other)
-            this.dots = other.dots.map(v => (Object.assign({}, v)));
+        const { u = other.dots } = other;
+        if (u)
+            this.u = u.map(v => (Object.assign({}, v)));
         return this;
     }
 }
@@ -3920,17 +3974,35 @@ Gaia.registerTool(exports.ToolEnum.Rect, () => new SimpleTool(exports.ToolEnum.R
 class TextData extends ShapeData {
     constructor() {
         super();
-        this.text = '';
-        this.f_d = ['normal', 'normal', 'normal', 24, 'Simsum'];
-        this.t_l = 3;
-        this.t_r = 3;
-        this.t_t = 3;
-        this.t_b = 3;
+        /** text */
+        this.s = '';
+        /** TFontStyle */
+        this.u = ['normal', 'normal', 'normal', 24, 'Simsum'];
+        /** padding left */
+        this.m = 3;
+        /** padding right */
+        this.n = 3;
+        /** padding top */
+        this.p = 3;
+        /** padding bottom */
+        this.q = 3;
         this.type = exports.ShapeEnum.Text;
         this.fillStyle = '#ff0000';
         this.strokeStyle = '';
         this.lineWidth = 0;
     }
+    get text() { return this.s; }
+    set text(v) { this.s = v; }
+    get f_d() { return this.u; }
+    set f_d(v) { this.u = v; }
+    get t_l() { return this.m; }
+    set t_l(v) { this.m = v; }
+    get t_r() { return this.n; }
+    set t_r(v) { this.n = v; }
+    get t_t() { return this.p; }
+    set t_t(v) { this.p = v; }
+    get t_b() { return this.q; }
+    set t_b(v) { this.q = v; }
     get font() {
         const arr = [...this.f_d];
         arr[3] = `${arr[3]}px`;
@@ -3949,18 +4021,19 @@ class TextData extends ShapeData {
     set font_family(v) { this.f_d[4] = v; }
     read(o) {
         super.read(o);
-        if (isStr(o.text))
-            this.text = o.text;
-        if (Array.isArray(o.f_d))
-            this.f_d = [...o.f_d];
-        if (isNum(o.t_l))
-            this.t_l = o.t_l;
-        if (isNum(o.t_r))
-            this.t_r = o.t_r;
-        if (isNum(o.t_t))
-            this.t_t = o.t_t;
-        if (isNum(o.t_b))
-            this.t_b = o.t_b;
+        const { s = o.text, u = o.f_d, m = o.t_l, n = o.t_r, p = o.t_t, q = o.t_b, } = o;
+        if (isStr(s))
+            this.s = s;
+        if (Array.isArray(u))
+            this.u = [...u];
+        if (isNum(m))
+            this.m = m;
+        if (isNum(n))
+            this.n = n;
+        if (isNum(p))
+            this.p = p;
+        if (isNum(q))
+            this.q = q;
         return this;
     }
 }
@@ -3979,7 +4052,7 @@ class TextSelection {
 
 const measurer = document.createElement('canvas').getContext('2d');
 class ShapeText extends Shape {
-    get text() { return this.data.text; }
+    get text() { return this.data.s; }
     set text(v) { this.setText(v); }
     get selection() { return this._selection; }
     set selection(v) { this.setSelection(v); }
@@ -4042,9 +4115,9 @@ class ShapeText extends Shape {
         ctx.setLineDash([]);
     }
     setText(v, dirty = true) {
-        if (this.data.text === v)
+        if (this.data.s === v)
             return;
-        this.data.text = v;
+        this.data.s = v;
         this._calculateLines();
         dirty && this.endDirty();
     }
@@ -4059,7 +4132,7 @@ class ShapeText extends Shape {
     }
     _calculateLines() {
         this._applyStyle(measurer);
-        let totalH = this.data.t_t;
+        let totalH = this.data.p;
         let totalW = 0;
         const text = this.text;
         this._lines = text.split('\n').map(v => {
@@ -4069,10 +4142,10 @@ class ShapeText extends Shape {
             const bl = y + tm.fontBoundingBoxAscent;
             totalW = Math.max(tm.width, totalW);
             totalH += tm.fontBoundingBoxAscent + tm.fontBoundingBoxDescent;
-            return Object.assign({ str, x: this.data.t_l, y, bl }, tm);
+            return Object.assign({ str, x: this.data.m, y, bl }, tm);
         });
-        totalH += this.data.t_b;
-        totalW += this.data.t_r + this.data.t_l;
+        totalH += this.data.q;
+        totalW += this.data.n + this.data.m;
         this.resize(totalW, totalH);
     }
     _calculateSectionRects() {
@@ -4423,12 +4496,14 @@ Gaia.registerShape(exports.ShapeEnum.HalfTick, () => new HalfTickData, d => new 
 Gaia.registerTool(exports.ToolEnum.HalfTick, () => new SimpleTool(exports.ToolEnum.HalfTick, exports.ShapeEnum.HalfTick), { name: 'Half tick', desc: 'half tick drawer', shape: exports.ShapeEnum.HalfTick });
 
 class LinesData extends ShapeData {
+    get coords() { return this.u; }
+    set coords(v) { this.u = v; }
     get needFill() {
         return false;
     }
     constructor() {
         super();
-        this.coords = [];
+        this.u = [];
         this.type = exports.ShapeEnum.Lines;
         this.strokeStyle = '#ff0000';
         this.lineCap = 'round';
@@ -4437,15 +4512,18 @@ class LinesData extends ShapeData {
     }
     read(other) {
         super.read(other);
-        if (Array.isArray(other.coords))
-            this.coords = [...other.coords];
+        const { coords } = other;
+        const { u = coords } = other;
+        if (Array.isArray(u))
+            this.coords = [...u];
         return this;
     }
     merge(other) {
         super.read(other);
-        if (Array.isArray(other.coords)) {
-            this.coords = [...other.coords];
-        }
+        const { coords } = other;
+        const { u = coords } = other;
+        if (Array.isArray(u))
+            this.coords = [...u];
         return this;
     }
 }
@@ -4745,19 +4823,14 @@ exports.ObjectFit = void 0;
     ObjectFit[ObjectFit["Cover"] = 2] = "Cover";
 })(exports.ObjectFit || (exports.ObjectFit = {}));
 class ImgData extends ShapeData {
-    get src() {
-        return this.s;
+    get src() { var _a; return (_a = this.s) !== null && _a !== void 0 ? _a : ''; }
+    set src(v) { if (!v) {
+        delete this.s;
     }
-    set src(v) {
-        this.s = v;
-    }
-    get objectFit() {
-        var _a;
-        return (_a = this.f) !== null && _a !== void 0 ? _a : exports.ObjectFit.Fill;
-    }
-    set objectFit(v) {
-        this.f = v;
-    }
+    else
+        this.s = v; }
+    get objectFit() { var _a; return (_a = this.f) !== null && _a !== void 0 ? _a : exports.ObjectFit.Fill; }
+    set objectFit(v) { this.f = v; }
     get needFill() {
         return false;
     }
@@ -4766,8 +4839,6 @@ class ImgData extends ShapeData {
     }
     constructor() {
         super();
-        // src: string = 'http://download.niushibang.com/tvzwLPPzgRqnab818f2c19e1b1aefa67e9682fec5a77.jpg';
-        this.s = 'http://download.niushibang.com/niubo/wx/message/93482af6-597e-4d96-b91d-498222adcfaa/1686551265158.png';
         this.type = exports.ShapeEnum.Img;
     }
     read(other) {
@@ -4795,7 +4866,7 @@ class ShapeImg extends Shape {
             this._error = 'fail to load: ' + e.target.src;
             this.endDirty();
         };
-        this._resizable = exports.Resizable.All;
+        this._r = exports.Resizable.All;
     }
     get img() {
         const d = this.data;
@@ -4978,13 +5049,15 @@ class ShapeRotator extends Shape {
         this.beginDraw(ctx);
         const { x, y, w, h } = this._ctrlDot;
         const mx = Math.floor(x + w / 2) - 0.5;
-        const t = Math.floor(y) + 0.5;
-        const l = Math.floor(x) - 0.5;
         ctx.strokeStyle = "black";
         ctx.fillStyle = "white";
         ctx.lineWidth = 1;
-        ctx.fillRect(x, y, w, h);
-        ctx.strokeRect(l, t, w, h);
+        ctx.beginPath();
+        ctx.arc(x + w / 2, y + w / 2, w / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // ctx.fillRect(x, y, w, h)
+        // ctx.strokeRect(l, t, w, h)
         ctx.beginPath();
         ctx.moveTo(mx, y + h);
         ctx.lineTo(mx, this._distance);
@@ -5730,7 +5803,7 @@ class Board {
             w: this.width,
             h: this.height,
             l: Array.from(this._layers.values()).map(v => v.info),
-            s: this.shapes().map(v => v.data)
+            s: this.shapes().map(v => v.data.wash())
         };
     }
     fromSnapshot(snapshot) {
@@ -6720,7 +6793,7 @@ class FClipboard {
             const shapes = raws.sort((a, b) => a.z - b.z).map(raw => {
                 raw.i = factory.newId(raw);
                 raw.z = factory.newZ(raw);
-                raw.status && (raw.status.f = void 0);
+                raw.b && (raw.b.f = void 0);
                 raw.x = raw.x + 10;
                 raw.y = raw.y + 10;
                 const shape = factory.newShape(raw);

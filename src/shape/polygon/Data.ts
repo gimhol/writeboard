@@ -1,8 +1,13 @@
-import { ShapeEnum } from "../ShapeEnum";
-import { ShapeData } from "../base";
 import { IDot } from "../../utils/Dot";
+import { ShapeEnum } from "../ShapeEnum";
+import { IShapeData, ShapeData } from "../base";
 
-export class PolygonData extends ShapeData {
+export interface IPolygonData extends IShapeData {
+  /** dots */
+  u: IDot[];
+}
+
+export class PolygonData extends ShapeData implements IPolygonData {
   constructor() {
     super()
     this.type = ShapeEnum.Polygon
@@ -10,10 +15,15 @@ export class PolygonData extends ShapeData {
     this.strokeStyle = '#000000'
     this.lineWidth = 2
   }
-  dots: IDot[] = []
+
+  u: IDot[] = []
+  get dots(): IDot[] { return this.u }
+  set dots(v: IDot[]) { this.u = v }
+
   override read(other: Partial<PolygonData>) {
     super.read(other)
-    if ('dots' in other) this.dots = other.dots!.map(v => ({ ...v }))
+    const { u = other.dots } = other
+    if (u) this.u = u.map(v => ({ ...v }))
     return this
   }
 }

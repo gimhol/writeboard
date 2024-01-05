@@ -5,14 +5,26 @@ import { IShapeStatus, ShapeStatus } from "./IShapeStatus"
 import { IShapeStyle, ShapeStyle } from "./IShapeStyle"
 
 export interface IShapeData {
-  t: ShapeType;
+  /** style */
+  a?: IShapeStyle;
+
+  /** status */
+  b?: IShapeStatus;
+
+  /** scale x */
+  c?: number;
+
+  /** scale y */
+  d?: number;
+
+  /** group id */
+  g?: string;
+
+  /* height */
+  h: number;
+
   /** id */
   i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  z: number;
 
   /** layerId */
   l?: string;
@@ -20,11 +32,20 @@ export interface IShapeData {
   /** rotation */
   r?: number;
 
-  /** group id */
-  g?: string;
+  /** ShapeType */
+  t: ShapeType;
 
-  style?: IShapeStyle;
-  status?: IShapeStatus;
+  /** width */
+  w: number;
+
+  /** position x */
+  x: number;
+
+  /** position y */
+  y: number;
+
+  /** z-index */
+  z: number;
 }
 export class ShapeData implements IShapeData {
   t: ShapeType = ShapeEnum.Invalid
@@ -34,6 +55,8 @@ export class ShapeData implements IShapeData {
   w = 0
   h = 0
   z = 0
+  c?: number;
+  d?: number;
 
   /** layerId */
   l?: string
@@ -44,13 +67,40 @@ export class ShapeData implements IShapeData {
   /** group id */
   g?: string
 
-  style = new ShapeStyle();
-  status = new ShapeStatus();
+  /** style */
+  a?: IShapeStyle
+
+  /** status */
+  b?: IShapeStatus
+
+  get style(): ShapeStyle {
+    if (this.a instanceof ShapeStyle)
+      return this.a
+    else if (this.a)
+      return this.a = new ShapeStyle().merge(this.a)
+    else
+      return this.a = new ShapeStyle()
+  };
+
+  get status(): ShapeStatus {
+    if (this.b instanceof ShapeStatus)
+      return this.b
+    else if (this.b)
+      return this.b = new ShapeStatus().merge(this.b)
+    else
+      return this.b = new ShapeStatus()
+  };
 
   get type() { return this.t }
   set type(v) { this.t = v }
   get id() { return this.i }
   set id(v) { this.i = v }
+
+
+  get scaleX(): number { return this.c ?? 1 }
+  set scaleX(v: number) { if (v == 1) { delete this.c } else this.c = v }
+  get scaleY(): number { return this.d ?? 1 }
+  set scaleY(v: number) { if (v == 1) { delete this.d } else this.d = v }
 
   get fillStyle() { return this.style.fillStyle }
   set fillStyle(v) { this.style.fillStyle = v; }
@@ -103,16 +153,28 @@ export class ShapeData implements IShapeData {
     if (isNum(o.w)) this.w = o.w
     if (isNum(o.h)) this.h = o.h
     if (isStr(o.l)) this.l = o.l
+    if (isNum(o.c)) this.c = o.c
+    if (isStr(o.d)) this.d = o.d
     this.r = isNum(o.r) ? o.r : void 0
 
-    const { style, status } = o
-    if (style) this.style.read(style)
-    if (status) this.status.read(status)
+    const { style, status } = o as any;
+    const { a = style, b = status } = o;
+    if (a) this.style.read(a)
+    if (b) this.status.read(b)
+    if (a) this.style.read(a)
+    if (b) this.status.read(b)
     return this
   }
 
   copy(): typeof this {
     const ret: (typeof this) = new (Object.getPrototypeOf(this).constructor)
     return ret.read(this)
+  }
+  
+  /** 清洗掉可空的字段 */
+  wash(): typeof this {
+    if (this.a && !Object.keys(this.a).length) delete this.a
+    if (this.b && !Object.keys(this.b).length) delete this.b
+    return this;
   }
 }

@@ -66,8 +66,13 @@ export class ShapeRotator extends Shape<ShapeData> {
     ctx.strokeStyle = "black"
     ctx.fillStyle = "white"
     ctx.lineWidth = 1
-    ctx.fillRect(x, y, w, h)
-    ctx.strokeRect(l, t, w, h)
+
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + w / 2, w / 2, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    // ctx.fillRect(x, y, w, h)
+    // ctx.strokeRect(l, t, w, h)
     ctx.beginPath();
     ctx.moveTo(mx, y + h)
     ctx.lineTo(mx, this._distance)

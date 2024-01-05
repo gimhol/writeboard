@@ -155,7 +155,7 @@ export class Board {
       w: this.width,
       h: this.height,
       l: Array.from(this._layers.values()).map(v => v.info),
-      s: this.shapes().map(v => v.data)
+      s: this.shapes().map(v => v.data.wash())
     }
   }
 

@@ -1,8 +1,16 @@
 import { ShapeEnum } from "../ShapeEnum"
-import { ShapeData } from "../base"
+import { IShapeData, ShapeData } from "../base"
 
-export class LinesData extends ShapeData {
-  coords: number[] = []
+export interface ILinesData extends IShapeData {
+  /** coords */
+  u: number[]
+}
+export class LinesData extends ShapeData implements ILinesData {
+  u: number[] = []
+
+  get coords(): number[] { return this.u }
+  set coords(v: number[]) { this.u = v }
+
   override get needFill(): boolean {
     return false;
   }
@@ -16,14 +24,16 @@ export class LinesData extends ShapeData {
   }
   override read(other: Partial<LinesData>) {
     super.read(other)
-    if (Array.isArray(other.coords)) this.coords = [...other.coords]
+    const { coords } = other
+    const { u = coords } = other
+    if (Array.isArray(u)) this.coords = [...u]
     return this
   }
   override merge(other: Partial<LinesData>) {
     super.read(other)
-    if (Array.isArray(other.coords)) {
-      this.coords = [...other.coords]
-    }
+    const { coords } = other
+    const { u = coords } = other
+    if (Array.isArray(u)) this.coords = [...u]
     return this
   }
 }

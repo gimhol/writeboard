@@ -1,8 +1,35 @@
 import { isNum, isStr } from "../../utils/helper";
 import { ShapeEnum } from "../ShapeEnum";
-import { ShapeData } from "../base";
+import { IShapeData, ShapeData } from "../base";
 
-export class TextData extends ShapeData {
+export type TFontStyle = [
+  'normal' | 'italic' | 'oblique',
+  'normal' | 'small-caps',
+  'normal' | 'bold' | 'bolder' | 'lighter' | number,
+  number,
+  string
+]
+export interface ITextData extends IShapeData {
+  /** text */
+  s: string;
+
+  /** TFontStyle */
+  u: TFontStyle;
+
+  /** padding left */
+  m: number;
+
+  /** padding right */
+  n: number;
+
+  /** padding top */
+  p: number;
+
+  /** padding bottom */
+  q: number;
+}
+
+export class TextData extends ShapeData implements ITextData {
   constructor() {
     super();
     this.type = ShapeEnum.Text;
@@ -10,18 +37,37 @@ export class TextData extends ShapeData {
     this.strokeStyle = '';
     this.lineWidth = 0;
   }
-  text: string = '';
-  f_d: [
-    'normal' | 'italic' | 'oblique',
-    'normal' | 'small-caps',
-    'normal' | 'bold' | 'bolder' | 'lighter' | number,
-    number,
-    string
-  ] = ['normal', 'normal', 'normal', 24, 'Simsum'];
-  t_l: number = 3;
-  t_r: number = 3;
-  t_t: number = 3;
-  t_b: number = 3;
+  /** text */
+  s: string = '';
+  get text() { return this.s }
+  set text(v) { this.s = v }
+
+  /** TFontStyle */
+  u: TFontStyle = ['normal', 'normal', 'normal', 24, 'Simsum']
+  get f_d() { return this.u }
+  set f_d(v) { this.u = v }
+
+  /** padding left */
+  m: number = 3;
+  get t_l() { return this.m }
+  set t_l(v) { this.m = v }
+
+  /** padding right */
+  n: number = 3;
+  get t_r() { return this.n }
+  set t_r(v) { this.n = v }
+
+  /** padding top */
+  p: number = 3;
+  get t_t() { return this.p }
+  set t_t(v) { this.p = v }
+
+  /** padding bottom */
+  q: number = 3;
+  get t_b() { return this.q }
+  set t_b(v) { this.q = v }
+
+
   get font() {
     const arr = [...this.f_d];
     arr[3] = `${arr[3]}px`;
@@ -39,12 +85,21 @@ export class TextData extends ShapeData {
   set font_family(v) { this.f_d[4] = v }
   override read(o: Partial<TextData>) {
     super.read(o)
-    if (isStr(o.text)) this.text = o.text;
-    if (Array.isArray(o.f_d)) this.f_d = [...o.f_d];
-    if (isNum(o.t_l)) this.t_l = o.t_l;
-    if (isNum(o.t_r)) this.t_r = o.t_r;
-    if (isNum(o.t_t)) this.t_t = o.t_t;
-    if (isNum(o.t_b)) this.t_b = o.t_b;
+    const {
+      s = o.text,
+      u = o.f_d,
+      m = o.t_l,
+      n = o.t_r,
+      p = o.t_t,
+      q = o.t_b,
+    } = o
+
+    if (isStr(s)) this.s = s;
+    if (Array.isArray(u)) this.u = [...u];
+    if (isNum(m)) this.m = m;
+    if (isNum(n)) this.n = n;
+    if (isNum(p)) this.p = p;
+    if (isNum(q)) this.q = q;
     return this
   }
 }

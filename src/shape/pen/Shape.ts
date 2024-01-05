@@ -1,7 +1,7 @@
 import { ShapeEnum } from "../ShapeEnum"
 import { Gaia } from "../../mgr/Gaia"
 import { Shape } from "../base"
-import { DotsType, PenData } from "./Data"
+import { ChangeType, PenData } from "./Data"
 import { IRect } from "../../utils/Rect"
 import { IVector } from "../../utils/Vector"
 import { IDot } from "../../utils/Dot"
