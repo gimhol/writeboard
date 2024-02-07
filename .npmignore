@@ -1,7 +1,5 @@
 /node_modules
 /.vscode
-/dist
-/demo/dist
 /test
 /output
 /demo
