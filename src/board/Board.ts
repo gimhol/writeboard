@@ -18,7 +18,7 @@ const Tag = '[Board]'
 
 export class Board {
   private _factory: IFactory
-  private _toolType: ToolType = ToolEnum.Pen
+  private _toolType: ToolType | undefined = void 0
   private _layers = new Map<string, Layer>();
   private _shapesMgr: IShapesMgr
   private _mousedown = false
@@ -235,7 +235,7 @@ export class Board {
 
   get toolType() { return this._toolType }
   set toolType(v) { this.setToolType(v) }
-  setToolType(to: ToolType) {
+  setToolType(to: ToolType | undefined) {
     if (this._toolType === to) {
       /* 
       Note：
@@ -257,6 +257,7 @@ export class Board {
     })
 
     this._tool?.end()
+    if (!to) return;
     this._tool = this._factory.newTool(to)
     if (!this._tool) {
       console.error('toolType not supported. got ', to)
@@ -406,6 +407,10 @@ export class Board {
       return
     }
     this._mousedown = true;
+    if (!this.tool) {
+      console.warn("toolType not set.")
+      return;
+    }
     this.tool?.pointerDown(this.getDot(e))
     e.stopPropagation();
   }
@@ -471,6 +476,7 @@ export class Board {
     delete this._dirty
   }
   destory() {
+
     this._element.removeEventListener('pointerdown', this.pointerdown);
     window.removeEventListener('pointermove', this.pointermove);
     window.removeEventListener('pointerup', this.pointerup);

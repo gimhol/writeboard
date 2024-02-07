@@ -49,8 +49,8 @@ export namespace Events {
   }
   export interface IToolChangedDetail {
     operator: string;
-    from: ToolType;
-    to: ToolType;
+    from?: ToolType;
+    to?: ToolType;
   }
   export interface EventDetailMap {
     [EventEnum.ShapesAdded]: IShapesDetail;
