@@ -3,3 +3,7 @@
 /test
 /output
 /demo
+/src
+gulpfile.js
+rollup.config.js
+tsconfig.json
