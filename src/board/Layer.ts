@@ -64,9 +64,14 @@ export class Layer implements ILayer {
   set opacity(v) { this._onscreen.style.opacity = '' + v };
   get id() { return this._info.id; }
 
+  private _own_onscreen = false;
+  private _own_offscreen = false;
+
   constructor(inits: ILayerInits) {
     this._info = new LayerInfo(inits.info);
     this._onscreen = inits.onscreen ?? document.createElement('canvas');
+    this._own_onscreen = !inits.onscreen;
+
     this._onscreen.setAttribute('layer_id', this.id);
     this._onscreen.setAttribute('layer_name', this.name);
 
@@ -75,9 +80,11 @@ export class Layer implements ILayer {
     this._ctx = this._onscreen.getContext('2d')!
 
     this._offscreen = document.createElement('canvas')
+    this._own_offscreen = true
     this._offscreen.width = this._onscreen.width;
     this._offscreen.height = this._onscreen.height;
     this._octx = this._offscreen.getContext('2d')!
+
   }
   get width() {
     return this._onscreen.width;
@@ -92,5 +99,9 @@ export class Layer implements ILayer {
   set height(v: number) {
     this._onscreen.height = v;
     this._offscreen.height = v;
+  }
+  destory() {
+    if (this._own_onscreen) this._onscreen.remove();
+    if (this._own_offscreen) this._offscreen.remove();
   }
 }

@@ -26,6 +26,7 @@ export class Board {
   private _tool: ITool | undefined
   private _selects: Shape[] = []
   private _element: HTMLElement;
+  private _own_element = false;
   private _whoami = 'local'
   private _editingLayerId: string = '';
 
@@ -114,7 +115,7 @@ export class Board {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();
     this._element = options.element ?? document.createElement('div');
-
+    this._own_element = !options.element;
     if (options.width) {
       this._viewport.w = options.width
       this._world.w = options.width
@@ -468,5 +469,13 @@ export class Board {
       ctx.restore()
     })
     delete this._dirty
+  }
+  destory() {
+    this._element.removeEventListener('pointerdown', this.pointerdown);
+    window.removeEventListener('pointermove', this.pointermove);
+    window.removeEventListener('pointerup', this.pointerup);
+
+    this._layers.forEach(v => v.destory())
+    if (this._own_element) this._element.remove();
   }
 }

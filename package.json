@@ -1,6 +1,6 @@
 {
   "name": "@fimagine/writeboard",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,6 @@
     "rollup:cjs": "rollup -c --environment output_format:cjs",
     "rollup:es": "rollup -c --environment output_format:es"
   },
-  "type": "module",
   "author": "Gim",
   "license": "Apache License 2.0",
   "devDependencies": {
