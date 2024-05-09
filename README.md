@@ -6,7 +6,7 @@
 
 Extensible whiteboard for writing with minimal reliance on third-party libraries.
 
-DEMO：https://gimholg.gitee.io/writeboard
+DEMO：[https://writeboard.gim.ink/](https://writeboard.gim.ink)
 
 #### 安装教程 Installation
 
