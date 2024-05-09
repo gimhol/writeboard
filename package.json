@@ -8,10 +8,10 @@
     "test": "mocha",
     "start": "gulp",
     "tsc": "tsc -p ./tsconfig.json",
-    "tsc-demo": "tsc -p ./demo/tsconfig.json",
     "browserify": "browserify ./demo/dist/index.js -o ./output/bundle.js",
-    "rollup:cjs": "rollup -c --environment output_format:cjs",
-    "rollup:es": "rollup -c --environment output_format:es"
+    "rollup:cjs": "rollup -c --environment output_format:cjs --bundleConfigAsCjs",
+    "rollup:es": "rollup -c --environment output_format:es --bundleConfigAsCjs",
+    "rollup:iife": "rollup -c --name Writeboard --environment output_format:iife --bundleConfigAsCjs"
   },
   "author": "Gim",
   "license": "Apache License 2.0",

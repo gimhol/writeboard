@@ -10,7 +10,7 @@ import {
   TextData,
   ToolEnum,
   EventEnum,
-} from "../../dist/cjs";
+} from "../writeboard";
 import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
 import { Styles } from "./G/BaseView/Styles";
@@ -19,7 +19,7 @@ import { Menu } from "./G/CompoundView/Menu";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
 import { Shiftable } from "./Shiftable";
 import { ShortcutsKeeper } from "./Shortcuts";
-import * as Gim from "../../dist/cjs";
+import * as Gim from "../writeboard";
 View.get(document.head).addChild(
   new View('title', '每日一句'),
   new View('link')

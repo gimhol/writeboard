@@ -1,4 +1,4 @@
-import { Board, Player, Recorder } from "../../dist/cjs";
+import { Board, Player, Recorder } from "../writeboard";
 import { Button } from "./G/BaseView/Button";
 import { CssDisplay, CssFlexDirection } from "./G/BaseView/StyleType";
 import { View } from "./G/BaseView/View";

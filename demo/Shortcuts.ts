@@ -1,5 +1,5 @@
-import { ActionQueue, Board, SelectorTool, ToolEnum } from "../../dist/cjs";
-import { FClipboard } from "../../dist/cjs";
+import { ActionQueue, Board, SelectorTool, ToolEnum } from "../writeboard";
+import { FClipboard } from "../writeboard";
 
 /**
  * 处理键盘输入产生的事件

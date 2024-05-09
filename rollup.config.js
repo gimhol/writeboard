@@ -1,13 +1,14 @@
 import typescript from "@rollup/plugin-typescript";
 
-const { output_format } = process.env;
+const { output_format = 'cjs' } = process.env;
 
 export default {
-  input: "src/index.ts",
+  input: "demo/index.ts",
   output: {
-    dir: "dist/" + (output_format || ''),
-    format: output_format ?? 'cjs',
+    entryFileNames: 'bundle.js',
+    dir: "output",
+    format: output_format,
     sourcemap: true,
   },
-  plugins: [typescript({ outDir: "dist/" + (output_format || '') })]
+  plugins: [typescript({ outDir: "output/" + output_format })]
 };
