@@ -6,26 +6,21 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha",
-    "start": "gulp",
-    "tsc": "tsc -p ./tsconfig.json",
+    "start": "tsc -p ./tsconfig.lib.json",
     "browserify": "browserify ./demo/dist/index.js -o ./output/bundle.js",
-    "rollup:cjs": "rollup -c --environment output_format:cjs --bundleConfigAsCjs",
+    "rollup": "rollup -c --environment output_format:cjs --bundleConfigAsCjs",
     "rollup:es": "rollup -c --environment output_format:es --bundleConfigAsCjs",
     "rollup:iife": "rollup -c --name Writeboard --environment output_format:iife --bundleConfigAsCjs"
   },
   "author": "Gim",
   "license": "Apache License 2.0",
   "devDependencies": {
-    "@rollup/plugin-typescript": "^11.1.5",
+    "@rollup/plugin-html": "^1.0.3",
+    "@rollup/plugin-typescript": "^11.1.6",
     "browserify": "^17.0.0",
-    "comment-json": "^4.2.3",
-    "copyfiles": "^2.4.1",
-    "gulp": "^4.0.2",
-    "gulp-connect": "^5.7.0",
-    "mocha": "^10.2.0",
-    "rollup": "^4.9.0",
-    "tslib": "^2.6.2",
-    "typescript": "^4.9.4"
+    "mocha": "^10.6.0",
+    "rollup": "^4.18.1",
+    "typescript": "^5.5.3"
   },
   "repository": {
     "type": "git",

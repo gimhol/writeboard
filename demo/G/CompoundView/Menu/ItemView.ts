@@ -1,6 +1,7 @@
+
 import { View } from "../../BaseView/View";
-import { IMenuItemInfo } from "./Info";
-import { Menu } from ".";
+import type { IMenuItemInfo } from "./Info";
+import type { Menu } from "./Menu";
 
 export class MenuItemView<K extends string | number | symbol> extends View<'div'> {
   private _info: IMenuItemInfo<K>;
@@ -28,7 +29,6 @@ export class MenuItemView<K extends string | number | symbol> extends View<'div'
       more.style.marginLeft = '5px';
       more.innerText = '>';
       this.inner.appendChild(more);
-      this._submenu = new Menu(this._menu.container, info);
     }
     this.hoverOb;
   }
@@ -45,10 +45,11 @@ export class MenuItemView<K extends string | number | symbol> extends View<'div'
     }
   }
 
-  constructor(menu: Menu<K>, info: IMenuItemInfo<K>) {
+  constructor(menu: Menu<K>, info: IMenuItemInfo<K>, submenu: Menu<K> | undefined) {
     super('div');
     this._menu = menu;
     this._info = info;
+    this._submenu = submenu;
     this.setup();
   }
 }
