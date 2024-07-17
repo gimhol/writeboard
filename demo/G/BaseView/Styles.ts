@@ -2,47 +2,46 @@ import { Style, autoPxKeys } from "./StyleType";
 import { ReValue, reValue } from "../utils";
 import { View } from "./View";
 export const flag = 2;
-export class Styles<T extends string = string, V extends View<keyof HTMLElementTagNameMap> = View<keyof HTMLElementTagNameMap>>{
-  static csses = new Map<string, HTMLLinkElement>();
-  static pendings = new Map<string, Promise<HTMLLinkElement>>;
+export class Styles<T extends string = string, V extends View<keyof HTMLElementTagNameMap> = View<keyof HTMLElementTagNameMap>> {
+  // static csses = new Map<string, HTMLLinkElement>();
+  // static pendings = new Map<string, Promise<HTMLLinkElement>>;
+  // static css(...hrefs: string[]): Promise<HTMLLinkElement[]> {
+  //   const ls: Promise<HTMLLinkElement>[] = [];
+  //   for (let i = 0; i < hrefs.length; ++i) {
+  //     const href = hrefs[i]! + '?t=' + flag;
+  //     const l = this.csses.get(href);
+  //     if (l) {
+  //       ls.push(Promise.resolve(l));
+  //       continue;
+  //     }
 
-  static css(...hrefs: string[]): Promise<HTMLLinkElement[]> {
-    const ls: Promise<HTMLLinkElement>[] = [];
-    for (let i = 0; i < hrefs.length; ++i) {
-      const href = hrefs[i]! + '?t=' + flag;
-      const l = this.csses.get(href);
-      if (l) {
-        ls.push(Promise.resolve(l));
-        continue;
-      }
+  //     const p = this.pendings.get(href);
+  //     if (p) {
+  //       ls.push(p);
+  //       continue;
+  //     }
 
-      const p = this.pendings.get(href);
-      if (p) {
-        ls.push(p);
-        continue;
-      }
-
-      const n = new Promise<HTMLLinkElement>((resolve, reject) => {
-        const l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = href;
-        l.onload = () => {
-          this.csses.set(href, l);
-          this.pendings.delete(href);
-          resolve(l)
-        };
-        l.onerror = (e) => {
-          this.csses.set(href, l);
-          this.pendings.delete(href);
-          resolve(l)
-        };
-        document.head.appendChild(l);
-      })
-      this.pendings.set(href, n);
-      ls.push(n);
-    }
-    return Promise.all(ls);
-  }
+  //     const n = new Promise<HTMLLinkElement>((resolve, reject) => {
+  //       const l = document.createElement('link');
+  //       l.rel = 'css';
+  //       l.href = href;
+  //       l.onload = () => {
+  //         this.csses.set(href, l);
+  //         this.pendings.delete(href);
+  //         resolve(l)
+  //       };
+  //       l.onerror = (e) => {
+  //         this.csses.set(href, l);
+  //         this.pendings.delete(href);
+  //         resolve(l)
+  //       };
+  //       document.head.appendChild(l);
+  //     })
+  //     this.pendings.set(href, n);
+  //     ls.push(n);
+  //   }
+  //   return Promise.all(ls);
+  // }
 
   private _view?: V;
   private _pool?: Map<T, Style | null>;
@@ -166,7 +165,10 @@ export class Styles<T extends string = string, V extends View<keyof HTMLElementT
     this.view.inner.classList.remove(...names)
     return this;
   }
-
+  toggleCls(name: string, force?: boolean): this {
+    this.view.inner.classList.toggle(name, force)
+    return this;
+  }
   destory() {
     delete this._view;
     this.pool.clear();

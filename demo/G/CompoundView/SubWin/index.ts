@@ -1,11 +1,11 @@
-import { SubwinFooter } from "./Footer";
-import { SubwinHeader } from "./Header";
-import type { WorkspaceView } from "../Workspace/WorkspaceView";
 import { View } from "../../BaseView/View";
+import { DockableEventMap } from "../../Events/EventType";
 import { ViewDragger } from "../../Helper/ViewDragger";
 import { IDockable } from "../Workspace/Dockable";
-import { DockableEventMap } from "../../Events/EventType";
-import { Styles } from "../../BaseView/Styles";
+import type { WorkspaceView } from "../Workspace/WorkspaceView";
+import { SubwinFooter } from "./Footer";
+import "./g_subwin.css";
+import { SubwinHeader } from "./Header";
 export enum StyleNames {
   Normal = 'normal',
   Docked = 'docked'
@@ -41,7 +41,6 @@ export class Subwin extends View<'div'> implements IDockable {
   }
   constructor() {
     super('div');
-    Styles.css('./g_subwin.css')
     this.styles.addCls('g_subwin').apply(StyleNames.Normal, {});
     this.addChild(this._header, this._footer);
     this._dragger = new ViewDragger({

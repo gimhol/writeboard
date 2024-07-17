@@ -5,11 +5,11 @@ import { HoverOb } from "../../Observer/HoverOb";
 import { Subwin } from "../SubWin";
 import { DockView } from "./DockView";
 import { DockableDirection } from "./DockableDirection";
+import "./g_dockable_resizer.css";
 
 export class DockableResizer extends View<'div'> {
   constructor(direction: DockableDirection) {
     super('div');
-    Styles.css('./g_dockable_resizer.css')
     const w = direction === DockableDirection.H ? 1 : undefined;
     const h = direction === DockableDirection.V ? 1 : undefined;
     const hOffset = direction === DockableDirection.H ? -3 : 0;

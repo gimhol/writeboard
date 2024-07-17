@@ -1,6 +1,16 @@
-import type { WorkspaceView } from "../G/CompoundView/Workspace/WorkspaceView";
-declare global {
-  interface Window {
-    workspace: WorkspaceView;
-  }
+declare module "*.svg" {
+  const src: string
+  export default src
+}
+declare module "*.css" {
+  const src: string
+  export default src
+}
+declare module "*.png" {
+  const src: string
+  export default src
+}
+declare module "*.jpg" {
+  const src: string
+  export default src
 }

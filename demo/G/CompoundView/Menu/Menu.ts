@@ -6,6 +6,7 @@ import { findParent } from "../../utils";
 import { MenuEventMap, MenuEventType } from "./Events";
 import { IMenuItemInfo } from "./Info";
 import { MenuItemView } from "./ItemView";
+import "./g_menu.css";
 
 export interface IMenuInits<K extends string | number | symbol> {
   items?: IMenuItemInfo<K>[];
@@ -21,7 +22,6 @@ export class Menu<K extends string | number | symbol> extends View<'div'> {
   get container() { return this._container; }
   constructor(container: View, inits?: IMenuInits<K>) {
     super('div');
-    Styles.css('./g_menu.css');
 
     this._container = container;
     this._zIndex = inits?.zIndex ?? this._zIndex;

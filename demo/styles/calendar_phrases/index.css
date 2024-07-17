@@ -4,7 +4,7 @@
   flex-direction: row;
   align-items: stretch;
   justify-content: space-between;
-  background-image: url(../bg.jpg);
+  background-image: url(../../assets/img/bg.jpg);
   background-size: 100% 100%
 }
 

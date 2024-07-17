@@ -1,5 +1,7 @@
+import * as Gim from "../writeboard";
 import {
   ActionQueue,
+  EventEnum,
   FactoryEnum, Gaia,
   ObjectFit,
   Player,
@@ -9,30 +11,30 @@ import {
   ShapeText,
   TextData,
   ToolEnum,
-  EventEnum,
 } from "../writeboard";
+import img_logo from './assets/img/logo.png';
+import img_header_0 from "./assets/img/calendar_phrases/main_pics/header_0.jpg";
+import img_header_1 from "./assets/img/calendar_phrases/main_pics/header_1.jpg";
+import img_header_2 from "./assets/img/calendar_phrases/main_pics/header_2.jpg";
+import img_header_3 from "./assets/img/calendar_phrases/main_pics/header_3.jpg";
+import "./styles/calendar_phrases/edit_panel.css";
+import "./styles/calendar_phrases/index.css";
 import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
-import { Styles } from "./G/BaseView/Styles";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
+import "./index.css";
 import { Shiftable } from "./Shiftable";
 import { ShortcutsKeeper } from "./Shortcuts";
-import * as Gim from "../writeboard";
+console.log('img_logo', img_logo)
 View.get(document.head).addChild(
   new View('title', '每日一句'),
   new View('link')
     .setAttribute('rel', 'icon')
     .setAttribute('sizes', '16x16')
-    .setAttribute('href', './calendar_phrases/logo.png')
+    .setAttribute('href', img_logo)
 );
-
-Styles.css(
-  './calendar_phrases/styles/index.css',
-  './calendar_phrases/styles/edit_panel.css'
-).then(() => main());
-
 function main() {
   const resultWidth = 600;
   const resultHeight = 600;
@@ -40,10 +42,8 @@ function main() {
 
   const ffn = factory.fontFamilies().map(ff => ff + ' = ' + factory.fontName(ff))
   console.log('可用字体：', ffn)
-
   const mainView = View.ref<'body'>()
   const blackboard = View.ref<'div'>()
-
   View.get(document.body)
     .ref(mainView)
     .styles
@@ -351,10 +351,10 @@ function main() {
   templateText.lineWidth = 1
 
   const main_pics = new Shiftable([
-    './calendar_phrases/main_pics/header_0.jpg',
-    './calendar_phrases/main_pics/header_1.jpg',
-    './calendar_phrases/main_pics/header_2.jpg',
-    './calendar_phrases/main_pics/header_3.jpg',
+    img_header_0,
+    img_header_1,
+    img_header_2,
+    img_header_3,
   ])
   const main_txts = new Shiftable([
     '垂死病中惊坐起\n　　　　笑问客从何处来',
@@ -364,19 +364,19 @@ function main() {
   ]);
 
   const builtins = new Shiftable([{
-    logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
+    logo_img: { src: img_logo, w: 150, h: 150 },
     main_pic: { src: main_pics.next()! },
     main_txt: { text: main_txts.next()! }
   }, {
-    logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
+    logo_img: { src: img_logo, w: 150, h: 150 },
     main_pic: { src: main_pics.next()! },
     main_txt: { text: main_txts.next()! }
   }, {
-    logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
+    logo_img: { src: img_logo, w: 150, h: 150 },
     main_pic: { src: main_pics.next()! },
     main_txt: { text: main_txts.next()! }
   }, {
-    logo_img: { src: './calendar_phrases/logo.png', w: 150, h: 150 },
+    logo_img: { src: img_logo, w: 150, h: 150 },
     main_pic: { src: main_pics.next()! },
     main_txt: { text: main_txts.next()! }
   }])
@@ -502,7 +502,7 @@ function main() {
   board.setToolType(ToolEnum.Selector);
 
   Object.assign(window, {
-    board, factory, mainView, Gaia, menu, 
+    board, factory, mainView, Gaia, menu,
     gim: Gim,
     record: {
       who: rec,
@@ -525,3 +525,4 @@ function main() {
     }
   });
 }
+addEventListener('load', () => main(), { once: true })
