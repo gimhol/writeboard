@@ -1,10 +1,8 @@
 import type { Board } from "../board/Board";
 import { EventEnum } from "../event/EventType";
-import { Events } from "../event/Events";
 import { Gaia } from "../mgr";
 import { IShapeData } from "../shape/base/Data";
 import { ToolEnum } from "../tools";
-type EMap = Events.EventDetailMap;
 
 export class ActionQueue {
   setActor(actor: Board | undefined): this {

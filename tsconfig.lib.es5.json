@@ -32,7 +32,6 @@
     // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     "rootDirs": [
       "./writeboard",
-      // "./demo"
     ], /* Allow multiple folders to be treated as one when resolving modules. */
     "typeRoots": [
       "./src/whiteBoard/types/"
@@ -101,6 +100,5 @@
   },
   "include": [
     "./writeboard/**/*",
-    // "./demo/**/*"
   ]
 }
