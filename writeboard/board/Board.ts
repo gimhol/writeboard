@@ -4,7 +4,7 @@ import { TextTool } from "../shape"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, Numbers, Rect } from "../utils"
-import { ISnapshot } from "./ISnapshot"
+import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 
 export interface BoardOptions {

@@ -1,7 +1,8 @@
 import { Degrees, Numbers } from "../../utils"
 import { isNum, isStr } from "../../utils/helper"
 import { ShapeEnum, ShapeType } from "../ShapeEnum"
-import { IShapeStatus, ShapeStatus } from "./IShapeStatus"
+import { IShapeStatus } from "./IShapeStatus"
+import { ShapeStatus } from "./ShapeStatus"
 import { IShapeStyle, ShapeStyle } from "./IShapeStyle"
 
 export interface IShapeData {

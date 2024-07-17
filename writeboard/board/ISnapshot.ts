@@ -1,5 +1,5 @@
-import { IShapeData } from "../shape/base";
-import { ILayerInfo } from "./Layer";
+import type { IShapeData } from "../shape/base/Data";
+import type { ILayerInfo } from "./Layer";
 
 export interface ISnapshot {
   v: number;

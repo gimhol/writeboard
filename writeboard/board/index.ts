@@ -1,4 +1,4 @@
 export * from "./Board";
-export * from "./ISnapshot";
+export type * from "./ISnapshot";
 export * from "./Layer";
 export * from "./ShapeDecoration"
