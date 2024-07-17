@@ -1,14 +1,18 @@
 import { Image } from "../../BaseView/Image";
 import { Style } from "../../BaseView/StyleType";
 import { DockPosition } from "../DockPosition";
-
+import ic_dock_to_left from "../../../assets/svg/ic_dock_to_left.svg"
+import ic_dock_to_right from "../../../assets/svg/ic_dock_to_right.svg"
+import ic_dock_to_top from "../../../assets/svg/ic_dock_to_top.svg"
+import ic_dock_to_bottom from "../../../assets/svg/ic_dock_to_bottom.svg"
+import ic_dock_to_center from "../../../assets/svg/ic_dock_to_center.svg"
 export const srcs: Record<DockPosition, string> = {
   [DockPosition.Hide]: "",
-  [DockPosition.ToLeft]: "./ic_dock_to_left.svg",
-  [DockPosition.ToRight]: "./ic_dock_to_right.svg",
-  [DockPosition.ToTop]: "./ic_dock_to_top.svg",
-  [DockPosition.ToBottom]: "./ic_dock_to_bottom.svg",
-  [DockPosition.ToCenter]: "./ic_dock_to_center.svg"
+  [DockPosition.ToLeft]: ic_dock_to_left,
+  [DockPosition.ToRight]: ic_dock_to_right,
+  [DockPosition.ToTop]: ic_dock_to_top,
+  [DockPosition.ToBottom]: ic_dock_to_bottom,
+  [DockPosition.ToCenter]: ic_dock_to_center,
 }
 export class IndicatorImage extends Image {
   constructor(inits: { type: DockPosition; style?: Style; }) {

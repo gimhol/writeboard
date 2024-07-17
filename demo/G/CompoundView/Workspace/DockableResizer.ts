@@ -1,4 +1,3 @@
-import { Styles } from "../../BaseView/Styles";
 import { View } from "../../BaseView/View";
 import { ViewDragger } from "../../Helper/ViewDragger";
 import { HoverOb } from "../../Observer/HoverOb";
