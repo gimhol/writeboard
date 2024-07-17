@@ -167,8 +167,8 @@ export class Board {
     const shapes = snapshot.s.map((v: IShapeData) => this.factory.newShape(v))
     this.add(shapes, false);
   }
-  toJson(): string {
-    return JSON.stringify(this.toSnapshot())
+  toJson(replacer?: (this: any, key: string, value: any) => any, space?: string | number): string {
+    return JSON.stringify(this.toSnapshot(), replacer, space)
   }
   fromJson(json: string) {
     this.fromSnapshot(JSON.parse(json))

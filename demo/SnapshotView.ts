@@ -5,7 +5,6 @@ import { View } from "./G/BaseView/View";
 import { Subwin } from "./G/CompoundView/SubWin";
 
 export class SnapshotView extends Subwin {
-  private _textarea = new View('textarea')
   private _board: (() => Board | undefined) | undefined
   get board() { return this._board; }
   set board(v) { this._board = v; }
@@ -18,14 +17,26 @@ export class SnapshotView extends Subwin {
     this.content.addChild(new Button().init({ content: 'save Snapshot' }).addEventListener('click', () => {
       const board = this._board?.();
       if (!board) { return; }
-      this._textarea.inner.value = board.toJson();
+
+      const blob = new Blob([board.toJson(void 0, 2)])
+      const ele_a = document.createElement('a');
+      ele_a.href = URL.createObjectURL(blob);
+      ele_a.download = `snapshot_${Date.now()}.json`
+      ele_a.click()
     }));
     this.content.addChild(new Button().init({ content: 'load Snapshot' }).addEventListener('click', () => {
       const board = this._board?.();
       if (!board) { return; }
-      board.fromJson(this._textarea.inner.value)
+
+      const ele_input = document.createElement('input');
+      ele_input.type = 'file';
+      ele_input.accept = '.json';
+      ele_input.click()
+
+      const json_file = ele_input.files?.item(0);
+      if (json_file) {
+        json_file.text().then(txt => board.fromJson(txt))
+      }
     }));
-    this.content.addChild(this._textarea);
-    this._textarea.styles.apply('', { resize: 'vertical' })
   }
 }
