@@ -1,17 +1,16 @@
 import { View } from "../../BaseView/View";
 import { DockableEventType, EventMap, EventType } from "../../Events/EventType";
+import { List } from "../../Helper/List";
 import { GetValue, Rect, getValue } from "../../utils";
+import { DockPosition } from "../DockPosition";
+import DockResultPreview from "../DockResultPreview";
 import { Subwin } from "../SubWin";
 import { DockView } from "./DockView";
+import { IDockable } from "./Dockable";
 import { DockableDirection } from "./DockableDirection";
-import { IndicatorImage } from "./IndicatorImage";
-import { List } from "../../Helper/List";
-import { IndicatorView } from "./IndicatorView";
-import { IDockable as IDockable } from "./Dockable";
-import { HoverOb } from "../../Observer/HoverOb";
-import DockResultPreview from "../DockResultPreview";
-import { DockPosition } from "../DockPosition";
 import HeaderView from "./HeaderView";
+import { IndicatorImage } from "./IndicatorImage";
+import { IndicatorView } from "./IndicatorView";
 
 export interface WorkspaceInits {
   rect?: GetValue<Rect>;
