@@ -2,8 +2,8 @@ import { Resizable, Shape } from "./Shape";
 import { ShapeData } from "./Data";
 
 export class ShapeNeedPath<D extends ShapeData = ShapeData> extends Shape<D> {
-  constructor(data: D) {
-    super(data);
+  constructor(data: Partial<D>, cls: new (other?: Partial<D>) => D) {
+    super(data, cls);
     this._r = Resizable.All;
   }
   path(ctx: CanvasRenderingContext2D) {

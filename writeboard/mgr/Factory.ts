@@ -110,7 +110,7 @@ export class DefaultFactory implements IFactory {
       data.id = this.newId(data);
       data.z = this.newZ(data);
     }
-    return Gaia.shape(type)?.(data) ?? new Shape(data);
+    return Gaia.shape(type)?.(data) ?? new Shape(data, ShapeData);
   }
   newLayerId(): string {
     return `layer_${Date.now()}_${++this._time}`
@@ -137,7 +137,7 @@ export class DefaultFactory implements IFactory {
   fontName(fontFamily: string): string {
     return builtInFontNames[fontFamily] ?? fontFamily;
   }
-  
+
   private _shapeDecoration = new DefaultShapeDecoration
 
   shapeDecoration(_: Shape<ShapeData>): IShapeDecoration {

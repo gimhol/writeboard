@@ -4,6 +4,9 @@ import { OvalData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
 export class ShapeOval extends ShapeNeedPath<OvalData> {
+  constructor(data: Partial<OvalData>) {
+    super(data, OvalData)
+  }
   path(ctx: CanvasRenderingContext2D) {
     const { x, y, w, h } = this.drawingRect()
     const r = (w > h) ? w : h;

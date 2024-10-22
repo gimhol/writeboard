@@ -4,6 +4,9 @@ import { CrossData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
 export class ShapeCross extends ShapeNeedPath<CrossData> {
+  constructor(data: Partial<CrossData>) {
+    super(data, CrossData)
+  }
   path(ctx: CanvasRenderingContext2D) {
     const { x, y, w, h } = this.drawingRect()
     const a = { x: x, y: y + 0.05 * h }

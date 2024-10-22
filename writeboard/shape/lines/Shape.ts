@@ -9,12 +9,12 @@ export class ShapeLines extends Shape<LinesData> {
   private _srcGeo: IRect | null = null
   private _path2D = new Path2D();
 
-  constructor(v: LinesData) {
-    super(v);
+  constructor(data: Partial<LinesData>) {
+    super(data, LinesData);
     let x, y: number
-    for (let i = 0; i < v.coords.length; i += 2) {
-      x = v.coords[i]
-      y = v.coords[i + 1]
+    for (let i = 0; i < this.data.coords.length; i += 2) {
+      x = this.data.coords[i]
+      y = this.data.coords[i + 1]
       this.updatePath(x, y, i === 0 ? 'first' : undefined);
     }
     this.updateSrcGeo()

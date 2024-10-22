@@ -30,12 +30,13 @@ export interface ITextData extends IShapeData {
 }
 
 export class TextData extends ShapeData implements ITextData {
-  constructor() {
-    super();
+  constructor(other?: Partial<TextData>) {
+    super(other);
     this.type = ShapeEnum.Text;
     this.fillStyle = '#ff0000';
     this.strokeStyle = '';
     this.lineWidth = 0;
+    other && this.read(other)
   }
   /** text */
   s: string = '';

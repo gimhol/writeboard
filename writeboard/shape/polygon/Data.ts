@@ -8,12 +8,13 @@ export interface IPolygonData extends IShapeData {
 }
 
 export class PolygonData extends ShapeData implements IPolygonData {
-  constructor() {
-    super()
+  constructor(other?: Partial<PolygonData>) {
+    super(other)
     this.type = ShapeEnum.Polygon
     this.fillStyle = '#ff0000'
     this.strokeStyle = '#000000'
     this.lineWidth = 2
+    other && this.read(other)
   }
 
   u: IDot[] = []

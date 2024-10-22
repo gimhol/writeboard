@@ -74,6 +74,10 @@ export class ShapeData implements IShapeData {
   /** status */
   b?: IShapeStatus
 
+  constructor(other?: Partial<ShapeData>) {
+    if (other) this.read(other);
+  }
+
   get style(): ShapeStyle {
     if (this.a instanceof ShapeStyle)
       return this.a
@@ -171,7 +175,7 @@ export class ShapeData implements IShapeData {
     const ret: (typeof this) = new (Object.getPrototypeOf(this).constructor)
     return ret.read(this)
   }
-  
+
   /** 清洗掉可空的字段 */
   wash(): typeof this {
     if (this.a && !Object.keys(this.a).length) delete this.a

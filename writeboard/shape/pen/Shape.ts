@@ -13,16 +13,16 @@ export class ShapePen extends Shape<PenData> {
   private _path2D = new Path2D()
   private prev_t: IVector | undefined
   private prev_dot: IVector | undefined
-  constructor(v: PenData) {
-    super(v)
+  constructor(data: Partial<PenData>) {
+    super(data, PenData)
     let x, y: number
-    for (let i = 0; i < v.coords.length; i += 2) {
-      x = v.coords[i]
-      y = v.coords[i + 1]
+    for (let i = 0; i < this.data.coords.length; i += 2) {
+      x = this.data.coords[i]
+      y = this.data.coords[i + 1]
       this.updateSrcGeo(x, y)
       if (i === 0)
         this.updatePath(x, y, 'first')
-      else if (i >= v.coords.length - 2)
+      else if (i >= this.data.coords.length - 2)
         this.updatePath(x, y, 'last')
       else
         this.updatePath(x, y)

@@ -25,13 +25,14 @@ export class PenData extends ShapeData implements IPenData {
   override get needFill(): boolean {
     return false;
   }
-  constructor() {
-    super()
+  constructor(other?: Partial<PenData>) {
+    super(other)
     this.type = ShapeEnum.Pen
     this.strokeStyle = '#ff0000'
     this.lineCap = 'round'
     this.lineJoin = 'round'
     this.lineWidth = 3
+    other && this.read(other)
   }
   override read(other: Partial<PenData>) {
     super.read(other)

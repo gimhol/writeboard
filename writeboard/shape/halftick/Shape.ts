@@ -4,6 +4,9 @@ import { HalfTickData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
 export class ShapeHalfTick extends ShapeNeedPath<HalfTickData> {
+  constructor(data: Partial<HalfTickData>) {
+    super(data, HalfTickData)
+  }
   path(ctx: CanvasRenderingContext2D) {
     const { x, y, w, h } = this.drawingRect()
     const a = { x: x, y: y + h * 0.7 }

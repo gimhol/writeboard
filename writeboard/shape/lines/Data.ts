@@ -14,13 +14,14 @@ export class LinesData extends ShapeData implements ILinesData {
   override get needFill(): boolean {
     return false;
   }
-  constructor() {
-    super()
+  constructor(other?: Partial<LinesData>) {
+    super(other)
     this.type = ShapeEnum.Lines;
     this.strokeStyle = '#ff0000';
     this.lineCap = 'round';
     this.lineJoin = 'round';
     this.lineWidth = 2;
+    if (other) this.read(other)
   }
   override read(other: Partial<LinesData>) {
     super.read(other)

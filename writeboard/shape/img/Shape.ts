@@ -9,8 +9,8 @@ export class ShapeImg extends Shape<ImgData> {
   private _loaded: boolean = false;
   private _error: string = '';
 
-  constructor(data: ImgData) {
-    super(data);
+  constructor(data: Partial<ImgData>) {
+    super(data, ImgData);
     this._r = Resizable.All;
   }
 

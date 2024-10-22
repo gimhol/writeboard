@@ -43,8 +43,9 @@ export class Shape<D extends ShapeData = ShapeData> {
   protected _d: D;
   protected _b?: Board;
   protected _r: Resizable = Resizable.None;
-  constructor(data: D) {
-    this._d = data
+
+  constructor(data: Partial<D>, cls: new (other?: Partial<D>) => D) {
+    this._d = new cls(data);
   }
 
   /**

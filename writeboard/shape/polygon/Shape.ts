@@ -4,6 +4,9 @@ import { PolygonData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
 export class ShapePolygon extends ShapeNeedPath<PolygonData> {
+  constructor(data: Partial<PolygonData>) {
+    super(data, PolygonData)
+  }
   path(ctx: CanvasRenderingContext2D) {
     const { x, y, w, h } = this.drawingRect()
     ctx.beginPath();

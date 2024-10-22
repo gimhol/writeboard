@@ -4,6 +4,9 @@ import { TickData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
 export class ShapeTick extends ShapeNeedPath<TickData> {
+  constructor(data: Partial<TickData>) {
+    super(data, TickData)
+  }
   path(ctx: CanvasRenderingContext2D) {
     const { x, y, w, h } = this.drawingRect()
     const a = { x: x, y: y + h * 0.7 }

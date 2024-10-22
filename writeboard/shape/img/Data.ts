@@ -35,9 +35,10 @@ export class ImgData extends ShapeData {
     return false;
   }
 
-  constructor() {
-    super()
+  constructor(other?: Partial<ImgData>) {
+    super(other)
     this.type = ShapeEnum.Img;
+    other && this.read(other)
   }
 
   override read(other: Partial<ImgData>): this {

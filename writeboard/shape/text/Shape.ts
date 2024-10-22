@@ -29,8 +29,8 @@ export class ShapeText extends Shape<TextData> {
     return this._offscreen;
   }
 
-  constructor(data: TextData) {
-    super(data)
+  constructor(data: Partial<TextData>) {
+    super(data, TextData)
     this._calculateLines()
     this._calculateSectionRects()
   }
@@ -38,7 +38,7 @@ export class ShapeText extends Shape<TextData> {
   get fontSize(): number { return this.data.font_size }
 
   set fontSize(v) {
-    const prev = { }
+    const prev = {}
     this.beginDirty(prev)
     this.data.font_size = v;
     this._calculateLines()

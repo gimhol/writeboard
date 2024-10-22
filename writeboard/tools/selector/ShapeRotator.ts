@@ -14,7 +14,7 @@ export class ShapeRotator extends Shape<ShapeData> {
   private get _distance() { return this.board?.factory.rotator.distance || 30 }
   private get _width() { return this.board?.factory.rotator.size || 10 }
   constructor() {
-    super(new ShapeData);
+    super({}, ShapeData);
     this.data.ghost = true
     this.data.visible = false
   }
