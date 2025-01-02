@@ -1,10 +1,5 @@
-import {
-  Board, FactoryEnum, Gaia,
-  ObjectFit,
-  ShapeEnum,
-  ShapeImg,
-  ToolEnum
-} from ".";
+
+import { Gaia, FactoryEnum, Board, ToolEnum, ShapeEnum, ShapeImg, ObjectFit } from "../writeboard";
 import ColorView from "./ColorView";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
