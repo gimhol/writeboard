@@ -32,5 +32,8 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@univerjs/presets": "^0.5.2"
   }
 }

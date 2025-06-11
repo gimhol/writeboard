@@ -35,6 +35,29 @@ View.get(document.head).addChild(
     .setAttribute('sizes', '16x16')
     .setAttribute('href', img_logo)
 );
+
+
+Gaia.editToolInfo(ToolEnum.Cross, v => ({ ...v, name: '打叉' }));
+Gaia.editToolInfo(ToolEnum.HalfTick, v => ({ ...v, name: '半对' }));
+Gaia.editToolInfo(ToolEnum.Img, v => ({ ...v, name: '图片' }));
+Gaia.editToolInfo(ToolEnum.Lines, v => ({ ...v, name: '直线' }));
+Gaia.editToolInfo(ToolEnum.Oval, v => ({ ...v, name: '椭圆' }));
+Gaia.editToolInfo(ToolEnum.Pen, v => ({ ...v, name: '笔' }));
+Gaia.editToolInfo(ToolEnum.Polygon, v => ({ ...v, name: '多边形' }));
+Gaia.editToolInfo(ToolEnum.Rect, v => ({ ...v, name: '矩形' }));
+Gaia.editToolInfo(ToolEnum.Selector, v => ({ ...v, name: '选择器' }));
+Gaia.editToolInfo(ToolEnum.Text, v => ({ ...v, name: '文本' }));
+Gaia.editToolInfo(ToolEnum.Tick, v => ({ ...v, name: '打钩' }));
+
+enum MenuKey {
+  SelectAll = 'SelectAll',
+  RemoveSelected = 'RemoveSelected',
+  Deselect = 'Deselect',
+  ClearUp = 'ClearUp',
+  InsertImage = 'InsertImage',
+  ExportResult = 'ExportResult',
+}
+
 function main() {
   const resultWidth = 600;
   const resultHeight = 600;
@@ -44,6 +67,7 @@ function main() {
   console.log('可用字体：', ffn)
   const mainView = View.ref<'body'>()
   const blackboard = View.ref<'div'>()
+
   View.get(document.body)
     .ref(mainView)
     .styles
@@ -65,27 +89,29 @@ function main() {
         )
     );
 
+  let m = false;
+  let mx = 0;
+  let my = 0;
+  blackboard.current?.inner.addEventListener('pointerdown', (e) => {
+    if (e.button !== 1) return;
+    m = true;
+    mx = board.world.x - e.x;
+    my = board.world.y - e.y;
 
-  enum MenuKey {
-    SelectAll = 'SelectAll',
-    RemoveSelected = 'RemoveSelected',
-    Deselect = 'Deselect',
-    ClearUp = 'ClearUp',
-    InsertImage = 'InsertImage',
-    ExportResult = 'ExportResult',
-  }
+  })
+  document.body.addEventListener('pointerup', (e) => {
+    if (e.button !== 1) return;
+    m = false;
+  })
+  document.body.addEventListener('pointercancel', (e) => {
+    if (e.button !== 1) return;
+    m = false;
+  })
+  document.body.addEventListener('pointermove', (e) => {
+    if (!m) return;
+    board.scroll_to(mx + e.x, my + e.y)
+  })
 
-  Gaia.editToolInfo(ToolEnum.Cross, v => ({ ...v, name: '打叉' }));
-  Gaia.editToolInfo(ToolEnum.HalfTick, v => ({ ...v, name: '半对' }));
-  Gaia.editToolInfo(ToolEnum.Img, v => ({ ...v, name: '图片' }));
-  Gaia.editToolInfo(ToolEnum.Lines, v => ({ ...v, name: '直线' }));
-  Gaia.editToolInfo(ToolEnum.Oval, v => ({ ...v, name: '椭圆' }));
-  Gaia.editToolInfo(ToolEnum.Pen, v => ({ ...v, name: '笔' }));
-  Gaia.editToolInfo(ToolEnum.Polygon, v => ({ ...v, name: '多边形' }));
-  Gaia.editToolInfo(ToolEnum.Rect, v => ({ ...v, name: '矩形' }));
-  Gaia.editToolInfo(ToolEnum.Selector, v => ({ ...v, name: '选择器' }));
-  Gaia.editToolInfo(ToolEnum.Text, v => ({ ...v, name: '文本' }));
-  Gaia.editToolInfo(ToolEnum.Tick, v => ({ ...v, name: '打钩' }));
   const menu = new Menu(mainView.current!).setup([{
     label: '工具',
     items: Gaia.listTools()
@@ -261,7 +287,7 @@ function main() {
     const imgd_main = img_main.data.copy();
     imgd_main.id = 'img_header';
     imgd_main.src = ttt.main_pic.src;
-    imgd_main.locked = true;
+    imgd_main.locked = false;
     imgd_main.x = 0;
     imgd_main.y = 0;
     imgd_main.w = resultWidth;

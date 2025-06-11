@@ -80,6 +80,9 @@ export class Layer implements ILayer {
     this._ctx = this._onscreen.getContext('2d')!
 
     this._offscreen = document.createElement('canvas')
+    // this._offscreen.style.position = 'fixed'
+    // this._offscreen.style.border = '1px solid black'
+    // document.body.appendChild(this._offscreen)
     this._own_offscreen = true
     this._offscreen.width = this._onscreen.width;
     this._offscreen.height = this._onscreen.height;

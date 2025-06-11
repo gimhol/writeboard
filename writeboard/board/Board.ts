@@ -22,7 +22,7 @@ export class Board {
   private _layers = new Map<string, Layer>();
   private _shapesMgr: IShapesMgr
   private _mousedown = false
-  private _tools: { [key in ToolEnum | string]?: ITool } = {}
+  private _tools = new Map<ToolEnum | string, ITool>()
   private _tool: ITool | undefined
   private _selects: Shape[] = []
   private _element: HTMLElement;
@@ -32,7 +32,12 @@ export class Board {
 
   private _viewport = new Rect(0, 0, 600, 600)
   private _world = new Rect(0, 0, 600, 600)
-
+  get viewport() {
+    return this._viewport;
+  }
+  get world() {
+    return this._world;
+  }
   get whoami() {
     return this._whoami
   }
@@ -50,7 +55,23 @@ export class Board {
     this._viewport.h = v;
     this._layers.forEach(l => l.height = v);
   }
-
+  scroll_to(x: number, y: number): this {
+    this.world.x = x;
+    this.world.y = y;
+    this.markDirty({
+      x: -this.world.x,
+      y: -this.world.y,
+      w: this.viewport.w,
+      h: this.viewport.h
+    })
+    return this;
+  }
+  scroll_by(x: number, y: number): this {
+    return this.scroll_to(
+      this.world.x + x,
+      this.world.y + y,
+    );
+  }
   addLayer(layer?: ILayerInits | Layer): boolean {
     if (!layer) {
       layer = this.factory.newLayer();
@@ -264,7 +285,7 @@ export class Board {
       return;
     }
     this._tool.board = this
-    this._tools[to] = this._tool
+    this._tools.set(to, this._tool)
     this._tool.start()
 
   }
@@ -432,7 +453,7 @@ export class Board {
     e.stopPropagation();
   }
 
-  private _dirty: IRect | undefined
+  private _dirty: IRect | undefined;
   markDirty(rect: IRect) {
     const requested = !this._dirty
     this._dirty = this._dirty ? Rect.bounds(this._dirty, rect) : rect
@@ -445,8 +466,13 @@ export class Board {
       return
 
     this._layers.forEach(layer => {
-      layer.ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
-      layer.octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
+      const { octx } = layer
+      octx.save()
+      octx.translate(
+        this._viewport.x + this._world.x,
+        this._viewport.y + this._world.y
+      )
+      octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
     })
 
     this._shapesMgr.shapes().forEach(v => {
@@ -458,25 +484,36 @@ export class Board {
     })
 
     this.tool?.render(this.layer().octx)
-
     this._layers.forEach(layer => {
-      const { ctx, offscreen } = layer
+      const { ctx, octx, offscreen } = layer
       ctx.save()
-      ctx.translate(
-        this._viewport.x + this._world.x,
-        this._viewport.y + this._world.y
+      const tx = this._viewport.x + this._world.x
+      const ty = this._viewport.y + this._world.y
+      ctx.translate(tx, ty)
+      ctx.clearRect(
+        dirty.x,
+        dirty.y,
+        dirty.w,
+        dirty.h
       )
       ctx.drawImage(
         offscreen,
-        dirty.x, dirty.y, dirty.w, dirty.h,
-        dirty.x, dirty.y, dirty.w, dirty.h
+        dirty.x + tx,
+        dirty.y + ty,
+        dirty.w,
+        dirty.h,
+        dirty.x,
+        dirty.y,
+        dirty.w,
+        dirty.h
       )
       ctx.restore()
+      octx.restore()
     })
     delete this._dirty
   }
-  destory() {
 
+  destory() {
     this._element.removeEventListener('pointerdown', this.pointerdown);
     window.removeEventListener('pointermove', this.pointermove);
     window.removeEventListener('pointerup', this.pointerup);

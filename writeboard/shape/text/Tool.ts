@@ -22,7 +22,7 @@ Css.add(`
   padding: 0px;
   margin: 0px;
   transition: none;
-  opacity: 00%;
+  opacity: 100%;
 }`)
 
 export class TextTool implements ITool {
@@ -65,9 +65,11 @@ export class TextTool implements ITool {
     this._prevData = shape?.data.copy();
   }
   private _updateEditorStyle = (shape: ShapeText) => {
+    const { board } = this;
+    if (!board) return;
     this._editor.style.font = shape.data.font
-    this._editor.style.left = shape.data.x + 'px'
-    this._editor.style.top = shape.data.y + 'px'
+    this._editor.style.left = board.world.x + shape.data.x + 'px'
+    this._editor.style.top = board.world.y + shape.data.y + 'px'
     this._editor.style.minWidth = shape.data.w + 'px'
     this._editor.style.minHeight = shape.data.h + 'px'
     this._editor.style.maxWidth = shape.data.w + 'px'
