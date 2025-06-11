@@ -2,6 +2,7 @@ import type { Layer } from "../board/Layer";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { IShapeData } from "../shape/base/Data";
 import type { ToolType } from "../tools/ToolEnum";
+import { IRect } from "../utils";
 import type { EventEnum } from "./EventType";
 
 export namespace Events {
@@ -52,6 +53,10 @@ export namespace Events {
     from?: ToolType;
     to?: ToolType;
   }
+  export interface IRectChangeDetail {
+    form: IRect;
+    to: IRect;
+  }
   export interface EventDetailMap {
     [EventEnum.ShapesAdded]: IShapesDetail;
     [EventEnum.ShapesRemoved]: IShapesDetail;
@@ -65,6 +70,8 @@ export namespace Events {
     [EventEnum.LayerRemoved]: ILayerDetail;
     [EventEnum.ShapesSelected]: IShapesDetail;
     [EventEnum.ShapesDeselected]: IShapesDetail;
+    [EventEnum.WorldRectChanged]: IRectChangeDetail;
+    [EventEnum.ViewportChanged]: IRectChangeDetail;
   }
   export interface EventMap extends HTMLElementEventMap {
     [EventEnum.ShapesAdded]: CustomEvent<EventDetailMap[EventEnum.ShapesAdded]>;
@@ -79,6 +86,8 @@ export namespace Events {
     [EventEnum.LayerRemoved]: CustomEvent<EventDetailMap[EventEnum.LayerRemoved]>;
     [EventEnum.ShapesSelected]: CustomEvent<EventDetailMap[EventEnum.ShapesSelected]>;
     [EventEnum.ShapesDeselected]: CustomEvent<EventDetailMap[EventEnum.ShapesDeselected]>;
+    [EventEnum.WorldRectChanged]: CustomEvent<EventDetailMap[EventEnum.WorldRectChanged]>;
+    [EventEnum.ViewportChanged]: CustomEvent<EventDetailMap[EventEnum.ViewportChanged]>;
   }
 }
 

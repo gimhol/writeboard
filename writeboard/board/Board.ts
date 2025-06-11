@@ -3,7 +3,7 @@ import { IFactory, IShapesMgr } from "../mgr"
 import { TextTool } from "../shape"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
-import { IDot, IRect, Numbers, Rect } from "../utils"
+import { IDot, IRect, Rect } from "../utils"
 import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 
@@ -12,6 +12,8 @@ export interface BoardOptions {
   layers?: ILayerInits[];
   width?: number;
   height?: number;
+  scrollWidth?: number;
+  scrollHeight?: number;
   toolType?: ToolType;
 }
 const Tag = '[Board]'
@@ -21,7 +23,7 @@ export class Board {
   private _toolType: ToolType | undefined = void 0
   private _layers = new Map<string, Layer>();
   private _shapesMgr: IShapesMgr
-  private _mousedown = false
+  private _lb_down = false
   private _tools = new Map<ToolEnum | string, ITool>()
   private _tool: ITool | undefined
   private _selects: Shape[] = []
@@ -31,47 +33,55 @@ export class Board {
   private _editingLayerId: string = '';
 
   private _viewport = new Rect(0, 0, 600, 600)
-  private _world = new Rect(0, 0, 600, 600)
-  get viewport() {
+  private _world = new Rect(0, 0, 1600, 1600)
+
+  get viewport(): Readonly<Rect> {
     return this._viewport;
   }
-  get world() {
+
+  get world(): Readonly<Rect> {
     return this._world;
   }
+
   get whoami() {
     return this._whoami
   }
+
   get width() {
     return this._viewport.w;
   }
+
   set width(v: number) {
     this._viewport.w = v;
     this._layers.forEach(l => l.width = v);
+    this.markViewDirty();
   }
+
   get height() {
     return this._viewport.h;
   }
+
   set height(v: number) {
     this._viewport.h = v;
     this._layers.forEach(l => l.height = v);
+    this.markViewDirty();
   }
+
   scroll_to(x: number, y: number): this {
-    this.world.x = x;
-    this.world.y = y;
-    this.markDirty({
-      x: -this.world.x,
-      y: -this.world.y,
-      w: this.viewport.w,
-      h: this.viewport.h
-    })
+    const { min, max } = Math
+    this._world.x = -max(min(x, this._world.w - this._viewport.w), 0);
+    this._world.y = -max(min(y, this._world.h - this._viewport.h), 0);
+    this.markViewDirty();
     return this;
   }
+
   scroll_by(x: number, y: number): this {
     return this.scroll_to(
-      this.world.x + x,
-      this.world.y + y,
+      -this.world.x + x,
+      -this.world.y + y,
     );
   }
+
   addLayer(layer?: ILayerInits | Layer): boolean {
     if (!layer) {
       layer = this.factory.newLayer();
@@ -89,13 +99,24 @@ export class Board {
       this._element.appendChild(layer.onscreen);
       this._layers.set(layer.info.id, layer);
       this.dispatchEvent(new CustomEvent(EventEnum.LayerAdded, { detail: layer }));
-      this.markDirty({ x: 0, y: 0, w: this.width, h: this.height })
+      this.markViewDirty()
     } else {
       layer = this.factory.newLayer(layer);
       this.addLayer(layer);
     }
     return true;
   }
+
+  markViewDirty(): this {
+    this.markDirty({
+      x: -this.world.x,
+      y: -this.world.y,
+      w: this.viewport.w,
+      h: this.viewport.h
+    })
+    return this;
+  }
+
   removeLayer(layerId: string): boolean {
     const layer = this._layers.get(layerId);
     if (!layer) {
@@ -137,15 +158,22 @@ export class Board {
     this._shapesMgr = this._factory.newShapesMgr();
     this._element = options.element ?? document.createElement('div');
     this._own_element = !options.element;
-    if (options.width) {
-      this._viewport.w = options.width
-      this._world.w = options.width
-    }
-    if (options.height) {
-      this._viewport.h = options.height
-      this._world.h = options.height
-    }
-    if (options.toolType) this._toolType = options.toolType
+
+    const {
+      width = this._viewport.w,
+      scrollWidth = width,
+
+      height = this._viewport.h,
+      scrollHeight = height,
+
+      toolType = this._toolType,
+    } = options;
+
+    this._viewport.w = width
+    this._world.w = scrollWidth
+    this._viewport.h = height
+    this._world.h = scrollHeight
+    this._toolType = toolType
 
     const layers: ILayerInits[] = options.layers ?? []
     if (!layers.length) {
@@ -158,11 +186,12 @@ export class Board {
     }
     this.addLayers(layers);
 
-    this._element.addEventListener('pointerdown', this.pointerdown);
+    this._element.addEventListener('pointerdown', this._pointerdown);
+    this._element.addEventListener('wheel', this._wheel);
     this._element.tabIndex = 0;
     this._element.style.outline = 'none';
-    window.addEventListener('pointermove', this.pointermove);
-    window.addEventListener('pointerup', this.pointerup);
+    window.addEventListener('pointermove', this._pointermove);
+    window.addEventListener('pointerup', this._pointerup);
   }
 
   find(id: string): Shape | null {
@@ -384,6 +413,14 @@ export class Board {
     return this.setSelects(hits, opts);
   }
 
+  /**
+   * 设置被选中的图形，原来被选中的图形数组将被取消选中
+   *
+   * @param {Shape[]} shapes 被选中的图形
+   * @param {(boolean | { operator: string })} [opts]
+   * @return {[Shape[], Shape[]]} [被选中的图形数组， 取消选中的图形数组]
+   * @memberof Board
+   */
   setSelects(shapes: Shape[], opts?: boolean | { operator: string }): [Shape[], Shape[]] {
     const emit = !!opts;
     const operator = (opts as any)?.operator ?? this._whoami;
@@ -421,13 +458,46 @@ export class Board {
   get tools() { return this._tools }
   get tool() { return this._tool }
 
-  pointerdown = (e: PointerEvent) => {
+  /**
+   * 鼠标滚动事件
+   *
+   * @protected
+   * @param {WheelEvent} e
+   * @memberof Board
+   */
+  protected _wheel = (e: WheelEvent) => {
+    const sx = e.shiftKey ? e.deltaY : 0;
+    const sy = e.shiftKey ? 0 : e.deltaY;
+    this.world_rect_changing(() => {
+      this.scroll_by(sx, sy)
+    })
+  }
+
+  /**
+   * 执行指定函数，并检查世界矩形变化，当变化触发emitEvent
+   *
+   * @protected
+   * @param {() => any} func 执行函数
+   * @return {this}
+   * @memberof Board
+   */
+  protected world_rect_changing(func: () => any): this {
+    const r1 = this._world.pure()
+    func();
+    const r2 = this._world.pure();
+    if (r1.x !== r2.x || r1.y !== r2.y || r1.w !== r2.w || r1.h !== r2.h) {
+      this.emitEvent(EventEnum.WorldRectChanged, { form: r1, to: r2 })
+    }
+    return this;
+  }
+
+  protected _pointerdown = (e: PointerEvent) => {
     if (e.button !== 0) {
       e.preventDefault()
       e.stopPropagation()
       return
     }
-    this._mousedown = true;
+    this._lb_down = true;
     if (!this.tool) {
       console.warn("toolType not set.")
       return;
@@ -436,8 +506,8 @@ export class Board {
     e.stopPropagation();
   }
 
-  pointermove = (e: PointerEvent) => {
-    if (this._mousedown) {
+  protected _pointermove = (e: PointerEvent) => {
+    if (this._lb_down) {
       this.tool?.pointerDraw(this.getDot(e));
     } else {
       this.tool?.pointerMove(this.getDot(e))
@@ -445,22 +515,36 @@ export class Board {
     e.stopPropagation();
   }
 
-  pointerup = (e: PointerEvent) => {
-    if (!this._mousedown) { return; }
+  protected _pointerup = (e: PointerEvent) => {
+    if (!this._lb_down) { return; }
 
-    this._mousedown = false
+    this._lb_down = false
     this.tool?.pointerUp(this.getDot(e))
     e.stopPropagation();
   }
 
   private _dirty: IRect | undefined;
-  markDirty(rect: IRect) {
+
+  /**
+   * 标记脏矩形区域，将触发重绘
+   * 
+   * 若在重绘前，连续调用，将会将多个矩形合并一个大的矩形，并仅会触发一次重绘
+   *
+   * @param {IRect} rect
+   * @memberof Board
+   */
+  markDirty(rect: IRect): void {
     const requested = !this._dirty
     this._dirty = this._dirty ? Rect.bounds(this._dirty, rect) : rect
     requested && requestAnimationFrame(() => this.render())
   }
 
-  render() {
+  /**
+   * 绘制
+   * 
+   * @memberof Board
+   */
+  render(): void {
     const dirty = this._dirty
     if (!dirty)
       return
@@ -514,9 +598,10 @@ export class Board {
   }
 
   destory() {
-    this._element.removeEventListener('pointerdown', this.pointerdown);
-    window.removeEventListener('pointermove', this.pointermove);
-    window.removeEventListener('pointerup', this.pointerup);
+    this._element.removeEventListener('pointerdown', this._pointerdown);
+    this._element.removeEventListener('wheel', this._wheel);
+    window.removeEventListener('pointermove', this._pointermove);
+    window.removeEventListener('pointerup', this._pointerup);
 
     this._layers.forEach(v => v.destory())
     if (this._own_element) this._element.remove();

@@ -95,8 +95,8 @@ function main() {
   blackboard.current?.inner.addEventListener('pointerdown', (e) => {
     if (e.button !== 1) return;
     m = true;
-    mx = board.world.x - e.x;
-    my = board.world.y - e.y;
+    mx = -board.world.x + e.x;
+    my = -board.world.y + e.y;
 
   })
   document.body.addEventListener('pointerup', (e) => {
@@ -109,7 +109,7 @@ function main() {
   })
   document.body.addEventListener('pointermove', (e) => {
     if (!m) return;
-    board.scroll_to(mx + e.x, my + e.y)
+    board.scroll_to(mx - e.x, my - e.y)
   })
 
   const menu = new Menu(mainView.current!).setup([{
@@ -220,6 +220,8 @@ function main() {
   const board = factory.newWhiteBoard({
     width: resultWidth,
     height: resultHeight,
+    scrollWidth: 2 * resultWidth,
+    scrollHeight: 2 * resultHeight,
     element: blackboard.current!.inner,
   });
   const aq = new ActionQueue().setActor(board);
@@ -370,6 +372,13 @@ function main() {
   }
 
   const templateText = board.factory.shapeTemplate(ShapeEnum.Text) as TextData;
+  board.addEventListener(EventEnum.WorldRectChanged, (e) => {
+    console.log(
+      EventEnum.WorldRectChanged,
+      e.detail.form,
+      e.detail.to
+    )
+  })
   templateText.font_family = '"Microsoft YaHei", Arial, Helvetica, sans-serif';
   templateText.fillStyle = '#ffffff'
   templateText.strokeStyle = '#000000'

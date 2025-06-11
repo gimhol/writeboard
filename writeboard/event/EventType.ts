@@ -12,5 +12,7 @@ export enum EventEnum {
   LayerRemoved = 'LAYER_REMOVED',
   ShapesSelected = 'SHAPES_SELECTED',
   ShapesDeselected = 'SHAPES_DESELECTED',
+  WorldRectChanged = 'WORLD_RECT_CHANGED',
+  ViewportChanged = 'VIEWPORT_CHANGED'
 }
 export type EventType = EventEnum | string;

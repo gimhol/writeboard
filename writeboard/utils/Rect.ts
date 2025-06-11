@@ -30,6 +30,14 @@ export class Rect implements IRect {
     this.w = w
     this.h = h
   }
+  pure(): IRect {
+    return {
+      x: this.x,
+      y: this.y,
+      w: this.w,
+      h: this.h,
+    }
+  }
   set(o: IRect) {
     this.x = o.x
     this.y = o.y
