@@ -88,7 +88,7 @@ for (const format of formats) {
     const bundle_dts_config = {
       input: 'writeboard/index.ts',
       output: {
-        file: `${dir}/${format}/writeboard-dom.d.ts`,
+        file: `${dir}/${format}/writeboard.d.ts`,
         format
       },
       plugins: [dts()],
@@ -96,10 +96,8 @@ for (const format of formats) {
     configs.push(bundle_js_config, bundle_dts_config)
   }
 }
-
-configs.push(demo_config);
-
 if (process.argv.some(v => v === '-w')) {
-  configs.length = 1;
+  configs.length = 0
+  configs.push(demo_config);
 }
 export default configs

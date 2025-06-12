@@ -1,15 +1,12 @@
 {
   "name": "@fimagine/writeboard",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "",
-  "main": "dist/es6/index.js",
-  "types": "dist/es6/index.d.ts",
+  "main": "dist/es6/cjs/writeboard.js",
+  "types": "dist/es6/cjs/writeboard.ts",
   "scripts": {
     "start": "npm run demo",
     "test": "mocha",
-    "es6": "tsc -p ./tsconfig.lib.es6.json",
-    "es5": "tsc -p ./tsconfig.lib.es5.json",
-    "es5_min": "tsc -p ./tsconfig.lib.es5.json --outFile ./dist/writeboard.min.js --module amd",
     "demo": "rollup -c -w --environment output_format:cjs",
     "build": "rollup -c"
   },

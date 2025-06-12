@@ -7,3 +7,5 @@
 gulpfile.js
 rollup.config.js
 tsconfig.json
+tsconfig.lib.es5.json
+tsconfig.lib.es6.json
