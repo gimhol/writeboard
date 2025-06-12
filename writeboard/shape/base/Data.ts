@@ -1,9 +1,9 @@
-import { Degrees, Numbers } from "../../utils"
+import { Degrees } from "../../utils"
 import { isNum, isStr } from "../../utils/helper"
 import { ShapeEnum, ShapeType } from "../ShapeEnum"
 import { IShapeStatus } from "./IShapeStatus"
-import { ShapeStatus } from "./ShapeStatus"
 import { IShapeStyle, ShapeStyle } from "./IShapeStyle"
+import { ShapeStatus } from "./ShapeStatus"
 
 export interface IShapeData {
   /** style */
@@ -48,6 +48,7 @@ export interface IShapeData {
   /** z-index */
   z: number;
 }
+
 export class ShapeData implements IShapeData {
   t: ShapeType = ShapeEnum.Invalid
   i = ''
@@ -111,8 +112,21 @@ export class ShapeData implements IShapeData {
       return this.b = new ShapeStatus()
   };
 
-  get type() { return this.t }
-  set type(v) { this.t = v }
+  /**
+   * getter: type
+   *
+   * @type {ShapeType}
+   * @memberof ShapeData
+   */
+  get type(): ShapeType { return this.t }
+
+  /**
+   * setter: type
+   * 
+   * @type {ShapeType}
+   * @memberof ShapeData
+   */
+  set type(v: ShapeType) { this.t = v }
   get id() { return this.i }
   set id(v) { this.i = v }
 
