@@ -377,7 +377,7 @@ export class Board {
     return this.remove(this._shapesMgr.shapes(), emit)
   }
 
-  removeSelected(emit?: boolean) {
+  removeSelected(emit?: boolean | { operator: string }) {
     this.remove(this._selects.filter(v => !v.locked), emit);
     this._selects = []
   }
@@ -389,7 +389,7 @@ export class Board {
    * @return {Shape[]} 新选中的图形
    * @memberof Board
    */
-  selectAll(emit?: boolean): Shape[] {
+  selectAll(emit?: boolean | { operator: string }): Shape[] {
     return this.setSelects([...this.shapes()], emit)[0];
   }
 
@@ -400,7 +400,7 @@ export class Board {
    * @return {Shape[]} ？？？
    * @memberof Board
    */
-  deselect(emit?: boolean): Shape[] {
+  deselect(emit?: boolean | { operator: string }): Shape[] {
     return this.setSelects([], emit)[1];
   }
 
