@@ -79,6 +79,28 @@ export class Board {
     return this;
   }
 
+  set_world_rect(to: IRect) {
+    this._world.x = to.x;
+    this._world.y = to.y;
+    this._world.w = to.w;
+    this._world.h = to.h;
+    this.markViewDirty();
+  }
+
+  set_viewport(to: IRect) {
+    this._viewport.x = to.x;
+    this._viewport.y = to.y;
+    if (this._viewport.w != to.w) {
+      this._viewport.w = to.w
+      this._layers.forEach(l => l.width = to.w);
+    }
+    if (this._viewport.h != to.h) {
+      this._viewport.h = to.h;
+      this._layers.forEach(l => l.width = to.h);
+    }
+    this.markViewDirty();
+  }
+
   scroll_by(x: number, y: number): this {
     return this.scroll_to(
       -this.world.x + x,

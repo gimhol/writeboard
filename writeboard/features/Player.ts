@@ -77,6 +77,15 @@ export class Player {
         this._removeShape(shapeDatas);
         break;
       }
+      case EventEnum.WorldRectChanged: {
+        const { to } = e.detail as EMap[typeof e.type];
+        this.actor!.set_world_rect(to)
+        break;
+      }
+      case EventEnum.ViewportChanged: {
+        const { to } = e.detail as EMap[typeof e.type];
+        this.actor!.set_viewport(to)
+      }
     }
   }
   private _undoEvent(e: IPureCustomEvent<any>) {
