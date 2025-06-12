@@ -75,6 +75,21 @@ export class ShapeData implements IShapeData {
   b?: IShapeStatus
 
   constructor(other?: Partial<ShapeData>) {
+    /*
+    NOTE: 
+      here, subclasses' "read" won't be called.
+      subclasses need to call its own 'read' in its own 'constructor'
+
+      like:
+
+      class SubData extends ShapeData {
+        constructor(other?: Partial<SubData>) {
+          // super(other); // don't do it
+          super();
+          this.read(other) // subclasses need to call its own 'read' in its own 'constructor'
+        }
+      }
+    */
     if (other) this.read(other);
   }
 
