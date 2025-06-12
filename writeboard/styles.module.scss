@@ -1,0 +1,26 @@
+.layer_onscreen_canvas {
+  position    : absolute;
+  touch-action: none;
+  user-select : none;
+  left        : 0px;
+  right       : 0px;
+  top         : 0px;
+  bottom      : 0px;
+  transition  : opacity 200ms;
+  outline     : none;
+}
+
+.text_editor {
+  display   : none;
+  position  : absolute;
+  left      : 0px;
+  top       : 0px;
+  box-sizing: border-box;
+  outline   : none;
+  border    : none;
+  resize    : none;
+  padding   : 0px;
+  margin    : 0px;
+  transition: none;
+  opacity   : 0%;
+}

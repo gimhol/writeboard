@@ -1,19 +1,20 @@
 import { Board } from "../../board"
 import { EventEnum } from "../../event"
 import { Gaia } from "../../mgr/Gaia"
+import styles from "../../styles.module.scss"
 import { ToolEnum } from "../../tools/ToolEnum"
 import { ITool } from "../../tools/base/Tool"
-import { Css } from "../../utils/Css"
 import { IDot } from "../../utils/Dot"
 import { ShapeEnum } from "../ShapeEnum"
 import { TextData } from "./Data"
 import { ShapeText } from "./Shape"
-import styles from "./style.module.scss";
 
 export class TextTool implements ITool {
+  readonly type: string = ToolEnum.Text;
+  readonly editor = document.createElement('textarea');
+
   private _board: Board | undefined;
   private _curShape: ShapeText | undefined;
-  private _editor = document.createElement('textarea');
   private _prevData: TextData | undefined;
   selectorCallback?: (this: HTMLTextAreaElement, ev: FocusEvent) => void
   private _newTxt: boolean = false
@@ -25,10 +26,10 @@ export class TextTool implements ITool {
     if (shape) {
       shape.editing = true
       this._updateEditorStyle(shape)
-      this._editor.style.display = 'block'
-      this._editor.value = shape.text
+      this.editor.style.display = 'block'
+      this.editor.value = shape.text
     } else {
-      this._editor.style.display = 'none'
+      this.editor.style.display = 'none'
     }
 
     if (preShape) {
@@ -52,26 +53,26 @@ export class TextTool implements ITool {
   private _updateEditorStyle = (shape: ShapeText) => {
     const { board } = this;
     if (!board) return;
-    this._editor.style.font = shape.data.font
-    this._editor.style.left = board.world.x + shape.data.x + 'px'
-    this._editor.style.top = board.world.y + shape.data.y + 'px'
-    this._editor.style.minWidth = shape.data.w + 'px'
-    this._editor.style.minHeight = shape.data.h + 'px'
-    this._editor.style.maxWidth = shape.data.w + 'px'
-    this._editor.style.maxHeight = shape.data.h + 'px'
-    this._editor.style.paddingLeft = shape.data.t_l + 'px'
-    this._editor.style.paddingTop = shape.data.t_t + 'px'
-    this._editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg) scale(${shape.data.scaleX},${shape.data.scaleY})`
+    this.editor.style.font = shape.data.font
+    this.editor.style.left = board.world.x + shape.data.x + 'px'
+    this.editor.style.top = board.world.y + shape.data.y + 'px'
+    this.editor.style.minWidth = shape.data.w + 'px'
+    this.editor.style.minHeight = shape.data.h + 'px'
+    this.editor.style.maxWidth = shape.data.w + 'px'
+    this.editor.style.maxHeight = shape.data.h + 'px'
+    this.editor.style.paddingLeft = shape.data.t_l + 'px'
+    this.editor.style.paddingTop = shape.data.t_t + 'px'
+    this.editor.style.transform = `rotate(${(180 * shape.data.rotation / Math.PI).toFixed(4)}deg) scale(${shape.data.scaleX},${shape.data.scaleY})`
   }
   private _updateShapeText = () => {
     const shape = this._curShape
     if (!shape) return
     const prev = shape.data.copy()
 
-    shape.setText(this._editor.value, false)
+    shape.setText(this.editor.value, false)
     shape.setSelection({
-      start: this._editor.selectionStart,
-      end: this._editor.selectionEnd
+      start: this.editor.selectionStart,
+      end: this.editor.selectionEnd
     })
     this._updateEditorStyle(shape)
 
@@ -87,19 +88,19 @@ export class TextTool implements ITool {
   }
 
   constructor() {
-    this._editor.wrap = 'off';
-    this._editor.classList.add(styles.text_editor);
+    this.editor.wrap = 'off';
+    this.editor.classList.add(styles.text_editor);
   }
 
   start(): void {
-    this._editor.addEventListener('keydown', this._keydown)
-    this._editor.addEventListener('input', this._updateShapeText)
+    this.editor.addEventListener('keydown', this._keydown)
+    this.editor.addEventListener('input', this._updateShapeText)
     document.addEventListener('selectionchange', this._updateShapeText)
     document.addEventListener('pointerdown', this._docPointerdown)
   }
   end(): void {
-    this._editor.removeEventListener('keydown', this._keydown)
-    this._editor.removeEventListener('input', this._updateShapeText)
+    this.editor.removeEventListener('keydown', this._keydown)
+    this.editor.removeEventListener('input', this._updateShapeText)
     document.removeEventListener('selectionchange', this._updateShapeText)
     document.removeEventListener('pointerdown', this._docPointerdown)
     this.curShape = undefined;
@@ -115,17 +116,13 @@ export class TextTool implements ITool {
     }
     e.stopPropagation()
   }
-  get type() { return ToolEnum.Text }
   get board(): Board | undefined {
     return this._board
   }
   set board(v: Board | undefined) {
     this._board = v;
-    this._board?.onscreen()?.parentElement?.appendChild(this._editor)
+    this._board?.onscreen()?.parentElement?.appendChild(this.editor)
   }
-  get editor() { return this._editor; }
-  render(): void { }
-  pointerMove(dot: IDot): void { }
   pointerDown(dot: IDot): void {
     const { board } = this
     if (!board) { return; }
@@ -152,14 +149,12 @@ export class TextTool implements ITool {
     }
     this.connect(shapeText);
   }
-  pointerDraw(dot: IDot): void { }
-  pointerUp(dot: IDot): void { }
 
   connect(shapeText: ShapeText): void {
     const { board } = this;
     if (!board) { return; }
     this.curShape = shapeText
-    setTimeout(() => this._editor.focus(), 10)
+    setTimeout(() => this.editor.focus(), 10)
   }
 }
 Gaia.registerTool(ToolEnum.Text,

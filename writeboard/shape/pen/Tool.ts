@@ -1,29 +1,62 @@
 import { Board } from "../../board/Board"
-import { ToolEnum } from "../../tools/ToolEnum"
+import { EventEnum } from "../../event"
 import { Gaia } from "../../mgr/Gaia"
-import { ShapePen } from "./Shape"
+import { ITool } from "../../tools/base/Tool"
+import { ToolEnum } from "../../tools/ToolEnum"
+import { IDot } from "../../utils/Dot"
 import { ShapeEnum } from "../ShapeEnum"
 import { ChangeType, PenData } from "./Data"
-import { IDot } from "../../utils/Dot"
-import { ITool } from "../../tools/base/Tool"
-import { EventEnum, Events } from "../../event"
+import { ShapePen } from "./Shape"
 const Tag = '[PenTool]'
 export class PenTool implements ITool {
-  start(): void {
-  }
-  end(): void {
-    delete this._curShape
-  }
-  get type(): string { return ToolEnum.Pen }
+  readonly type: string = ToolEnum.Pen
+  board: Board | undefined = void 0;
 
-  render(): void { }
-  get board(): Board | undefined {
-    return this._board
+  end(): void {
+    const shape = this._curShape
+    if (shape && shape.data.coords.length >= 2) {
+      const { coords } = shape.data
+      shape.data.editing = false;
+      this.addDot({
+        x: coords[coords.length - 2],
+        y: coords[coords.length - 1],
+        p: 0
+      }, 'last')
+      this.board?.emitEvent(EventEnum.ShapesDone, {
+        operator: this.board.whoami,
+        shapeDatas: [shape!.data.copy()]
+      })
+    }
+    delete this._curShape;
   }
-  set board(v: Board | undefined) {
-    this._board = v
+
+  pointerDown(dot: IDot): void {
+    const board = this.board
+    if (!board) return;
+    this._curShape = board.factory.newShape(ShapeEnum.Pen) as ShapePen
+    this._curShape.data.layer = board.layer().id;
+    this._curShape.data.editing = true
+    board.add(this._curShape, true)
+    this.addDot(dot, 'first')
   }
-  addDot(dot: IDot, type?: 'first' | 'last') {
+  pointerDraw(dot: IDot): void {
+    this.addDot(dot)
+  }
+  pointerUp(dot: IDot): void {
+    const shape = this._curShape
+    if (shape) {
+      shape.data.editing = false;
+      this.addDot(dot, 'last')
+      this.board?.emitEvent(EventEnum.ShapesDone, {
+        operator: this.board.whoami,
+        shapeDatas: [shape!.data.copy()]
+      })
+      delete this._curShape;
+    }
+  }
+  protected _prevData: PenData | undefined
+  protected _curShape: ShapePen | undefined
+  protected addDot(dot: IDot, type?: 'first' | 'last') {
     const shape = this._curShape
     const board = this.board
     if (!shape || !board) return
@@ -54,33 +87,6 @@ export class PenTool implements ITool {
     }
 
   }
-  pointerMove(dot: IDot): void { }
-  pointerDown(dot: IDot): void {
-    const board = this.board
-    if (!board) return;
-    this._curShape = board.factory.newShape(ShapeEnum.Pen) as ShapePen
-    this._curShape.data.layer = board.layer().id;
-    this._curShape.data.editing = true
-    board.add(this._curShape, true)
-    this.addDot(dot, 'first')
-  }
-  pointerDraw(dot: IDot): void {
-    this.addDot(dot)
-  }
-  pointerUp(dot: IDot): void {
-    const shape = this._curShape
-    if (shape)
-      shape.data.editing = false
-    this.addDot(dot, 'last')
-    this._board?.emitEvent(EventEnum.ShapesDone, {
-      operator: this._board.whoami,
-      shapeDatas: [shape!.data.copy()]
-    })
-    this.end()
-  }
-  private _prevData: PenData | undefined
-  private _curShape: ShapePen | undefined
-  private _board: Board | undefined
 }
 
 Gaia.registerTool(ToolEnum.Pen,

@@ -89,29 +89,6 @@ function main() {
         )
     );
 
-  let m = false;
-  let mx = 0;
-  let my = 0;
-  blackboard.current?.inner.addEventListener('pointerdown', (e) => {
-    if (e.button !== 1) return;
-    m = true;
-    mx = -board.world.x + e.x;
-    my = -board.world.y + e.y;
-
-  })
-  document.body.addEventListener('pointerup', (e) => {
-    if (e.button !== 1) return;
-    m = false;
-  })
-  document.body.addEventListener('pointercancel', (e) => {
-    if (e.button !== 1) return;
-    m = false;
-  })
-  document.body.addEventListener('pointermove', (e) => {
-    if (!m) return;
-    board.scroll_to(mx - e.x, my - e.y)
-  })
-
   const menu = new Menu(mainView.current!).setup([{
     label: '工具',
     items: Gaia.listTools()

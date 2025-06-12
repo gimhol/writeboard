@@ -1,18 +1,4 @@
-import { Css } from "../utils/Css";
-Css.add(`
-/*whiteboard STYLES*/
-.g_whiteboard_layer {
-  position: absolute;
-  touch-action: none;
-  user-select: none;
-  left: 0px;
-  right: 0px;
-  top: 0px;
-  bottom: 0px;
-  transition: opacity 200ms;
-  outline: none;
-}`)
-
+import styles from "../styles.module.scss"
 export interface ILayerInfoInit {
   readonly id: string;
   readonly name: string;
@@ -76,7 +62,7 @@ export class Layer implements ILayer {
     this._onscreen.setAttribute('layer_name', this.name);
 
     this._onscreen.draggable = false;
-    this._onscreen.classList.add('g_whiteboard_layer');
+    this._onscreen.classList.add(styles.layer_onscreen_canvas);
     this._ctx = this._onscreen.getContext('2d')!
 
     this._offscreen = document.createElement('canvas')

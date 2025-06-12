@@ -3,7 +3,7 @@ import { IFactory, IShapesMgr } from "../mgr"
 import { TextTool } from "../shape"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
-import { IDot, IRect, Rect } from "../utils"
+import { IDot, IRect, IVector, Rect } from "../utils"
 import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 
@@ -19,30 +19,34 @@ export interface BoardOptions {
 const Tag = '[Board]'
 
 export class Board {
-  private _factory: IFactory
-  private _toolType: ToolType | undefined = void 0
-  private _layers = new Map<string, Layer>();
-  private _shapesMgr: IShapesMgr
-  private _lb_down = false
-  private _tools = new Map<ToolEnum | string, ITool>()
-  private _tool: ITool | undefined
-  private _selects: Shape[] = []
-  private _element: HTMLElement;
-  private _own_element = false;
-  private _whoami = 'local'
-  private _editingLayerId: string = '';
+  protected _factory: IFactory
+  protected _toolType: ToolType | undefined = void 0
+  protected _layers = new Map<string, Layer>();
+  protected _shapesMgr: IShapesMgr
+  protected _mousebuttons: { [x in number]?: number } = {}
+  protected _tools = new Map<ToolEnum | string, ITool>()
+  protected _tool: ITool | undefined
+  protected _selects: Shape[] = []
+  protected _element: HTMLElement;
+  protected _own_element = false;
+  protected _whoami = 'local'
+  protected _editingLayerId: string = '';
+  protected _viewport = new Rect(0, 0, 600, 600)
+  protected _world = new Rect(0, 0, 1600, 1600)
+  protected _world_drag_start_pos: IVector = { x: 0, y: 0 };
 
-  private _viewport = new Rect(0, 0, 600, 600)
-  private _world = new Rect(0, 0, 1600, 1600)
-
+  get lb_down(): boolean {
+    return !!this._mousebuttons[0]
+  }
+  get mb_down(): boolean {
+    return !!this._mousebuttons[1]
+  }
   get viewport(): Readonly<Rect> {
     return this._viewport;
   }
-
   get world(): Readonly<Rect> {
     return this._world;
   }
-
   get whoami() {
     return this._whoami
   }
@@ -306,7 +310,7 @@ export class Board {
       from, to
     })
 
-    this._tool?.end()
+    this._tool?.end?.()
     if (!to) return;
     this._tool = this._factory.newTool(to)
     if (!this._tool) {
@@ -315,7 +319,7 @@ export class Board {
     }
     this._tool.board = this
     this._tools.set(to, this._tool)
-    this._tool.start()
+    this._tool.start?.()
 
   }
   get selects() {
@@ -492,35 +496,47 @@ export class Board {
   }
 
   protected _pointerdown = (e: PointerEvent) => {
-    if (e.button !== 0) {
+    this._mousebuttons[e.button] = 1
+    if (e.button === 0) {
+      if (!this.tool) {
+        console.warn("toolType not set.")
+        return;
+      }
+      this.tool?.pointerDown?.(this.getDot(e))
+      e.stopPropagation()
+    } else if (e.button === 1) {
+      this._world_drag_start_pos = {
+        x: -this._world.x + e.x,
+        y: -this._world.y + e.y,
+      }
+      e.stopPropagation()
+    } else {
       e.preventDefault()
       e.stopPropagation()
-      return
     }
-    this._lb_down = true;
-    if (!this.tool) {
-      console.warn("toolType not set.")
-      return;
-    }
-    this.tool?.pointerDown(this.getDot(e))
-    e.stopPropagation();
   }
 
   protected _pointermove = (e: PointerEvent) => {
-    if (this._lb_down) {
-      this.tool?.pointerDraw(this.getDot(e));
+    if (this.mb_down) {
+      this.world_rect_changing(() => {
+        const { x, y } = this._world_drag_start_pos
+        this.scroll_to(x - e.x, y - e.y)
+      })
+    }
+    if (this.lb_down) {
+      this.tool?.pointerDraw?.(this.getDot(e));
     } else {
-      this.tool?.pointerMove(this.getDot(e))
+      this.tool?.pointerMove?.(this.getDot(e))
     }
     e.stopPropagation();
   }
 
   protected _pointerup = (e: PointerEvent) => {
-    if (!this._lb_down) { return; }
-
-    this._lb_down = false
-    this.tool?.pointerUp(this.getDot(e))
-    e.stopPropagation();
+    if (e.button == 0) {
+      this.tool?.pointerUp?.(this.getDot(e))
+      e.stopPropagation();
+    }
+    this._mousebuttons[e.button] = 0
   }
 
   private _dirty: IRect | undefined;
@@ -566,8 +582,7 @@ export class Board {
       if (!layer) return;
       v.render(layer.octx)
     })
-
-    this.tool?.render(this.layer().octx)
+    this.tool?.render?.(this.layer().octx)
     this._layers.forEach(layer => {
       const { ctx, octx, offscreen } = layer
       ctx.save()
