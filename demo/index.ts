@@ -203,8 +203,8 @@ function main() {
   });
   const aq = new ActionQueue().setActor(board);
   const rec = new Recorder().setActor(board);
-  const sc = new Player()
-
+  const sc = new Player();
+  (window as any).board = board
   const updateEditPanel = () => {
     let needFill = false;
     let needStroke = false;

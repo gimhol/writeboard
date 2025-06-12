@@ -1,11 +1,12 @@
 import html from "@rollup/plugin-html";
 import image from "@rollup/plugin-image";
-import typescript from "@rollup/plugin-typescript";
 import fs from "fs";
+import { dts } from "rollup-plugin-dts";
 import postcss from "rollup-plugin-postcss";
-const { output_format = 'cjs' } = process.env;
+import typescript from 'rollup-plugin-typescript2';
 
-export default {
+const { output_format = 'cjs' } = process.env;
+const demo_config = {
   input: "demo/index.ts",
   output: {
     entryFileNames: 'bundle.js',
@@ -15,10 +16,6 @@ export default {
   },
   plugins: [
     image(),
-    // postcss({
-    //   extract: true,
-    //   autoModules: true
-    // }),
     postcss({
       extensions: ['.scss'],
       extract: true,
@@ -58,4 +55,51 @@ export default {
       },
     })
   ]
-};
+}
+
+const targets = [
+  { dir: 'dist/es6', tsconfig: "./tsconfig.lib.es6.json" },
+  { dir: 'dist/es5', tsconfig: "./tsconfig.lib.es5.json" }
+]
+const formats = ['module', 'amd', 'cjs', 'es', 'iife', 'system', 'umd', 'commonjs', 'esm', 'systemjs']
+const configs = [];
+for (const format of formats) {
+  for (const { dir, tsconfig } of targets) {
+    const bundle_js_config = {
+      input: 'writeboard/index.ts',
+      output: {
+        file: `${dir}/${format}/writeboard.js`,
+        format,
+        sourcemap: true,
+        name: "writeboard"
+      },
+      plugins: [
+        typescript({ tsconfig }),
+        postcss({
+          extensions: ['.scss'],
+          extract: true,
+          modules: {
+            generateScopedName: 'writeboard_[local]_[hash:base64:5]'
+          },
+          use: ['sass']
+        }),
+      ],
+    }
+    const bundle_dts_config = {
+      input: 'writeboard/index.ts',
+      output: {
+        file: `${dir}/${format}/writeboard-dom.d.ts`,
+        format
+      },
+      plugins: [dts()],
+    }
+    configs.push(bundle_js_config, bundle_dts_config)
+  }
+}
+
+configs.push(demo_config);
+
+if (process.argv.some(v => v === '-w')) {
+  configs.length = 1;
+}
+export default configs
