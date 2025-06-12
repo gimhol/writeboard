@@ -15,7 +15,18 @@ export default {
   },
   plugins: [
     image(),
-    postcss({ extract: true, autoModules: true }),
+    // postcss({
+    //   extract: true,
+    //   autoModules: true
+    // }),
+    postcss({
+      extensions: ['.scss'],
+      extract: true,
+      modules: {
+        generateScopedName: 'writeboard_[local]_[hash:base64:5]'
+      },
+      use: ['sass']
+    }),
     typescript({ tsconfig: './tsconfig.json' }),
     html({
       template: (opts) => {

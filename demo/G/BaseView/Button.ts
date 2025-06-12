@@ -1,6 +1,6 @@
 import { SizeType } from "./SizeType";
 import { View } from "./View";
-import "./g_button.css";
+import "./g_button.scss";
 export type ButtonContent = string | View;
 export interface ButtonInits {
   contents?: [ButtonContent, ButtonContent];

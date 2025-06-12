@@ -4,7 +4,7 @@ import { HoverOb } from "../../Observer/HoverOb";
 import { Subwin } from "../SubWin";
 import { DockView } from "./DockView";
 import { DockableDirection } from "./DockableDirection";
-import "./g_dockable_resizer.css";
+import "./g_dockable_resizer.scss";
 
 export class DockableResizer extends View<'div'> {
   constructor(direction: DockableDirection) {

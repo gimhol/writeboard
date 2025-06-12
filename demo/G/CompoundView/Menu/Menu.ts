@@ -6,7 +6,7 @@ import { findParent } from "../../utils";
 import { MenuEventMap, MenuEventType } from "./Events";
 import { IMenuItemInfo } from "./Info";
 import { MenuItemView } from "./ItemView";
-import "./g_menu.css";
+import "./g_menu.scss";
 
 export interface IMenuInits<K extends string | number | symbol> {
   items?: IMenuItemInfo<K>[];

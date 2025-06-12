@@ -17,14 +17,14 @@ import img_header_0 from "./assets/img/calendar_phrases/main_pics/header_0.jpg";
 import img_header_1 from "./assets/img/calendar_phrases/main_pics/header_1.jpg";
 import img_header_2 from "./assets/img/calendar_phrases/main_pics/header_2.jpg";
 import img_header_3 from "./assets/img/calendar_phrases/main_pics/header_3.jpg";
-import "./styles/calendar_phrases/edit_panel.css";
-import "./styles/calendar_phrases/index.css";
+import "./styles/calendar_phrases/edit_panel.scss";
+import "./styles/calendar_phrases/index.scss";
 import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
 import { View } from "./G/BaseView/View";
 import { Menu } from "./G/CompoundView/Menu";
 import { ButtonGroup } from "./G/Helper/ButtonGroup";
-import "./index.css";
+import "./index.scss";
 import { Shiftable } from "./Shiftable";
 import { ShortcutsKeeper } from "./Shortcuts";
 console.log('img_logo', img_logo)

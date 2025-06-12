@@ -11,7 +11,7 @@ import { SnapshotView } from "./SnapshotView";
 import { ToolsView } from "./ToolsView";
 import { ToyView } from "./ToyView";
 import { RGBA } from "./colorPalette/Color";
-import './index.css';
+import './index.scss';
 function main() {
   const factory = Gaia.factory(FactoryEnum.Default)();
   let board: Board

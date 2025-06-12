@@ -1,0 +1,73 @@
+.g_indicator_view {
+  position: absolute;
+  opacity: 0;
+  transition: all 200ms;
+  z-index: 9999;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.g_indicator_view_appear {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.g_indicator_view .content {
+  position: absolute;
+  display: grid;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto auto;
+}
+
+.g_indicator_image {
+  width: 48px;
+  height: 48px;
+  z-index: 10000;
+  user-select: none;
+  background: #000000FF;
+  border-radius: 5px;
+  opacity: 0;
+  transition: all 200ms;
+  pointer-events: none;
+}
+
+.g_indicator_image_appear {
+  opacity: 0.3;
+  pointer-events: all;
+}
+
+.g_indicator_image_hover {
+  opacity: 0.8;
+}
+
+.g_dock_result_preview {
+  position: absolute;
+  z-index: 1;
+  background: #0055ff88;
+  box-sizing: border-box;
+  transition: all 200ms;
+  opacity: 0px;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  pointer-events: none;
+}
+
+.g_gone {
+  display: none;
+}
+.g_workspace_header_btn {
+  color: lightgray;
+  padding: 10px 5px;
+}
+.g_workspace_header_btn:hover {
+  background-color: #ffffff22 !important;
+}
+.g_workspace_header_btn:active {
+  background-color: #ffffff11 !important;
+}

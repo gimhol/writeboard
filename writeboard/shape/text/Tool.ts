@@ -8,22 +8,7 @@ import { IDot } from "../../utils/Dot"
 import { ShapeEnum } from "../ShapeEnum"
 import { TextData } from "./Data"
 import { ShapeText } from "./Shape"
-
-Css.add(`
-.g_whiteboard_text_editor {
-  display: none;
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  boxSizing: border-box;
-  outline: none;
-  border: none;
-  resize: none;
-  padding: 0px;
-  margin: 0px;
-  transition: none;
-  opacity: 100%;
-}`)
+import styles from "./style.module.scss";
 
 export class TextTool implements ITool {
   private _board: Board | undefined;
@@ -103,7 +88,7 @@ export class TextTool implements ITool {
 
   constructor() {
     this._editor.wrap = 'off';
-    this._editor.classList.add('g_whiteboard_text_editor');
+    this._editor.classList.add(styles.text_editor);
   }
 
   start(): void {

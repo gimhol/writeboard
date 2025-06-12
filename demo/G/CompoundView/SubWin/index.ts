@@ -4,7 +4,7 @@ import { ViewDragger } from "../../Helper/ViewDragger";
 import { IDockable } from "../Workspace/Dockable";
 import type { WorkspaceView } from "../Workspace/WorkspaceView";
 import { SubwinFooter } from "./Footer";
-import "./g_subwin.css";
+import "./g_subwin.scss";
 import { SubwinHeader } from "./Header";
 export enum StyleNames {
   Normal = 'normal',
