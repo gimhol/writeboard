@@ -1,5 +1,6 @@
-import { Resizable, Shape } from "./Shape";
-import { ShapeData } from "./Data";
+import { Shape } from "./Shape";
+import { Resizable } from "./Resizable";
+import { ShapeData } from "./ShapeData";
 
 export class ShapeNeedPath<D extends ShapeData = ShapeData> extends Shape<D> {
   constructor(data: Partial<D>, cls: new (other?: Partial<D>) => D) {

@@ -1,4 +1,4 @@
-import type { IShapeData } from "../shape/base/Data";
+import type { IShapeData } from "../shape/base/IShapeData";
 import type { ILayerInfo } from "./Layer";
 
 export interface ISnapshot {

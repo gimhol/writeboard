@@ -1,6 +1,6 @@
 import { Board } from "../board";
 import { EventEnum, Events } from "../event";
-import type { IShapeData } from "../shape";
+import { IShapeData } from "../shape/base/IShapeData";
 import { IPureCustomEvent, IScreenplay } from "./Screenplay";
 
 type EMap = Events.EventDetailMap;

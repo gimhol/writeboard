@@ -1,6 +1,6 @@
 import { Shape } from "./Shape";
 import { Board } from "../../board";
-import { IShapeData } from "./Data";
+import { IShapeData } from "./IShapeData";
 
 export enum ShapeEventEnum {
   StartDirty = 'start_dirty',

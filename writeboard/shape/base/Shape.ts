@@ -3,34 +3,11 @@ import { IRect, Rect } from "../../utils/Rect";
 import { IVector, Vector } from "../../utils/Vector";
 import { isNum } from "../../utils/helper";
 import { ShapeType } from "../ShapeEnum";
-import { IShapeData, ShapeData } from "./Data";
+import { ShapeData } from "./ShapeData";
+import { IShapeData } from "./IShapeData";
+import { Resizable } from "./Resizable";
+import { ResizeDirection } from "./ResizeDirection";
 import { ShapeEventMap, ShapeEventEnum, ShapeEventListener } from "./ShapeEvent";
-
-export enum ResizeDirection {
-  None = 0,
-  Top = 1,
-  TopRight = 2,
-  Right = 3,
-  BottomRight = 4,
-  Bottom = 5,
-  BottomLeft = 6,
-  Left = 7,
-  TopLeft = 8,
-}
-
-/**
- * 表示图形能以何种方式被拉伸
- *
- * @export
- * @enum {number}
- */
-export enum Resizable {
-  /** 禁止 */ None = 0b000,
-  /** 水平 */ Horizontal = 0b001,
-  /** 垂直 */ Vertical = 0b010,
-  /** 四角 */ Corner = 0b100,
-  /** 八向 */ All = 0b111,
-}
 
 /**
  * 一切图形的基类

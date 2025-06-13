@@ -1,6 +1,6 @@
 import type { Layer } from "../board/Layer";
 import type { ShapeType } from "../shape/ShapeEnum";
-import type { IShapeData } from "../shape/base/Data";
+import type { IShapeData } from "../shape/base/IShapeData";
 import type { ToolType } from "../tools/ToolEnum";
 import { IRect } from "../utils";
 import type { EventEnum } from "./EventType";

@@ -1,5 +1,5 @@
 import { Shape } from "../../shape/base/Shape";
-import { ShapeData } from "../../shape/base/Data";
+import { ShapeData } from "../../shape/base/ShapeData";
 import { ShapeEventEnum, ShapeEventMap } from "../../shape/base/ShapeEvent";
 import { IDot } from "../../utils/Dot";
 import { Numbers } from "../../utils/Numbers";

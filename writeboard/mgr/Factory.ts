@@ -1,4 +1,5 @@
-import { IShapeData, ShapeData } from "../shape/base/Data";
+import { ShapeData } from "../shape/base/ShapeData";
+import { IShapeData } from "../shape/base/IShapeData";
 import { IShapesMgr, DefaultShapesMgr } from "./ShapesMgr";
 import { Shape } from "../shape/base/Shape";
 import type { ITool } from "../tools/base/Tool";

@@ -1,7 +1,7 @@
 import type { Board } from "../board/Board";
 import { EventEnum } from "../event/EventType";
 import { Gaia } from "../mgr";
-import { IShapeData } from "../shape/base/Data";
+import { IShapeData } from "../shape/base/IShapeData";
 import { ToolEnum } from "../tools";
 
 export class ActionQueue {
