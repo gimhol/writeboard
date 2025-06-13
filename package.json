@@ -1,6 +1,6 @@
 {
   "name": "@fimagine/writeboard",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/es6/cjs/writeboard.js",
   "types": "dist/es6/cjs/writeboard.ts",
@@ -8,7 +8,8 @@
     "start": "npm run demo",
     "test": "mocha",
     "demo": "rollup -c -w --environment output_format:cjs",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "doc": "typedoc --out typedoc writeboard/index.ts"
   },
   "author": "Gim",
   "license": "Apache License 2.0",
@@ -26,6 +27,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-typescript2": "^0.36.0",
     "sass": "^1.89.2",
+    "typedoc": "^0.28.5",
     "typescript": "^5.8.3"
   },
   "repository": {

@@ -1,6 +1,5 @@
 /node_modules
 /.vscode
 /dist
-/demo/dist
-/es5
-output
+/output
+/typedoc

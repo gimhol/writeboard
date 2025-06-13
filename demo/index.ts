@@ -194,7 +194,7 @@ function main() {
   window.addEventListener('resize', resize)
   resize();
 
-  const board = factory.newWhiteBoard({
+  const board = factory.newBoard({
     width: resultWidth,
     height: resultHeight,
     scrollWidth: 2 * resultWidth,

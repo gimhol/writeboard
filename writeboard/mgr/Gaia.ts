@@ -1,14 +1,18 @@
 
-import type { IShapeData, ShapeData, Shape } from "../shape/base"
-import type { IFactory } from "./Factory"
-import type { ITool } from "../tools/base/Tool"
-import type { FactoryEnum, FactoryType } from "./FactoryEnum"
-import { ToolEnum, ToolType, getToolName } from "../tools/ToolEnum"
-import { ShapeType, getShapeName } from "../shape/ShapeEnum"
-import type { CrossData, CrossTool, HalfTickData, HalfTickTool, LinesData, LinesTool, OvalData, OvalTool, PenData, PenTool, PolygonData, PolygonTool, RectData, RectTool, ShapeCross, ShapeEnum, ShapeHalfTick, ShapeLines, ShapeOval, ShapePen, ShapePolygon, ShapeRect, ShapeText, ShapeTick, TextData, TextTool, TickData, TickTool } from "../shape"
-import { SelectorTool } from "../tools"
 import { Board } from "../board"
-import { EventEnum, Events } from "../event"
+import { Events } from "../event"
+import type {
+  CrossData, CrossTool, HalfTickData, HalfTickTool, LinesData, LinesTool, OvalData, OvalTool, PenData, PenTool,
+  PolygonData, PolygonTool, RectData, RectTool, ShapeCross, ShapeEnum, ShapeHalfTick, ShapeLines, ShapeOval, ShapePen,
+  ShapePolygon, ShapeRect, ShapeText, ShapeTick, TextData, TextTool, TickData, TickTool
+} from "../shape"
+import type { IShapeData, Shape, ShapeData } from "../shape/base"
+import { ShapeType, getShapeName } from "../shape/ShapeEnum"
+import { SelectorTool } from "../tools"
+import type { ITool } from "../tools/base/Tool"
+import { ToolEnum, ToolType, getToolName } from "../tools/ToolEnum"
+import type { IFactory } from "./IFactory"
+import type { FactoryEnum, FactoryType } from "./FactoryEnum"
 
 export interface IFactoryInfomation {
   readonly name: string
@@ -39,6 +43,15 @@ export class Gaia {
   private static _factorys = new Map<FactoryType, IFactoryCreater>()
   private static _factoryInfos = new Map<FactoryType, IFactoryInfomation>()
 
+  /**
+   * 注册工厂
+   *
+   * @static
+   * @param {FactoryType} type 工厂类型
+   * @param {IFactoryCreater} creator
+   * @param {IFactoryInfomation} info
+   * @memberof Gaia
+   */
   static registerFactory(type: FactoryType, creator: IFactoryCreater, info: IFactoryInfomation): void {
     if (this._factorys.has(type)) {
       console.warn(Tag, `registerFactory(), factory '${type}' already exists!`);
@@ -48,6 +61,14 @@ export class Gaia {
     this._factorys.set(type, creator);
     this._factoryInfos.set(type, info);
   }
+
+  /**
+   * 列出工厂类型
+   *
+   * @static
+   * @return {FactoryType[]}
+   * @memberof Gaia
+   */
   static listFactories(): FactoryType[] {
     return Array.from(this._factoryInfos.keys())
   }

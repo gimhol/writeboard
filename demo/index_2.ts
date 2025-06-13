@@ -209,8 +209,8 @@ function main() {
     pointerEvents: 'all',
   });
   workspace.rootDockView.setContent(blackboard);
-
-  board = factory.newWhiteBoard({ width: 1024, height: 1024, element: blackboard.inner });
+  
+  board = factory.newBoard({ width: 1024, height: 1024, element: blackboard.inner });
   Object.assign(window, {
     board, factory, workspace, FactoryMgr: Gaia
   });

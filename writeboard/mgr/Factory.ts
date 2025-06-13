@@ -14,36 +14,9 @@ import { FontFamilysChecker } from "../fonts/checker";
 import { builtInFontFamilies, builtInFontNames } from "../fonts/builtInFontFamilies";
 import { isNum, isStr } from "../utils/helper";
 import { DefaultShapeDecoration, IShapeDecoration } from "../board/ShapeDecoration";
-
-export interface IResizerInfo {
-  size: number;
-}
-export interface IRotatorInfo {
-  size: number;
-  distance: number;
-}
-export interface IFactory {
-  get type(): FactoryType;
-  get resizer(): IResizerInfo;
-  get rotator(): IRotatorInfo;
-  shapeTemplate(shapeType: ShapeType): ShapeData;
-  setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
-  newWhiteBoard(options: BoardOptions): Board;
-  newShapesMgr(): IShapesMgr;
-  newTool(toolType: ToolType): ITool;
-  newShapeData(shapeType: ShapeType): ShapeData;
-  newId(data: IShapeData): string;
-  newZ(data: IShapeData): number;
-  newShape(shapeType: ShapeType): Shape;
-  newShape(shapeData: IShapeData): Shape;
-  newLayerId(): string;
-  newLayerName(): string;
-  newLayer(inits?: Partial<ILayerInits>): Layer;
-  fontFamilies(): string[];
-  fontName(fontFamily: string): string;
-  shapeDecoration(shape: Shape): IShapeDecoration;
-  overbound(shape: Shape): number;
-}
+import { IResizerInfo } from "./IResizerInfo";
+import { IRotatorInfo } from "./IRotatorInfo";
+import { IFactory } from "./IFactory";
 
 const Tag = '[DefaultFactory]';
 export class DefaultFactory implements IFactory {
@@ -63,7 +36,7 @@ export class DefaultFactory implements IFactory {
   setShapeTemplate(type: ShapeType, template: ShapeData): void {
     this._shapeTemplates[type] = template
   }
-  newWhiteBoard(options: BoardOptions): Board {
+  newBoard(options: BoardOptions): Board {
     return new Board(this, options)
   }
   newShapesMgr(): IShapesMgr {
