@@ -476,8 +476,8 @@ export class Board {
     const sh = ele.height / h
     const { pressure = 0.5 } = ev as any
     return {
-      x: Math.floor(sw * (ev.clientX - left - this._world.x)),
-      y: Math.floor(sh * (ev.clientY - top - this._world.y)),
+      x: sw * (ev.clientX - left) - this._world.x,
+      y: sh * (ev.clientY - top) - this._world.y,
       p: pressure
     }
   }
