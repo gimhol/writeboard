@@ -468,18 +468,18 @@ export class Board {
     return [selecteds, desecteds]
   }
 
-  getDot(ev: MouseEvent | PointerEvent): IDot {
+  map2world(x: number, y: number): [number, number] {
     const layer = this.layer();
     const ele = layer.onscreen;
     const { width: w, height: h, left, top } = ele.getBoundingClientRect()
     const sw = ele.width / w
     const sh = ele.height / h
+    return [sw * (x - left) - this._world.x, sh * (y - top) - this._world.y]
+  }
+  getDot(ev: MouseEvent | PointerEvent): IDot {
     const { pressure = 0.5 } = ev as any
-    return {
-      x: sw * (ev.clientX - left) - this._world.x,
-      y: sh * (ev.clientY - top) - this._world.y,
-      p: pressure
-    }
+    const [x, y] = this.map2world(ev.x, ev.y)
+    return { x, y, p: pressure }
   }
   get tools() { return this._tools }
   get tool() { return this._tool }
