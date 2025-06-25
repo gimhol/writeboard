@@ -28,6 +28,7 @@ export class Player {
     this.startTime = performance.now();
     this.tick(this.startTime)
   }
+
   stop() {
     console.log('[Player]stop()')
     if (!this._requestId) {
@@ -35,25 +36,32 @@ export class Player {
       this._requestId = 0;
     }
   }
-  tick(time: number) {
-    const { screenplay } = this;
-    if (!screenplay) { return this.stop() };
 
-    const playerTime = time - this.startTime;
+  update_once(time: number) {
+    const { screenplay } = this;
+    if (!screenplay) return;
     while (true) {
       const event = screenplay.events[this.eventIdx];
       if (!event) { return this.stop() };
       const eventTime = event.timestamp;
-      if (eventTime > playerTime) { break; }
+      if (eventTime > time) { break; }
       this._applyEvent(event);
       ++this.eventIdx;
     }
+  }
+
+  tick(time: number) {
+    const { screenplay } = this;
+    if (!screenplay) { return this.stop() };
+    this.update_once(time - this.startTime)
     this._requestId = requestAnimationFrame(time => this.tick(time))
   }
+
   backward(): this {
     this._backwarding = true;
     return this
   }
+
   forward(): this {
     this._backwarding = false;
     return this
@@ -88,6 +96,7 @@ export class Player {
       }
     }
   }
+
   private _undoEvent(e: IPureCustomEvent<any>) {
     switch (e.type) {
       case EventEnum.ShapesAdded: {
@@ -108,6 +117,7 @@ export class Player {
       }
     }
   }
+  
   private _addShape(shapeDatas?: IShapeData[]) {
     const shapes = shapeDatas?.map(v => this.actor!.factory.newShape(v));
     shapes && this.actor!.add(shapes, false);
