@@ -6,7 +6,8 @@ export interface IPureCustomEvent<T = any> {
   readonly detail: T;
 }
 export interface IScreenplay {
-  readonly startTime: number,
-  readonly snapshot?: ISnapshot;
-  readonly events: IPureCustomEvent<any>[];
+  startTime: number,
+  endTime: number,
+  snapshot?: ISnapshot;
+  events: IPureCustomEvent<any>[];
 }

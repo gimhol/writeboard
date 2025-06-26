@@ -9,31 +9,39 @@ export class Player {
   private screenplay: IScreenplay | undefined;
   private eventIdx = 0;
   private actor: Board | undefined;
-  private startTime: number = 0;
   private _backwarding: boolean = false;
-  private _requestId: number = 0;
+  private _req_id: number = 0;
+  private _time: number = 0;
+  private _start_time: number = 0;
+  private _prev_time: number = 0;
 
   play(actor: Board, screenplay: Partial<IScreenplay>) {
     console.log('[Player]play()', screenplay)
+    this.begin(actor, screenplay)
+    this.tick(this._start_time)
+  }
+
+  begin(actor: Board, screenplay: Partial<IScreenplay>) {
+    console.log('[Player]begin()', screenplay)
     this.eventIdx = 0;
     this.actor = actor;
     this.screenplay = {
       startTime: screenplay.startTime || 0,
+      endTime: screenplay.endTime || 0,
       snapshot: screenplay.snapshot,
       events: screenplay.events || [],
     };
     if (screenplay.snapshot) {
       actor.fromSnapshot(screenplay.snapshot);
     }
-    this.startTime = performance.now();
-    this.tick(this.startTime)
+    this._time = this._prev_time = this._start_time = performance.now();
   }
 
   stop() {
     console.log('[Player]stop()')
-    if (!this._requestId) {
-      cancelAnimationFrame(this._requestId);
-      this._requestId = 0;
+    if (this._req_id) {
+      cancelAnimationFrame(this._req_id);
+      this._req_id = 0;
     }
   }
 
@@ -43,18 +51,26 @@ export class Player {
     while (true) {
       const event = screenplay.events[this.eventIdx];
       if (!event) { return this.stop() };
-      const eventTime = event.timestamp;
-      if (eventTime > time) { break; }
+      const event_time = event.timestamp;
+      if (event_time > time) { break; }
       this._applyEvent(event);
       ++this.eventIdx;
     }
   }
-
+  
   tick(time: number) {
     const { screenplay } = this;
     if (!screenplay) { return this.stop() };
-    this.update_once(time - this.startTime)
-    this._requestId = requestAnimationFrame(time => this.tick(time))
+    const dt = time - this._prev_time
+    if (this._backwarding)
+      this._time -= dt;
+    else
+      this._time += dt;
+    const { min, max } = Math;
+    const duration = screenplay.endTime - screenplay.startTime
+    this.update_once(max(0, min(this._time - this._start_time, duration)))
+    this._req_id = requestAnimationFrame(time => this.tick(time))
+    this._prev_time = time;
   }
 
   backward(): this {
@@ -117,7 +133,7 @@ export class Player {
       }
     }
   }
-  
+
   private _addShape(shapeDatas?: IShapeData[]) {
     const shapes = shapeDatas?.map(v => this.actor!.factory.newShape(v));
     shapes && this.actor!.add(shapes, false);

@@ -16,6 +16,9 @@ export class Recorder {
   private _screenplay?: IScreenplay;
   private _running = false;
 
+  get running() { return this._running }
+  get actor() { return this._actor }
+
   constructor() {
     console.log('[Recorder] constructor()')
   }
@@ -47,6 +50,9 @@ export class Recorder {
 
   stop(): this {
     console.log('[Recorder] stop()');
+    if (this._screenplay) {
+      this._screenplay.endTime = performance.now();
+    }
     this._running = false;
     this._cancellers.forEach(v => v())
     this._cancellers = [];
@@ -66,19 +72,20 @@ export class Recorder {
     this._cancellers = [];
 
     const startTime = performance.now();
-    const screenplay: IScreenplay = {
+    const screenplay: IScreenplay = this._screenplay = {
       startTime,
+      endTime: startTime,
       snapshot: actor.toSnapshot(),
       events: []
     }
     for (const key in EventEnum) {
       const v = (EventEnum as any)[key]
-      const func = (e: CustomEvent) => screenplay.events.push({
-        timestamp: e.timeStamp - startTime,
-        type: e.type,
-        detail: e.detail
-      });
-      this._screenplay = screenplay;
+      const func = (e: CustomEvent) => {
+        screenplay.events.push({
+          timestamp: e.timeStamp - startTime, type: e.type, detail: e.detail
+        })
+        screenplay.endTime = e.timeStamp
+      };
       actor.addEventListener(v, func);
       const canceller = () => actor.removeEventListener(v, func);
       this._cancellers.push(canceller);
