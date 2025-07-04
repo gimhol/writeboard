@@ -99,6 +99,7 @@ export class TextTool implements ITool {
     document.addEventListener('pointerdown', this._docPointerdown)
   }
   end(): void {
+    this.editor.remove()
     this.editor.removeEventListener('keydown', this._keydown)
     this.editor.removeEventListener('input', this._updateShapeText)
     document.removeEventListener('selectionchange', this._updateShapeText)
@@ -121,7 +122,10 @@ export class TextTool implements ITool {
   }
   set board(v: Board | undefined) {
     this._board = v;
-    this._board?.onscreen()?.parentElement?.appendChild(this.editor)
+    const pe = this._board?.element
+    if (pe && this.editor.parentElement !== pe) {
+      pe.appendChild(this.editor)
+    }
   }
   pointerDown(dot: IDot): void {
     const { board } = this

@@ -402,7 +402,10 @@ export class SelectorTool implements ITool {
       board.setToolType(ToolEnum.Text);
       const textTool = board.tool as TextTool;
 
-      textTool.selectorCallback = () => board.setToolType(ToolEnum.Selector);
+      textTool.selectorCallback = () => {
+        board.setToolType(ToolEnum.Selector);
+        textTool.end()
+      };
       textTool.editor.addEventListener('blur', textTool.selectorCallback, { once: true });
       textTool.connect(this._shapes[0].shape);
     }
