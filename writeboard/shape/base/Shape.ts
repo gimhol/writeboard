@@ -191,7 +191,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.dispatchEvent(ShapeEventEnum.EndDirty, { shape: this, prev })
   }
 
-  private markDirty(rect: IRect = this.boundingRect()): void {
+  markDirty(rect: IRect = this.boundingRect()): void {
     this.board?.markDirty(rect)
   }
 
