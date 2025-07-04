@@ -48,6 +48,7 @@ Gaia.editToolInfo(ToolEnum.Rect, v => ({ ...v, name: '矩形' }));
 Gaia.editToolInfo(ToolEnum.Selector, v => ({ ...v, name: '选择器' }));
 Gaia.editToolInfo(ToolEnum.Text, v => ({ ...v, name: '文本' }));
 Gaia.editToolInfo(ToolEnum.Tick, v => ({ ...v, name: '打钩' }));
+Gaia.editToolInfo(ToolEnum.Eraser, v => ({ ...v, name: '橡皮擦' }));
 
 enum MenuKey {
   SelectAll = 'SelectAll',
@@ -56,6 +57,8 @@ enum MenuKey {
   ClearUp = 'ClearUp',
   InsertImage = 'InsertImage',
   ExportResult = 'ExportResult',
+  UnlockSelecteds = "UnlockSelecteds",
+  LockSelecteds = "LockSelecteds",
 }
 
 function main() {
@@ -107,6 +110,14 @@ function main() {
   }, {
     divider: true
   }, {
+    key: MenuKey.LockSelecteds,
+    label: '锁定'
+  }, {
+    key: MenuKey.UnlockSelecteds,
+    label: '取消锁定'
+  }, {
+    divider: true
+  }, {
     key: MenuKey.SelectAll,
     label: '全选'
   }, {
@@ -122,7 +133,6 @@ function main() {
     label: '删除全部',
     danger: true,
   }]);
-
   menu.addEventListener(Menu.EventType.ItemClick, (e) => {
     switch (e.detail.key) {
       case ToolEnum.Rect:
@@ -135,6 +145,7 @@ function main() {
       case ToolEnum.Cross:
       case ToolEnum.HalfTick:
       case ToolEnum.Lines:
+      case ToolEnum.Eraser:
       case ToolEnum.Img:
         board.setToolType(e.detail.key);
         break;
@@ -180,6 +191,14 @@ function main() {
       }
       case MenuKey.ExportResult: {
         download();
+        break;
+      }
+      case MenuKey.LockSelecteds: {
+        board.selects.forEach(v => v.locked = true)
+        break;
+      }
+      case MenuKey.UnlockSelecteds: {
+        board.selects.forEach(v => v.locked = false)
         break;
       }
     }

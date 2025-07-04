@@ -29,10 +29,14 @@ export class Menu<K extends string | number | symbol> extends View<'div'> {
     this.setup(inits?.items ?? []);
     window.addEventListener('pointerdown', e => {
       if (findParent(e.target, ele => !!View.try(ele, Menu))) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        e.preventDefault()
         return;
       }
       this.hide();
-    }, true);
+
+    }, { capture: true });
     window.addEventListener('blur', () => this.hide());
   }
 

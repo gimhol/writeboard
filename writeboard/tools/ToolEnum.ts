@@ -13,6 +13,7 @@ export enum ToolEnum {
   HalfTick = 'TOOL_HALFTICK',
   Lines = "TOOL_Lines",
   Img = "TOOL_Img",
+  Eraser = "TOOL_Eraser"
 }
 export type ToolType = ToolEnum | string
 export const getToolName = enumNameGetter<ToolType>("ToolEnum", ToolEnum)
