@@ -117,11 +117,11 @@ export class Shape<D extends ShapeData = ShapeData> {
    * 当不为Resizable.None时，选中的图形将出现控制点，
    * 此时可以点击拖拽控制点来修改图形的尺寸
    *
-   * @readonly
    * @type {Resizable}
    * @memberof Shape
    */
   get resizable(): Resizable { return this._r; }
+  set resizable(v: Resizable) { this._r = v; }
 
   /**
    * 图形是否被锁定
