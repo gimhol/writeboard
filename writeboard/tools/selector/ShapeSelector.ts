@@ -1,4 +1,4 @@
-import { ResizeDirection, Shape, ShapeData, ShapeRect } from "../../shape";
+import { Resizable, ResizeDirection, Shape, ShapeData, ShapeRect } from "../../shape";
 import { IDot } from "../../utils/Dot";
 import { Rect } from "../../utils/Rect";
 
@@ -32,6 +32,8 @@ export class ShapePicking extends ShapeRect {
     super(new ShapeData);
     this.data.selected = true;
     this.data.visible = false;
+    this.data.strokeStyle = ''
+    this.resizable = Resizable.None;
   }
 
   hit(dot: IDot): [ResizeDirection, Rect | undefined] | null {
