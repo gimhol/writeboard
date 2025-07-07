@@ -39,20 +39,20 @@ export class EraserTool implements ITool {
     const pen = shape as ShapePen
     const { coords } = pen.data;
     const coords_arr: IVector[][] = []
-    let hit_1 = Rect.hit(this._bounding, { x: coords[0], y: coords[1] })
+    let hit_1 = Rect.hit(this.indicator.data, { x: coords[0], y: coords[1] })
     for (let i = 2; i < coords.length; i += 2) {
       const x0 = coords[i - 2];
       const y0 = coords[i - 1];
 
       const x1 = coords[i];
       const y1 = coords[i + 1];
-      const hit_2 = Rect.hit(this._bounding, { x: x1, y: y1 })
+      const hit_2 = Rect.hit(this.indicator.data, { x: x1, y: y1 })
 
       /* 线段的两个端点都在矩形内，该线段被擦除 */
       if (hit_1 && hit_2)
         continue;
 
-      const intersections = Rect.line_segment_intersection(this._bounding, { x0, y0, x1, y1 });
+      const intersections = Rect.line_segment_intersection(this.indicator.data, { x0, y0, x1, y1 });
 
       /* 线段的端点，一个在内，一个在外，线段与矩形交点应只有1个 */
       if (hit_1 != hit_2 && intersections.length != 1)
