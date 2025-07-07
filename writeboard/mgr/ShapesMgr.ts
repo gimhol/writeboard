@@ -1,6 +1,5 @@
 import { Shape } from "../shape/base/Shape"
-import { IRect } from "../utils/Rect"
-import { RotatedRect } from "../utils/RotatedRect"
+import { IRotatedRect, RotatedRect } from "../utils/RotatedRect"
 export interface IShapesMgr {
   /**
    * 查找指定ID的图形
@@ -26,9 +25,9 @@ export interface IShapesMgr {
 
   exists(...items: Shape[]): number
 
-  hit(rect: IRect, predicate?: (shape: Shape) => any): Shape | null
+  hit(rect: IRotatedRect, predicate?: (shape: Shape) => any): Shape | null
 
-  hits(rect: IRect, predicate?: (shape: Shape) => any): Shape[]
+  hits(rect: IRotatedRect, predicate?: (shape: Shape) => any): Shape[]
 }
 
 const Tag = '[DefaultShapesMgr]'
@@ -77,7 +76,7 @@ export class DefaultShapesMgr implements IShapesMgr {
     return ret
   }
 
-  hits(rect: IRect, predicate?: (shape: Shape) => any): Shape[] {
+  hits(rect: IRotatedRect, predicate?: (shape: Shape) => any): Shape[] {
     const count = this._items.length
     const ret: Shape[] = []
     for (let idx = count - 1; idx >= 0; --idx) {
@@ -88,7 +87,7 @@ export class DefaultShapesMgr implements IShapesMgr {
     return ret
   }
 
-  hit(rect: IRect, predicate?: (shape: Shape) => any): Shape | null {
+  hit(rect: IRotatedRect, predicate?: (shape: Shape) => any): Shape | null {
     const count = this._items.length
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]

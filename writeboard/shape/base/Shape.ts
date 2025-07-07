@@ -191,7 +191,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.dispatchEvent(ShapeEventEnum.EndDirty, { shape: this, prev })
   }
 
-  markDirty(rect: IRect = this.boundingRect()): void {
+  markDirty(rect: IRect = this.aabb()): void {
     this.board?.markDirty(rect)
   }
 
@@ -366,13 +366,16 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
   }
 
+
+  /** @deprecated */ boundingRect = () => this.aabb()
+
   /**
-   * 获取包围盒矩形
+   * 获取AABB包围盒
    *
    * @return {IRect} 包围盒矩形
    * @memberof Shape
    */
-  boundingRect(): IRect {
+  aabb(): IRect {
     const d = this.data
     const offset = (d.lineWidth % 2) ? 1 : 0
     const overbound1 = this.board?.factory.overbound(this) || 1
@@ -396,7 +399,7 @@ export class Shape<D extends ShapeData = ShapeData> {
       h: Math.ceil(h + d.lineWidth + offset + overbound2)
     }
   }
-
+  
   getResizerNumbers(x: number, y: number, w: number, h: number) {
     const lw = 1
     const hlw = lw / 2

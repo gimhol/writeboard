@@ -359,7 +359,7 @@ export class Board {
     shapes.forEach(item => {
       item.board = this
       if (item.selected) this._selects.push(item)
-      this.markDirty(item.boundingRect())
+      this.markDirty(item.aabb())
     })
     emit && this.emitEvent(EventEnum.ShapesAdded, {
       operator,
@@ -388,7 +388,7 @@ export class Board {
 
     const ret = this._shapesMgr.remove(...shapes);
     shapes.forEach(item => {
-      this.markDirty(item.boundingRect())
+      this.markDirty(item.aabb())
       item.board = undefined
     })
 
@@ -598,7 +598,7 @@ export class Board {
     })
 
     this._shapesMgr.shapes().forEach(v => {
-      const br = v.boundingRect();
+      const br = v.aabb();
       if (!Rect.hit(br, dirty)) return;
       const layer = this._layers.get(v.data.layer || '');
       if (!layer) return;
