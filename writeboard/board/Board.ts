@@ -255,11 +255,11 @@ export class Board {
   exists(...items: Shape<ShapeData>[]): number {
     return this._shapesMgr.exists(...items)
   }
-  hit(rect: IRect): Shape<ShapeData> | null {
-    return this._shapesMgr.hit(rect)
+  hit(rect: IRect, predicate?: (shape: Shape) => any): Shape | null {
+    return this._shapesMgr.hit(rect, predicate)
   }
-  hits(rect: IRect): Shape<ShapeData>[] {
-    return this._shapesMgr.hits(rect)
+  hits(rect: IRect, predicate?: (shape: Shape) => any): Shape[] {
+    return this._shapesMgr.hits(rect, predicate)
   }
 
   addEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;

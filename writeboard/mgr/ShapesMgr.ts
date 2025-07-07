@@ -1,5 +1,5 @@
 import { Shape } from "../shape/base/Shape"
-import { IRect, Rect } from "../utils/Rect"
+import { IRect } from "../utils/Rect"
 import { RotatedRect } from "../utils/RotatedRect"
 export interface IShapesMgr {
   /**
@@ -26,9 +26,9 @@ export interface IShapesMgr {
 
   exists(...items: Shape[]): number
 
-  hit(rect: IRect): Shape | null
+  hit(rect: IRect, predicate?: (shape: Shape) => any): Shape | null
 
-  hits(rect: IRect): Shape[]
+  hits(rect: IRect, predicate?: (shape: Shape) => any): Shape[]
 }
 
 const Tag = '[DefaultShapesMgr]'
@@ -77,22 +77,22 @@ export class DefaultShapesMgr implements IShapesMgr {
     return ret
   }
 
-  hits(rect: IRect): Shape[] {
+  hits(rect: IRect, predicate?: (shape: Shape) => any): Shape[] {
     const count = this._items.length
     const ret: Shape[] = []
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]
-      if (!v.ghost && RotatedRect.hit(v.data, rect))
+      if (!v.ghost && RotatedRect.hit(v.data, rect) && (!predicate || predicate(v)))
         ret.push(v)
     }
     return ret
   }
 
-  hit(rect: IRect): Shape | null {
+  hit(rect: IRect, predicate?: (shape: Shape) => any): Shape | null {
     const count = this._items.length
     for (let idx = count - 1; idx >= 0; --idx) {
       const v = this._items[idx]
-      if (!v.ghost && RotatedRect.hit(v.data, rect))
+      if (!v.ghost && RotatedRect.hit(v.data, rect) && (!predicate || predicate(v)))
         return v
     }
     return null

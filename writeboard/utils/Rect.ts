@@ -1,5 +1,8 @@
-import { IVector } from "./Vector"
+import { type ILine } from "./Line"
+import { LineSegment } from "./LineSegment";
+import { Vector, type IVector } from "./Vector"
 
+const { min, max } = Math;
 export interface IRect { x: number, y: number, w: number, h: number }
 export class Rect implements IRect {
   x: number
@@ -66,12 +69,12 @@ export class Rect implements IRect {
     return { x, y, w, h };
   }
   static bounds(r1: IRect, r2: IRect): IRect {
-    const x = Math.min(r1.x, r2.x)
-    const y = Math.min(r1.y, r2.y)
+    const x = min(r1.x, r2.x)
+    const y = min(r1.y, r2.y)
     return {
       x, y,
-      w: Math.max(r1.x + r1.w, r2.x + r2.w) - x,
-      h: Math.max(r1.y + r1.h, r2.y + r2.h) - y
+      w: max(r1.x + r1.w, r2.x + r2.w) - x,
+      h: max(r1.y + r1.h, r2.y + r2.h) - y
     }
   }
   static hit(a: IRect, b: IRect | IVector): boolean {
@@ -89,14 +92,43 @@ export class Rect implements IRect {
     )
   }
   static intersect(a: IRect, b: IRect): IRect {
-    const x = Math.max(a.x, b.x)
-    const y = Math.max(a.y, b.y)
-    const right = Math.min(a.x + a.w, b.x + b.w)
-    const bottom = Math.min(a.y + a.h, b.y + b.h)
+    const x = max(a.x, b.x)
+    const y = max(a.y, b.y)
+    const right = min(a.x + a.w, b.x + b.w)
+    const bottom = min(a.y + a.h, b.y + b.h)
     return {
       x, y,
       w: right - x,
       h: bottom - y
     }
   }
+  /**
+   * 获取矩形与线段的交点
+   * (与边共线视为不相交)
+   *
+   * @static
+   * @param {IRect} rect 
+   * @param {ILine} line 线段
+   * @return {IVector[]} 当不相交时，返回空数组，否则返回非空Vector数组
+   * @memberof Rect
+   */
+  static line_segment_intersection(rect: IRect, line: ILine): IVector[] {
+    const sides: ILine[] = [
+      { x0: rect.x, y0: rect.y, x1: rect.x + rect.w, y1: rect.y },
+      { x0: rect.x, y0: rect.y, x1: rect.x, y1: rect.y + rect.h },
+      { x0: rect.x, y0: rect.y + rect.h, x1: rect.x + rect.w, y1: rect.y + rect.h },
+      { x0: rect.x + rect.w, y0: rect.y, x1: rect.x + rect.w, y1: rect.y + rect.h }
+    ];
+    const ret: IVector[] = [];
+    for (const side of sides) {
+      const vector = LineSegment.intersection2(side, line)
+      if (vector) ret.push(vector)
+    }
+    if (ret.length <= 1) return ret;
+    const s = LineSegment.start(line)
+    ret.sort((a, b) => Vector.distance(a, s) - Vector.distance(b, s))
+    return ret;
+  }
+
+  
 }
