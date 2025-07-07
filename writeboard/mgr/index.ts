@@ -1,4 +1,4 @@
-export * from "./Factory"
+export * from "./DefaultFactory"
 export * from "./FactoryEnum"
 export * from "./Gaia"
 export * from "./IFactory"

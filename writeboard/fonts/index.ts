@@ -1,2 +1,3 @@
 export * from "./checker";
-export * from "./builtInFontFamilies";
+export * from "./builtInFonts";
+export * from "./IFontInfo"

@@ -1,6 +1,7 @@
 
 import { Board } from "../board"
 import { Events } from "../event"
+import { BUILT_IN_FONTS, FontFamilysChecker, IFontInfo } from "../fonts"
 import type {
   CrossData, CrossTool, HalfTickData, HalfTickTool, LinesData, LinesTool, OvalData, OvalTool, PenData, PenTool,
   PolygonData, PolygonTool, RectData, RectTool, ShapeCross, ShapeEnum, ShapeHalfTick, ShapeLines, ShapeOval, ShapePen,
@@ -11,8 +12,8 @@ import { ShapeType, getShapeName } from "../shape/ShapeEnum"
 import { SelectorTool } from "../tools"
 import type { ITool } from "../tools/base/Tool"
 import { ToolEnum, ToolType, getToolName } from "../tools/ToolEnum"
-import type { IFactory } from "./IFactory"
 import type { FactoryEnum, FactoryType } from "./FactoryEnum"
+import type { IFactory } from "./IFactory"
 
 export interface IFactoryInfomation {
   readonly name: string
@@ -33,8 +34,9 @@ export interface IToolCreater<T extends ITool = ITool> { (): T }
 export interface IShapeDataCreater<D extends IShapeData = IShapeData> { (): D }
 export interface IShapeCreater<D extends IShapeData, S extends Shape = Shape> { (data: D): S }
 
-const Tag = '[Gaia]'
+const Tag = 'Gaia'
 export class Gaia {
+  private static _fonts = new Map<string, IFontInfo>();
   private static _tools = new Map<ToolType, IToolCreater>();
   private static _toolInfos = new Map<ToolType, IToolInfomation>()
   private static _shapeDatas = new Map<ShapeType, IShapeDataCreater<any>>()
@@ -42,6 +44,31 @@ export class Gaia {
   private static _shapeInfos = new Map<ShapeType, IShapeInfomation>()
   private static _factorys = new Map<FactoryType, IFactoryCreater>()
   private static _factoryInfos = new Map<FactoryType, IFactoryInfomation>()
+  private static _fonts_ininted = false
+
+  static get fonts(): ReadonlyMap<string, IFontInfo> {
+    if (!this._fonts_ininted) {
+      this.registerFont(BUILT_IN_FONTS)
+      this._fonts_ininted = true;
+    }
+    return this._fonts;
+  }
+
+  static checkFont: (fontFamily: string) => boolean = FontFamilysChecker.check;
+
+  static registerFont(infos: IFontInfo[]) {
+    for (const info of infos) {
+      if (this._fonts.has(info.family)) {
+        console.warn(`[${Tag}::registerFont] font info already exists, family: "${info.family}"`);
+        continue;
+      }
+      const t = Date.now()
+      const ok = this.checkFont(info.family)
+      if (ok) this._fonts.set(info.family, info)
+      else console.warn(`[${Tag}::registerFont] font not supported, family: "${info.family}", name: "${info.name}", desc: "${info.desc}"`)
+      console.log(`[${Tag}::registerFont] checking, family: "${info.family}", duration: ${Date.now() - t}ms`)
+    };
+  }
 
   /**
    * 注册工厂
@@ -54,9 +81,9 @@ export class Gaia {
    */
   static registerFactory(type: FactoryType, creator: IFactoryCreater, info: IFactoryInfomation): void {
     if (this._factorys.has(type)) {
-      console.warn(Tag, `registerFactory(), factory '${type}' already exists!`);
+      console.warn(`[${Tag}::registerFactory] factory '${type}' already exists!`);
     } else if (this._factoryInfos.has(type)) {
-      console.warn(Tag, `registerFactory(), factory info '${type}' already exists!`);
+      console.warn(`[${Tag}::registerFactory] factory info '${type}' already exists!`);
     }
     this._factorys.set(type, creator);
     this._factoryInfos.set(type, info);
@@ -81,9 +108,9 @@ export class Gaia {
 
   static registerTool(type: ToolType, creator: IToolCreater, info?: Partial<IToolInfomation>): void {
     if (this._tools.has(type)) {
-      console.warn(Tag, `registerTool(), tool '${type}' already exists!`);
+      console.warn(`${Tag}::registerTool`, `tool '${type}' already exists!`);
     } else if (this._toolInfos.has(type)) {
-      console.warn(Tag, `registerTool(), tool info '${type}' already exists!`);
+      console.warn(`${Tag}::registerTool`, `tool info '${type}' already exists!`);
     }
     this._tools.set(type, creator);
     this._toolInfos.set(type, {
@@ -122,11 +149,11 @@ export class Gaia {
     info?: Partial<IShapeInfomation>
   ): void {
     if (this._shapeInfos.has(type)) {
-      console.warn(Tag, `registerShape(), shape info '${type}' already exists!`);
+      console.warn(`${Tag}::registerShape`, `shape info '${type}' already exists!`);
     } else if (this._shapeDatas.has(type)) {
-      console.warn(Tag, `registerShape(), shape data'${type}' already exists!`);
+      console.warn(`${Tag}::registerShape`, `shape data'${type}' already exists!`);
     } else if (this._shapes.has(type)) {
-      console.warn(Tag, `registerShape(), shape '${type}' already exists!`);
+      console.warn(`${Tag}::registerShape`, `shape '${type}' already exists!`);
     }
     this._shapeInfos.set(type, {
       name: info?.name || getShapeName(type),

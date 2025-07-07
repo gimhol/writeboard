@@ -30,8 +30,10 @@ export interface IFactory {
   newLayerId(): string;
   newLayerName(): string;
   newLayer(inits?: Partial<ILayerInits>): Layer;
-  fontFamilies(): string[];
-  fontName(fontFamily: string): string;
   shapeDecoration(shape: Shape): IShapeDecoration;
   overbound(shape: Shape): number;
+
+
+  /** @deprecated */ fontFamilies(): string[];
+  /** @deprecated */ fontName(fontFamily: string): string;
 }
