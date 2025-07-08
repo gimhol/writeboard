@@ -51,4 +51,14 @@ export class Vector implements IVector {
       y: dx * s + dy * c + b.y
     };
   }
+  static rotated2(ax: number, ay: number, bx: number, by: number, radians: number): IVector {
+    const dx = ax - bx;
+    const dy = ay - by;
+    const c = cos(radians);
+    const s = sin(radians);
+    return {
+      x: dx * c - dy * s + bx,
+      y: dx * s + dy * c + by
+    };
+  }
 }

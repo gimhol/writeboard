@@ -1,7 +1,7 @@
 import type { Board } from "../../board";
 import { Gaia } from "../../mgr/Gaia";
 import { ShapeEnum, ShapePen, type Shape } from "../../shape";
-import { IVector, Rect, type IDot } from "../../utils";
+import { IVector, Rect, Vector, type IDot } from "../../utils";
 import type { ITool } from "../base";
 import { ToolEnum } from "../ToolEnum";
 import { Indicator } from "./Indicator";
@@ -40,12 +40,25 @@ export class EraserTool implements ITool {
     const { coords } = pen.data;
     const coords_arr: IVector[][] = []
     let hit_1 = Rect.hit(this.indicator.data, { x: coords[0], y: coords[1] })
-    for (let i = 2; i < coords.length; i += 2) {
-      const x0 = coords[i - 2];
-      const y0 = coords[i - 1];
+    const { midX, midY, rotation } = pen;
 
-      const x1 = coords[i];
-      const y1 = coords[i + 1];
+
+    for (let i = 2; i < coords.length; i += 2) {
+      let x0 = coords[i - 2];
+      let y0 = coords[i - 1];
+
+      let x1 = coords[i];
+      let y1 = coords[i + 1];
+
+      if (rotation) {
+        const a = Vector.rotated2(x0, y0, midX, midY, rotation)
+        x0 = a.x;
+        y0 = a.y;
+        const b = Vector.rotated2(x1, y1, midX, midY, rotation)
+        x1 = b.x;
+        y1 = b.y;
+      }
+
       const hit_2 = Rect.hit(this.indicator.data, { x: x1, y: y1 })
 
       /* 线段的两个端点都在矩形内，该线段被擦除 */
@@ -100,6 +113,7 @@ export class EraserTool implements ITool {
         const new_data = pen.data.copy();
         new_data.id = this.board.factory.newId(new_data)
         new_data.coords.length = 0;
+        new_data.rotation = 0
         new_data.x = 0;
         new_data.y = 0;
         new_data.w = 0;
