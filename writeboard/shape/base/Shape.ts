@@ -8,7 +8,7 @@ import { IShapeData } from "./IShapeData";
 import { Resizable } from "./Resizable";
 import { ResizeDirection } from "./ResizeDirection";
 import { ShapeEventMap, ShapeEventEnum, ShapeEventListener } from "./ShapeEvent";
-
+const { floor, max, ceil, abs, sin, cos, PI } = Math;
 /**
  * 一切图形的基类
  *
@@ -170,7 +170,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     if (!this._d.needStroke) { return; }
     const prev: Partial<IShapeData> = { a: { g: this._d.lineWidth } }
     this.beginDirty(prev)
-    this._d.lineWidth = Math.max(0, v);
+    this._d.lineWidth = max(0, v);
     this.endDirty(prev)
   }
 
@@ -263,7 +263,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     if (r == this._d.rotation) return
     const prev: Partial<IShapeData> = { x: this._d.x, y: this._d.y, r: this._d.r }
     this.beginDirty(prev)
-    this._d.rotation = r % (Math.PI * 2);
+    this._d.rotation = r % (PI * 2);
     this.endDirty(prev)
   }
 
@@ -349,20 +349,20 @@ export class Shape<D extends ShapeData = ShapeData> {
     return {
       x: 0,
       y: 0,
-      w: Math.floor(d.w),
-      h: Math.floor(d.h)
+      w: floor(d.w),
+      h: floor(d.h)
     }
   }
 
   selectorRect(): IRect {
     const { w, h, locked, lineWidth } = this.data
-    const hlw = Math.floor(lineWidth / 2)
+    const hlw = floor(lineWidth / 2)
     const offset = locked ? 0 : 0.5
     return {
       x: offset - hlw,
       y: offset - hlw,
-      w: Math.floor(w + hlw * 2) - 1,
-      h: Math.floor(h + hlw * 2) - 1
+      w: floor(w + hlw * 2) - 1,
+      h: floor(h + hlw * 2) - 1
     }
   }
 
@@ -382,24 +382,24 @@ export class Shape<D extends ShapeData = ShapeData> {
     const overbound2 = overbound1 * 2
     if (!d.r)
       return {
-        x: Math.floor(d.x - d.lineWidth / 2 - overbound1),
-        y: Math.floor(d.y - d.lineWidth / 2 - overbound1),
-        w: Math.ceil(d.w + d.lineWidth + offset + overbound2),
-        h: Math.ceil(d.h + d.lineWidth + offset + overbound2)
+        x: floor(d.x - d.lineWidth / 2 - overbound1),
+        y: floor(d.y - d.lineWidth / 2 - overbound1),
+        w: ceil(d.w + d.lineWidth + offset + overbound2),
+        h: ceil(d.h + d.lineWidth + offset + overbound2)
       }
 
-    const w = Math.abs(d.w * Math.cos(d.r)) + Math.abs(d.h * Math.sin(d.r))
-    const h = Math.abs(d.w * Math.sin(d.r)) + Math.abs(d.h * Math.cos(d.r))
+    const w = abs(d.w * cos(d.r)) + abs(d.h * sin(d.r))
+    const h = abs(d.w * sin(d.r)) + abs(d.h * cos(d.r))
     const x = d.x - (w - d.w) / 2
     const y = d.y - (h - d.h) / 2
     return {
-      x: Math.floor(x - d.lineWidth / 2 - overbound1),
-      y: Math.floor(y - d.lineWidth / 2 - overbound1),
-      w: Math.ceil(w + d.lineWidth + offset + overbound2),
-      h: Math.ceil(h + d.lineWidth + offset + overbound2)
+      x: floor(x - d.lineWidth / 2 - overbound1),
+      y: floor(y - d.lineWidth / 2 - overbound1),
+      w: ceil(w + d.lineWidth + offset + overbound2),
+      h: ceil(h + d.lineWidth + offset + overbound2)
     }
   }
-  
+
   getResizerNumbers(x: number, y: number, w: number, h: number) {
     const lw = 1
     const hlw = lw / 2
@@ -410,8 +410,8 @@ export class Shape<D extends ShapeData = ShapeData> {
       rx: x + w - s,
       ty: y,
       by: y + h - s,
-      mx: Math.floor(x + (w - s) / 2) - hlw,
-      my: Math.floor(y + (h - s) / 2) - hlw,
+      mx: floor(x + (w - s) / 2) - hlw,
+      my: floor(y + (h - s) / 2) - hlw,
     }
   }
 
@@ -437,8 +437,8 @@ export class Shape<D extends ShapeData = ShapeData> {
     if (!r) return new Vector(ix - x, iy - y)
     const mx = this.midX
     const my = this.midY
-    const cr = Math.cos(-r)
-    const sr = Math.sin(-r)
+    const cr = cos(-r)
+    const sr = sin(-r)
     const dx = ix - mx
     const dy = iy - my
     return new Vector(
@@ -468,8 +468,8 @@ export class Shape<D extends ShapeData = ShapeData> {
     if (!r) return { x: ix + x, y: iy + y }
     const mx = w / 2
     const my = h / 2
-    const cr = Math.cos(r)
-    const sr = Math.sin(r)
+    const cr = cos(r)
+    const sr = sin(r)
     const dx = ix - mx
     const dy = iy - my
     return {
@@ -527,10 +527,10 @@ export class Shape<D extends ShapeData = ShapeData> {
   protected beginDraw(ctx: CanvasRenderingContext2D): void {
     let { x, y, w, h, r, c, d } = this.data
     ctx.save()
-    x = Math.floor(x)
-    y = Math.floor(y)
-    const hw = Math.floor(w / 2)
-    const hh = Math.floor(h / 2)
+    x = floor(x)
+    y = floor(y)
+    const hw = floor(w / 2)
+    const hh = floor(h / 2)
     if (r || c || d) {
       ctx.translate(x + hw, y + hh)
       r && ctx.rotate(r);

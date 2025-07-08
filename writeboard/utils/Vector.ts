@@ -1,5 +1,6 @@
 
 export interface IVector { x: number, y: number }
+const { pow, abs, sin, cos, sqrt } = Math;
 export class Vector implements IVector {
   x = 0
   y = 0
@@ -26,18 +27,28 @@ export class Vector implements IVector {
     return { x, y }
   }
   static distance(a: IVector, b: IVector): number {
-    return Math.sqrt(
-      Math.pow(a.x - b.x, 2) +
-      Math.pow(a.y - b.y, 2)
+    return sqrt(
+      pow(a.x - b.x, 2) +
+      pow(a.y - b.y, 2)
     )
   }
   static manhattan(a: IVector, b: IVector): number {
-    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    return abs(a.x - b.x) + abs(a.y - b.y);
   }
   static dot(a: IVector, b: IVector) {
-    return Math.abs(a.x * b.x + a.y * b.y);
+    return abs(a.x * b.x + a.y * b.y);
   }
   static multiply(a: IVector, n: number): IVector {
     return { x: a.x * n, y: a.y * n }
+  }
+  static rotated(a: IVector, b: IVector, radians: number): IVector {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    const c = cos(radians);
+    const s = sin(radians);
+    return {
+      x: dx * c - dy * s + b.x,
+      y: dx * s + dy * c + b.y
+    };
   }
 }

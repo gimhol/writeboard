@@ -34,7 +34,7 @@ export class EraserTool implements ITool {
   }
   protected _breakings: [ShapePen, IVector[][]][] = []
   protected _predicate_and_calc = (shape: Shape): boolean => {
-    if (shape.type !== ShapeEnum.Pen || shape.type !== ShapeEnum.Pen)
+    if (shape.type !== ShapeEnum.Pen)
       return false
     const pen = shape as ShapePen
     const { coords } = pen.data;
