@@ -1,5 +1,6 @@
 import { ITree } from "./ITree"
-import { IRect, Rect } from "./Rect"
+import { Rect } from "./Rect"
+import { IRect } from "./IRect"
 export type QuadTreeOptions<T = any> = {
   rect: IRect
   getItemRect: (item: T) => IRect,

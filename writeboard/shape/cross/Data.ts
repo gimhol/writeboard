@@ -6,7 +6,7 @@ export class CrossData extends ShapeData {
     return false;
   }
   constructor(other?: Partial<CrossData>) {
-    super(other)
+    super()
     this.type = ShapeEnum.Cross;
     this.strokeStyle = '#FF0000';
     this.lineWidth = 2;

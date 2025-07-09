@@ -1,6 +1,7 @@
 import { Shape } from "../../shape/base/Shape";
 import { ShapeData } from "../../shape/base/ShapeData";
 import { ShapeEventEnum, ShapeEventMap } from "../../shape/base/ShapeEvent";
+import { Vector } from "../../utils";
 import { IDot } from "../../utils/Dot";
 import { Numbers } from "../../utils/Numbers";
 import { Rect } from "../../utils/Rect";
@@ -8,7 +9,7 @@ import { Rect } from "../../utils/Rect";
 export class ShapeRotator extends Shape<ShapeData> {
   get target() { return this._target }
   private _target: Shape | undefined
-  private _ctrlDot = new Rect(0, 0, 0, 0)
+  private _ctrl = new Rect(0, 0, 0, 0)
   private _oY: number = 0;
   private _oX: number = 0;
   private get _distance() { return this.board?.factory.rotator.distance || 30 }
@@ -17,6 +18,7 @@ export class ShapeRotator extends Shape<ShapeData> {
     super({}, ShapeData);
     this.data.ghost = true
     this.data.visible = false
+    this.data.lineWidth = 10
   }
 
   private _update = (shape: Shape) => {
@@ -28,12 +30,13 @@ export class ShapeRotator extends Shape<ShapeData> {
     if (v) {
       this.data.w = w
       this.data.h = shape.h + d * 2
-      this.data.x = mx - this.halfW
-      this.data.y = my - this.halfH
+      const offset = Vector.rotated2(0, shape.lineWidth / 2, 0, 0, shape.rotation)
+      this.data.x = mx - this.halfW - offset.x
+      this.data.y = my - this.halfH - offset.y
       this.data.rotation = shape.rotation
       const s = this.board?.factory.rotator.size || 10
-      this._ctrlDot.w = s;
-      this._ctrlDot.h = s;
+      this._ctrl.w = s;
+      this._ctrl.h = s;
     }
     this.data.visible = v
     this.endDirty()
@@ -59,10 +62,9 @@ export class ShapeRotator extends Shape<ShapeData> {
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible) return;
     this.beginDraw(ctx)
-    const { x, y, w, h } = this._ctrlDot
+    const { x, y, w, h } = this._ctrl
+
     const mx = Math.floor(x + w / 2) - 0.5
-    const t = Math.floor(y) + 0.5
-    const l = Math.floor(x) - 0.5
     ctx.strokeStyle = "black"
     ctx.fillStyle = "white"
     ctx.lineWidth = 1
@@ -71,8 +73,6 @@ export class ShapeRotator extends Shape<ShapeData> {
     ctx.arc(x + w / 2, y + w / 2, w / 2, 0, Math.PI * 2)
     ctx.fill()
     ctx.stroke()
-    // ctx.fillRect(x, y, w, h)
-    // ctx.strokeRect(l, t, w, h)
     ctx.beginPath();
     ctx.moveTo(mx, y + h)
     ctx.lineTo(mx, this._distance)
@@ -97,6 +97,6 @@ export class ShapeRotator extends Shape<ShapeData> {
   }
 
   hit(dot: IDot): boolean {
-    return this._ctrlDot.hit(this.map2me(dot.x, dot.y))
+    return this._ctrl.hit(this.map2me(dot.x, dot.y))
   }
 }

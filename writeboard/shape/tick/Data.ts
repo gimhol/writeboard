@@ -6,7 +6,7 @@ export class TickData extends ShapeData {
     return false;
   }
   constructor(other?: Partial<TickData>) {
-    super(other)
+    super()
     this.type = ShapeEnum.Tick;
     this.strokeStyle = '#FF0000';
     this.lineWidth = 2;

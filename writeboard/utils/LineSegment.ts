@@ -1,5 +1,5 @@
 import { Line, type ILine } from "./Line";
-import type { IVector } from "./Vector";
+import type { IVector } from "./IVector";
 
 export class LineSegment extends Line {
   toString() {

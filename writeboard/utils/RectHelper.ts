@@ -1,4 +1,4 @@
-import { IRect } from "./Rect"
+import { IRect } from "./IRect"
 import { Vector } from "./Vector"
 export enum GenMode {
   FromCorner = 0,

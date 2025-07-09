@@ -22,50 +22,33 @@ export class EraserTool implements ITool {
     )
   }
   pointerDown(dot: IDot): void {
-    this.indicator.data.strokeStyle = '#000000FF'
-    this.indicator.data.fillStyle = '#FFFFFFFF'
-    this.indicator.markDirty();
+    this.indicator.press()
     this.pointerDraw(dot)
   }
   pointerUp(dot: IDot): void {
-    this.indicator.data.strokeStyle = '#00000055'
-    this.indicator.data.fillStyle = '#FFFFFF55'
-    this.indicator.markDirty();
+    this.indicator.release();
   }
   protected _breakings: [ShapePen, IVector[][]][] = []
   protected _predicate_and_calc = (shape: Shape): boolean => {
     if (shape.type !== ShapeEnum.Pen)
       return false
     const pen = shape as ShapePen
-    const { coords } = pen.data;
+    const coords = pen.data.coords2world;
     const coords_arr: IVector[][] = []
-    let hit_1 = Rect.hit(this.indicator.data, { x: coords[0], y: coords[1] })
-    const { midX, midY, rotation } = pen;
 
-
+    let hit_1 = false;
     for (let i = 2; i < coords.length; i += 2) {
-      let x0 = coords[i - 2];
-      let y0 = coords[i - 1];
+      const a = { x: coords[i - 2], y: coords[i - 1] }
+      const b = { x: coords[i + 0], y: coords[i + 1] }
 
-      let x1 = coords[i];
-      let y1 = coords[i + 1];
-
-      if (rotation) {
-        const a = Vector.rotated2(x0, y0, midX, midY, rotation)
-        x0 = a.x;
-        y0 = a.y;
-        const b = Vector.rotated2(x1, y1, midX, midY, rotation)
-        x1 = b.x;
-        y1 = b.y;
-      }
-
-      const hit_2 = Rect.hit(this.indicator.data, { x: x1, y: y1 })
+      if (i == 2) hit_1 = Rect.hit(this.indicator.data, a)
+      const hit_2 = Rect.hit(this.indicator.data, b)
 
       /* 线段的两个端点都在矩形内，该线段被擦除 */
       if (hit_1 && hit_2)
         continue;
 
-      const intersections = Rect.line_segment_intersection(this.indicator.data, { x0, y0, x1, y1 });
+      const intersections = Rect.line_segment_intersection(this.indicator.data, { x0: a.x, y0: a.y, x1: b.x, y1: b.y });
 
       /* 线段的端点，一个在内，一个在外，线段与矩形交点应只有1个 */
       if (hit_1 != hit_2 && intersections.length != 1)
@@ -77,9 +60,9 @@ export class EraserTool implements ITool {
 
       const append_prev_lines = (v: IVector) => {
         if (coords_arr.length) coords_arr[coords_arr.length - 1].push(v)
-        else coords_arr.push([{ x: x0, y: y0 }, v])
+        else coords_arr.push([a, v])
       }
-      const create_next_lines = (v: IVector) => coords_arr.push([v, { x: x1, y: y1 }])
+      const create_next_lines = (v: IVector) => coords_arr.push([v, b])
       if (!hit_1 && hit_2) {
         /* 线段起点在矩形外，线段终点在矩形内 */
         append_prev_lines(intersections[0])
@@ -91,7 +74,7 @@ export class EraserTool implements ITool {
         append_prev_lines(intersections[0])
         create_next_lines(intersections[1])
       } else if (!intersections.length) {
-        append_prev_lines({ x: x1, y: y1 })
+        append_prev_lines(b)
       }
       hit_1 = hit_2;
     }
@@ -107,25 +90,33 @@ export class EraserTool implements ITool {
     this.board.hits(this.indicator.data, this._predicate_and_calc);
     const add_pens: Shape[] = [];
     const del_pens: Shape[] = [];
-    for (const [pen, coords_arr] of this._breakings) {
-      for (let i = 0; i < coords_arr.length; ++i) {
-        const new_coords = coords_arr[i]
-        const new_data = pen.data.copy();
-        new_data.id = this.board.factory.newId(new_data)
-        new_data.coords.length = 0;
-        new_data.rotation = 0
-        new_data.x = 0;
-        new_data.y = 0;
-        new_data.w = 0;
-        new_data.h = 0;
-        const new_pen = this.board.factory.newShape(new_data) as ShapePen;
-        for (let j = 0; j < new_coords.length; ++j) {
-          const { x, y } = new_coords[j];
-          const t = j === 0 ? 'first' : j == new_coords.length - 1 ? 'last' : void 0
-          new_pen.appendDot({ x, y, p: 0 }, t)
-        }
-        add_pens.push(new_pen)
-      }
+    for (const [pen, dots_arr] of this._breakings) {
+      // for (let i = 0; i < dots_arr.length; ++i) {
+      //   const new_data = pen.data.copy();
+      //   new_data.id = this.board.factory.newId(new_data)
+      //   new_data.coords.length = 0;
+      //   new_data.rotation = 0
+      //   new_data.x = 0;
+      //   new_data.y = 0;
+      //   new_data.w = 0;
+      //   new_data.h = 0;
+      //   const new_pen = this.board.factory.newShape(new_data) as ShapePen;
+      //   new_pen.applyDots(dots_arr[i])
+      //   add_pens.push(new_pen)
+      // }
+
+      const new_data = pen.data.copy();
+      new_data.id = this.board.factory.newId(new_data)
+      new_data.coords = [];
+      new_data.rotation = 0
+      new_data.x = 0;
+      new_data.y = 0;
+      new_data.w = 0;
+      new_data.h = 0;
+      const new_pen = this.board.factory.newShape(new_data) as ShapePen;
+      new_pen.applyCoords(pen.data.coords2world)
+      add_pens.push(new_pen)
+
       del_pens.push(pen);
     }
     this.board.add(add_pens, true)

@@ -3,7 +3,7 @@ import { ShapeEnum } from "../ShapeEnum";
 import { ShapeData } from "../base";
 export class OvalData extends ShapeData {
   constructor(other?: Partial<OvalData>) {
-    super(other)
+    super()
     this.type = ShapeEnum.Oval;
     this.strokeStyle = '#ff0000';
     this.lineWidth = 2;

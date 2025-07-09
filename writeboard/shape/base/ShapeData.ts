@@ -32,23 +32,29 @@ export class ShapeData implements IShapeData {
   /** status */
   b?: IShapeStatus
 
+
+  /**
+   * Creates an instance of ShapeData.
+   *
+   * @description 
+   *    here, subclasses' "read" can't be called correctly because of "this" problem.
+   *    subclass needs to call its own 'read' in its own 'constructor'
+   *
+   *    like:
+   *    ``` typescript 
+   *    class SubData extends ShapeData {
+   *      constructor(other?: Partial<SubData>) {
+   *        // super(other); // don't do it
+   *        super();
+   *        this.read(other) // subclasses need to call its own 'read' in its own 'constructor'
+   *      }
+   *    }
+   *    ```
+   * @constructor
+   * @param {?Partial<ShapeData>} [other] 
+   */
   constructor(other?: Partial<ShapeData>) {
-    /*
-    NOTE: 
-      here, subclasses' "read" won't be called.
-      subclasses need to call its own 'read' in its own 'constructor'
-
-      like:
-
-      class SubData extends ShapeData {
-        constructor(other?: Partial<SubData>) {
-          // super(other); // don't do it
-          super();
-          this.read(other) // subclasses need to call its own 'read' in its own 'constructor'
-        }
-      }
-    */
-    if (other) this.read(other);
+    other && this.read(other);
   }
 
   get style(): ShapeStyle {
@@ -129,6 +135,15 @@ export class ShapeData implements IShapeData {
 
   get rotation() { return this.r ?? 0; }
   set rotation(v: number) { this.r = Degrees.normalized(v) }
+
+  get halfW(): number { return this.w / 2 }
+  set halfW(v: number) { this.w = v * 2 }
+  get halfH(): number { return this.h / 2 }
+  set halfH(v: number) { this.h = v * 2 }
+  get midX(): number { return this.x + this.halfW }
+  set midX(v: number) { this.x = v - this.halfW }
+  get midY(): number { return this.y + this.halfH }
+  set midY(v: number) { this.y = v - this.halfH }
 
   merge(o: Partial<IShapeData>) {
     this.read(o)

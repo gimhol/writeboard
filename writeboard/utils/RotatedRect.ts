@@ -1,7 +1,8 @@
-import { Rect, type IRect } from "./Rect";
-import { Vector, type IVector } from "./Vector";
+import type { IRotatedRect } from "./IRotatedRect";
+import { Rect } from "./Rect";
+import { Vector } from "./Vector";
+import { type IVector } from "./IVector";
 
-export interface IRotatedRect extends IRect { r?: number }
 export class RotatedRect implements IRotatedRect {
   x: number
   y: number
@@ -25,8 +26,31 @@ export class RotatedRect implements IRotatedRect {
   set right(v: number) {
     this.w = v - this.x
   }
+  get right(): number {
+    return this.x + this.w
+  }
   set bottom(v: number) {
     this.h = v - this.y
+  }
+  get bottom(): number {
+    return this.y + this.h
+  }
+  get dots(): [IVector, IVector, IVector, IVector] {
+    const { middleX: bx, middleY: by, _cr: c, _sr: s, r } = this;
+    const dot = (x: number, y: number) => {
+      const dx = x - bx;
+      const dy = y - by;
+      return {
+        x: Number((dx * c - dy * s + bx).toPrecision(4)),
+        y: Number((dx * s + dy * c + by).toPrecision(4)),
+      }
+    }
+    return [
+      dot(this.x, this.y),
+      dot(this.right, this.y),
+      dot(this.right, this.bottom),
+      dot(this.x, this.bottom),
+    ]
   }
   get r() { return this._r }
   set r(r: number) {
@@ -78,7 +102,9 @@ export class RotatedRect implements IRotatedRect {
   mid(): IVector {
     return { x: this.x + this.w / 2, y: this.y + this.h / 2 }
   }
-
+  static ensure(rect: IRotatedRect): RotatedRect {
+    return rect instanceof RotatedRect ? rect : RotatedRect.create(rect)
+  }
   static create(rect: IRotatedRect) {
     return new RotatedRect(rect.x, rect.y, rect.w, rect.h, rect.r)
   }

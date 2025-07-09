@@ -1,9 +1,10 @@
-import { type ILine } from "./Line"
+import type { IRect } from "./IRect";
+import type { ILine } from "./Line";
 import { LineSegment } from "./LineSegment";
-import { Vector, type IVector } from "./Vector"
+import { Vector } from "./Vector";
+import { type IVector } from "./IVector";
 
 const { min, max } = Math;
-export interface IRect { x: number, y: number, w: number, h: number }
 export class Rect implements IRect {
   x: number
   y: number
@@ -26,6 +27,21 @@ export class Rect implements IRect {
   }
   set bottom(v: number) {
     this.h = v - this.y
+  }
+
+  /**
+   * 获取顶点
+   *
+   * @readonly
+   * @type {[IVector, IVector, IVector, IVector]}
+   */
+  get dots(): [IVector, IVector, IVector, IVector] {
+    return [
+      { x: this.x, y: this.y },
+      { x: this.right, y: this.y },
+      { x: this.right, y: this.bottom },
+      { x: this.x, y: this.bottom },
+    ]
   }
   constructor(x: number = 0, y: number = 0, w: number = 0, h: number = 0) {
     this.x = x
@@ -58,9 +74,14 @@ export class Rect implements IRect {
     this.y = y;
     return this;
   }
-
   mid(): IVector {
     return { x: this.x + this.w / 2, y: this.y + this.h / 2 }
+  }
+  vaild(): boolean {
+    return this.w >= 0 || this.h >= 0
+  }
+  static ensure(rect: IRect): Rect {
+    return rect instanceof Rect ? rect : Rect.create(rect)
   }
   static create(rect: IRect) {
     return new Rect(rect.x, rect.y, rect.w, rect.h)
@@ -130,5 +151,5 @@ export class Rect implements IRect {
     return ret;
   }
 
-  
+
 }

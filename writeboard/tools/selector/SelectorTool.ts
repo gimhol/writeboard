@@ -2,13 +2,14 @@ import { Board } from "../../board"
 import { EventEnum } from "../../event"
 import { Events } from "../../event/Events"
 import { Gaia } from "../../mgr/Gaia"
-import { ShapeText, TextTool } from "../../shape"
+import { ShapePen, ShapeText, TextTool } from "../../shape"
 import { ResizeDirection, Shape } from "../../shape/base"
-import { Arrays, Degrees } from "../../utils"
+import { Arrays, Degrees, IRotatedRect, Polygon, Rect, RotatedRect } from "../../utils"
 import { IDot } from "../../utils/Dot"
+import { IVector } from "../../utils/IVector"
 import { RectHelper } from "../../utils/RectHelper"
 import { throttle } from "../../utils/Throttle"
-import { IVector, Vector } from "../../utils/Vector"
+import { Vector } from "../../utils/Vector"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { ITool } from "../base/Tool"
 import { ShapeRotator } from "./ShapeRotator"
@@ -163,7 +164,12 @@ export class SelectorTool implements ITool {
 
     this._rectHelper.start(x, y)
     this.updateGeo()
-    const shapes = board.hits({ x, y, w: 0, h: 0 }); // 点击位置的全部图形
+
+    /* 点击位置的全部图形 */
+    let shapes = board.hits({ x, y, w: 0, h: 0 });
+    if (!shapes.length) shapes = board.hits({ x: x - 15, y: y - 15, w: 30, h: 30 }, this._pen_in_click);
+
+
     const shape = Arrays.firstOf(shapes, it => (it.selected && !it.locked) ? it : null) || shapes[0]
 
     if (!shape || shape.locked) {
@@ -275,7 +281,39 @@ export class SelectorTool implements ITool {
     }
     return '';
   }
-
+  _pen_in_click = (shape: Shape, rect: IRotatedRect) => {
+    // 当点击位置未命中
+    if (!ShapePen.is(shape)) return false;
+    return this._pen_in_rect(shape, rect)
+  }
+  _pen_in_rect = (shape: Shape, rect: IRotatedRect) => {
+    if (!ShapePen.is(shape)) return true;
+    const lw = shape.lineWidth;
+    const rect_r = (rect.r ? RotatedRect : Rect).ensure({
+      x: rect.x - lw / 2,
+      y: rect.y - lw / 2,
+      w: rect.w + lw,
+      h: rect.h + lw,
+      r: rect.r
+    })
+    const { dots } = rect_r;
+    const { coords } = shape.data;
+    for (let i = 2; i < coords.length; i += 2) {
+      const a = coords[i - 2]
+      const b = coords[i - 1]
+      const c = coords[i + 0]
+      const d = coords[i + 1]
+      if (
+        (i === 2 && Polygon.contain_dot2(dots, a, b)) ||
+        Polygon.contain_dot2(dots, c, d) ||
+        Polygon.intersect_linesegment(dots, a, b, c, d)
+      ) {
+        return true
+      }
+    }
+    console.log('' + rect_r, '' + new Vector(coords[0], coords[1]))
+    return false
+  }
   pointerDraw(dot: IDot): void {
     const board = this.board
     if (!board) return
@@ -292,7 +330,7 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Selecting: {
         this._rectHelper.end(dot.x, dot.y)
         this.updateGeo();
-        board.selectAt(this._selector.data, true);
+        board.selectAt(this._selector.data, true, this._pen_in_rect);
         return
       }
       case SelectorStatus.ReadyForDragging: // let it fall-through

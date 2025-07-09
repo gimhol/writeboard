@@ -1,4 +1,5 @@
 import { ShapeData, ShapeRect } from "../../shape";
+import { IDot } from "../../utils";
 
 export class Indicator extends ShapeRect {
   constructor() {
@@ -6,8 +7,20 @@ export class Indicator extends ShapeRect {
     this.data.lineWidth = 1
     this.data.strokeStyle = '#00000055'
     this.data.fillStyle = '#FFFFFF55'
-    // this.data.ghost = true;
+    this.data.ghost = true;
     this.data.w = 100;
     this.data.h = 100;
+  }
+
+  press() {
+    this.data.strokeStyle = '#000000FF'
+    this.data.fillStyle = '#FFFFFFFF'
+    this.markDirty();
+  }
+
+  release() {
+    this.data.strokeStyle = '#00000055'
+    this.data.fillStyle = '#FFFFFF55'
+    this.markDirty();
   }
 }

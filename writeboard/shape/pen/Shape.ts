@@ -1,25 +1,27 @@
-import { ShapeEnum } from "../ShapeEnum"
 import { Gaia } from "../../mgr/Gaia"
-import { Shape } from "../base"
-import { ChangeType, PenData } from "./Data"
-import { IRect } from "../../utils/Rect"
-import { IVector } from "../../utils/Vector"
-import { IDot } from "../../utils/Dot"
+import { IRect } from "../../utils/IRect"
+import { IVector } from "../../utils/IVector"
+import { Shape, ShapeData } from "../base"
+import { ShapeEnum } from "../ShapeEnum"
+import { PenData } from "./Data"
 
 export class ShapePen extends Shape<PenData> {
+  static is(shape: Shape<ShapeData>): shape is ShapePen {
+    return shape.type === ShapeEnum.Pen && shape.type === shape.data.type
+  }
+
   private _lineFactor = 0.5
   private _smoothFactor = 0.5
-  private _srcGeo: IRect | null = null
   private _path2D = new Path2D()
   private prev_t: IVector | undefined
   private prev_dot: IVector | undefined
+
   constructor(data: Partial<PenData>) {
     super(data, PenData)
     let x, y: number
     for (let i = 0; i < this.data.coords.length; i += 2) {
       x = this.data.coords[i]
       y = this.data.coords[i + 1]
-      this.updateSrcGeo(x, y)
       if (i === 0)
         this.updatePath(x, y, 'first')
       else if (i >= this.data.coords.length - 2)
@@ -39,7 +41,6 @@ export class ShapePen extends Shape<PenData> {
       for (let i = startIdx; i <= endIdx; i += 2) {
         x = this.data.coords[i]
         y = this.data.coords[i + 1]
-        this.updateSrcGeo(x, y)
         if (i === 0)
           this.updatePath(x, y, 'first')
         else if (!this.data.editing && i === endIdx)
@@ -49,30 +50,6 @@ export class ShapePen extends Shape<PenData> {
       }
     }
     this.endDirty(prev)
-  }
-
-  /**
-   * 根据新加入的点，计算原始矩形
-   * @param dot 
-   */
-  private updateSrcGeo(x: number, y: number): IRect {
-    if (this._srcGeo) {
-      const left = Math.min(this._srcGeo.x, x)
-      const top = Math.min(this._srcGeo.y, y)
-      let w = Math.max(this._srcGeo.x + this._srcGeo.w, x) - left
-      let h = Math.max(this._srcGeo.y + this._srcGeo.h, y) - top
-      if (w !== w) w = 0 // NaN check
-      if (h !== h) h = 0 // NaN check
-      this._srcGeo = { x: left, y: top, w, h }
-    } else {
-      this._srcGeo = {
-        x: x,
-        y: y,
-        w: 0,
-        h: 0
-      }
-    }
-    return this._srcGeo
   }
 
   private updatePath(x: number, y: number, type?: 'first' | 'last') {
@@ -111,28 +88,41 @@ export class ShapePen extends Shape<PenData> {
     }
   }
 
-  appendDot(dot: IDot, type?: 'first' | 'last') {
+  appendDot(dot: IVector, type?: 'first' | 'last') {
     const coords = this.data.coords
     const prevY: number | undefined = coords[coords.length - 1]
     const prevX: number | undefined = coords[coords.length - 2]
     if (prevY === dot.y && prevX === dot.x && type !== 'last')
       return
-    this.data.coords.push(dot.x, dot.y)
-    const geo = this.updateSrcGeo(dot.x, dot.y)
+    this.data.add_coords([dot.x, dot.y])
+    const geo = this.data.src_rect
     this.updatePath(dot.x, dot.y, type)
     this.geo(geo.x, geo.y, geo.w, geo.h)
     this.endDirty()
+  }
+
+  applyCoords(coords: number[]) {
+    for (let i = 0; i < coords.length; i += 2) {
+      const t = i === 0 ? 'first' : i == coords.length - 2 ? 'last' : void 0
+      this.appendDot({ x: coords[i], y: coords[i + 1] }, t)
+    }
+  }
+  applyDots(dots: IVector[]) {
+    for (let i = 0; i < dots.length; ++i) {
+      const t = i === 0 ? 'first' : i == dots.length - 1 ? 'last' : void 0
+      this.appendDot(dots[i], t)
+    }
   }
 
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible)
       return;
     const d = this.data;
-    if (d.lineWidth && d.strokeStyle && this._srcGeo) {
+    if (d.lineWidth && d.strokeStyle) {
       this.beginDraw(ctx)
       ctx.translate(
-        - this._srcGeo.x,
-        - this._srcGeo.y
+        - this.data.src_rect.x,
+        - this.data.src_rect.y
       )
       ctx.lineCap = d.lineCap
       ctx.lineDashOffset = d.lineDashOffset || 0

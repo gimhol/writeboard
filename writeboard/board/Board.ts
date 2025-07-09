@@ -1,12 +1,13 @@
 import { EventEnum, Events } from "../event"
-import { IFactory, IShapesMgr } from "../mgr"
+import { IFactory, IHitPredicate, IShapesMgr } from "../mgr"
 import { TextTool } from "../shape"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, IVector, Rect } from "../utils"
 import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
-
+const { floor, ceil } = Math;
+export type EmitOpts = boolean | { operator: string }
 export interface BoardOptions {
   element?: HTMLElement;
   layers?: ILayerInits[];
@@ -255,10 +256,10 @@ export class Board {
   exists(...items: Shape<ShapeData>[]): number {
     return this._shapesMgr.exists(...items)
   }
-  hit(rect: IRect, predicate?: (shape: Shape) => any): Shape | null {
+  hit(rect: IRect, predicate?: IHitPredicate): Shape | null {
     return this._shapesMgr.hit(rect, predicate)
   }
-  hits(rect: IRect, predicate?: (shape: Shape) => any): Shape[] {
+  hits(rect: IRect, predicate?: IHitPredicate): Shape[] {
     return this._shapesMgr.hits(rect, predicate)
   }
 
@@ -368,7 +369,7 @@ export class Board {
     return ret
   }
 
-  remove(shapes: Shape[] | Shape, opts?: boolean | { operator: string }): number {
+  remove(shapes: Shape[] | Shape, opts?: EmitOpts): number {
     const emit = !!opts;
     const operator = (opts as any)?.operator ?? this._whoami;
     shapes = Array.isArray(shapes) ? shapes : [shapes];
@@ -395,11 +396,11 @@ export class Board {
     return ret
   }
 
-  removeAll(emit?: boolean | { operator: string }): number {
+  removeAll(emit?: EmitOpts): number {
     return this.remove(this._shapesMgr.shapes(), emit)
   }
 
-  removeSelected(emit?: boolean | { operator: string }) {
+  removeSelected(emit?: EmitOpts) {
     this.remove(this._selects.filter(v => !v.locked), emit);
     this._selects = []
   }
@@ -411,7 +412,7 @@ export class Board {
    * @return {Shape[]} 新选中的图形
    * @memberof Board
    */
-  selectAll(emit?: boolean | { operator: string }): Shape[] {
+  selectAll(emit?: EmitOpts): Shape[] {
     return this.setSelects([...this.shapes()], emit)[0];
   }
 
@@ -422,7 +423,7 @@ export class Board {
    * @return {Shape[]} ？？？
    * @memberof Board
    */
-  deselect(emit?: boolean | { operator: string }): Shape[] {
+  deselect(emit?: EmitOpts): Shape[] {
     return this.setSelects([], emit)[1];
   }
 
@@ -430,12 +431,13 @@ export class Board {
    * 选中指定区域内的图形，指定区域以外的会被取消选择
    *
    * @param {IRect} rect
+   * @param {?EmitOpts} opts 事件发射选项
+   * @param {?IHitPredicate} predicate 筛选函数
    * @return {[Shape[], Shape[]]} [新选中的图形的数组, 取消选择的图形的数组]
-   * @param {true} [emit] 是否发射事件
    * @memberof Board
    */
-  selectAt(rect: IRect, opts?: boolean | { operator: string }): [Shape[], Shape[]] {
-    const hits = this._shapesMgr.hits(rect);
+  selectAt(rect: IRect, opts?: EmitOpts, predicate?: IHitPredicate): [Shape[], Shape[]] {
+    const hits = this._shapesMgr.hits(rect, predicate);
     return this.setSelects(hits, opts);
   }
 
@@ -443,11 +445,11 @@ export class Board {
    * 设置被选中的图形，原来被选中的图形数组将被取消选中
    *
    * @param {Shape[]} shapes 被选中的图形
-   * @param {(boolean | { operator: string })} [opts]
+   * @param {(EmitOpts)} [opts]
    * @return {[Shape[], Shape[]]} [被选中的图形数组， 取消选中的图形数组]
    * @memberof Board
    */
-  setSelects(shapes: Shape[], opts?: boolean | { operator: string }): [Shape[], Shape[]] {
+  setSelects(shapes: Shape[], opts?: EmitOpts): [Shape[], Shape[]] {
     const emit = !!opts;
     const operator = (opts as any)?.operator ?? this._whoami;
     const selecteds = shapes.filter(v => !v.selected);
@@ -561,19 +563,23 @@ export class Board {
     this._mousebuttons[e.button] = 0
   }
 
-  private _dirty: IRect | undefined;
+  private _dirty: Readonly<IRect> | undefined;
 
   /**
    * 标记脏矩形区域，将触发重绘
+   * 若在重绘前，连续调用，将会将多个矩形合并一个大的矩形，并仅会触发一次重绘。
    * 
-   * 若在重绘前，连续调用，将会将多个矩形合并一个大的矩形，并仅会触发一次重绘
-   *
-   * @param {IRect} rect
+   * 脏矩形必须是整数，否则将导致画面有“脏东西”，所以传入浮点的矩形将被取整后再运算
+   * 
+   * @param {Readonly<IRect>} rect 新的脏矩形区域
    * @memberof Board
    */
-  markDirty(rect: IRect): void {
-    const requested = !this._dirty
-    this._dirty = this._dirty ? Rect.bounds(this._dirty, rect) : rect
+  markDirty(rect: Readonly<IRect>): void {
+    const requested = !this._dirty;
+    const x = floor(rect.x)
+    const y = floor(rect.y)
+    const rr: IRect = { x, y, w: ceil(x + rect.w) - x, h: ceil(y + rect.h) - y }
+    this._dirty = this._dirty ? Rect.bounds(this._dirty, rr) : rr
     requested && requestAnimationFrame(() => this.render())
   }
 

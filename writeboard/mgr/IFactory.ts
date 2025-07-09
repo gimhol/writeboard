@@ -4,7 +4,7 @@ import type { ToolType, ITool } from "../tools";
 import { FactoryType } from "./FactoryEnum";
 import { IResizerInfo } from "./IResizerInfo";
 import { IRotatorInfo } from "./IRotatorInfo";
-import { IShapesMgr } from "./ShapesMgr";
+import { IShapesMgr } from "./IShapesMgr";
 
 /**
  * 接口：工厂

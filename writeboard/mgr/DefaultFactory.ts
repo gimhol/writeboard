@@ -15,7 +15,8 @@ import { Gaia } from "./Gaia";
 import { IFactory } from "./IFactory";
 import { IResizerInfo } from "./IResizerInfo";
 import { IRotatorInfo } from "./IRotatorInfo";
-import { DefaultShapesMgr, IShapesMgr } from "./ShapesMgr";
+import { IShapesMgr } from "./IShapesMgr";
+import { DefaultShapesMgr } from "./DefaultShapesMgr";
 
 const Tag = '[DefaultFactory]';
 export class DefaultFactory implements IFactory {

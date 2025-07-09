@@ -1,5 +1,4 @@
-import { LineSegment } from "./LineSegment";
-import type { IVector } from "./Vector";
+import type { IVector } from "./IVector";
 
 const { EPSILON: EPS } = Number;
 const { abs } = Math;
@@ -32,9 +31,9 @@ export class Line implements ILine {
   toString() {
     return `Line(x0=${this.x0}, y0=${this.x0}, x1=${this.x1}, y1=${this.y1})`
   }
-  mid(): IVector { return LineSegment.mid(this) }
-  start(): IVector { return LineSegment.start(this) }
-  end(): IVector { return LineSegment.end(this) }
+  mid(): IVector { return Line.mid(this) }
+  start(): IVector { return Line.start(this) }
+  end(): IVector { return Line.end(this) }
   static mid(l: ILine): IVector {
     return {
       x: l.x1 + (l.x1 - l.x0) / 2,

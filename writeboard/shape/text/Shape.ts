@@ -2,7 +2,8 @@ import { ShapeEnum } from "../ShapeEnum"
 import { Gaia } from "../../mgr/Gaia"
 import { TextData } from "./Data"
 import { Shape } from "../base"
-import { IRect, Rect } from "../../utils/Rect"
+import { Rect } from "../../utils/Rect"
+import { IRect } from "../../utils/IRect"
 import { TextSelection, ITextSelection } from "./TextSelection"
 
 const measurer = document.createElement('canvas').getContext('2d')!

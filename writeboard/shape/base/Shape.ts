@@ -1,6 +1,8 @@
 import { Board } from "../../board/Board";
-import { IRect, Rect } from "../../utils/Rect";
-import { IVector, Vector } from "../../utils/Vector";
+import { Rect } from "../../utils/Rect";
+import { IRect } from "../../utils/IRect";
+import { Vector } from "../../utils/Vector";
+import { IVector } from "../../utils/IVector";
 import { isNum } from "../../utils/helper";
 import { ShapeType } from "../ShapeEnum";
 import { ShapeData } from "./ShapeData";
@@ -8,7 +10,8 @@ import { IShapeData } from "./IShapeData";
 import { Resizable } from "./Resizable";
 import { ResizeDirection } from "./ResizeDirection";
 import { ShapeEventMap, ShapeEventEnum, ShapeEventListener } from "./ShapeEvent";
-const { floor, max, ceil, abs, sin, cos, PI } = Math;
+import { IRotatedRect, Polygon, RotatedRect } from "../../utils";
+const { floor, max, ceil, abs, sin, cos, PI, min } = Math;
 /**
  * 一切图形的基类
  *
@@ -212,15 +215,15 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   get x() { return this._d.x }
   get y() { return this._d.y }
-  get halfW() { return this._d.w / 2 }
-  get halfH() { return this._d.h / 2 }
-  get midX() { return this._d.x + this.halfW }
-  get midY() { return this._d.y + this.halfH }
+  get halfW() { return this._d.halfW }
+  get halfH() { return this._d.halfH }
+  get midX() { return this._d.midX }
+  get midY() { return this._d.midY }
   get w() { return this._d.w }
   get h() { return this._d.h }
   get left() { return this._d.x }
-  get right() { return this._d.y }
-  get top() { return this._d.w + this._d.x }
+  get top() { return this._d.y }
+  get right() { return this._d.w + this._d.x }
   get bottom() { return this._d.h + this._d.y }
 
   get topLeft(): IVector { return { x: this.left, y: this.top } }
@@ -371,6 +374,10 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   /**
    * 获取AABB包围盒
+   * 
+   * 包围盒矩形的数据均为整数。
+   * 
+   * 脏区域会根据包围盒矩形的来运算
    *
    * @return {IRect} 包围盒矩形
    * @memberof Shape
@@ -380,26 +387,35 @@ export class Shape<D extends ShapeData = ShapeData> {
     const offset = (d.lineWidth % 2) ? 1 : 0
     const overbound1 = this.board?.factory.overbound(this) || 1
     const overbound2 = overbound1 * 2
-    if (!d.r)
-      return {
-        x: floor(d.x - d.lineWidth / 2 - overbound1),
-        y: floor(d.y - d.lineWidth / 2 - overbound1),
-        w: ceil(d.w + d.lineWidth + offset + overbound2),
-        h: ceil(d.h + d.lineWidth + offset + overbound2)
-      }
-
-    const w = abs(d.w * cos(d.r)) + abs(d.h * sin(d.r))
-    const h = abs(d.w * sin(d.r)) + abs(d.h * cos(d.r))
-    const x = d.x - (w - d.w) / 2
-    const y = d.y - (h - d.h) / 2
-    return {
-      x: floor(x - d.lineWidth / 2 - overbound1),
-      y: floor(y - d.lineWidth / 2 - overbound1),
-      w: ceil(w + d.lineWidth + offset + overbound2),
-      h: ceil(h + d.lineWidth + offset + overbound2)
+    const rr = {
+      x: floor(d.x - d.lineWidth / 2 - overbound1),
+      y: floor(d.y - d.lineWidth / 2 - overbound1),
+      w: ceil(d.w + d.lineWidth + offset + overbound2),
+      h: ceil(d.h + d.lineWidth + offset + overbound2),
+      r: d.r,
     }
+    if (!d.r) return rr
+    const { dots } = RotatedRect.create(rr)
+    let x = rr.x;
+    let y = rr.y;
+    let r = rr.x + rr.w;
+    let b = rr.y + rr.h;
+    for (const dot of dots) {
+      x = min(x, floor(dot.x))
+      y = min(y, floor(dot.y))
+      r = max(r, ceil(dot.x))
+      b = max(b, ceil(dot.y))
+    }
+    return { x, y, w: r - x, h: b - y }
   }
-
+  obb(): IRotatedRect {
+    const lw = this.lineWidth;
+    const x = this.x - lw / 2;
+    const y = this.y - lw / 2;
+    const w = this.w + lw;
+    const h = this.h + lw;
+    return { x, y, w, h, r: this.rotation }
+  }
   getResizerNumbers(x: number, y: number, w: number, h: number) {
     const lw = 1
     const hlw = lw / 2

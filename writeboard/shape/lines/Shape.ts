@@ -2,7 +2,7 @@ import { ShapeEnum } from "../ShapeEnum"
 import { Gaia } from "../../mgr/Gaia"
 import { Shape } from "../base"
 import { LinesData } from "./Data"
-import { IRect } from "../../utils/Rect"
+import { IRect } from "../../utils/IRect"
 import { IDot } from "../../utils/Dot"
 
 export class ShapeLines extends Shape<LinesData> {
