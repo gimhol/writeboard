@@ -5,7 +5,7 @@
     "_SSH_USER": "root",
     "REMOTE_DIR": "/root/frontends/writeboard",
     "REMOTE_BACKUP_DIR": "/root/frontends_backup/writeboard",
-    "LOCAL_PATH": "./dist",
+    "LOCAL_PATH": "./output",
     "GIT_BRANCH": "origin/main",
     "GIT_IGNORED": true,
     "GIT_NO_BEHIND": false,
