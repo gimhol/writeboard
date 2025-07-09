@@ -1,0 +1,15 @@
+{
+  "main": {
+    "SSH_HOST": "gim.ink",
+    "SSH_PORT": "22",
+    "_SSH_USER": "root",
+    "REMOTE_DIR": "/root/frontends/writeboard",
+    "REMOTE_BACKUP_DIR": "/root/frontends_backup/writeboard",
+    "LOCAL_PATH": "./dist",
+    "GIT_BRANCH": "origin/main",
+    "GIT_IGNORED": true,
+    "GIT_NO_BEHIND": false,
+    "GIT_NO_AHEAD": false,
+    "GIT_NO_DIRTY": false
+  }
+}

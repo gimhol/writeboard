@@ -14,6 +14,7 @@
   "author": "Gim",
   "license": "Apache License 2.0",
   "devDependencies": {
+    "@fimagine/frontend_deployer": "^1.0.7",
     "@rollup/plugin-html": "^2.0.0",
     "@rollup/plugin-image": "^3.0.3",
     "browserify": "^17.0.1",
