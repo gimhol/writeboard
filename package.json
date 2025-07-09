@@ -10,6 +10,7 @@
     "demo": "rollup -c -w --environment output_format:cjs",
     "build": "rollup -c",
     "doc": "typedoc --out typedoc writeboard/index.ts",
+    "deploy": "fdeploy -s main",
     "flow": "npm run build && npm run deploy"
   },
   "author": "Gim",
