@@ -62,6 +62,8 @@ export class SelectorTool implements ITool {
     if (selects.length > 1) {
       this._picking.setShapes(selects);
       this._rotator.follow(this._picking);
+    } else if (selects.length == 1) {
+      this._rotator.follow(selects[0])
     } else {
       this._picking.reset();
     }

@@ -91,36 +91,22 @@ export class EraserTool implements ITool {
     const add_pens: Shape[] = [];
     const del_pens: Shape[] = [];
     for (const [pen, dots_arr] of this._breakings) {
-      // for (let i = 0; i < dots_arr.length; ++i) {
-      //   const new_data = pen.data.copy();
-      //   new_data.id = this.board.factory.newId(new_data)
-      //   new_data.coords.length = 0;
-      //   new_data.rotation = 0
-      //   new_data.x = 0;
-      //   new_data.y = 0;
-      //   new_data.w = 0;
-      //   new_data.h = 0;
-      //   const new_pen = this.board.factory.newShape(new_data) as ShapePen;
-      //   new_pen.applyDots(dots_arr[i])
-      //   add_pens.push(new_pen)
-      // }
-
-      const new_data = pen.data.copy();
-      new_data.id = this.board.factory.newId(new_data)
-      new_data.coords = [];
-      new_data.rotation = 0
-      new_data.x = 0;
-      new_data.y = 0;
-      new_data.w = 0;
-      new_data.h = 0;
-      const new_pen = this.board.factory.newShape(new_data) as ShapePen;
-      new_pen.applyCoords(pen.data.coords2world)
-      add_pens.push(new_pen)
-
+      for (let dots of dots_arr) {
+        const new_data = pen.data.copy();
+        new_data.id = this.board.factory.newId(new_data)
+        new_data.rotation = 0
+        new_data.x = 0;
+        new_data.y = 0;
+        new_data.w = 0;
+        new_data.h = 0;
+        const new_pen = this.board.factory.newShape(new_data) as ShapePen;
+        new_pen.applyDots(dots)
+        add_pens.push(new_pen)
+      }
       del_pens.push(pen);
     }
-    this.board.add(add_pens, true)
     this.board.remove(del_pens, true)
+    this.board.add(add_pens, true)
   }
   pointerMove(dot: IDot): void {
     this.update_geo(dot);

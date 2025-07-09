@@ -16,15 +16,10 @@ export class PenTool implements ITool {
     const shape = this._curShape
     if (shape && shape.data.coords.length >= 2) {
       const { coords } = shape.data
-      shape.data.editing = false;
-      this.addDot({
+      this.pointerUp({
         x: coords[coords.length - 2],
         y: coords[coords.length - 1],
         p: 0
-      }, 'last')
-      this.board?.emitEvent(EventEnum.ShapesDone, {
-        operator: this.board.whoami,
-        shapeDatas: [shape!.data.copy()]
       })
     }
     delete this._curShape;
@@ -40,7 +35,7 @@ export class PenTool implements ITool {
     this.addDot(dot, 'first')
   }
   pointerDraw(dot: IDot): void {
-    this.addDot(dot)
+    this.addDot(dot, 'mid')
   }
   pointerUp(dot: IDot): void {
     const shape = this._curShape
@@ -56,7 +51,7 @@ export class PenTool implements ITool {
   }
   protected _prevData: PenData | undefined
   protected _curShape: ShapePen | undefined
-  protected addDot(dot: IDot, type?: 'first' | 'last') {
+  protected addDot(dot: IDot, type: 'first' | 'last' | 'mid') {
     const shape = this._curShape
     const board = this.board
     if (!shape || !board) return

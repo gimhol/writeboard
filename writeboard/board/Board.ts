@@ -387,12 +387,12 @@ export class Board {
       })
     }
 
-    const ret = this._shapesMgr.remove(...shapes);
     shapes.forEach(item => {
+      console.log('!')
       this.markDirty(item.aabb())
-      item.board = undefined
     })
-
+    const ret = this._shapesMgr.remove(...shapes);
+    shapes.forEach(item => { item.board = void 0 })
     return ret
   }
 
