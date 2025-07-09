@@ -9,7 +9,8 @@
     "test": "mocha",
     "demo": "rollup -c -w --environment output_format:cjs",
     "build": "rollup -c",
-    "doc": "typedoc --out typedoc writeboard/index.ts"
+    "doc": "typedoc --out typedoc writeboard/index.ts",
+    "flow": "npm run build && npm run deploy"
   },
   "author": "Gim",
   "license": "Apache License 2.0",
