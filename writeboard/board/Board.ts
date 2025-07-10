@@ -91,7 +91,7 @@ export class Board {
     this._viewport.read(to)
     this._layers.forEach(l => {
       l.width = this._viewport.w;
-      l.width = this._viewport.h
+      l.height = this._viewport.h
     });
     this.markViewDirty();
     this.read_emit_opts(opts, (operator) => {
