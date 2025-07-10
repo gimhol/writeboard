@@ -285,7 +285,7 @@ function main() {
     const imgd_main = img_main.data.copy();
     imgd_main.id = 'img_header';
     imgd_main.src = ttt.main_pic.src;
-    imgd_main.locked = false;
+    imgd_main.locked = true;
     imgd_main.x = 0;
     imgd_main.y = 0;
     imgd_main.w = resultWidth;

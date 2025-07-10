@@ -3,7 +3,7 @@ import type { IShapeDecoration } from "./IShapeDecoration";
 
 export class DefaultShapeDecoration implements IShapeDecoration {
 
-  private dashSroke(ctx: CanvasRenderingContext2D, segments: Iterable<number>) {
+  private dash_stroke(ctx: CanvasRenderingContext2D, segments: Iterable<number>) {
     ctx.strokeStyle = 'white'
     ctx.setLineDash([])
     ctx.stroke()
@@ -24,6 +24,36 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     if (!selects) return false;
     return selects.some(v => v === shape) && selects.length > 1
   }
+  private lock_icon_w = 25;
+  private lock_icon_h = 25;
+  private draw_lock(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = '#FFFFFF88'
+    ctx.strokeStyle = '#00000088'
+    ctx.lineWidth = 2
+    ctx.setLineDash([])
+    ctx.beginPath()
+    ctx.roundRect(0, 0, this.lock_icon_w, this.lock_icon_h, 2)
+    ctx.fill()
+
+    const w = 15;
+    const h = 12;
+    const t = w * 0.65;
+    const l = (this.lock_icon_w - w) / 2
+    const r = l + w;
+    const mx = l + w / 2;
+    const my = t + h / 2;
+
+    ctx.beginPath()
+    ctx.roundRect(l, t, w, h, 2);
+    ctx.moveTo(l + w / 6, t)
+    ctx.arc(mx, t - 2, w / 3, Math.PI, 0)
+    ctx.lineTo(r - w / 6, t)
+    ctx.roundRect(0, 0, this.lock_icon_w, this.lock_icon_h, 2)
+    ctx.moveTo(mx, my - h * 0.3)
+    ctx.lineTo(mx, my + h * 0.2)
+    ctx.arc(mx, my + h * 0.2, 1, 0, Math.PI * 2)
+    ctx.stroke()
+  }
 
   locked(shape: Shape, ctx: CanvasRenderingContext2D) {
     /* 选择多个图形时，图形本身的矩形示意框不展示 */
@@ -34,7 +64,11 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     ctx.beginPath()
     ctx.rect(x + 1, y + 1, w - 1, h - 1)
     ctx.closePath()
-    this.dashSroke(ctx, [lineWidth * 8])
+    this.dash_stroke(ctx, [lineWidth * 8])
+
+    ctx.translate(w - this.lock_icon_w - 5, 5)
+    this.draw_lock(ctx)
+
   }
 
   selected(shape: Shape, ctx: CanvasRenderingContext2D) {
@@ -46,7 +80,7 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     ctx.beginPath()
     ctx.rect(x, y, w, h)
     ctx.closePath()
-    this.dashSroke(ctx, [lineWidth * 4])
+    this.dash_stroke(ctx, [lineWidth * 4])
   }
 
   resizable(shape: Shape, ctx: CanvasRenderingContext2D) {

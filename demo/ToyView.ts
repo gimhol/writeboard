@@ -82,7 +82,7 @@ export class ToyView extends Subwin {
         for (let j = 0; j < lenth; ++j) {
           x += v5();
           y += v5();
-          item.appendDot({ x, y, p: 0.5 })
+          item.appendDot({ x, y }, 'mid')
         }
         randomShapeItem(item);
         items.push(item)
