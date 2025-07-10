@@ -2,7 +2,8 @@ import type { Layer } from "../board/Layer";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { IShapeData } from "../shape/base/IShapeData";
 import type { ToolType } from "../tools/ToolEnum";
-import { IRect } from "../utils";
+import type { ITool } from "../tools/base/Tool";
+import type { IRect } from "../utils";
 import type { EventEnum } from "./EventType";
 
 export namespace Events {
@@ -57,6 +58,12 @@ export namespace Events {
     form: IRect;
     to: IRect;
   }
+  export interface IToolDetail {
+    operator: string;
+    tool: ITool;
+    x: number;
+    y: number;
+  }
   export interface EventDetailMap {
     [EventEnum.ShapesAdded]: IShapesDetail;
     [EventEnum.ShapesRemoved]: IShapesDetail;
@@ -72,6 +79,10 @@ export namespace Events {
     [EventEnum.ShapesDeselected]: IShapesDetail;
     [EventEnum.WorldRectChanged]: IRectChangeDetail;
     [EventEnum.ViewportChanged]: IRectChangeDetail;
+    [EventEnum.ToolDown]: IToolDetail;
+    [EventEnum.ToolDraw]: IToolDetail;
+    [EventEnum.ToolMove]: IToolDetail;
+    [EventEnum.ToolUp]: IToolDetail;
   }
   export interface EventMap extends HTMLElementEventMap {
     [EventEnum.ShapesAdded]: CustomEvent<EventDetailMap[EventEnum.ShapesAdded]>;
@@ -88,6 +99,10 @@ export namespace Events {
     [EventEnum.ShapesDeselected]: CustomEvent<EventDetailMap[EventEnum.ShapesDeselected]>;
     [EventEnum.WorldRectChanged]: CustomEvent<EventDetailMap[EventEnum.WorldRectChanged]>;
     [EventEnum.ViewportChanged]: CustomEvent<EventDetailMap[EventEnum.ViewportChanged]>;
+    [EventEnum.ToolDown]: CustomEvent<EventDetailMap[EventEnum.ToolDown]>;
+    [EventEnum.ToolDraw]: CustomEvent<EventDetailMap[EventEnum.ToolDraw]>;
+    [EventEnum.ToolMove]: CustomEvent<EventDetailMap[EventEnum.ToolMove]>;
+    [EventEnum.ToolUp]: CustomEvent<EventDetailMap[EventEnum.ToolUp]>;
   }
 }
 

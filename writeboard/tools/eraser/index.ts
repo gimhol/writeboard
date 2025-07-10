@@ -1,7 +1,7 @@
 import type { Board } from "../../board";
 import { Gaia } from "../../mgr/Gaia";
 import { ShapeEnum, ShapePen, type Shape } from "../../shape";
-import { IVector, Rect, Vector, type IDot } from "../../utils";
+import { IVector, Rect, type IDot } from "../../utils";
 import type { ITool } from "../base";
 import { ToolEnum } from "../ToolEnum";
 import { Indicator } from "./Indicator";

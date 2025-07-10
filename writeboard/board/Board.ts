@@ -526,8 +526,13 @@ export class Board {
         console.warn("toolType not set.")
         return;
       }
-      this.tool?.pointerDown?.(this.getDot(e))
-      e.stopPropagation()
+      if (this.tool) {
+        const dot = this.getDot(e)
+        const d: Events.IToolDetail = { operator: this.whoami, tool: this.tool, ...dot }
+        this.emitEvent(EventEnum.ToolDown, d)
+        this.tool?.pointerDown?.(dot)
+        e.stopPropagation()
+      }
     } else if (e.button === 1) {
       this._world_drag_start_pos = {
         x: -this._world.x + e.x,
@@ -547,17 +552,29 @@ export class Board {
         this.scroll_to(x - e.x, y - e.y)
       })
     }
-    if (this.lb_down) {
-      this.tool?.pointerDraw?.(this.getDot(e));
-    } else {
-      this.tool?.pointerMove?.(this.getDot(e))
+    if (this.tool) {
+      const dot = this.getDot(e)
+      const d: Events.IToolDetail = { operator: this.whoami, tool: this.tool, ...dot }
+      if (this.lb_down) {
+        this.emitEvent(EventEnum.ToolDraw, d)
+        this.tool.pointerDraw?.(dot);
+      } else {
+        this.emitEvent(EventEnum.ToolMove, d)
+        this.tool.pointerMove?.(dot)
+      }
+      e.stopPropagation();
     }
-    e.stopPropagation();
   }
+
 
   protected _pointerup = (e: PointerEvent) => {
     if (e.button == 0) {
-      this.tool?.pointerUp?.(this.getDot(e))
+      if (this.tool) {
+        const dot = this.getDot(e)
+        const d: Events.IToolDetail = { operator: this.whoami, tool: this.tool, ...dot }
+        this.emitEvent(EventEnum.ToolUp, d)
+        this.tool?.pointerUp?.(dot)
+      }
       e.stopPropagation();
     }
     this._mousebuttons[e.button] = 0

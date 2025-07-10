@@ -1,5 +1,4 @@
 import { ShapeData, ShapeRect } from "../../shape";
-import { IDot } from "../../utils";
 
 export class Indicator extends ShapeRect {
   constructor() {
