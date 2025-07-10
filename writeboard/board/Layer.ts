@@ -1,20 +1,12 @@
 import styles from "../styles.module.scss"
 import { Numbers } from "../utils";
-export interface ILayerInfoInit {
-  readonly id: string;
-  readonly name: string;
-}
-
-export interface ILayerInits {
-  readonly info: ILayerInfoInit;
-  readonly onscreen?: HTMLCanvasElement;
-}
-
 export interface ILayerInfo {
   id: string;
   name: string;
 }
-
+export interface ILayerInits extends ILayerInfo {
+  readonly onscreen?: HTMLCanvasElement;
+}
 export interface ILayer {
   readonly name: string;
   readonly info: ILayerInfo;
@@ -28,14 +20,17 @@ export interface ILayer {
 export class LayerInfo implements ILayerInfo {
   id: string;
   name: string;
-  constructor(inits: ILayerInfoInit) {
+  constructor(inits: ILayerInfo) {
     this.id = inits.id;
     this.name = inits.name;
+  }
+  pure(): ILayerInfo {
+    return { id: this.id, name: this.name }
   }
 }
 
 export class Layer implements ILayer {
-  protected _info: ILayerInfo;
+  protected _info: LayerInfo;
   protected _onscreen: HTMLCanvasElement;
   protected _offscreen: HTMLCanvasElement;
   protected _ctx: CanvasRenderingContext2D;
@@ -55,7 +50,7 @@ export class Layer implements ILayer {
   private _own_offscreen = false;
 
   constructor(inits: ILayerInits) {
-    this._info = new LayerInfo(inits.info);
+    this._info = new LayerInfo(inits);
     this._onscreen = inits.onscreen ?? document.createElement('canvas');
     this._own_onscreen = !inits.onscreen;
 

@@ -1,4 +1,4 @@
-import type { Layer } from "../board/Layer";
+import type { ILayerInfo, Layer } from "../board/Layer";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { IShapeData } from "../shape/base/IShapeData";
 import type { ToolType } from "../tools/ToolEnum";
@@ -22,7 +22,7 @@ export namespace Events {
     shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[];
   }
   export interface ILayerDetail extends IOperatorDetail {
-    layer: Layer
+    layer: ILayerInfo
   }
   export interface IShapeGeoData {
     i: string;

@@ -17,7 +17,7 @@ export interface BoardOptions {
   scrollHeight?: number;
   toolType?: ToolType;
 }
-const Tag = '[Board]'
+const Tag = 'Board'
 
 export class Board {
   protected _factory: IFactory
@@ -36,25 +36,12 @@ export class Board {
   protected _world = new Rect(0, 0, 1600, 1600)
   protected _world_drag_start_pos: IVector = { x: 0, y: 0 };
 
-  get lb_down(): boolean {
-    return !!this._mousebuttons[0]
-  }
-  get mb_down(): boolean {
-    return !!this._mousebuttons[1]
-  }
-  get viewport(): Readonly<Rect> {
-    return this._viewport;
-  }
-  get world(): Readonly<Rect> {
-    return this._world;
-  }
-  get whoami() {
-    return this._whoami
-  }
-
-  get width() {
-    return this._viewport.w;
-  }
+  get lb_down(): boolean { return !!this._mousebuttons[0] }
+  get mb_down(): boolean { return !!this._mousebuttons[1] }
+  get viewport(): Readonly<Rect> { return this._viewport; }
+  get world(): Readonly<Rect> { return this._world; }
+  get whoami() { return this._whoami }
+  get width() { return this._viewport.w; }
 
   set width(v: number) {
     const rect = this._viewport.pure()
@@ -62,9 +49,7 @@ export class Board {
     this.set_viewport(rect);
   }
 
-  get height() {
-    return this._viewport.h;
-  }
+  get height() { return this._viewport.h; }
 
   set height(v: number) {
     const rect = this._viewport.pure()
@@ -122,14 +107,14 @@ export class Board {
     );
   }
 
-  addLayer(layer?: ILayerInits | Layer): boolean {
+  addLayer(layer: ILayerInits | Layer | undefined): boolean {
     if (!layer) {
       layer = this.factory.newLayer();
       this.addLayer(layer);
       return true;
     }
-    if (this._layers.has(layer.info.id)) {
-      console.error(`[WhiteBoard] addLayer(): layerId already existed! id = ${layer.info.id}`)
+    if (this._layers.has(layer.id)) {
+      console.error(`[${Tag}] addLayer(): layerId already existed! id = ${layer.id}`)
       return false;
     }
     if (layer instanceof Layer) {
@@ -138,7 +123,7 @@ export class Board {
       layer.onscreen.style.pointerEvents = 'none';
       this._element.appendChild(layer.onscreen);
       this._layers.set(layer.info.id, layer);
-      this.dispatchEvent(new CustomEvent(EventEnum.LayerAdded, { detail: layer }));
+      this.dispatchEvent(new CustomEvent(EventEnum.LayerAdded, { detail: layer.info.pure() }));
       this.markViewDirty()
     } else {
       layer = this.factory.newLayer(layer);
@@ -160,17 +145,18 @@ export class Board {
   removeLayer(layerId: string): boolean {
     const layer = this._layers.get(layerId);
     if (!layer) {
-      console.error(`[WhiteBoard] removeLayer(): layer not found! id = ${layerId}`)
+      console.error(`[${Tag}::editLayer] removeLayer(): layer not found! id = ${layerId}`)
       return false;
     }
     this._layers.delete(layerId);
     this._element.removeChild(layer.onscreen);
-    this.dispatchEvent(new CustomEvent(EventEnum.LayerRemoved, { detail: layer }));
+    this.dispatchEvent(new CustomEvent(EventEnum.LayerRemoved, { detail: layer.info.pure() }));
     return true;
   }
+
   editLayer(layerId: string): boolean {
     if (!this._layers.has(layerId)) {
-      console.error(`[WhiteBoard] editLayer(): layer not found! id = ${layerId}`)
+      console.error(`[${Tag}::editLayer] editLayer(): layer not found! id = ${layerId}`)
       return false;
     }
     this._layers.forEach((layer, id) => {
@@ -187,9 +173,8 @@ export class Board {
   }
 
   addLayers(layers: ILayerInits[]): void {
-    if (!layers.length) { return; }
+    if (!layers.length) return;
     layers.forEach(v => this.addLayer(v));
-    this.editLayer(layers[0].info.id);
   }
   get layers(): Layer[] { return Array.from(this._layers.values()) }
   get element(): HTMLElement { return this._element }
@@ -218,14 +203,12 @@ export class Board {
     const layers: ILayerInits[] = options.layers ?? []
     if (!layers.length) {
       layers.push({
-        info: {
-          id: factory.newLayerId(),
-          name: factory.newLayerName(),
-        }
+        id: factory.newLayerId(),
+        name: factory.newLayerName(),
       })
     }
     this.addLayers(layers);
-
+    this.editLayer(layers[0].id)
     this._element.addEventListener('pointerdown', this._pointerdown);
     this._element.addEventListener('wheel', this._wheel);
     this._element.tabIndex = 0;
@@ -253,7 +236,10 @@ export class Board {
   fromSnapshot(snapshot: ISnapshot) {
     this.removeAll(false);
     Array.from(this._layers.keys()).forEach((layerId) => this.removeLayer(layerId))
-    this.addLayers(snapshot.l.map(info => ({ info })));
+    if (snapshot.l.length) {
+      this.addLayers(snapshot.l);
+      this.editLayer(snapshot.l[0].id)
+    }
     const shapes = snapshot.s.map((v: IShapeData) => this.factory.newShape(v))
     this.add(shapes, false);
   }
@@ -350,7 +336,7 @@ export class Board {
     if (!to) return;
     this._tool = this._factory.newTool(to)
     if (!this._tool) {
-      console.error('toolType not supported. got ', to)
+      console.error(`[${Tag}::setToolType] toolType not supported. got ${to}`,)
       return;
     }
     this._tool.board = this
@@ -506,14 +492,14 @@ export class Board {
     this._mousebuttons[e.button] = 1
     if (e.button === 0) {
       if (!this.tool) {
-        console.warn("toolType not set.")
+        console.warn(`[${Tag}::_pointerdown] toolType not set`)
         return;
       }
       if (this.tool) {
         const dot = this.getDot(e)
         const d: Events.IToolDetail = { operator: this.whoami, tool: this.tool, ...dot }
         this.emitEvent(EventEnum.ToolDown, d)
-        this.tool?.pointerDown?.(dot)
+        this.tool.pointerDown?.(dot)
         e.stopPropagation()
       }
     } else if (e.button === 1) {

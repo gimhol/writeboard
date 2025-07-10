@@ -1,4 +1,4 @@
-import { ILayerInfoInit } from "../writeboard";
+import { ILayerInfo } from "../writeboard";
 import { Button } from "./G/BaseView/Button";
 import { SizeType } from "./G/BaseView/SizeType";
 import { InputStyleNames, TextInput } from "./G/BaseView/TextInput";
@@ -58,7 +58,7 @@ export class LayersView extends Subwin {
     this.footer.addChild(this.btnAddFolder);
   }
   layers() { return this._layers }
-  addLayer(inits: ILayerInfoInit): LayerItemView {
+  addLayer(inits: ILayerInfo): LayerItemView {
     const item = new LayerItemView(inits);
     this._layers.push(item);
     this.content?.addChild(item);
@@ -99,7 +99,7 @@ export class LayerItemView extends View<'div'> {
   }
   override onHover(hover: boolean): void { this.updateStyle() }
 
-  constructor(inits: ILayerInfoInit) {
+  constructor(inits: ILayerInfo) {
     super('div')
     this._state.id = inits.id;
     this._state.name = inits.name;

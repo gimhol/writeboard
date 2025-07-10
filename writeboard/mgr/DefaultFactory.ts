@@ -10,13 +10,13 @@ import { InvalidTool } from "../tools/base/InvalidTool";
 import type { ITool } from "../tools/base/Tool";
 import type { ToolType } from "../tools/ToolEnum";
 import { isNum, isStr } from "../utils/helper";
+import { DefaultShapesMgr } from "./DefaultShapesMgr";
 import { FactoryEnum, FactoryType } from "./FactoryEnum";
 import { Gaia } from "./Gaia";
 import { IFactory } from "./IFactory";
 import { IResizerInfo } from "./IResizerInfo";
 import { IRotatorInfo } from "./IRotatorInfo";
 import { IShapesMgr } from "./IShapesMgr";
-import { DefaultShapesMgr } from "./DefaultShapesMgr";
 
 const Tag = '[DefaultFactory]';
 export class DefaultFactory implements IFactory {
@@ -92,18 +92,13 @@ export class DefaultFactory implements IFactory {
   newLayerName(): string {
     return `layer_${Date.now()}_${++this._time}`
   }
-  newLayer(inits?: Partial<ILayerInits>): Layer {
-    const { info, ...remainInits } = inits || {}
+  newLayer(inits: Partial<ILayerInits> = {}): Layer {
     const {
       id = this.newLayerId(),
       name = this.newLayerName(),
-      ...remainInfo
-    } = info || {}
-    const _inits: ILayerInits = {
-      info: { id, name, ...remainInfo },
-      ...remainInits
-    }
-    return new Layer(_inits);
+      ...remains
+    } = inits
+    return new Layer({ id, name, ...remains });
   }
 
   private _shapeDecoration = new DefaultShapeDecoration
