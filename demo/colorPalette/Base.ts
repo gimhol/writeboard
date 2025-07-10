@@ -10,7 +10,7 @@ export class Base {
   protected _requested = false;
   get rect() { return this._rect; }
   set rect(v: IRect) {
-    this._rect.set(v);
+    this._rect.read(v);
     this.update();
   }
   constructor(onscreen: HTMLCanvasElement, offscreen: HTMLCanvasElement, rect?: IRect) {

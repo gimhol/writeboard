@@ -25,7 +25,7 @@ export class QuadTree<T = any> implements ITree<T> {
   private _parent: QuadTree<T> | undefined
   constructor(opts: QuadTreeOptions<T>) {
     this._opts = { ...opts }
-    this._rect.set(opts.rect)
+    this._rect.read(opts.rect)
   }
   get children(): (QuadTree<T> | undefined)[] { return [this._child0, this._child1, this._child2, this._child3] }
   get maxItems() { return this._opts.maxItems || 20 }

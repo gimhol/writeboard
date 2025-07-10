@@ -57,9 +57,9 @@ export class Board {
   }
 
   set width(v: number) {
-    this._viewport.w = v;
-    this._layers.forEach(l => l.width = v);
-    this.markViewDirty();
+    const rect = this._viewport.pure()
+    rect.w = v;
+    this.set_viewport(rect);
   }
 
   get height() {
@@ -67,45 +67,58 @@ export class Board {
   }
 
   set height(v: number) {
-    this._viewport.h = v;
-    this._layers.forEach(l => l.height = v);
-    this.markViewDirty();
+    const rect = this._viewport.pure()
+    rect.h = v;
+    this.set_viewport(rect);
   }
 
-  scroll_to(x: number, y: number): this {
+  scroll_to(x: number, y: number, opts?: EmitOpts): this {
+    const rect = this._world.pure();
     const { min, max } = Math
-    this._world.x = -max(min(x, this._world.w - this._viewport.w), 0);
-    this._world.y = -max(min(y, this._world.h - this._viewport.h), 0);
-    this.markViewDirty();
+    rect.x = -max(min(x, this._world.w - this._viewport.w), 0);
+    rect.y = -max(min(y, this._world.h - this._viewport.h), 0);
+    this.set_world_rect(rect, opts);
     return this;
   }
 
-  set_world_rect(to: IRect) {
+  private read_emit_opts = (opts: EmitOpts | null | undefined, fn: (operator: string) => any) => {
+    if (!opts) return;
+    const operator = typeof opts === 'boolean' ? this.whoami : opts.operator;
+    fn(operator)
+  }
+
+  set_world_rect(to: IRect, opts?: EmitOpts) {
+    if (Rect.equal(this._world, to)) return;
+    const form = this._world.pure();
     this._world.x = to.x;
     this._world.y = to.y;
     this._world.w = to.w;
     this._world.h = to.h;
     this.markViewDirty();
+    this.read_emit_opts(opts, (operator) => {
+      this.emitEvent(EventEnum.WorldRectChanged, { operator, form, to: this._world.pure() })
+    })
   }
 
-  set_viewport(to: IRect) {
-    this._viewport.x = to.x;
-    this._viewport.y = to.y;
-    if (this._viewport.w != to.w) {
-      this._viewport.w = to.w
-      this._layers.forEach(l => l.width = to.w);
-    }
-    if (this._viewport.h != to.h) {
-      this._viewport.h = to.h;
-      this._layers.forEach(l => l.width = to.h);
-    }
+  set_viewport(to: IRect, opts?: EmitOpts) {
+    if (Rect.equal(this._viewport, to)) return;
+    const form = this._viewport.pure();
+    this._viewport.read(to)
+    this._layers.forEach(l => {
+      l.width = this._viewport.w;
+      l.width = this._viewport.h
+    });
     this.markViewDirty();
+    this.read_emit_opts(opts, (operator) => {
+      this.emitEvent(EventEnum.ViewportChanged, { operator, form, to: this._viewport.pure() })
+    })
   }
 
-  scroll_by(x: number, y: number): this {
+  scroll_by(x: number, y: number, opts?: EmitOpts): this {
     return this.scroll_to(
       -this.world.x + x,
       -this.world.y + y,
+      opts
     );
   }
 
@@ -348,12 +361,7 @@ export class Board {
   get selects() {
     return this._selects
   }
-  add(shapes: Shape[] | Shape): number;
-  add(shapes: Shape[] | Shape, emit: boolean): number;
-  add(shapes: Shape[] | Shape, opts: { operator: string, emit?: boolean }): number
-  add(shapes: Shape[] | Shape, arg1: boolean | { operator: string, emit?: boolean } = false): number {
-    const emit = typeof arg1 === 'boolean' ? arg1 : arg1.emit !== false
-    const operator = typeof arg1 === 'boolean' ? this._whoami : arg1.operator
+  add(shapes: Shape[] | Shape, opts?: EmitOpts): number {
     shapes = Array.isArray(shapes) ? shapes : [shapes];
     if (!shapes.length) return 0;
     const ret = this._shapesMgr.add(...shapes)
@@ -362,35 +370,30 @@ export class Board {
       if (item.selected) this._selects.push(item)
       this.markDirty(item.aabb())
     })
-    emit && this.emitEvent(EventEnum.ShapesAdded, {
-      operator,
-      shapeDatas: shapes.map(v => v.data.copy())
+    this.read_emit_opts(opts, (operator) => {
+      this.emitEvent(EventEnum.ShapesAdded, {
+        operator,
+        shapeDatas: shapes.map(v => v.data.copy())
+      })
     })
     return ret
   }
 
   remove(shapes: Shape[] | Shape, opts?: EmitOpts): number {
-    const emit = !!opts;
-    const operator = (opts as any)?.operator ?? this._whoami;
     shapes = Array.isArray(shapes) ? shapes : [shapes];
 
     if (!shapes.length) return 0
 
     const remains = shapes.filter(a => !this.selects.find(b => a === b))
-    this.setSelects(remains, emit);
+    this.setSelects(remains, opts);
 
-    if (emit) {
-      const shapeDatas = shapes.map(v => v.data);
-      shapeDatas.length && this.emitEvent(EventEnum.ShapesRemoved, {
+    this.read_emit_opts(opts, (operator) => {
+      this.emitEvent(EventEnum.ShapesRemoved, {
         operator,
-        shapeDatas
+        shapeDatas: shapes.map(v => v.data)
       })
-    }
-
-    shapes.forEach(item => {
-      console.log('!')
-      this.markDirty(item.aabb())
     })
+    shapes.forEach(item => this.markDirty(item.aabb()))
     const ret = this._shapesMgr.remove(...shapes);
     shapes.forEach(item => { item.board = void 0 })
     return ret
@@ -450,14 +453,13 @@ export class Board {
    * @memberof Board
    */
   setSelects(shapes: Shape[], opts?: EmitOpts): [Shape[], Shape[]] {
-    const emit = !!opts;
-    const operator = (opts as any)?.operator ?? this._whoami;
     const selecteds = shapes.filter(v => !v.selected);
     const desecteds = this._selects.filter(a => !shapes.find(b => a === b))
     desecteds.forEach(v => v.selected = false)
     selecteds.forEach(v => v.selected = true)
     this._selects = shapes
-    if (emit) {
+
+    this.read_emit_opts(opts, (operator) => {
       selecteds.length && this.emitEvent(EventEnum.ShapesSelected, {
         operator,
         shapeDatas: selecteds.map(v => v.data)
@@ -466,7 +468,8 @@ export class Board {
         operator,
         shapeDatas: desecteds.map(v => v.data)
       });
-    }
+    })
+
     return [selecteds, desecteds]
   }
 
@@ -496,27 +499,7 @@ export class Board {
   protected _wheel = (e: WheelEvent) => {
     const sx = e.shiftKey ? e.deltaY : 0;
     const sy = e.shiftKey ? 0 : e.deltaY;
-    this.world_rect_changing(() => {
-      this.scroll_by(sx, sy)
-    })
-  }
-
-  /**
-   * 执行指定函数，并检查世界矩形变化，当变化触发emitEvent
-   *
-   * @protected
-   * @param {() => any} func 执行函数
-   * @return {this}
-   * @memberof Board
-   */
-  protected world_rect_changing(func: () => any): this {
-    const r1 = this._world.pure()
-    func();
-    const r2 = this._world.pure();
-    if (r1.x !== r2.x || r1.y !== r2.y || r1.w !== r2.w || r1.h !== r2.h) {
-      this.emitEvent(EventEnum.WorldRectChanged, { form: r1, to: r2 })
-    }
-    return this;
+    this.scroll_by(sx, sy, true)
   }
 
   protected _pointerdown = (e: PointerEvent) => {
@@ -547,10 +530,8 @@ export class Board {
 
   protected _pointermove = (e: PointerEvent) => {
     if (this.mb_down) {
-      this.world_rect_changing(() => {
-        const { x, y } = this._world_drag_start_pos
-        this.scroll_to(x - e.x, y - e.y)
-      })
+      const { x, y } = this._world_drag_start_pos
+      this.scroll_to(x - e.x, y - e.y, true)
     }
     if (this.tool) {
       const dot = this.getDot(e)

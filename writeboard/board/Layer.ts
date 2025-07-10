@@ -1,4 +1,5 @@
 import styles from "../styles.module.scss"
+import { Numbers } from "../utils";
 export interface ILayerInfoInit {
   readonly id: string;
   readonly name: string;
@@ -79,6 +80,7 @@ export class Layer implements ILayer {
     return this._onscreen.width;
   }
   set width(v: number) {
+    if (Numbers.equals(this.width, v)) return
     this._onscreen.width = v;
     this._offscreen.width = v;
   }
@@ -86,6 +88,7 @@ export class Layer implements ILayer {
     return this._onscreen.height;
   }
   set height(v: number) {
+    if (Numbers.equals(this.height, v)) return
     this._onscreen.height = v;
     this._offscreen.height = v;
   }

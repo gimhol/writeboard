@@ -55,6 +55,7 @@ export namespace Events {
     to?: ToolType;
   }
   export interface IRectChangeDetail {
+    operator: string;
     form: IRect;
     to: IRect;
   }

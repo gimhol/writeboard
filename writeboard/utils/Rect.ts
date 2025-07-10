@@ -3,13 +3,14 @@ import type { ILine } from "./Line";
 import { LineSegment } from "./LineSegment";
 import { Vector } from "./Vector";
 import { type IVector } from "./IVector";
+import { Numbers } from "./Numbers";
 
 const { min, max } = Math;
 export class Rect implements IRect {
-  x: number
-  y: number
-  w: number
-  h: number
+  x: number = 0
+  y: number = 0
+  w: number = -1
+  h: number = -1
   get top() { return this.y }
   get left() { return this.x }
   get right() { return this.x + this.w }
@@ -44,10 +45,7 @@ export class Rect implements IRect {
     ]
   }
   constructor(x: number = 0, y: number = 0, w: number = 0, h: number = 0) {
-    this.x = x
-    this.y = y
-    this.w = w
-    this.h = h
+    this.set(x, y, w, h)
   }
   pure(): IRect {
     return {
@@ -57,7 +55,13 @@ export class Rect implements IRect {
       h: this.h,
     }
   }
-  set(o: IRect) {
+  set(x: number, y: number, w: number, h: number) {
+    this.x = x
+    this.y = y
+    this.w = w
+    this.h = h
+  }
+  read(o: IRect) {
     this.x = o.x
     this.y = o.y
     this.w = o.w
@@ -151,5 +155,10 @@ export class Rect implements IRect {
     return ret;
   }
 
-
+  static equal = (a: IRect, b: IRect) => (
+    Numbers.equals(a.x, b.x) &&
+    Numbers.equals(a.y, b.y) &&
+    Numbers.equals(a.w, b.w) &&
+    Numbers.equals(a.h, b.h)
+  )
 }
