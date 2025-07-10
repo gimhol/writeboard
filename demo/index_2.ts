@@ -147,11 +147,8 @@ function main() {
   workspace.addChild(layersView);
   layersView.addEventListener(LayersView.EventType.LayerAdded, () => {
     const layer = factory.newLayer({
-      info: {
-        name: factory.newLayerName(),
-        id: factory.newLayerId()
-      },
-      onscreen: document.createElement('canvas')
+      name: factory.newLayerName(),
+      id: factory.newLayerId()
     })
     layersView.addLayer(layer);
     board.addLayer(layer);
@@ -209,7 +206,7 @@ function main() {
     pointerEvents: 'all',
   });
   workspace.rootDockView.setContent(blackboard);
-  
+
   board = factory.newBoard({ width: 1024, height: 1024, element: blackboard.inner });
   Object.assign(window, {
     board, factory, workspace, FactoryMgr: Gaia
