@@ -1,9 +1,6 @@
-import { Shape } from "../../shape";
-
+import type { Shape } from "../../shape";
 
 export interface IPickTarget {
   shape: Shape;
-  midX: number;
-  midY: number;
   rotation: number;
 }

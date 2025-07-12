@@ -36,21 +36,7 @@ export class RotatedRect implements IRotatedRect {
     return this.y + this.h
   }
   get dots(): [IVector, IVector, IVector, IVector] {
-    const { middleX: bx, middleY: by, _cr: c, _sr: s, r } = this;
-    const dot = (x: number, y: number) => {
-      const dx = x - bx;
-      const dy = y - by;
-      return {
-        x: Number((dx * c - dy * s + bx).toPrecision(4)),
-        y: Number((dx * s + dy * c + by).toPrecision(4)),
-      }
-    }
-    return [
-      dot(this.x, this.y),
-      dot(this.right, this.y),
-      dot(this.right, this.bottom),
-      dot(this.x, this.bottom),
-    ]
+    return RotatedRect.dots_cs(this.x, this.y, this.w, this.h, this._cr, this._sr);
   }
   get r() { return this._r }
   set r(r: number) {
@@ -112,7 +98,34 @@ export class RotatedRect implements IRotatedRect {
   static pure(x: number, y: number, w: number, h: number, r: number): IRotatedRect {
     return { x, y, w, h, r };
   }
-
+  static dots_cs(x: number, y: number, w: number, h: number, c: number, s: number): [IVector, IVector, IVector, IVector] {
+    const bx = x + w / 2
+    const by = y + h / 2
+    const right = x + w
+    const bottom = y + h
+    const dot = (x: number, y: number) => {
+      const dx = x - bx;
+      const dy = y - by;
+      return {
+        x: Number((dx * c - dy * s + bx).toPrecision(4)),
+        y: Number((dx * s + dy * c + by).toPrecision(4)),
+      }
+    }
+    return [
+      dot(x, y),
+      dot(right, y),
+      dot(right, bottom),
+      dot(x, bottom),
+    ]
+  }
+  static dots(x: number, y: number, w: number, h: number, r: number = 0): [IVector, IVector, IVector, IVector] {
+    const c = Math.cos(r)
+    const s = Math.sin(r)
+    return this.dots_cs(x, y, w, h, c, s)
+  }
+  static dots2(r: IRotatedRect): [IVector, IVector, IVector, IVector] {
+    return this.dots(r.x, r.y, r.w, r.h, r.r)
+  }
   static hit(a: IRotatedRect, b: IRotatedRect): boolean {
     if (!a.r && !b.r) return Rect.hit(a, b)
     const realA = a instanceof RotatedRect ? a : new RotatedRect(a.x, a.y, a.w, a.h, a.r)

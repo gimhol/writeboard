@@ -1,7 +1,7 @@
 import { Resizable, ResizeDirection, Shape, ShapeData, ShapeRect } from "../../shape";
-import { Rect, Vector, type IDot } from "../../utils";
+import { Rect, RotatedRect, type IDot } from "../../utils";
 import { type IPickTarget } from "./IPickTarget";
-
+const { min, max } = Math
 export class ShapePicking extends ShapeRect {
   private _targets: IPickTarget[] = [];
   private _geo = new Rect(
@@ -40,22 +40,14 @@ export class ShapePicking extends ShapeRect {
     const rotation = this.data.rotation;
     const geo = this._geo;
     this._targets = [];
-    for (let i = 0, len = shapes.length; i < len; ++i) {
-      const shape = shapes[i];
-      const {
-        rotatedTopLeft: a, rotatedTopRight: b, rotatedBottomLeft: c, rotatedBottomRight: d, locked,
-      } = shape;
-      if (locked) continue;
-      this._targets.push({
-        shape,
-        midX: shape.midX,
-        midY: shape.midY,
-        rotation: shape.rotation - rotation,
-      });
-      geo.left = Math.min(geo.left, a.x, b.x, c.x, d.x);
-      geo.right = Math.max(geo.right, a.x, b.x, c.x, d.x);
-      geo.top = Math.min(geo.top, a.y, b.y, c.y, d.y);
-      geo.bottom = Math.max(geo.bottom, a.y, b.y, c.y, d.y);
+    for (const s of shapes) {
+      if (s.locked) continue;
+      const [a, b, c, d] = RotatedRect.dots2(s.data)
+      this._targets.push({ shape: s, rotation: s.rotation - rotation });
+      geo.left = min(geo.left, a.x, b.x, c.x, d.x);
+      geo.right = max(geo.right, a.x, b.x, c.x, d.x);
+      geo.top = min(geo.top, a.y, b.y, c.y, d.y);
+      geo.bottom = max(geo.bottom, a.y, b.y, c.y, d.y);
     }
     this.setGeo(geo);
     this.visible = true;
