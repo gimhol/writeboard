@@ -2,6 +2,10 @@
  * 数字类型相关的工具函数
  */
 export namespace Numbers {
+  export function isVaild(n: any): n is number {
+    if (typeof n !== 'number') return false;
+    return !Number.isNaN(n)
+  }
   /**
    * 判断两个数值是否相等
    * 

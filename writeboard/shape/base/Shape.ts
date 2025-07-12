@@ -10,7 +10,7 @@ import { IShapeData } from "./IShapeData";
 import { Resizable } from "./Resizable";
 import { ResizeDirection } from "./ResizeDirection";
 import { ShapeEventMap, ShapeEventEnum, ShapeEventListener } from "./ShapeEvent";
-import { IRotatedRect, Polygon, RotatedRect } from "../../utils";
+import { IRotatedRect, Numbers, Polygon, RotatedRect } from "../../utils";
 const { floor, max, ceil, abs, sin, cos, PI, min } = Math;
 /**
  * 一切图形的基类
@@ -257,19 +257,26 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   get rotation() { return this.data.rotation }
 
-  rotateBy(d: number): void {
+  rotateBy(d: number, x?: number, y?: number): void {
     const r = this._d.rotation + d
-    this.rotateTo(r);
+    this.rotateTo(r, x, y);
   }
 
-  rotateTo(r: number): void {
-    if (r == this._d.rotation) return
-    const prev: Partial<IShapeData> = { x: this._d.x, y: this._d.y, r: this._d.r }
+  rotateTo(r: number, x?: number, y?: number): void {
+    if (r == this._d.rotation) return;
+    const old_rotation = this._d.r
+    const prev: Partial<IShapeData> = { x: this._d.x, y: this._d.y, r: old_rotation }
     this.beginDirty(prev)
     this._d.rotation = r % (PI * 2);
+    if (Numbers.isVaild(x) && Numbers.isVaild(y)) {
+      const m = Vector.rotated2(this.midX, this.midY, x, y, this.rotation - (old_rotation || 0))
+      this._d.x = m.x - this.w / 2
+      this._d.y = m.y - this.h / 2
+    }
     this.endDirty(prev)
   }
 
+  
   getGeo(): Rect {
     return new Rect(
       this._d.x,

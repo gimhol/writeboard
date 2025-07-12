@@ -13,7 +13,8 @@ import { Vector } from "../../utils/Vector"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { ITool } from "../base/Tool"
 import { ShapeRotator } from "./ShapeRotator"
-import { ShapePicking, ShapeSelector } from "./ShapeSelector"
+import { ShapeSelector } from "./ShapeSelector"
+import { ShapePicking } from "./ShapePicking"
 export enum SelectorStatus {
   Idle = 0,
   ReadyForDragging,
