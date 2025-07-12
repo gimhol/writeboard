@@ -5,16 +5,18 @@ const { min, max } = Math
 export class ShapePicking extends ShapeRect {
   private _targets: IPickTarget[] = [];
   private _geo = new Rect(
-    Number.MAX_VALUE,
-    Number.MAX_VALUE,
-    -Number.MAX_VALUE,
-    -Number.MAX_VALUE
+    Number.MAX_SAFE_INTEGER,
+    Number.MAX_SAFE_INTEGER,
+    Number.MIN_SAFE_INTEGER,
+    Number.MIN_SAFE_INTEGER,
   );
   constructor() {
     super(new ShapeData);
     this.data.selected = true;
     this.data.visible = false;
     this.data.strokeStyle = '';
+    this.data.fillStyle = ''
+    this.data.lineWidth = 0;
     this.resizable = Resizable.None;
   }
 
@@ -28,10 +30,10 @@ export class ShapePicking extends ShapeRect {
   reset(): void {
     this._targets = [];
     this.visible = false;
-    this._geo.x = Number.MAX_VALUE;
-    this._geo.y = Number.MAX_VALUE;
-    this._geo.w = -Number.MAX_VALUE;
-    this._geo.h = -Number.MAX_VALUE;
+    this._geo.x = Number.MAX_SAFE_INTEGER;
+    this._geo.y = Number.MAX_SAFE_INTEGER;
+    this._geo.w = Number.MIN_SAFE_INTEGER;
+    this._geo.h = Number.MIN_SAFE_INTEGER;
     this.rotateTo(0);
   }
 
@@ -55,7 +57,6 @@ export class ShapePicking extends ShapeRect {
 
   override rotateTo(r: number, x?: number, y?: number): void {
     super.rotateTo(r, x, y);
-
     for (const { shape, rotation } of this._targets) {
       shape.rotateTo(r + rotation, x ?? this.midX, y ?? this.midY);
     }
