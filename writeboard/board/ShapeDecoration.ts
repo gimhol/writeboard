@@ -26,33 +26,33 @@ export class DefaultShapeDecoration implements IShapeDecoration {
   }
   private lock_icon_w = 25;
   private lock_icon_h = 25;
+  private lock_path_2d: Path2D | null = null;
   private draw_lock(ctx: CanvasRenderingContext2D) {
+    if (!this.lock_path_2d) {
+      const path = this.lock_path_2d = new Path2D()
+      const w = 15;
+      const h = 12;
+      const t = w * 0.65;
+      const l = (this.lock_icon_w - w) / 2
+      const r = l + w;
+      const mx = l + w / 2;
+      const my = t + h / 2;
+      path.roundRect(0, 0, this.lock_icon_w, this.lock_icon_h, 2)
+      path.roundRect(l, t, w, h, 2);
+      path.moveTo(l + w / 6, t)
+      path.arc(mx, t - 2, w / 3, Math.PI, 0)
+      path.lineTo(r - w / 6, t)
+      path.moveTo(mx, my - h * 0.3)
+      path.lineTo(mx, my + h * 0.2)
+      path.arc(mx, my + h * 0.2, 1, 0, Math.PI * 2)
+    }
+
     ctx.fillStyle = '#FFFFFF88'
     ctx.strokeStyle = '#00000088'
     ctx.lineWidth = 2
     ctx.setLineDash([])
-    ctx.beginPath()
-    ctx.roundRect(0, 0, this.lock_icon_w, this.lock_icon_h, 2)
-    ctx.fill()
-
-    const w = 15;
-    const h = 12;
-    const t = w * 0.65;
-    const l = (this.lock_icon_w - w) / 2
-    const r = l + w;
-    const mx = l + w / 2;
-    const my = t + h / 2;
-
-    ctx.beginPath()
-    ctx.roundRect(l, t, w, h, 2);
-    ctx.moveTo(l + w / 6, t)
-    ctx.arc(mx, t - 2, w / 3, Math.PI, 0)
-    ctx.lineTo(r - w / 6, t)
-    ctx.roundRect(0, 0, this.lock_icon_w, this.lock_icon_h, 2)
-    ctx.moveTo(mx, my - h * 0.3)
-    ctx.lineTo(mx, my + h * 0.2)
-    ctx.arc(mx, my + h * 0.2, 1, 0, Math.PI * 2)
-    ctx.stroke()
+    ctx.fill(this.lock_path_2d)
+    ctx.stroke(this.lock_path_2d)
   }
 
   locked(shape: Shape, ctx: CanvasRenderingContext2D) {
