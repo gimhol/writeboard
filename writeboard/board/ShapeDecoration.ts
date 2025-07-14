@@ -84,6 +84,7 @@ export class DefaultShapeDecoration implements IShapeDecoration {
   }
 
   resizable(shape: Shape, ctx: CanvasRenderingContext2D) {
+    if (!shape.board?.shapeResizble) return false;
     /* 选择多个图形时，图形本身的resize示意框不展示 */
     if (this.is_mutiply_selected(shape)) return;
     let { x, y, w, h } = shape.selectorRect()

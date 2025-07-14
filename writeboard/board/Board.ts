@@ -18,7 +18,6 @@ export interface BoardOptions {
   toolType?: ToolType;
 }
 const Tag = 'Board'
-
 export class Board {
   protected _factory: IFactory
   protected _toolType: ToolType | undefined = void 0
@@ -35,6 +34,20 @@ export class Board {
   protected _viewport = new Rect(0, 0, 600, 600)
   protected _world = new Rect(0, 0, 1600, 1600)
   protected _world_drag_start_pos: IVector = { x: 0, y: 0 };
+
+  /**
+   * 是否允许用户拉伸图形
+   * 
+   * @type {boolean}
+   */
+  shapeResizble: boolean = false;
+
+  /**
+   * 是否允许用户旋转图形
+   *
+   * @type {boolean}
+   */
+  shapeRotatable: boolean = false;
 
   get lb_down(): boolean { return !!this._mousebuttons[0] }
   get mb_down(): boolean { return !!this._mousebuttons[1] }

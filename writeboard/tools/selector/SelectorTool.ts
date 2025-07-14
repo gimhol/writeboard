@@ -12,9 +12,9 @@ import { throttle } from "../../utils/Throttle"
 import { Vector } from "../../utils/Vector"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { ITool } from "../base/Tool"
+import { ShapePicking } from "./ShapePicking"
 import { ShapeRotator } from "./ShapeRotator"
 import { ShapeSelector } from "./ShapeSelector"
-import { ShapePicking } from "./ShapePicking"
 export enum SelectorStatus {
   Idle = 0,
   ReadyForDragging,
@@ -268,7 +268,7 @@ export class SelectorTool implements ITool {
 
   private getReiszerCursor(direction: ResizeDirection, shape: Shape) {
     const { rotation } = shape;
-    if (!direction) return 'move';
+    if (!direction || !this.board.shapeResizble) return 'move';
     const deg = Math.floor(
       (
         25 + Degrees.angle(

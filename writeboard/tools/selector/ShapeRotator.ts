@@ -38,7 +38,7 @@ export class ShapeRotator extends Shape<ShapeData> {
       this._ctrl.w = s;
       this._ctrl.h = s;
     }
-    this.data.visible = v
+    this.data.visible = v && !!this.board?.shapeRotatable
     this.endDirty()
   }
 

@@ -276,7 +276,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.endDirty(prev)
   }
 
-  
+
   getGeo(): Rect {
     return new Rect(
       this._d.x,
@@ -501,7 +501,7 @@ export class Shape<D extends ShapeData = ShapeData> {
     }
   }
   resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
-    if (!this.selected || !this._r || this.ghost || this.locked) {
+    if (!this.selected || !this._r || this.ghost || this.locked || !this.board?.shapeResizble) {
       return [ResizeDirection.None, undefined];
     }
     const { x: l, y: t } = this.data
