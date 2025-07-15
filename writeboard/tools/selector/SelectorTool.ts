@@ -3,7 +3,7 @@ import { EventEnum } from "../../event"
 import { Events } from "../../event/Events"
 import { Gaia } from "../../mgr/Gaia"
 import { ShapePen, ShapeText, TextTool } from "../../shape"
-import { ResizeDirection, Shape } from "../../shape/base"
+import { degrees, opposites, Resizable, Shape } from "../../shape/base"
 import { Arrays, Degrees, IRotatedRect, Polygon, Rect, RotatedRect } from "../../utils"
 import { IDot } from "../../utils/Dot"
 import { IVector } from "../../utils/IVector"
@@ -35,7 +35,7 @@ export class SelectorTool implements ITool {
   private _status = SelectorStatus.Idle
   private _prevPos: IVector = { x: 0, y: 0 }
   private _resizer = {
-    direction: ResizeDirection.None,
+    direction: Resizable.None,
     anchor: { x: 0, y: 0 },
     offset: { x: 0, y: 0 },
     shape: <Shape | null>null
@@ -188,50 +188,43 @@ export class SelectorTool implements ITool {
     } else {
       // 点击位置存在图形，且图形已被选择，则判断是否点击尺寸调整。
       const dot = shape.map2me(x, y).plus(shape.data)
-      const [direction, resizerRect] = shape.resizeDirection(dot.x, dot.y);
+      const [direction, resizerRect] = shape.resizableDirection(x, y);
       if (direction) {
         this._resizer.direction = direction;
         this._resizer.shape = shape
+        this._resizer.anchor = shape.getRotatedDot(opposites[direction]);
         switch (direction) {
-          case ResizeDirection.Top:
+          case Resizable.Top:
             this._resizer.offset.x = 0
             this._resizer.offset.y = resizerRect!.top - dot.y
-            this._resizer.anchor = shape.rotatedMidBottom;
             break
-          case ResizeDirection.Bottom:
+          case Resizable.Bottom:
             this._resizer.offset.x = 0
             this._resizer.offset.y = resizerRect!.bottom - dot.y
-            this._resizer.anchor = shape.rotatedMidTop;
             break
-          case ResizeDirection.Left:
+          case Resizable.Left:
             this._resizer.offset.x = resizerRect!.left - dot.x
             this._resizer.offset.y = 0
-            this._resizer.anchor = shape.rotatedMidRight;
             break
-          case ResizeDirection.Right:
+          case Resizable.Right:
             this._resizer.offset.x = resizerRect!.right - dot.x
             this._resizer.offset.y = 0
-            this._resizer.anchor = shape.rotatedMidLeft;
             break
-          case ResizeDirection.TopLeft:
+          case Resizable.TopLeft:
             this._resizer.offset.x = resizerRect!.left - dot.x
             this._resizer.offset.y = resizerRect!.top - dot.y
-            this._resizer.anchor = shape.rotatedBottomRight;
             break
-          case ResizeDirection.TopRight:
+          case Resizable.TopRight:
             this._resizer.offset.x = resizerRect!.right - dot.x
             this._resizer.offset.y = resizerRect!.top - dot.y
-            this._resizer.anchor = shape.rotatedBottomLeft;
             break
-          case ResizeDirection.BottomLeft:
+          case Resizable.BottomLeft:
             this._resizer.offset.x = resizerRect!.left - dot.x
             this._resizer.offset.y = resizerRect!.bottom - dot.y
-            this._resizer.anchor = shape.rotatedTopRight;
             break
-          case ResizeDirection.BottomRight:
+          case Resizable.BottomRight:
             this._resizer.offset.x = resizerRect!.right - dot.x
             this._resizer.offset.y = resizerRect!.bottom - dot.y
-            this._resizer.anchor = shape.rotatedTopLeft;
             break
         }
         this._status = SelectorStatus.ReadyForResizing;
@@ -260,35 +253,41 @@ export class SelectorTool implements ITool {
       if (it.locked) return null;
       const hit = it.getGeo().hit({ x, y })
       if (!hit) return null;
-      const [direction] = it.resizeDirection(x, y)
+      const [direction] = it.resizableDirection(dot.x, dot.y)
       return [direction, it] as const
     })
     this.cursor = result ? this.getReiszerCursor(...result) : ''
   }
 
-  private getReiszerCursor(direction: ResizeDirection, shape: Shape) {
-    const { rotation } = shape;
+
+  private getReiszerCursor(direction: Resizable, shape: Shape) {
     if (!direction || !this.board.shapeResizble) return 'move';
-    const deg = Math.floor(
-      (
-        25 + Degrees.angle(
-          Degrees.normalized(rotation + (direction - 1) * Math.PI * 0.25)
-        )
-      ) / 45
+    const a = shape.getRotatedDot(direction);
+    a.x -= shape.midX;
+    a.y -= shape.midY;
+    const d = Math.atan2(a.x, -a.y)
+    const which: number = Math.floor(
+      Degrees.normalized(0.39269908169872414 + d) / 0.7853981633974483
     ) % 8;
-    switch (deg) {
-      case 0: case 4: return 'ns-resize';
-      case 2: case 6: return 'ew-resize';
-      case 3: case 7: return 'nw-resize';
-      case 1: case 5: return 'ne-resize';
+    switch (which) {
+      case 0: return 'ns-resize';
+      case 4: return 'ns-resize';
+      case 2: return 'ew-resize';
+      case 6: return 'ew-resize';
+      case 3: return 'se-resize';
+      case 7: return 'nw-resize';
+      case 1: return 'ne-resize';
+      case 5: return 'sw-resize';
     }
     return '';
   }
+
   _pen_in_click = (shape: Shape, rect: IRotatedRect) => {
     // 当点击位置未命中
     if (!ShapePen.is(shape)) return false;
     return this._pen_in_rect(shape, rect)
   }
+
   _pen_in_rect = (shape: Shape, rect: IRotatedRect) => {
     if (!ShapePen.is(shape)) return true;
     const lw = shape.lineWidth;
@@ -317,6 +316,7 @@ export class SelectorTool implements ITool {
     console.log('' + rect_r, '' + new Vector(coords[0], coords[1]))
     return false
   }
+
   pointerDraw(dot: IDot): void {
     const board = this.board
     if (!board) return
@@ -349,60 +349,48 @@ export class SelectorTool implements ITool {
       case SelectorStatus.Resizing: {
         const { shape, offset, anchor, direction } = this._resizer
         if (!shape) return
-
         const geo = shape.getGeo()
         const rs = board.factory.resizer.size
-        const { y: roy, x: rox } = offset
-        const { x, y } = shape.map2me(dot.x, dot.y).plus(shape)
+        const { x, y } = shape.map2me(dot.x, dot.y).plus(shape).plus(offset)
         const { left: l, right: r, bottom: b, top: t } = geo
+        this.cursor = this.getReiszerCursor(direction, shape);
         switch (direction) {
-          case ResizeDirection.Top:
-            geo.top = Math.min(roy + y, b - rs * 3)
+          case Resizable.Top:
+            geo.top = Math.min(y, b - rs * 3)
             break
-          case ResizeDirection.Bottom:
-            geo.bottom = Math.max(roy + y, t + rs * 3)
+          case Resizable.Bottom:
+            geo.bottom = Math.max(y, t + rs * 3)
             break
-          case ResizeDirection.Left:
-            geo.left = Math.min(rox + x, r - rs * 3)
+          case Resizable.Left:
+            geo.left = Math.min(x, r - rs * 3)
             break
-          case ResizeDirection.Right:
-            geo.right = Math.max(rox + x, l + rs * 3)
+          case Resizable.Right:
+            geo.right = Math.max(x, l + rs * 3)
             break
-          case ResizeDirection.TopLeft:
-            geo.top = Math.min(roy + y, b - rs * 3)
-            geo.left = Math.min(rox + x, r - rs * 3)
+          case Resizable.TopLeft:
+            geo.top = Math.min(y, b - rs * 3)
+            geo.left = Math.min(x, r - rs * 3)
             break
-          case ResizeDirection.TopRight:
-            geo.top = Math.min(roy + y, b - rs * 3)
-            geo.right = Math.max(rox + x, l + rs * 3)
+          case Resizable.TopRight:
+            geo.top = Math.min(y, b - rs * 3)
+            geo.right = Math.max(x, l + rs * 3)
             break
-          case ResizeDirection.BottomLeft:
-            geo.bottom = Math.max(roy + y, t + rs * 3)
-            geo.left = Math.min(rox + x, r - rs * 3)
+          case Resizable.BottomLeft:
+            geo.bottom = Math.max(y, t + rs * 3)
+            geo.left = Math.min(x, r - rs * 3)
             break
-          case ResizeDirection.BottomRight:
-            geo.bottom = Math.max(roy + y, t + rs * 3)
-            geo.right = Math.max(rox + x, l + rs * 3)
+          case Resizable.BottomRight:
+            geo.bottom = Math.max(y, t + rs * 3)
+            geo.right = Math.max(x, l + rs * 3)
             break
+          default:
+            break;
         }
-        const degree: number = shape.data.r ?? 0
-        const rd = direction - 1
-        const beveling = (rd == 0 || rd == 4) ? geo.h : (rd == 2 || rd == 6) ? geo.w : Math.sqrt(geo.w * geo.w + geo.h * geo.h)
-        let deg = degree + Math.PI * rd / 4;
-        if (rd == 1 || rd == 5)
-          deg += Math.atan2(geo.w, geo.h) - Math.PI / 4
-        else if (rd == 3 || rd == 7)
-          deg += Math.atan2(geo.h, geo.w) - Math.PI / 4
-        const sinV = Math.sin(deg);
-        const cosV = Math.cos(deg);
-        const midX = anchor.x + sinV * beveling / 2;
-        const midY = anchor.y - cosV * beveling / 2;
-        shape.geo(
-          midX - geo.w / 2,
-          midY - geo.h / 2,
-          geo.w,
-          geo.h
-        )
+        shape.beginDirty(Rect.pure2(shape))
+        shape.geo(geo.x, geo.y, geo.w, geo.h, false);
+        const o = Vector.minus(anchor, shape.getRotatedDot(opposites[direction]))
+        shape.moveBy(o.x, o.y, false)
+        shape.endDirty(Rect.pure2(shape))
         this.emitGeoEvent(false)
         return
       }

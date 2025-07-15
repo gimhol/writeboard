@@ -95,13 +95,14 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     } = shape.getResizerNumbers(x, y, w, h)
     const { resizable } = shape
 
-    if (resizable & Resizable.Vertical) {
+    if (resizable & Resizable.Top) {
       // top resizer
       ctx.beginPath()
       ctx.rect(mx, ty, s, s)
       ctx.fill()
       ctx.stroke()
-
+    }
+    if (resizable & Resizable.Bottom) {
       // bottom resizer
       ctx.beginPath()
       ctx.rect(mx, by, s, s)
@@ -109,38 +110,43 @@ export class DefaultShapeDecoration implements IShapeDecoration {
       ctx.stroke()
     }
 
-    if (resizable & Resizable.Horizontal) {
+    if (resizable & Resizable.Left) {
       // left resizer
       ctx.beginPath()
       ctx.rect(lx, my, s, s)
       ctx.fill()
       ctx.stroke()
-
+    }
+    if (resizable & Resizable.Right) {
       // right resizer
       ctx.beginPath()
       ctx.rect(rx, my, s, s)
       ctx.fill()
       ctx.stroke()
     }
-    if (resizable & Resizable.Corner) {
+    if (resizable & Resizable.TopLeft) {
       // top-left resizer
       ctx.beginPath()
       ctx.rect(lx, ty, s, s)
       ctx.fill()
       ctx.stroke()
+    }
+    if (resizable & Resizable.TopRight) {
 
       // top-right resizer
       ctx.beginPath()
       ctx.rect(rx, ty, s, s)
       ctx.fill()
       ctx.stroke()
-
+    }
+    if (resizable & Resizable.BottomLeft) {
       // bottom-left resizer
       ctx.beginPath()
       ctx.rect(lx, by, s, s)
       ctx.fill()
       ctx.stroke()
-
+    }
+    if (resizable & Resizable.BottomRight) {
       // bottom-right resizer
       ctx.beginPath()
       ctx.rect(rx, by, s, s)

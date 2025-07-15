@@ -1,4 +1,4 @@
-import { Resizable, ResizeDirection, Shape, ShapeData, ShapeRect } from "../../shape";
+import { Resizable, Shape, ShapeData, ShapeRect } from "../../shape";
 import { Rect, RotatedRect, type IDot } from "../../utils";
 import { type IPickTarget } from "./IPickTarget";
 const { min, max } = Math
@@ -20,11 +20,11 @@ export class ShapePicking extends ShapeRect {
     this.resizable = Resizable.None;
   }
 
-  hit(dot: IDot): [ResizeDirection, Rect | undefined] | null {
+  hit(dot: IDot): [Resizable, Rect | undefined] | null {
     if (!this.visible) return null;
     const d = this.map2me(dot.x, dot.y).plus(this.data);
     if (!this.getGeo().hit(d)) return null;
-    return this.resizeDirection(d.x, d.y);
+    return this.resizableDirection(dot.x, dot.y);
   }
 
   reset(): void {

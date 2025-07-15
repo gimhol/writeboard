@@ -67,7 +67,7 @@ export class Rect implements IRect {
     this.w = o.w
     this.h = o.h
   }
-  hit(b: IRect | IVector): boolean {
+  hit(b: IVector): boolean {
     return Rect.hit(this, b)
   }
   toString() {
@@ -92,6 +92,9 @@ export class Rect implements IRect {
   }
   static pure(x: number, y: number, w: number, h: number): IRect {
     return { x, y, w, h };
+  }
+  static pure2(r: IRect): IRect {
+    return { x: r.x, y: r.y, w: r.w, h: r.h };
   }
   static bounds(r1: IRect, r2: IRect): IRect {
     const x = min(r1.x, r2.x)

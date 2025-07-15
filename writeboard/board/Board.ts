@@ -40,14 +40,14 @@ export class Board {
    * 
    * @type {boolean}
    */
-  shapeResizble: boolean = false;
+  shapeResizble: boolean = true;
 
   /**
    * 是否允许用户旋转图形
    *
    * @type {boolean}
    */
-  shapeRotatable: boolean = false;
+  shapeRotatable: boolean = true;
 
   get lb_down(): boolean { return !!this._mousebuttons[0] }
   get mb_down(): boolean { return !!this._mousebuttons[1] }
@@ -651,6 +651,7 @@ export class Board {
     const groupId: string = this.factory.newGroupId(shapes);
     return groupId;
   }
+
   ungroup(): this {
     return this;
   }

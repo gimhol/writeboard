@@ -11,6 +11,7 @@ export class Vector implements IVector {
   }
 
   plus(o: IVector): this { return this.add(o.x, o.y); }
+  minus(o: IVector): this { return this.add(-o.x, -o.y); }
   set(x: number, y: number): this {
     this.x = x;
     this.y = y;
@@ -37,6 +38,9 @@ export class Vector implements IVector {
     const { x, y } = Vector.rotated2(this.x, this.y, b.x, b.y, radians)
     return new Vector(x, y);
   }
+
+  static plus(a: IVector, b: IVector): IVector { return { x: a.x + b.x, y: a.y + b.y } }
+  static minus(a: IVector, b: IVector): IVector { return { x: a.x - b.x, y: a.y - b.y } }
   static ensure(rect: IVector): Vector {
     return rect instanceof Vector ? rect : Vector.create(rect)
   }

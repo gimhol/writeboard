@@ -1,16 +1,15 @@
 import { Board } from "../../board/Board";
-import { Rect } from "../../utils/Rect";
+import { IRotatedRect, Numbers, RotatedRect } from "../../utils";
 import { IRect } from "../../utils/IRect";
-import { Vector } from "../../utils/Vector";
 import { IVector } from "../../utils/IVector";
+import { Rect } from "../../utils/Rect";
+import { Vector } from "../../utils/Vector";
 import { isNum } from "../../utils/helper";
 import { ShapeType } from "../ShapeEnum";
-import { ShapeData } from "./ShapeData";
 import { IShapeData } from "./IShapeData";
 import { Resizable } from "./Resizable";
-import { ResizeDirection } from "./ResizeDirection";
-import { ShapeEventMap, ShapeEventEnum, ShapeEventListener } from "./ShapeEvent";
-import { IRotatedRect, Numbers, Polygon, RotatedRect } from "../../utils";
+import { ShapeData } from "./ShapeData";
+import { ShapeEventEnum, ShapeEventListener, ShapeEventMap } from "./ShapeEvent";
 const { floor, max, ceil, abs, sin, cos, PI, min } = Math;
 /**
  * 一切图形的基类
@@ -208,12 +207,21 @@ export class Shape<D extends ShapeData = ShapeData> {
    * @param y y坐标
    * @returns void
    */
-  move(x: number, y: number): void {
-    this.geo(x, y, this._d.w, this._d.h)
+  move(x: number, y: number, dirty: boolean = true): this {
+    return this.geo(x, y, this._d.w, this._d.h, dirty)
   }
-
-  resize(w: number, h: number): void {
-    this.geo(this._d.x, this._d.y, w, h)
+  resize(w: number, h: number, dirty: boolean = true): this {
+    return this.geo(this._d.x, this._d.y, w, h, dirty)
+  }
+  set midX(v: number) {
+    this.beginDirty()
+    this._d.midX = v
+    this.endDirty()
+  }
+  set midY(v: number) {
+    this.beginDirty()
+    this._d.midY = v
+    this.endDirty()
   }
 
   get x() { return this._d.x }
@@ -238,6 +246,11 @@ export class Shape<D extends ShapeData = ShapeData> {
   get rightTop(): IVector { return this.topRight }
   get rightBottom(): IVector { return this.bottomRight }
 
+  get midTop(): IVector { return { x: this.midX, y: this.top } }
+  get midBottom(): IVector { return { x: this.midX, y: this.bottom } }
+  get midLeft(): IVector { return { x: this.left, y: this.midY } }
+  get midRight(): IVector { return { x: this.right, y: this.midY } }
+
   get rotatedTopLeft(): IVector { return this.map2world(0, 0) }
   get rotatedBottomLeft(): IVector { return this.map2world(0, this.h) }
   get rotatedTopRight(): IVector { return this.map2world(this.w, 0) }
@@ -246,12 +259,6 @@ export class Shape<D extends ShapeData = ShapeData> {
   get rotatedLeftBottom(): IVector { return this.map2world(0, this.h) }
   get rotatedRightTop(): IVector { return this.map2world(this.w, 0) }
   get rotatedRightBottom(): IVector { return this.map2world(this.w, this.h) }
-
-  get midTop(): IVector { return { x: this.midX, y: this.top } }
-  get midBottom(): IVector { return { x: this.midX, y: this.bottom } }
-  get midLeft(): IVector { return { x: this.left, y: this.midY } }
-  get midRight(): IVector { return { x: this.right, y: this.midY } }
-
   get rotatedMidTop(): IVector { return this.map2world(this.halfW, 0) }
   get rotatedMidBottom(): IVector { return this.map2world(this.halfW, this.h) }
   get rotatedMidLeft(): IVector { return this.map2world(0, this.halfH) }
@@ -259,6 +266,24 @@ export class Shape<D extends ShapeData = ShapeData> {
   get rotatedMid(): IVector { return this.map2world(this.halfW, this.halfH) }
 
   get rotation() { return this.data.rotation }
+  getRotatedDot(which: Resizable) {
+    switch (which) {
+      case Resizable.TopLeft: return this.rotatedTopLeft;
+      case Resizable.Top: return this.rotatedMidTop;
+      case Resizable.TopRight: return this.rotatedTopRight;
+      case Resizable.Right: return this.rotatedMidRight;
+      case Resizable.BottomRight: return this.rotatedBottomRight
+      case Resizable.Bottom: return this.rotatedMidBottom;
+      case Resizable.BottomLeft: return this.rotatedBottomLeft;
+      case Resizable.Left: return this.rotatedMidLeft;
+      case Resizable.None:
+      case Resizable.Horizontal:
+      case Resizable.Vertical:
+      case Resizable.Corner:
+      case Resizable.All:
+        return { x: NaN, y: NaN }
+    }
+  }
 
   rotateBy(d: number, x?: number, y?: number): void {
     const r = this._d.rotation + d
@@ -288,17 +313,24 @@ export class Shape<D extends ShapeData = ShapeData> {
       this._d.h
     )
   }
-  setGeo(rect: Rect): void {
-    this.geo(rect.x, rect.y, rect.w, rect.h)
+  setGeo(rect: Rect, dirty: boolean = true): this {
+    return this.geo(rect.x, rect.y, rect.w, rect.h, dirty)
   }
 
-  geo(x: number, y: number, w: number, h: number): void {
+  geo(x: number, y: number, w: number, h: number, dirty: boolean = true): this {
     if (
       x === this._d.x &&
       y === this._d.y &&
       w === this._d.w &&
       h === this._d.h
-    ) return
+    ) return this;
+    if (!dirty) {
+      this._d.x = x
+      this._d.y = y
+      this._d.w = w
+      this._d.h = h
+      return this;
+    }
     const prev: Partial<IShapeData> = {
       x: this._d.x, y: this._d.y,
       w: this._d.w, h: this._d.h
@@ -309,32 +341,36 @@ export class Shape<D extends ShapeData = ShapeData> {
     this._d.w = w
     this._d.h = h
     this.endDirty(prev)
+    return this
   }
 
-  moveBy(x: number, y: number): void {
-    this.geo(
+  moveBy(x: number, y: number, dirty: boolean = true): this {
+    return this.geo(
       this._d.x + x,
       this._d.y + y,
       this._d.w,
-      this._d.h
+      this._d.h,
+      dirty
     )
   }
 
-  resizeBy(w: number, h: number): void {
-    this.geo(
+  resizeBy(w: number, h: number, dirty: boolean = true): this {
+    return this.geo(
       this._d.x,
       this._d.y,
       this._d.w + w,
-      this._d.h + h
+      this._d.h + h,
+      dirty
     )
   }
 
-  geoBy(x: number, y: number, w: number, h: number): void {
-    this.geo(
+  geoBy(x: number, y: number, w: number, h: number, dirty: boolean = true): this {
+    return this.geo(
       this._d.x + x,
       this._d.y + y,
       this._d.w + w,
-      this._d.h + h
+      this._d.h + h,
+      dirty
     )
   }
 
@@ -503,51 +539,52 @@ export class Shape<D extends ShapeData = ShapeData> {
       y: dx * sr + dy * cr + my + y
     }
   }
-  resizeDirection(pointerX: number, pointerY: number): [ResizeDirection, Rect | undefined] {
+  resizableDirection(pointerX: number, pointerY: number): [Resizable, Rect | undefined] {
     if (!this.selected || !this._r || this.ghost || this.locked || !this.board?.shapeResizble) {
-      return [ResizeDirection.None, undefined];
+      return [Resizable.None, undefined];
     }
+
     const { x: l, y: t } = this.data
     const { x, y, w, h } = this.selectorRect();
     const { s, lx, rx, ty, by, mx, my } = this.getResizerNumbers(l + x, t + y, w, h)
 
-    const pos = { x: pointerX, y: pointerY }
+    const pos = this.map2me(pointerX, pointerY).plus(this)
     const rect = new Rect(0, 0, s, s);
 
-    rect.moveTo(mx, ty)
-    if (rect.hit(pos)) {
-      return [ResizeDirection.Top, rect];
+    if (this.resizable & Resizable.Top) {
+      rect.moveTo(mx, ty)
+      if (rect.hit(pos)) return [Resizable.Top, rect];
     }
-    rect.moveTo(mx, by);
-    if (rect.hit(pos)) {
-      return [ResizeDirection.Bottom, rect];
-    }
-    rect.moveTo(lx, my);
-    if (rect.hit(pos)) {
-      return [ResizeDirection.Left, rect];
-    }
-    rect.moveTo(rx, my);
-    if (rect.hit(pos)) {
-      return [ResizeDirection.Right, rect];
+    if (this.resizable & Resizable.Bottom) {
+      rect.moveTo(mx, by);
+      if (rect.hit(pos)) return [Resizable.Bottom, rect];
     }
 
-    rect.moveTo(lx, ty)
-    if (rect.hit(pos)) {
-      return [ResizeDirection.TopLeft, rect];
+    if (this.resizable & Resizable.Left) {
+      rect.moveTo(lx, my);
+      if (rect.hit(pos)) return [Resizable.Left, rect];
     }
-    rect.moveTo(rx, ty);
-    if (rect.hit(pos)) {
-      return [ResizeDirection.TopRight, rect];
+    if (this.resizable & Resizable.Right) {
+      rect.moveTo(rx, my);
+      if (rect.hit(pos)) return [Resizable.Right, rect];
     }
-    rect.moveTo(lx, by);
-    if (rect.hit(pos)) {
-      return [ResizeDirection.BottomLeft, rect];
+    if (this.resizable & Resizable.TopLeft) {
+      rect.moveTo(lx, ty)
+      if (rect.hit(pos)) return [Resizable.TopLeft, rect];
     }
-    rect.moveTo(rx, by);
-    if (rect.hit(pos)) {
-      return [ResizeDirection.BottomRight, rect];
+    if (this.resizable & Resizable.TopRight) {
+      rect.moveTo(rx, ty);
+      if (rect.hit(pos)) return [Resizable.TopRight, rect];
     }
-    return [ResizeDirection.None, undefined]
+    if (this.resizable & Resizable.BottomLeft) {
+      rect.moveTo(lx, by);
+      if (rect.hit(pos)) return [Resizable.BottomLeft, rect];
+    }
+    if (this.resizable & Resizable.BottomRight) {
+      rect.moveTo(rx, by);
+      if (rect.hit(pos)) return [Resizable.BottomRight, rect];
+    }
+    return [Resizable.None, undefined]
   }
 
   protected beginDraw(ctx: CanvasRenderingContext2D): void {

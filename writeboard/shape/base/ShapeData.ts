@@ -145,7 +145,6 @@ export class ShapeData implements IShapeData {
   set midX(v: number) { this.x = v - this.halfW }
   get midY(): number { return this.y + this.halfH }
   set midY(v: number) { this.y = v - this.halfH }
-
   get groupId(): string { return this.g ?? '' }
   set groupId(v: string | undefined | null) { if (v) this.g = v; else delete this.g; }
 
