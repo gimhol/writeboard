@@ -9,7 +9,7 @@ import { Indicator } from "./Indicator";
 export class EraserTool implements ITool {
   readonly type = ToolEnum.Eraser
   readonly indicator = new Indicator()
-  get board(): Board { return this.indicator.board!!; }
+  get board(): Board { return this.indicator.board!; }
   set board(v: Board) { this.indicator.board = v; }
   start(): void { console.log('[EraserTool::start]') }
   end(): void {

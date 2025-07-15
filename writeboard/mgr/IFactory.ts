@@ -16,7 +16,6 @@ export interface IFactory {
   get type(): FactoryType;
   get resizer(): IResizerInfo;
   get rotator(): IRotatorInfo;
-
   shapeTemplate(shapeType: ShapeType): ShapeData;
   setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
   newBoard(options: BoardOptions): Board;

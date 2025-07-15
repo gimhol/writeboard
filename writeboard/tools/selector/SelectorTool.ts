@@ -3,7 +3,7 @@ import { EventEnum } from "../../event"
 import { Events } from "../../event/Events"
 import { Gaia } from "../../mgr/Gaia"
 import { ShapePen, ShapeText, TextTool } from "../../shape"
-import { degrees, opposites, Resizable, Shape } from "../../shape/base"
+import { opposites, Resizable, Shape } from "../../shape/base"
 import { Arrays, Degrees, IRotatedRect, Polygon, Rect, RotatedRect } from "../../utils"
 import { IDot } from "../../utils/Dot"
 import { IVector } from "../../utils/IVector"
@@ -26,6 +26,7 @@ export enum SelectorStatus {
   ReadyForRotating,
   Rotating,
 }
+const { min, max, atan2, floor } = Math
 export class SelectorTool implements ITool {
   get type(): ToolType { return ToolEnum.Selector }
   private _doubleClickTimer = 0;
@@ -49,7 +50,7 @@ export class SelectorTool implements ITool {
     startData: Events.IShapeGeoData,
   }[] = []
 
-  get board(): Board { return this._selector.board!!; }
+  get board(): Board { return this._selector.board!; }
   set board(v: Board) {
     this._selector.board = v;
     this._rotator.board = v;
@@ -111,8 +112,8 @@ export class SelectorTool implements ITool {
         r: v.data.r,
       }
       if (startX === void 0) {
-        x = x === void 0 ? v.data.x : Math.min(x, v.data.x);
-        y = y === void 0 ? v.data.y : Math.min(y, v.data.y);
+        x = x === void 0 ? v.data.x : min(x, v.data.x);
+        y = y === void 0 ? v.data.y : min(y, v.data.y);
       }
       return {
         shape: v,
@@ -265,8 +266,8 @@ export class SelectorTool implements ITool {
     const a = shape.getRotatedDot(direction);
     a.x -= shape.midX;
     a.y -= shape.midY;
-    const d = Math.atan2(a.x, -a.y)
-    const which: number = Math.floor(
+    const d = atan2(a.x, -a.y)
+    const which: number = floor(
       Degrees.normalized(0.39269908169872414 + d) / 0.7853981633974483
     ) % 8;
     switch (which) {
@@ -350,38 +351,38 @@ export class SelectorTool implements ITool {
         const { shape, offset, anchor, direction } = this._resizer
         if (!shape) return
         const geo = shape.getGeo()
-        const rs = board.factory.resizer.size
+        const minsize = board.factory.resizer.size * 3
         const { x, y } = shape.map2me(dot.x, dot.y).plus(shape).plus(offset)
         const { left: l, right: r, bottom: b, top: t } = geo
         this.cursor = this.getReiszerCursor(direction, shape);
         switch (direction) {
           case Resizable.Top:
-            geo.top = Math.min(y, b - rs * 3)
+            geo.top = min(y, b - minsize)
             break
           case Resizable.Bottom:
-            geo.bottom = Math.max(y, t + rs * 3)
+            geo.bottom = max(y, t + minsize)
             break
           case Resizable.Left:
-            geo.left = Math.min(x, r - rs * 3)
+            geo.left = min(x, r - minsize)
             break
           case Resizable.Right:
-            geo.right = Math.max(x, l + rs * 3)
+            geo.right = max(x, l + minsize)
             break
           case Resizable.TopLeft:
-            geo.top = Math.min(y, b - rs * 3)
-            geo.left = Math.min(x, r - rs * 3)
+            geo.top = min(y, b - minsize)
+            geo.left = min(x, r - minsize)
             break
           case Resizable.TopRight:
-            geo.top = Math.min(y, b - rs * 3)
-            geo.right = Math.max(x, l + rs * 3)
+            geo.top = min(y, b - minsize)
+            geo.right = max(x, l + minsize)
             break
           case Resizable.BottomLeft:
-            geo.bottom = Math.max(y, t + rs * 3)
-            geo.left = Math.min(x, r - rs * 3)
+            geo.bottom = max(y, t + minsize)
+            geo.left = min(x, r - minsize)
             break
           case Resizable.BottomRight:
-            geo.bottom = Math.max(y, t + rs * 3)
-            geo.right = Math.max(x, l + rs * 3)
+            geo.bottom = max(y, t + minsize)
+            geo.right = max(x, l + minsize)
             break
           default:
             break;
