@@ -8,12 +8,13 @@ import { ShapeStatus } from "./ShapeStatus"
 
 export class ShapeData implements IShapeData {
   t: ShapeType = ShapeEnum.Invalid
-  i = ''
-  x = 0
-  y = 0
-  w = 0
-  h = 0
-  z = 0
+  i: string = ''
+  x: number = 0
+  y: number = 0
+  w: number = 0
+  h: number = 0
+  z: number = 0
+
   c?: number;
   d?: number;
 
@@ -145,7 +146,10 @@ export class ShapeData implements IShapeData {
   get midY(): number { return this.y + this.halfH }
   set midY(v: number) { this.y = v - this.halfH }
 
-  merge(o: Partial<IShapeData>) {
+  get groupId(): string { return this.g ?? '' }
+  set groupId(v: string | undefined | null) { this.g = v ?? '' }
+
+  merge(o: Partial<IShapeData>): this {
     this.read(o)
     return this
   }
@@ -153,6 +157,7 @@ export class ShapeData implements IShapeData {
   read(o: Partial<IShapeData>): this {
     if (isStr(o.t) || isNum(o.t)) this.t = o.t
     if (isStr(o.i)) this.i = o.i
+    if (isStr(o.g)) this.g = o.g
     if (isNum(o.x)) this.x = o.x
     if (isNum(o.y)) this.y = o.y
     if (isNum(o.z)) this.z = o.z
@@ -179,8 +184,16 @@ export class ShapeData implements IShapeData {
 
   /** 清洗掉可空的字段 */
   wash(): typeof this {
-    if (this.a && !Object.keys(this.a).length) delete this.a
-    if (this.b && !Object.keys(this.b).length) delete this.b
+    delete_void(this, 'a', 'b', 'c', 'd', 'l', 'r', 'g')
+    delete_void(this.a, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
+    delete_void(this.b, 'v', 's', 'e', 'f', 'g')
+    delete_eobj(this, 'a', 'b')
     return this;
   }
+}
+function delete_void<T extends {}>(o: T | undefined, ...ks: (keyof T)[]) {
+  if (o) for (const k of ks) if (k in o && o[k] === void 0) delete o[k];
+}
+function delete_eobj<T extends {}>(o: T | undefined, ...ks: (keyof T)[]) {
+  if (o) for (const k of ks) if (o[k] && typeof o[k] === 'object' && !Object.keys(o[k]).length) delete o[k];
 }
