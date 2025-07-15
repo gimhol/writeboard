@@ -376,7 +376,7 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   render(ctx: CanvasRenderingContext2D): void {
     if (!this.visible) return
-    const decoration = this.board?.factory.shapeDecoration(this)
+    const decoration = this.board?.shapeDecoration
     const { ghost, locked, resizable, selected } = this;
     this.beginDraw(ctx)
     ghost && decoration?.ghost?.(this, ctx)

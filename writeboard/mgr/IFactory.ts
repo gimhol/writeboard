@@ -1,10 +1,16 @@
-import { BoardOptions, Board, ILayerInits, Layer, IShapeDecoration } from "../board";
-import { type ShapeType, ShapeData, IShapeData, Shape } from "../shape";
-import type { ToolType, ITool } from "../tools";
-import { FactoryType } from "./FactoryEnum";
-import { IResizerInfo } from "./IResizerInfo";
-import { IRotatorInfo } from "./IRotatorInfo";
-import { IShapesMgr } from "./IShapesMgr";
+
+import type { Board, BoardOptions } from "../board/Board";
+import type { IShapeDecoration } from "../board/IShapeDecoration";
+import type { ILayerInits, Layer } from "../board/Layer";
+import type { IShapeData } from "../shape/base/IShapeData";
+import type { Shape } from "../shape/base/Shape";
+import type { ShapeData } from "../shape/base/ShapeData";
+import type { ShapeType } from "../shape/ShapeEnum";
+import type { ITool, ToolType } from "../tools";
+import type { FactoryType } from "./FactoryEnum";
+import type { IResizerInfo } from "./IResizerInfo";
+import type { IRotatorInfo } from "./IRotatorInfo";
+import type { IShapesMgr } from "./IShapesMgr";
 
 /**
  * 接口：工厂
@@ -29,7 +35,7 @@ export interface IFactory {
   newLayerId(): string;
   newLayerName(): string;
   newLayer(inits?: Partial<ILayerInits>): Layer;
-  shapeDecoration(shape: Shape): IShapeDecoration;
+  newShapeDecoration(board: Board): IShapeDecoration;
   overbound(shape: Shape): number;
   newGroupId(shapes: Shape<ShapeData>[]): string;
 

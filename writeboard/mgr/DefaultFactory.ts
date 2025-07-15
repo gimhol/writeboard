@@ -101,10 +101,8 @@ export class DefaultFactory implements IFactory {
     return new Layer({ id, name, ...remains });
   }
 
-  private _shapeDecoration = new DefaultShapeDecoration
-
-  shapeDecoration(_: Shape<ShapeData>): IShapeDecoration {
-    return this._shapeDecoration
+  newShapeDecoration(board: Board): IShapeDecoration {
+    return new DefaultShapeDecoration(board)
   }
 
   overbound(_: Shape<ShapeData>): number { return 1 }

@@ -1,8 +1,13 @@
-import { Resizable, Shape } from "../shape";
+import { opposites, Resizable, Shape } from "../shape";
+import { SelectorTool } from "../tools";
+import { Board } from "./Board";
 import type { IShapeDecoration } from "./IShapeDecoration";
 
 export class DefaultShapeDecoration implements IShapeDecoration {
-
+  board: Board;
+  constructor(board: Board) {
+    this.board = board;
+  }
   private dash_stroke(ctx: CanvasRenderingContext2D, segments: Iterable<number>) {
     ctx.strokeStyle = 'white'
     ctx.setLineDash([])
@@ -20,7 +25,7 @@ export class DefaultShapeDecoration implements IShapeDecoration {
    * @returns {boolean} 若是返回true，否则返回false
    */
   is_mutiply_selected(shape: Shape): boolean {
-    const selects = shape.board?.selects;
+    const selects = this.board?.selects;
     if (!selects) return false;
     return selects.some(v => v === shape) && selects.length > 1
   }
@@ -84,9 +89,17 @@ export class DefaultShapeDecoration implements IShapeDecoration {
   }
 
   resizable(shape: Shape, ctx: CanvasRenderingContext2D) {
-    if (!shape.board?.shapeResizble) return false;
+    if (!this.board?.shapeResizble || !shape.resizable) return false;
+
     /* 选择多个图形时，图形本身的resize示意框不展示 */
     if (this.is_mutiply_selected(shape)) return;
+
+    const { tool } = this.board;
+
+    const anchor = opposites[
+      tool instanceof SelectorTool && tool.resizer.shape === shape ? tool.resizer.direction : Resizable.None
+    ]
+
     let { x, y, w, h } = shape.selectorRect()
     ctx.fillStyle = 'white'
     ctx.setLineDash([]);
@@ -95,61 +108,40 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     } = shape.getResizerNumbers(x, y, w, h)
     const { resizable } = shape
 
+    let rects: [[number, number, number, number], boolean][] = []
     if (resizable & Resizable.Top) {
-      // top resizer
-      ctx.beginPath()
-      ctx.rect(mx, ty, s, s)
-      ctx.fill()
-      ctx.stroke()
+      rects.push([[mx, ty, s, s], anchor == Resizable.Top])
     }
     if (resizable & Resizable.Bottom) {
-      // bottom resizer
-      ctx.beginPath()
-      ctx.rect(mx, by, s, s)
-      ctx.fill()
-      ctx.stroke()
+      rects.push([[mx, by, s, s], anchor == Resizable.Bottom])
     }
-
     if (resizable & Resizable.Left) {
-      // left resizer
-      ctx.beginPath()
-      ctx.rect(lx, my, s, s)
-      ctx.fill()
-      ctx.stroke()
+      rects.push([[lx, my, s, s], anchor == Resizable.Left])
     }
     if (resizable & Resizable.Right) {
-      // right resizer
-      ctx.beginPath()
-      ctx.rect(rx, my, s, s)
-      ctx.fill()
-      ctx.stroke()
+      rects.push([[rx, my, s, s], anchor == Resizable.Right])
     }
     if (resizable & Resizable.TopLeft) {
-      // top-left resizer
-      ctx.beginPath()
-      ctx.rect(lx, ty, s, s)
-      ctx.fill()
-      ctx.stroke()
+      rects.push([[lx, ty, s, s], anchor == Resizable.TopLeft])
     }
     if (resizable & Resizable.TopRight) {
-
-      // top-right resizer
-      ctx.beginPath()
-      ctx.rect(rx, ty, s, s)
-      ctx.fill()
-      ctx.stroke()
+      rects.push([[rx, ty, s, s], anchor == Resizable.TopRight])
     }
     if (resizable & Resizable.BottomLeft) {
-      // bottom-left resizer
-      ctx.beginPath()
-      ctx.rect(lx, by, s, s)
-      ctx.fill()
-      ctx.stroke()
+      rects.push([[lx, by, s, s], anchor == Resizable.BottomLeft])
     }
     if (resizable & Resizable.BottomRight) {
-      // bottom-right resizer
+      rects.push([[rx, by, s, s], anchor == Resizable.BottomRight])
+    }
+    for (const [rect, is_anchor] of rects) {
       ctx.beginPath()
-      ctx.rect(rx, by, s, s)
+      if (is_anchor) {
+        ctx.moveTo(rect[0], rect[1])
+        ctx.lineTo(rect[0] + rect[2], rect[1] + rect[3])
+        ctx.moveTo(rect[0] + rect[2], rect[1])
+        ctx.lineTo(rect[0], rect[1] + rect[3])
+      }
+      ctx.rect(...rect)
       ctx.fill()
       ctx.stroke()
     }

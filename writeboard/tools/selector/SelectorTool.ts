@@ -27,6 +27,17 @@ export enum SelectorStatus {
   Rotating,
 }
 const { min, max, atan2, floor } = Math
+class ResizeInfo {
+  direction: Resizable = Resizable.None
+  anchor: IVector = { x: 0, y: 0 };
+  offset: IVector = { x: 0, y: 0 };
+  shape: Shape | null = null;
+  reset() {
+    this.direction = Resizable.None;
+    this.offset.x = this.offset.y = this.anchor.x = this.anchor.y = 0;
+    this.shape = null
+  }
+}
 export class SelectorTool implements ITool {
   get type(): ToolType { return ToolEnum.Selector }
   private _doubleClickTimer = 0;
@@ -35,21 +46,17 @@ export class SelectorTool implements ITool {
   private _rectHelper = new RectHelper()
   private _status = SelectorStatus.Idle
   private _prevPos: IVector = { x: 0, y: 0 }
-  private _resizer = {
-    direction: Resizable.None,
-    anchor: { x: 0, y: 0 },
-    offset: { x: 0, y: 0 },
-    shape: <Shape | null>null
-  }
+  private _resizer = new ResizeInfo();
   private _rotator = new ShapeRotator()
   private _windowPointerDown = () => this.deselect();
-
   private _shapes: {
     shape: Shape,
     prevData: Events.IShapeGeoData,
     startData: Events.IShapeGeoData,
   }[] = []
 
+  get picking() { return this._picking }
+  get resizer() { return this._resizer }
   get board(): Board { return this._selector.board!; }
   set board(v: Board) {
     this._selector.board = v;
@@ -411,16 +418,19 @@ export class SelectorTool implements ITool {
         }
         break;
       }
-      case SelectorStatus.Rotating:
       case SelectorStatus.Resizing:
+        this.resizer.shape?.markDirty()
+        // let it fall-throught
+      case SelectorStatus.Rotating:
       case SelectorStatus.Dragging: {
         this.emitGeoEvent.enforce(true)
         break;
       }
     }
-    this._selector.visible = false
-    this._rectHelper.clear()
-    this._status = SelectorStatus.Idle
+    this._selector.visible = false;
+    this._rectHelper.clear();
+    this._resizer.reset();
+    this._status = SelectorStatus.Idle;
   }
 
   doubleClick() {

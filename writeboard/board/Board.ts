@@ -4,6 +4,7 @@ import { TextTool } from "../shape"
 import { IShapeData, Shape, ShapeData } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, IVector, Rect } from "../utils"
+import { IShapeDecoration } from "./IShapeDecoration"
 import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 const { floor, ceil } = Math;
@@ -34,6 +35,8 @@ export class Board {
   protected _viewport = new Rect(0, 0, 600, 600)
   protected _world = new Rect(0, 0, 1600, 1600)
   protected _world_drag_start_pos: IVector = { x: 0, y: 0 };
+
+  readonly shapeDecoration: IShapeDecoration;
 
   /**
    * 是否允许用户拉伸图形
@@ -196,7 +199,7 @@ export class Board {
     this._shapesMgr = this._factory.newShapesMgr();
     this._element = options.element ?? document.createElement('div');
     this._own_element = !options.element;
-
+    this.shapeDecoration = factory.newShapeDecoration(this)
     const {
       width = this._viewport.w,
       scrollWidth = width,
