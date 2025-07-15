@@ -133,15 +133,15 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     if (resizable & Resizable.BottomRight) {
       rects.push([[rx, by, s, s], anchor == Resizable.BottomRight])
     }
-    for (const [rect, is_anchor] of rects) {
+    for (const [nums, is_anchor] of rects) {
       ctx.beginPath()
       if (is_anchor) {
-        ctx.moveTo(rect[0], rect[1])
-        ctx.lineTo(rect[0] + rect[2], rect[1] + rect[3])
-        ctx.moveTo(rect[0] + rect[2], rect[1])
-        ctx.lineTo(rect[0], rect[1] + rect[3])
+        ctx.moveTo(nums[0], nums[1])
+        ctx.lineTo(nums[0] + nums[2], nums[1] + nums[3])
+        ctx.moveTo(nums[0] + nums[2], nums[1])
+        ctx.lineTo(nums[0], nums[1] + nums[3])
       }
-      ctx.rect(...rect)
+      ctx.rect(...nums)
       ctx.fill()
       ctx.stroke()
     }
