@@ -67,7 +67,6 @@ export class PenTool implements ITool {
 
       board.emitEvent(EventEnum.ShapesChanging, {
         operator: board.whoami,
-        shapeType: this.type,
         shapeDatas: [[curr, prev]]
       })
       delete this._prevData

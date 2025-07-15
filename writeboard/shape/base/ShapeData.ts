@@ -91,8 +91,14 @@ export class ShapeData implements IShapeData {
    * @memberof ShapeData
    */
   set type(v: ShapeType) { this.t = v }
-  get id() { return this.i }
-  set id(v) { this.i = v }
+
+  /**
+   * 
+   * @type {string}
+   * @memberof ShapeData
+   */
+  get id(): string { return this.i }
+  set id(v: string) { this.i = v }
 
 
   get scaleX(): number { return this.c ?? 1 }
@@ -145,6 +151,10 @@ export class ShapeData implements IShapeData {
   set midX(v: number) { this.x = v - this.halfW }
   get midY(): number { return this.y + this.halfH }
   set midY(v: number) { this.y = v - this.halfH }
+
+  /** 
+   * raw field: g
+   */
   get groupId(): string { return this.g ?? '' }
   set groupId(v: string | undefined | null) { if (v) this.g = v; else delete this.g; }
 

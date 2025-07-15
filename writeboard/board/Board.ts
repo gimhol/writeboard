@@ -1,7 +1,7 @@
 import { EventEnum, Events } from "../event"
 import { IFactory, IHitPredicate, IShapesMgr } from "../mgr"
 import { TextTool } from "../shape"
-import { IShapeData, Shape, ShapeData } from "../shape/base"
+import { IShapeData, Shape } from "../shape/base"
 import { ITool, ToolEnum, ToolType } from "../tools"
 import { IDot, IRect, IVector, Rect } from "../utils"
 import { IShapeDecoration } from "./IShapeDecoration"
@@ -265,11 +265,11 @@ export class Board {
   fromJson(json: string) {
     this.fromSnapshot(JSON.parse(json))
   }
-  shapes(): Shape<ShapeData>[] {
+  shapes(): Shape[] {
     return this._shapesMgr.shapes()
   }
-  exists(...items: Shape<ShapeData>[]): number {
-    return this._shapesMgr.exists(...items)
+  exists(items: Shape[]): number {
+    return this._shapesMgr.exists(items)
   }
   hit(rect: IRect, predicate?: IHitPredicate): Shape | null {
     return this._shapesMgr.hit(rect, predicate)
@@ -366,7 +366,7 @@ export class Board {
   add(shapes: Shape[] | Shape, opts?: EmitOpts): number {
     shapes = Array.isArray(shapes) ? shapes : [shapes];
     if (!shapes.length) return 0;
-    const ret = this._shapesMgr.add(...shapes)
+    const ret = this._shapesMgr.add(shapes)
     shapes.forEach(item => {
       item.board = this
       if (item.selected) this._selects.push(item)
@@ -396,7 +396,7 @@ export class Board {
       })
     })
     shapes.forEach(item => this.markDirty(item.aabb()))
-    const ret = this._shapesMgr.remove(...shapes);
+    const ret = this._shapesMgr.remove(shapes);
     shapes.forEach(item => { item.board = void 0 })
     return ret
   }
@@ -651,11 +651,77 @@ export class Board {
   }
 
   group(shapes: Shape[]): string {
+    // TODO
     const groupId: string = this.factory.newGroupId(shapes);
     return groupId;
   }
 
   ungroup(): this {
+    // TODO
+    return this;
+  }
+
+  raise(shapes: Shape[], opts: EmitOpts): this {
+    if (!shapes.length) return this;
+    let zz = this._shapesMgr.maxZ()?.z ?? 0;
+    this._shapesMgr.remove(shapes);
+    shapes.sort((a, b) => a.z - b.z);
+    if (opts) {
+      const shapeDatas: [Readonly<Partial<IShapeData>>, Readonly<Partial<IShapeData>>][] = []
+      for (let i = 0; i < shapes.length; ++i) {
+        const shape = shapes[i];
+        if (shape.locked) continue;
+        const o = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
+        shape.data.z = ++zz;
+        shape.markDirty()
+        const p = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
+        shapeDatas.push([o, p] as const)
+      }
+      if (shapeDatas.length)
+        this.read_emit_opts(opts, (operator) => {
+          this.emitEvent(EventEnum.ShapesChanged, { operator, shapeDatas })
+        })
+    } else {
+      for (let i = 0; i < shapes.length; ++i) {
+        const shape = shapes[i];
+        if (shape.locked) continue;
+        shape.data.z = ++zz
+        shape.markDirty()
+      }
+    }
+    this._shapesMgr.add(shapes);
+    return this;
+  }
+
+  sink(shapes: Shape[], opts: EmitOpts): this {
+    if (!shapes.length) return this;
+    let zz = this._shapesMgr.minZ()?.z ?? 0;
+    this._shapesMgr.remove(shapes);
+    shapes.sort((a, b) => a.z - b.z);
+    if (opts) {
+      const shapeDatas: [Readonly<Partial<IShapeData>>, Readonly<Partial<IShapeData>>][] = []
+      for (let i = shapes.length - 1; i >= 0; --i) {
+        const shape = shapes[i];
+        if (shape.locked) continue;
+        const o = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
+        shape.data.z = --zz;
+        shape.markDirty()
+        const p = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
+        shapeDatas.push([o, p] as const)
+      }
+      if (shapeDatas.length)
+        this.read_emit_opts(opts, (operator) => {
+          this.emitEvent(EventEnum.ShapesChanged, { operator, shapeDatas })
+        })
+    } else {
+      for (let i = shapes.length - 1; i >= 0; --i) {
+        const shape = shapes[i];
+        if (shape.locked) continue;
+        shape.data.z = --zz
+        shape.markDirty()
+      }
+    }
+    this._shapesMgr.add(shapes);
     return this;
   }
 }

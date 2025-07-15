@@ -23,14 +23,17 @@ export interface IShapesMgr {
   shapes(): Shape[]
 
 
-  add(...items: Shape[]): number
+  add(items: Shape[]): number
 
-  remove(...items: Shape[]): number
+  remove(items: Shape[]): number
 
-  exists(...items: Shape[]): number
+  exists(items: Shape[]): number
 
   hit(rect: IRotatedRect, predicate?: IHitPredicate): Shape | null
 
-  hits(rect: IRotatedRect, predicate?: IHitPredicate): Shape[]
+  hits(rect: IRotatedRect, predicate?: IHitPredicate): Shape[];
+
+  minZ(): Shape | null;
+  maxZ(): Shape | null;
 }
 

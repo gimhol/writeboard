@@ -82,7 +82,6 @@ export class TextTool implements ITool {
     const curr = shape.data.copy()
     board.emitEvent(EventEnum.ShapesChanging, {
       operator: board.whoami,
-      shapeType: this.type,
       shapeDatas: [[curr, prev]]
     })
   }

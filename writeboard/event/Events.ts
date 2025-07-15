@@ -1,4 +1,4 @@
-import type { ILayerInfo, Layer } from "../board/Layer";
+import type { ILayerInfo } from "../board/Layer";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { IShapeData } from "../shape/base/IShapeData";
 import type { ToolType } from "../tools/ToolEnum";
@@ -13,11 +13,10 @@ export namespace Events {
   export interface IShapesDetail extends IOperatorDetail {
     shapeDatas: IShapeData[];
   }
-  export interface IShagesDetail<T extends Partial<IShapeData>> extends IOperatorDetail {
-    shapeType: ShapeType;
-    shapeDatas: [T, T][];
+  export interface IShapesChangeDetail<T extends IShapeData = IShapeData> extends IOperatorDetail {
+    shapeDatas: [Readonly<Partial<T>>, Readonly<Partial<T>>][];
   }
-  export interface IAnyShagesDetail extends IOperatorDetail {
+  export interface IAnyShapesDetail extends IOperatorDetail {
     tool: ToolType,
     shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[];
   }
@@ -68,11 +67,11 @@ export namespace Events {
   export interface EventDetailMap {
     [EventEnum.ShapesAdded]: IShapesDetail;
     [EventEnum.ShapesRemoved]: IShapesDetail;
-    [EventEnum.ShapesChanging]: IShagesDetail<IShapeData>;
-    [EventEnum.ShapesChanged]: IShagesDetail<IShapeData>;
+    [EventEnum.ShapesChanging]: IShapesChangeDetail<IShapeData>;
+    [EventEnum.ShapesChanged]: IShapesChangeDetail<IShapeData>;
     [EventEnum.ShapesDone]: IShapesDetail;
-    [EventEnum.ShapesGeoChanging]: IAnyShagesDetail;
-    [EventEnum.ShapesGeoChanged]: IAnyShagesDetail;
+    [EventEnum.ShapesGeoChanging]: IAnyShapesDetail;
+    [EventEnum.ShapesGeoChanged]: IAnyShapesDetail;
     [EventEnum.ToolChanged]: IToolChangedDetail;
     [EventEnum.LayerAdded]: ILayerDetail;
     [EventEnum.LayerRemoved]: ILayerDetail;

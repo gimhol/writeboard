@@ -226,6 +226,7 @@ export class Shape<D extends ShapeData = ShapeData> {
 
   get x() { return this._d.x }
   get y() { return this._d.y }
+  get z() { return this._d.z }
   get halfW() { return this._d.halfW }
   get halfH() { return this._d.halfH }
   get midX() { return this._d.midX }

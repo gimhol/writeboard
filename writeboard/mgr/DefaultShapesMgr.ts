@@ -1,6 +1,6 @@
 import { Shape } from "../shape";
 import { IRotatedRect, RotatedRect } from "../utils";
-import { IShapesMgr, IHitPredicate } from "./IShapesMgr";
+import { IHitPredicate, IShapesMgr } from "./IShapesMgr";
 
 const Tag = 'DefaultShapesMgr'
 export class DefaultShapesMgr implements IShapesMgr {
@@ -15,7 +15,7 @@ export class DefaultShapesMgr implements IShapesMgr {
 
   shapes(): Shape[] { return this._items; }
 
-  exists(...items: Shape[]): number {
+  exists(items: Shape[]): number {
     let ret = 0;
     items.forEach(v => {
       if (this._kvs[v.data.id])
@@ -24,10 +24,10 @@ export class DefaultShapesMgr implements IShapesMgr {
     return ret;
   }
 
-  add(...items: Shape[]): number {
+  add(items: Shape[]): number {
     let ret = 0;
     items.forEach(item => {
-      if (this.exists(item))
+      if (this._kvs[item.data.id])
         return console.warn(`[${Tag}::add] can not add "${item.data.id}", already exists!`);
       this._kvs[item.data.id] = item;
       this._items.push(item);
@@ -37,7 +37,7 @@ export class DefaultShapesMgr implements IShapesMgr {
     return ret;
   }
 
-  remove(...items: Shape[]): number {
+  remove(items: Shape[]): number {
     let ret = 0;
     items.forEach(item => {
       const idx = this._items.findIndex(v => v === item);
@@ -74,5 +74,11 @@ export class DefaultShapesMgr implements IShapesMgr {
       if (this.is_hit(v, rect, predicate)) return v;
     }
     return null;
+  }
+  minZ(): Shape | null {
+    return this._items[0] ?? null
+  }
+  maxZ(): Shape | null {
+    return this._items[this._items.length - 1] ?? null
   }
 }

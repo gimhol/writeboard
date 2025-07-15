@@ -63,7 +63,6 @@ export class LinesTool implements ITool {
       curr.coords.splice(0, prev.coords.length)
       board.emitEvent(EventEnum.ShapesChanging, {
         operator: board.whoami,
-        shapeType: this.type,
         shapeDatas: [[curr, prev]]
       });
       delete this._prevData
@@ -123,7 +122,6 @@ export class LinesTool implements ITool {
       curr.coords.splice(0, prev.coords.length)
       board.emitEvent(EventEnum.ShapesChanging, {
         operator: board.whoami,
-        shapeType: this.type,
         shapeDatas: [[curr, prev]]
       })
       delete this._prevData
