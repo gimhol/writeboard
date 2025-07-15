@@ -5,4 +5,4 @@ export enum FactoryEnum {
   Default = 1,
 }
 export type FactoryType = FactoryEnum | string
-export const getFactoryName = enumNameGetter<FactoryEnum>("FactoryEnum", FactoryEnum)
+export const getFactoryName = enumNameGetter<FactoryType>("FactoryEnum", FactoryEnum)

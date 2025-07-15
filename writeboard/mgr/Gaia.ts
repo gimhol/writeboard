@@ -12,7 +12,7 @@ import { ShapeType, getShapeName } from "../shape/ShapeEnum"
 import { SelectorTool } from "../tools"
 import type { ITool } from "../tools/base/Tool"
 import { ToolEnum, ToolType, getToolName } from "../tools/ToolEnum"
-import type { FactoryEnum, FactoryType } from "./FactoryEnum"
+import { getFactoryName, type FactoryEnum, type FactoryType } from "./FactoryEnum"
 import type { IFactory } from "./IFactory"
 
 export interface IFactoryInfomation {
@@ -79,14 +79,22 @@ export class Gaia {
    * @param {IFactoryInfomation} info
    * @memberof Gaia
    */
-  static registerFactory(type: FactoryType, creator: IFactoryCreater, info: IFactoryInfomation): void {
+  static registerFactory(type: FactoryType, creator: IFactoryCreater, info: Partial<IFactoryInfomation> = {}): void {
     if (this._factorys.has(type)) {
       console.warn(`[${Tag}::registerFactory] factory '${type}' already exists!`);
     } else if (this._factoryInfos.has(type)) {
       console.warn(`[${Tag}::registerFactory] factory info '${type}' already exists!`);
     }
-    this._factorys.set(type, creator);
-    this._factoryInfos.set(type, info);
+
+    this.overrideFactory(type, creator, info);
+  }
+
+  static overrideFactory(type: FactoryType, creator?: IFactoryCreater, info?: Partial<IFactoryInfomation>): void {
+    if (creator) this._factorys.set(type, creator);
+    if (info) {
+      const factoryName = getFactoryName(type) + ' Factory'
+      this._factoryInfos.set(type, { name: info.name ?? factoryName, desc: info.desc ?? factoryName });
+    }
   }
 
   /**
@@ -106,19 +114,27 @@ export class Gaia {
     return this._factorys.get(type);
   }
 
-  static registerTool(type: ToolType, creator: IToolCreater, info?: Partial<IToolInfomation>): void {
+  static registerTool(type: ToolType, creator: IToolCreater, info: Partial<IToolInfomation> = {}): void {
     if (this._tools.has(type)) {
       console.warn(`${Tag}::registerTool`, `tool '${type}' already exists!`);
     } else if (this._toolInfos.has(type)) {
       console.warn(`${Tag}::registerTool`, `tool info '${type}' already exists!`);
     }
-    this._tools.set(type, creator);
-    this._toolInfos.set(type, {
-      shape: info?.shape,
-      name: info?.name || getToolName(type),
-      desc: info?.desc || getToolName(type),
-    })
+    this.overrideTool(type, creator, info);
   }
+
+  static overrideTool(type: ToolType, creator?: IToolCreater, info?: Partial<IToolInfomation>): void {
+    if (creator) this._tools.set(type, creator)
+    if (info) {
+      const toolName = getToolName(type)
+      this._toolInfos.set(type, {
+        shape: info?.shape,
+        name: info?.name || toolName,
+        desc: info?.desc || toolName,
+      })
+    }
+  }
+
   static listTools(): ToolType[] {
     return Array.from(this._tools.keys());
   }
@@ -146,7 +162,7 @@ export class Gaia {
     type: ShapeType,
     dataCreator: IShapeDataCreater<D>,
     shapeCreator: IShapeCreater<D>,
-    info?: Partial<IShapeInfomation>
+    info: Partial<IShapeInfomation> = {}
   ): void {
     if (this._shapeInfos.has(type)) {
       console.warn(`${Tag}::registerShape`, `shape info '${type}' already exists!`);
@@ -155,13 +171,25 @@ export class Gaia {
     } else if (this._shapes.has(type)) {
       console.warn(`${Tag}::registerShape`, `shape '${type}' already exists!`);
     }
-    this._shapeInfos.set(type, {
-      name: info?.name || getShapeName(type),
-      desc: info?.desc || getShapeName(type),
-      type
-    })
-    this._shapeDatas.set(type, dataCreator);
-    this._shapes.set(type, shapeCreator);
+    this.overrideShape(type, dataCreator, shapeCreator, info)
+  }
+
+  static overrideShape<D extends ShapeData>(
+    type: ShapeType,
+    dataCreator?: IShapeDataCreater<D>,
+    shapeCreator?: IShapeCreater<D>,
+    info?: Partial<IShapeInfomation>
+  ): void {
+    if (info) {
+      const shapeName = getShapeName(type)
+      this._shapeInfos.set(type, {
+        name: info.name || shapeName,
+        desc: info.desc || shapeName,
+        type
+      })
+    }
+    if (dataCreator) this._shapeDatas.set(type, dataCreator);
+    if (shapeCreator) this._shapes.set(type, shapeCreator);
   }
 
   static listShapes(): ShapeType[] {

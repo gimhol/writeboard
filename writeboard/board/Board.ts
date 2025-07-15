@@ -646,4 +646,12 @@ export class Board {
     this._layers.forEach(v => v.destory())
     if (this._own_element) this._element.remove();
   }
+
+  group(shapes: Shape[]): string {
+    const groupId: string = this.factory.newGroupId(shapes);
+    return groupId;
+  }
+  ungroup(): this {
+    return this;
+  }
 }

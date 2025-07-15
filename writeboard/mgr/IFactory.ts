@@ -32,7 +32,7 @@ export interface IFactory {
   newLayer(inits?: Partial<ILayerInits>): Layer;
   shapeDecoration(shape: Shape): IShapeDecoration;
   overbound(shape: Shape): number;
-
+  newGroupId(shapes: Shape<ShapeData>[]): string;
 
   /** @deprecated */ fontFamilies(): string[];
   /** @deprecated */ fontName(fontFamily: string): string;

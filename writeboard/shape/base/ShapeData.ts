@@ -135,7 +135,7 @@ export class ShapeData implements IShapeData {
   get needStroke() { return true; }
 
   get rotation() { return this.r ?? 0; }
-  set rotation(v: number) { this.r = Degrees.normalized(v) }
+  set rotation(v: number) { if (!v) delete this.r; else this.r = Degrees.normalized(v) }
 
   get halfW(): number { return this.w / 2 }
   set halfW(v: number) { this.w = v * 2 }
@@ -147,7 +147,7 @@ export class ShapeData implements IShapeData {
   set midY(v: number) { this.y = v - this.halfH }
 
   get groupId(): string { return this.g ?? '' }
-  set groupId(v: string | undefined | null) { this.g = v ?? '' }
+  set groupId(v: string | undefined | null) { if (v) this.g = v; else delete this.g; }
 
   merge(o: Partial<IShapeData>): this {
     this.read(o)

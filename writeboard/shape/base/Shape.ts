@@ -177,6 +177,9 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.endDirty(prev)
   }
 
+  set groupId(v: string | undefined | null) { this._d.groupId = v }
+  get groupId(): string { return this._d.groupId }
+
   merge(data: Partial<IShapeData>): void {
     const prev = this.data.copy()
     this.beginDirty(prev)

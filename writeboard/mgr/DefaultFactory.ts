@@ -109,7 +109,9 @@ export class DefaultFactory implements IFactory {
 
   overbound(_: Shape<ShapeData>): number { return 1 }
 
-
+  newGroupId(shapes: Shape<ShapeData>[]): string {
+    return `group_${Date.now()}${shapes.length}${++this._time}`
+  }
   /** @deprecated */ fontFamilies = () => Array.from(Gaia.fonts.keys())
   /** @deprecated */ fontName = (f: string): string => (Gaia.fonts.get(f)?.name ?? f);
 }
