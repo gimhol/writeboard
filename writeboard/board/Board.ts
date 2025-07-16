@@ -455,24 +455,44 @@ export class Board {
    * @memberof Board
    */
   setSelects(shapes: Shape[], opts?: EmitOpts): [Shape[], Shape[]] {
-    const selecteds = shapes.filter(v => !v.selected);
-    const desecteds = this._selects.filter(a => !shapes.find(b => a === b))
-    desecteds.forEach(v => v.selected = false)
-    selecteds.forEach(v => v.selected = true)
-    this._selects = shapes
+
+    /** 全部新选择的图形 */
+    const selected_shapes = new Set(shapes);
+
+    /** 全部新选择的组合ID */
+    const selected_group_ids = new Set<string>();
+    for (const shape of shapes) { if (shape.groupId) selected_group_ids.add(shape.groupId); }
+
+    /** 确保组合的其他图形也被选择 */
+    for (const group_id of selected_group_ids) {
+      const shapes = this._shapesMgr.shapes_by_group(group_id);
+      for (const shape of shapes) selected_shapes.add(shape)
+    }
+
+    /** 新的被选择图形 */
+    const next_selecteds: Shape[] = []
+    for (const shape of selected_shapes) {
+      if (!shape.selected)
+        next_selecteds.push(shape)
+    }
+
+    const next_desecteds = this._selects.filter(a => !next_selecteds.find(b => a === b))
+    next_desecteds.forEach(v => v.selected = false)
+    next_selecteds.forEach(v => v.selected = true)
+    this._selects = Array.from(selected_shapes)
 
     this.read_emit_opts(opts, (operator) => {
-      selecteds.length && this.emitEvent(EventEnum.ShapesSelected, {
+      next_selecteds.length && this.emitEvent(EventEnum.ShapesSelected, {
         operator,
-        shapeDatas: selecteds.map(v => v.data)
+        shapeDatas: next_selecteds.map(v => v.data)
       });
-      desecteds.length && this.emitEvent(EventEnum.ShapesDeselected, {
+      next_desecteds.length && this.emitEvent(EventEnum.ShapesDeselected, {
         operator,
-        shapeDatas: desecteds.map(v => v.data)
+        shapeDatas: next_desecteds.map(v => v.data)
       });
     })
 
-    return [selecteds, desecteds]
+    return [next_selecteds, next_desecteds]
   }
 
   map2world(x: number, y: number): [number, number] {
@@ -651,13 +671,15 @@ export class Board {
   }
 
   group(shapes: Shape[]): string {
-    // TODO
     const groupId: string = this.factory.newGroupId(shapes);
+    for (const shape of shapes) {
+      if (shape.locked) continue;
+      shape.groupId = groupId
+    }
     return groupId;
   }
 
   ungroup(): this {
-    // TODO
     return this;
   }
 
@@ -722,6 +744,11 @@ export class Board {
       }
     }
     this._shapesMgr.add(shapes);
+    return this;
+  }
+
+  update_items_group(shapes: Shape[]): this {
+    this._shapesMgr.update_items_group(shapes);
     return this;
   }
 }

@@ -176,7 +176,11 @@ export class Shape<D extends ShapeData = ShapeData> {
     this.endDirty(prev)
   }
 
-  set groupId(v: string | undefined | null) { this._d.groupId = v }
+  set groupId(v: string) {
+    if (this._d.groupId === v) return;
+    this._d.groupId = v;
+    this.board?.update_items_group([this]);
+  }
   get groupId(): string { return this._d.groupId }
 
   merge(data: Partial<IShapeData>): void {

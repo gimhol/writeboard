@@ -70,18 +70,28 @@ export class DefaultShapeDecoration implements IShapeDecoration {
     ctx.rect(x + 1, y + 1, w - 1, h - 1)
     ctx.closePath()
     this.dash_stroke(ctx, [lineWidth * 8])
-
     ctx.translate(w - this.lock_icon_w - 5, 5)
     this.draw_lock(ctx)
 
   }
 
   selected(shape: Shape, ctx: CanvasRenderingContext2D) {
+    if (shape.groupId) {
+      const lineWidth = 1
+      ctx.lineWidth = lineWidth
+      const { x, y, w, h } = shape.selectorRect()
+      ctx.beginPath()
+      ctx.rect(x, y, w, h)
+      ctx.closePath()
+      ctx.stroke()
+      return;
+    }
+
     /* 选择多个图形时，图形本身的矩形示意框不展示 */
     if (this.is_mutiply_selected(shape)) return;
     const lineWidth = 1
     ctx.lineWidth = lineWidth
-    let { x, y, w, h } = shape.selectorRect()
+    const { x, y, w, h } = shape.selectorRect()
     ctx.beginPath()
     ctx.rect(x, y, w, h)
     ctx.closePath()

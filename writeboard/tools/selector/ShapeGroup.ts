@@ -56,7 +56,7 @@ export class ShapeGroup extends ShapeRect {
       geo.left
     }
     this.setGeo(geo);
-    this.visible = !!!this._members.length;
+    this.visible = !!this._members.length;
   }
 
   override rotateTo(r: number, x?: number, y?: number): void {

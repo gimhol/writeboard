@@ -22,7 +22,6 @@ export interface IShapesMgr {
    */
   shapes(): Shape[]
 
-
   add(items: Shape[]): number
 
   remove(items: Shape[]): number
@@ -35,5 +34,9 @@ export interface IShapesMgr {
 
   minZ(): Shape | null;
   maxZ(): Shape | null;
+
+  groups(): string[];
+  shapes_by_group(groupd_id: string): Shape[];
+  update_items_group(shapes: Shape[]): void;
 }
 

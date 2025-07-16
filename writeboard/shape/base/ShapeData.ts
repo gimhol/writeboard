@@ -156,7 +156,7 @@ export class ShapeData implements IShapeData {
    * raw field: g
    */
   get groupId(): string { return this.g ?? '' }
-  set groupId(v: string | undefined | null) { if (v) this.g = v; else delete this.g; }
+  set groupId(v: string) { if (v) this.g = v; else delete this.g; }
 
   merge(o: Partial<IShapeData>): this {
     this.read(o)

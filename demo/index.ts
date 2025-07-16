@@ -352,6 +352,8 @@ function main() {
     txt_week_and_year.merge(txtd_week_and_year);
     txt_week_and_year.merge(txtd_week_and_year);
     txt_week_and_year.board || board.add(txt_week_and_year, true);
+    const shapes = board.shapes()
+    board.group(shapes)
   }
 
   interface TTT {

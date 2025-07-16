@@ -4,8 +4,9 @@ import { IHitPredicate, IShapesMgr } from "./IShapesMgr";
 
 const Tag = 'DefaultShapesMgr'
 export class DefaultShapesMgr implements IShapesMgr {
-  private _items: Shape[] = [];
-  private _kvs: {
+  protected _group_shapes_map = new Map<string, Set<Shape>>();
+  protected _items: Shape[] = [];
+  protected _kvs: {
     [id in string]?: Shape;
   } = {};
 
@@ -31,6 +32,7 @@ export class DefaultShapesMgr implements IShapesMgr {
         return console.warn(`[${Tag}::add] can not add "${item.data.id}", already exists!`);
       this._kvs[item.data.id] = item;
       this._items.push(item);
+      this.ensure_shapes_set_by_group(item.groupId).add(item)
       ++ret;
     });
     this._items.sort((a, b) => a.data.z - b.data.z);
@@ -45,6 +47,7 @@ export class DefaultShapesMgr implements IShapesMgr {
         return;
       this._items = this._items.filter((_, i) => i !== idx);
       delete this._kvs[item.data.id];
+      this._group_shapes_map.get(item.groupId)?.delete(item)
       ++ret;
     });
     return ret;
@@ -75,10 +78,42 @@ export class DefaultShapesMgr implements IShapesMgr {
     }
     return null;
   }
+
   minZ(): Shape | null {
     return this._items[0] ?? null
   }
+
   maxZ(): Shape | null {
     return this._items[this._items.length - 1] ?? null
+  }
+
+  groups(): string[] {
+    return Array.from(this._group_shapes_map.keys())
+  }
+
+  private ensure_shapes_set_by_group(groupd_id: string): Set<Shape> {
+    let set = this._group_shapes_map.get(groupd_id);
+    if (set) return set
+    set = new Set<Shape>();
+    this._group_shapes_map.set(groupd_id, set);
+    return set
+  }
+
+  shapes_by_group(groupd_id: string): Shape[] {
+    const set = this._group_shapes_map.get(groupd_id);
+    if (!set) return [];
+    return Array.from(set);
+  }
+
+  update_items_group(shapes: Shape[]): void {
+    for (const shape of shapes) {
+      for (const [g, s] of this._group_shapes_map) {
+        if (g !== shape.groupId && s.has(shape)) {
+          s.delete(shape)
+          break;
+        }
+      }
+      this.ensure_shapes_set_by_group(shape.groupId).add(shape)
+    }
   }
 }
