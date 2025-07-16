@@ -7,6 +7,7 @@ import { Numbers } from "./Numbers";
 
 const { min, max } = Math;
 export class Rect implements IRect {
+
   x: number = 0
   y: number = 0
   w: number = -1
@@ -29,7 +30,6 @@ export class Rect implements IRect {
   set bottom(v: number) {
     this.h = v - this.y
   }
-
   /**
    * 获取顶点
    *

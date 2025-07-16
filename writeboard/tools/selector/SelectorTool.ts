@@ -12,7 +12,7 @@ import { throttle } from "../../utils/Throttle"
 import { Vector } from "../../utils/Vector"
 import { ToolEnum, ToolType } from "../ToolEnum"
 import { ITool } from "../base/Tool"
-import { ShapePicking } from "./ShapePicking"
+import { ShapeGroup } from "./ShapeGroup"
 import { ShapeRotator } from "./ShapeRotator"
 import { ShapeSelector } from "./ShapeSelector"
 export enum SelectorStatus {
@@ -41,7 +41,7 @@ class ResizeInfo {
 export class SelectorTool implements ITool {
   get type(): ToolType { return ToolEnum.Selector }
   private _doubleClickTimer = 0;
-  private _picking = new ShapePicking()
+  private _picking = new ShapeGroup()
   private _selector = new ShapeSelector()
   private _rectHelper = new RectHelper()
   private _status = SelectorStatus.Idle
@@ -69,7 +69,7 @@ export class SelectorTool implements ITool {
     this._picking.reset();
     const { selects } = this.board;
     if (selects.length > 1) {
-      this._picking.setShapes(selects);
+      this._picking.setMembers(selects);
       this._rotator.follow(this._picking);
     } else if (selects.length == 1) {
       this._rotator.follow(selects[0])

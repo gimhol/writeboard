@@ -1,9 +1,9 @@
 import { Resizable, Shape, ShapeData, ShapeRect } from "../../shape";
-import { Rect, RotatedRect, type IDot } from "../../utils";
-import { type IPickTarget } from "./IPickTarget";
+import { Rect, type IDot } from "../../utils";
+import { type IShapeGroupMember } from "./IShapeGroupMember";
 const { min, max } = Math
-export class ShapePicking extends ShapeRect {
-  private _targets: IPickTarget[] = [];
+export class ShapeGroup extends ShapeRect {
+  private _members: IShapeGroupMember[] = [];
   private _geo = new Rect(
     Number.MAX_SAFE_INTEGER,
     Number.MAX_SAFE_INTEGER,
@@ -28,7 +28,7 @@ export class ShapePicking extends ShapeRect {
   }
 
   reset(): void {
-    this._targets = [];
+    this._members = [];
     this.visible = false;
     this._geo.x = Number.MAX_SAFE_INTEGER;
     this._geo.y = Number.MAX_SAFE_INTEGER;
@@ -37,27 +37,31 @@ export class ShapePicking extends ShapeRect {
     this.rotateTo(0);
   }
 
-  setShapes(shapes: Shape[]): void {
+  setMembers(shapes: Shape[]): void {
     this.reset();
+
     const rotation = this.data.rotation;
+    this._members.length = 0;
     const geo = this._geo;
-    this._targets = [];
     for (const s of shapes) {
       if (s.locked) continue;
-      const [a, b, c, d] = RotatedRect.dots2(s.data)
-      this._targets.push({ shape: s, rotation: s.rotation - rotation });
-      geo.left = min(geo.left, a.x, b.x, c.x, d.x);
-      geo.right = max(geo.right, a.x, b.x, c.x, d.x);
-      geo.top = min(geo.top, a.y, b.y, c.y, d.y);
-      geo.bottom = max(geo.bottom, a.y, b.y, c.y, d.y);
+      this._members.push({ shape: s, rotation: s.rotation - rotation });
+      const { x, y, w, h } = s.aabb()
+      geo.left = min(geo.left, x);
+      geo.right = max(geo.right, x + w);
+      geo.top = min(geo.top, y);
+      geo.bottom = max(geo.bottom, y + h);
+    }
+    if (!this._members.length) {
+      geo.left
     }
     this.setGeo(geo);
-    this.visible = true;
+    this.visible = !!!this._members.length;
   }
 
   override rotateTo(r: number, x?: number, y?: number): void {
     super.rotateTo(r, x, y);
-    for (const { shape, rotation } of this._targets) {
+    for (const { shape, rotation } of this._members) {
       shape.rotateTo(r + rotation, x ?? this.midX, y ?? this.midY);
     }
   }
