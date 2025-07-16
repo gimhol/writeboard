@@ -670,12 +670,18 @@ export class Board {
     if (this._own_element) this._element.remove();
   }
 
-  group(shapes: Shape[]): string {
+  group(shapes: Shape[], opts?: EmitOpts): string {
     const groupId: string = this.factory.newGroupId(shapes);
+    const shapeDatas: [Readonly<Partial<IShapeData>>, Readonly<Partial<IShapeData>>][] = []
     for (const shape of shapes) {
       if (shape.locked) continue;
+      const prev = { g: shape.groupId }
       shape.groupId = groupId
+      shapeDatas.push([shape.data.copy(), prev] as const)
     }
+    this.read_emit_opts(opts, (operator) => {
+      if (shapeDatas.length) this.emitEvent(EventEnum.ShapesChanged, { operator, shapeDatas })
+    })
     return groupId;
   }
 
@@ -693,11 +699,10 @@ export class Board {
       for (let i = 0; i < shapes.length; ++i) {
         const shape = shapes[i];
         if (shape.locked) continue;
-        const o = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
+        const prev = { z: shape.data.z }
         shape.data.z = ++zz;
         shape.markDirty()
-        const p = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
-        shapeDatas.push([o, p] as const)
+        shapeDatas.push([shape.data.copy(), prev] as const)
       }
       if (shapeDatas.length)
         this.read_emit_opts(opts, (operator) => {
@@ -725,11 +730,10 @@ export class Board {
       for (let i = shapes.length - 1; i >= 0; --i) {
         const shape = shapes[i];
         if (shape.locked) continue;
-        const o = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
+        const prev = { z: shape.data.z }
         shape.data.z = --zz;
         shape.markDirty()
-        const p = { g: shape.data.g, i: shape.data.i, z: shape.data.z }
-        shapeDatas.push([o, p] as const)
+        shapeDatas.push([shape.data.copy(), prev] as const)
       }
       if (shapeDatas.length)
         this.read_emit_opts(opts, (operator) => {
