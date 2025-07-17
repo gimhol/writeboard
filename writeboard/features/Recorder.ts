@@ -6,9 +6,9 @@
  * @desc   事件记录器
  ******************************************************************/
 
-import { Board } from "../board";
-import { EventEnum } from "../event";
-import { IScreenplay } from "./Screenplay";
+import type { Board } from "../board";
+import { EventEnum, type Events } from "../event";
+import type { IScreenplay } from "./Screenplay";
 
 export class Recorder {
   private _actor?: Board;
@@ -71,25 +71,22 @@ export class Recorder {
     this._cancellers.forEach(v => v())
     this._cancellers = [];
 
-    const startTime = performance.now();
+    const start_time = performance.now();
     const screenplay: IScreenplay = this._screenplay = {
-      startTime,
-      endTime: startTime,
+      startTime: start_time,
+      endTime: start_time,
       snapshot: actor.toSnapshot(),
       events: []
     }
     for (const key in EventEnum) {
       const v = (EventEnum as any)[key]
-      const func = (e: CustomEvent) => {
-        screenplay.events.push({
-          timestamp: e.timeStamp - startTime, type: e.type, detail: e.detail
-        })
-        screenplay.endTime = e.timeStamp
-      };
-      actor.addEventListener(v, func);
-      const canceller = () => actor.removeEventListener(v, func);
-      this._cancellers.push(canceller);
+      const func = (detail: Events.IBaseDetail) => {
+        screenplay.events.push({ ...detail, timestamp: performance.now() - start_time })
+        screenplay.endTime = detail.timestamp
+      }
+      this._cancellers.push(actor.on(v, func));
     }
+
     return this;
   }
 

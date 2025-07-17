@@ -97,7 +97,7 @@ export class Board {
     this._world.h = to.h;
     this.markViewDirty();
     this.read_emit_opts(opts, (operator) => {
-      this.emitEvent(EventEnum.WorldRectChanged, { operator, form, to: this._world.pure() })
+      this.emit(EventEnum.WorldRectChanged, { operator, form, to: this._world.pure() })
     })
   }
 
@@ -111,7 +111,7 @@ export class Board {
     });
     this.markViewDirty();
     this.read_emit_opts(opts, (operator) => {
-      this.emitEvent(EventEnum.ViewportChanged, { operator, form, to: this._viewport.pure() })
+      this.emit(EventEnum.ViewportChanged, { operator, form, to: this._viewport.pure() })
     })
   }
 
@@ -123,7 +123,7 @@ export class Board {
     );
   }
 
-  addLayer(layer: ILayerInits | Layer | undefined): boolean {
+  addLayer(layer: ILayerInits | Layer | undefined, opts?: EmitOpts): boolean {
     if (!layer) {
       layer = this.factory.newLayer();
       this.addLayer(layer);
@@ -134,12 +134,15 @@ export class Board {
       return false;
     }
     if (layer instanceof Layer) {
-      layer.width = this.width;
-      layer.height = this.height;
-      layer.onscreen.style.pointerEvents = 'none';
-      this._element.appendChild(layer.onscreen);
-      this._layers.set(layer.info.id, layer);
-      this.dispatchEvent(new CustomEvent(EventEnum.LayerAdded, { detail: layer.info.pure() }));
+      const l = layer;
+      l.width = this.width;
+      l.height = this.height;
+      l.onscreen.style.pointerEvents = 'none';
+      this._element.appendChild(l.onscreen);
+      this._layers.set(l.info.id, l);
+      this.read_emit_opts(opts, (operator) => {
+        this.emit(EventEnum.LayerAdded, { operator, layer: l.info.pure() })
+      })
       this.markViewDirty()
     } else {
       layer = this.factory.newLayer(layer);
@@ -158,7 +161,7 @@ export class Board {
     return this;
   }
 
-  removeLayer(layerId: string): boolean {
+  removeLayer(layerId: string, opts?: EmitOpts): boolean {
     const layer = this._layers.get(layerId);
     if (!layer) {
       console.error(`[${Tag}::editLayer] removeLayer(): layer not found! id = ${layerId}`)
@@ -166,7 +169,9 @@ export class Board {
     }
     this._layers.delete(layerId);
     this._element.removeChild(layer.onscreen);
-    this.dispatchEvent(new CustomEvent(EventEnum.LayerRemoved, { detail: layer.info.pure() }));
+    this.read_emit_opts(opts, operator => {
+      this.emit(EventEnum.LayerRemoved, { operator, layer: layer.info.pure() });
+    })
     return true;
   }
 
@@ -277,26 +282,59 @@ export class Board {
   hits(rect: IRect, predicate?: IHitPredicate): Shape[] {
     return this._shapesMgr.hits(rect, predicate)
   }
-
-  addEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-  addEventListener(arg0: any, arg1: any, arg2: any): void {
-    return this._element.addEventListener(arg0, arg1, arg2);
+  private _listeners = new Map<any, Set<((p: any) => any) & { once?: boolean }>>();
+  once(type: string, listener: (data: Events.IBaseDetail) => any): () => void
+  once<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void
+  once<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void {
+    const real_listener = (data: Events.IDetailMap[K]) => listener(data);
+    real_listener.once = true;
+    return this.on(type, real_listener);
+  }
+  on(type: string, listener: (data: Events.IBaseDetail) => any): () => void
+  on<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void;
+  on<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void {
+    const set = this._listeners.get(type) ?? new Set();
+    this._listeners.set(type, set)
+    set.add(listener);
+    return () => this.off(type, listener);
+  }
+  off<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): void {
+    const set = this._listeners.get(type)
+    if (!set) return
+    set.delete(listener)
+    if (!set.size) this._listeners.delete(type)
+    return;
+  }
+  emit<K extends keyof Events.IDetailMap>(k: K, detail: Events.IEmit<Events.IDetailMap[K]>) {
+    const set = this._listeners.get(k)
+    if (!set) return;
+    const onces = [];
+    for (const l of set) {
+      l({ timeStamp: Date.now(), type: k, ...detail })
+      if (l.once) onces.push(l);
+    };
+    for (const l of onces) set.delete(l)
   }
 
 
-  removeEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
-  removeEventListener(arg0: any, arg1: any, arg2: any): void {
-    return this._element.removeEventListener(arg0, arg1, arg2);
-  }
+  // addEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+  // addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  // addEventListener(arg0: any, arg1: any, arg2: any): void {
+  //   return this._element.addEventListener(arg0, arg1, arg2);
+  // }
 
-  dispatchEvent(e: CustomEvent<any>): boolean {
-    return this._element.dispatchEvent(e)
-  }
-  emitEvent<K extends keyof Events.EventDetailMap>(k: K, detail: Events.EventDetailMap[K]) {
-    return this.dispatchEvent(new CustomEvent(k, { detail }));
-  }
+  // removeEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+  // removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+  // removeEventListener(arg0: any, arg1: any, arg2: any): void {
+  //   return this._element.removeEventListener(arg0, arg1, arg2);
+  // }
+
+  // dispatchEvent(e: CustomEvent<any>): boolean {
+  //   return this._element.dispatchEvent(e)
+  // }
+  // emitEvent<K extends keyof Events.DetailMap>(k: K, detail: Events.DetailMap[K]) {
+  //   return this.dispatchEvent(new CustomEvent(k, { detail }));
+  // }
 
   get factory() { return this._factory }
   set factory(v) { this._factory = v }
@@ -343,7 +381,7 @@ export class Board {
     }
     const from = this._toolType
     this._toolType = to
-    this.emitEvent(EventEnum.ToolChanged, {
+    this.emit(EventEnum.ToolChanged, {
       operator: this._whoami,
       from, to
     })
@@ -373,7 +411,7 @@ export class Board {
       this.markDirty(item.aabb())
     })
     this.read_emit_opts(opts, (operator) => {
-      this.emitEvent(EventEnum.ShapesAdded, {
+      this.emit(EventEnum.ShapesAdded, {
         operator,
         shapeDatas: shapes.map(v => v.data.copy())
       })
@@ -390,7 +428,7 @@ export class Board {
     this.setSelects(remains, opts);
 
     this.read_emit_opts(opts, (operator) => {
-      this.emitEvent(EventEnum.ShapesRemoved, {
+      this.emit(EventEnum.ShapesRemoved, {
         operator,
         shapeDatas: shapes.map(v => v.data)
       })
@@ -482,11 +520,11 @@ export class Board {
     this._selects = Array.from(selected_shapes)
 
     this.read_emit_opts(opts, (operator) => {
-      next_selecteds.length && this.emitEvent(EventEnum.ShapesSelected, {
+      next_selecteds.length && this.emit(EventEnum.ShapesSelected, {
         operator,
         shapeDatas: next_selecteds.map(v => v.data)
       });
-      next_desecteds.length && this.emitEvent(EventEnum.ShapesDeselected, {
+      next_desecteds.length && this.emit(EventEnum.ShapesDeselected, {
         operator,
         shapeDatas: next_desecteds.map(v => v.data)
       });
@@ -533,8 +571,8 @@ export class Board {
       }
       if (this.tool) {
         const dot = this.getDot(e)
-        const d: Events.IToolDetail = { operator: this.whoami, tool: this.tool, ...dot }
-        this.emitEvent(EventEnum.ToolDown, d)
+        const d: Events.IEmit<Events.IToolDetail> = { operator: this.whoami, tool: this.tool, ...dot }
+        this.emit(EventEnum.ToolDown, d)
         this.tool.pointerDown?.(dot)
         e.stopPropagation()
       }
@@ -557,12 +595,12 @@ export class Board {
     }
     if (this.tool) {
       const dot = this.getDot(e)
-      const d: Events.IToolDetail = { operator: this.whoami, tool: this.tool, ...dot }
+      const d: Events.IEmit<Events.IToolDetail> = { operator: this.whoami, tool: this.tool, ...dot }
       if (this.lb_down) {
-        this.emitEvent(EventEnum.ToolDraw, d)
+        this.emit(EventEnum.ToolDraw, d)
         this.tool.pointerDraw?.(dot);
       } else {
-        this.emitEvent(EventEnum.ToolMove, d)
+        this.emit(EventEnum.ToolMove, d)
         this.tool.pointerMove?.(dot)
       }
       e.stopPropagation();
@@ -574,8 +612,8 @@ export class Board {
     if (e.button == 0) {
       if (this.tool) {
         const dot = this.getDot(e)
-        const d: Events.IToolDetail = { operator: this.whoami, tool: this.tool, ...dot }
-        this.emitEvent(EventEnum.ToolUp, d)
+        const d: Events.IEmit<Events.IToolDetail> = { operator: this.whoami, tool: this.tool, ...dot }
+        this.emit(EventEnum.ToolUp, d)
         this.tool?.pointerUp?.(dot)
       }
       e.stopPropagation();
@@ -682,7 +720,7 @@ export class Board {
     }
     this.update_items_group(changed_shapes)
     this.read_emit_opts(opts, (operator) => {
-      if (shapeDatas.length) this.emitEvent(EventEnum.ShapesChanged, { operator, shapeDatas })
+      if (shapeDatas.length) this.emit(EventEnum.ShapesChanged, { operator, shapeDatas })
     })
     return this;
   }
@@ -708,7 +746,7 @@ export class Board {
       }
       if (shapeDatas.length)
         this.read_emit_opts(opts, (operator) => {
-          this.emitEvent(EventEnum.ShapesChanged, { operator, shapeDatas })
+          this.emit(EventEnum.ShapesChanged, { operator, shapeDatas })
         })
     } else {
       for (let i = 0; i < shapes.length; ++i) {
@@ -739,7 +777,7 @@ export class Board {
       }
       if (shapeDatas.length)
         this.read_emit_opts(opts, (operator) => {
-          this.emitEvent(EventEnum.ShapesChanged, { operator, shapeDatas })
+          this.emit(EventEnum.ShapesChanged, { operator, shapeDatas })
         })
     } else {
       for (let i = shapes.length - 1; i >= 0; --i) {

@@ -42,7 +42,7 @@ export class PenTool implements ITool {
     if (shape) {
       shape.data.editing = false;
       this.addDot(dot, 'last')
-      this.board?.emitEvent(EventEnum.ShapesDone, {
+      this.board?.emit(EventEnum.ShapesDone, {
         operator: this.board.whoami,
         shapeDatas: [shape!.data.copy()]
       })
@@ -65,7 +65,7 @@ export class PenTool implements ITool {
       curr.dotsType = ChangeType.Append
       curr.del_coords(0, prev.coords.length)
 
-      board.emitEvent(EventEnum.ShapesChanging, {
+      board.emit(EventEnum.ShapesChanging, {
         operator: board.whoami,
         shapeDatas: [[curr, prev]]
       })

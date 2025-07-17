@@ -62,8 +62,8 @@ export class SelectorTool implements ITool {
     this._selector.board = v;
     this._rotator.board = v;
     this._picking.board = v;
-    v.addEventListener(EventEnum.ShapesSelected, this.onSelectChanged)
-    v.addEventListener(EventEnum.ShapesDeselected, this.onSelectChanged)
+    v.on(EventEnum.ShapesSelected, this.onSelectChanged)
+    v.on(EventEnum.ShapesDeselected, this.onSelectChanged)
   }
   private onSelectChanged = () => {
     this._picking.reset();
@@ -455,7 +455,7 @@ export class SelectorTool implements ITool {
     const { board, _shapes } = this;
     if (!board || !_shapes.length) return;
     if (isLast) {
-      board.emitEvent(EventEnum.ShapesGeoChanged, {
+      board.emit(EventEnum.ShapesGeoChanged, {
         operator: board.whoami,
         tool: this.type,
         shapeDatas: this._shapes.map(v => [
@@ -463,7 +463,7 @@ export class SelectorTool implements ITool {
         ] as const)
       });
     } else {
-      board.emitEvent(EventEnum.ShapesGeoChanging, {
+      board.emit(EventEnum.ShapesGeoChanging, {
         operator: board.whoami,
         tool: this.type,
         shapeDatas: this._shapes.map(v => [

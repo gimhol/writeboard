@@ -1,5 +1,4 @@
 import type { ILayerInfo } from "../board/Layer";
-import type { ShapeType } from "../shape/ShapeEnum";
 import type { IShapeData } from "../shape/base/IShapeData";
 import type { ToolType } from "../tools/ToolEnum";
 import type { ITool } from "../tools/base/Tool";
@@ -7,20 +6,23 @@ import type { IRect } from "../utils";
 import type { EventEnum } from "./EventType";
 
 export namespace Events {
-  export interface IOperatorDetail {
+  export type IEmit<T extends IBaseDetail> = Omit<T, 'type' | 'timestamp'>
+  export interface IBaseDetail {
+    type: string;
+    timestamp: number;
     operator: string;
   }
-  export interface IShapesDetail extends IOperatorDetail {
+  export interface IShapesDetail extends IBaseDetail {
     shapeDatas: IShapeData[];
   }
-  export interface IShapesChangeDetail<T extends IShapeData = IShapeData> extends IOperatorDetail {
+  export interface IShapesChangeDetail<T extends IShapeData = IShapeData> extends IBaseDetail {
     shapeDatas: [Readonly<Partial<T>>, Readonly<Partial<T>>][];
   }
-  export interface IAnyShapesDetail extends IOperatorDetail {
+  export interface IAnyShapesDetail extends IBaseDetail {
     tool: ToolType,
     shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[];
   }
-  export interface ILayerDetail extends IOperatorDetail {
+  export interface ILayerDetail extends IBaseDetail {
     layer: ILayerInfo
   }
   export interface IShapeGeoData {
@@ -48,23 +50,20 @@ export namespace Events {
       r: data.r
     }
   }
-  export interface IToolChangedDetail {
-    operator: string;
+  export interface IToolChangedDetail extends IBaseDetail {
     from?: ToolType;
     to?: ToolType;
   }
-  export interface IRectChangeDetail {
-    operator: string;
+  export interface IRectChangeDetail extends IBaseDetail {
     form: IRect;
     to: IRect;
   }
-  export interface IToolDetail {
-    operator: string;
+  export interface IToolDetail extends IBaseDetail {
     tool: ITool;
     x: number;
     y: number;
   }
-  export interface EventDetailMap {
+  export interface IDetailMap {
     [EventEnum.ShapesAdded]: IShapesDetail;
     [EventEnum.ShapesRemoved]: IShapesDetail;
     [EventEnum.ShapesChanging]: IShapesChangeDetail<IShapeData>;
@@ -83,26 +82,6 @@ export namespace Events {
     [EventEnum.ToolDraw]: IToolDetail;
     [EventEnum.ToolMove]: IToolDetail;
     [EventEnum.ToolUp]: IToolDetail;
-  }
-  export interface EventMap extends HTMLElementEventMap {
-    [EventEnum.ShapesAdded]: CustomEvent<EventDetailMap[EventEnum.ShapesAdded]>;
-    [EventEnum.ShapesRemoved]: CustomEvent<EventDetailMap[EventEnum.ShapesRemoved]>;
-    [EventEnum.ShapesChanging]: CustomEvent<EventDetailMap[EventEnum.ShapesChanging]>;
-    [EventEnum.ShapesChanged]: CustomEvent<EventDetailMap[EventEnum.ShapesChanged]>;
-    [EventEnum.ShapesDone]: CustomEvent<EventDetailMap[EventEnum.ShapesDone]>;
-    [EventEnum.ShapesGeoChanging]: CustomEvent<EventDetailMap[EventEnum.ShapesGeoChanging]>;
-    [EventEnum.ShapesGeoChanged]: CustomEvent<EventDetailMap[EventEnum.ShapesGeoChanged]>;
-    [EventEnum.ToolChanged]: CustomEvent<EventDetailMap[EventEnum.ToolChanged]>;
-    [EventEnum.LayerAdded]: CustomEvent<EventDetailMap[EventEnum.LayerAdded]>;
-    [EventEnum.LayerRemoved]: CustomEvent<EventDetailMap[EventEnum.LayerRemoved]>;
-    [EventEnum.ShapesSelected]: CustomEvent<EventDetailMap[EventEnum.ShapesSelected]>;
-    [EventEnum.ShapesDeselected]: CustomEvent<EventDetailMap[EventEnum.ShapesDeselected]>;
-    [EventEnum.WorldRectChanged]: CustomEvent<EventDetailMap[EventEnum.WorldRectChanged]>;
-    [EventEnum.ViewportChanged]: CustomEvent<EventDetailMap[EventEnum.ViewportChanged]>;
-    [EventEnum.ToolDown]: CustomEvent<EventDetailMap[EventEnum.ToolDown]>;
-    [EventEnum.ToolDraw]: CustomEvent<EventDetailMap[EventEnum.ToolDraw]>;
-    [EventEnum.ToolMove]: CustomEvent<EventDetailMap[EventEnum.ToolMove]>;
-    [EventEnum.ToolUp]: CustomEvent<EventDetailMap[EventEnum.ToolUp]>;
   }
 }
 

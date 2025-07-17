@@ -214,7 +214,7 @@ export class Gaia {
     return this._shapes.get(type);
   }
 
-  static registAction<K extends keyof Events.EventMap>(eventType: K, handler: ActionHandler<Events.EventMap[K]>): void;
+  static registAction<K extends keyof Events.IDetailMap>(eventType: K, handler: ActionHandler<Events.IDetailMap[K]>): void;
   static registAction(eventType: string, handler: ActionHandler): void {
     this._actionHandler.set(eventType, handler);
   }

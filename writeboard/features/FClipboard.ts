@@ -68,7 +68,7 @@ export class FClipboard {
     })
     board.deselect(false)
     board.add(shapes, true)
-    board.emitEvent(EventEnum.ShapesDone, {
+    board.emit(EventEnum.ShapesDone, {
       operator: board.whoami,
       shapeDatas: raws
     })

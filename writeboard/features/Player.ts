@@ -1,9 +1,7 @@
-import { Board } from "../board";
-import { EventEnum, Events } from "../event";
-import { IShapeData } from "../shape/base/IShapeData";
-import { IPureCustomEvent, IScreenplay } from "./Screenplay";
-
-type EMap = Events.EventDetailMap;
+import type { Board } from "../board";
+import { EventEnum, type Events } from "../event";
+import type { IShapeData } from "../shape/base/IShapeData";
+import type { IScreenplay } from "./Screenplay";
 
 export class Player {
   private screenplay: IScreenplay | undefined;
@@ -48,7 +46,8 @@ export class Player {
   update_once(time: number) {
     const { screenplay } = this;
     if (!screenplay) return;
-    while (true) {
+
+    while (this.eventIdx < screenplay.events.length) {
       const event = screenplay.events[this.eventIdx];
       if (!event) { return this.stop() };
       const event_time = event.timestamp;
@@ -57,7 +56,7 @@ export class Player {
       ++this.eventIdx;
     }
   }
-  
+
   tick(time: number) {
     const { screenplay } = this;
     if (!screenplay) { return this.stop() };
@@ -68,9 +67,14 @@ export class Player {
       this._time += dt;
     const { min, max } = Math;
     const duration = screenplay.endTime - screenplay.startTime
-    this.update_once(max(0, min(this._time - this._start_time, duration)))
-    this._req_id = requestAnimationFrame(time => this.tick(time))
-    this._prev_time = time;
+    const now = this._time - this._start_time
+    if (now <= duration) {
+      this.update_once(max(0, min(now, duration)))
+      this._req_id = requestAnimationFrame(time => this.tick(time))
+      this._prev_time = time;
+    } else {
+      this.stop()
+    }
   }
 
   backward(): this {
@@ -83,51 +87,51 @@ export class Player {
     return this
   }
 
-  private _applyEvent(e: IPureCustomEvent<any>) {
+  private _applyEvent(e: Events.IBaseDetail) {
     switch (e.type) {
       case EventEnum.ShapesAdded: {
-        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        const { shapeDatas } = e as Events.IDetailMap[typeof e.type];
         this._addShape(shapeDatas)
         break;
       }
       case EventEnum.ShapesGeoChanging:
       case EventEnum.ShapesChanging: {
-        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        const { shapeDatas } = e as Events.IDetailMap[typeof e.type];
         this._changeShapes(shapeDatas, 0);
         break;
       }
       case EventEnum.ShapesRemoved: {
-        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        const { shapeDatas } = e as Events.IDetailMap[typeof e.type];
         this._removeShape(shapeDatas);
         break;
       }
       case EventEnum.WorldRectChanged: {
-        const { to } = e.detail as EMap[typeof e.type];
+        const { to } = e as Events.IDetailMap[typeof e.type];
         this.actor!.set_world_rect(to)
         break;
       }
       case EventEnum.ViewportChanged: {
-        const { to } = e.detail as EMap[typeof e.type];
+        const { to } = e as Events.IDetailMap[typeof e.type];
         this.actor!.set_viewport(to)
       }
     }
   }
 
-  private _undoEvent(e: IPureCustomEvent<any>) {
+  private _undoEvent(e: Events.IBaseDetail) {
     switch (e.type) {
       case EventEnum.ShapesAdded: {
-        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        const { shapeDatas } = e as Events.IDetailMap[typeof e.type];
         this._removeShape(shapeDatas)
         break;
       }
       case EventEnum.ShapesGeoChanging:
       case EventEnum.ShapesChanging: {
-        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        const { shapeDatas } = e as Events.IDetailMap[typeof e.type];
         this._changeShapes(shapeDatas, 1);
         break;
       }
       case EventEnum.ShapesRemoved: {
-        const { shapeDatas } = e.detail as EMap[typeof e.type];
+        const { shapeDatas } = e as Events.IDetailMap[typeof e.type];
         this._addShape(shapeDatas)
         break;
       }

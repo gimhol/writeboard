@@ -261,8 +261,8 @@ function main() {
     btnLineWidthUp.disabled = !needStroke
   }
 
-  board.addEventListener(EventEnum.ShapesSelected, e => updateEditPanel());
-  board.addEventListener(EventEnum.ShapesDeselected, e => updateEditPanel());
+  board.on(EventEnum.ShapesSelected, e => updateEditPanel());
+  board.on(EventEnum.ShapesDeselected, e => updateEditPanel());
 
   const oncontextmenu = (e: MouseEvent) => {
     menu.move(e.x, e.y).show();
@@ -370,13 +370,6 @@ function main() {
   }
 
   const templateText = board.factory.shapeTemplate(ShapeEnum.Text) as TextData;
-  board.addEventListener(EventEnum.WorldRectChanged, (e) => {
-    console.log(
-      EventEnum.WorldRectChanged,
-      e.detail.form,
-      e.detail.to
-    )
-  })
   templateText.font_family = '"Microsoft YaHei", Arial, Helvetica, sans-serif';
   templateText.fillStyle = '#ffffff'
   templateText.strokeStyle = '#000000'
