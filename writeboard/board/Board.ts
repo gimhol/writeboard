@@ -316,26 +316,6 @@ export class Board {
     for (const l of onces) set.delete(l)
   }
 
-
-  // addEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-  // addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-  // addEventListener(arg0: any, arg1: any, arg2: any): void {
-  //   return this._element.addEventListener(arg0, arg1, arg2);
-  // }
-
-  // removeEventListener<K extends keyof Events.EventMap>(type: K, listener: (this: HTMLDivElement, ev: Events.EventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-  // removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
-  // removeEventListener(arg0: any, arg1: any, arg2: any): void {
-  //   return this._element.removeEventListener(arg0, arg1, arg2);
-  // }
-
-  // dispatchEvent(e: CustomEvent<any>): boolean {
-  //   return this._element.dispatchEvent(e)
-  // }
-  // emitEvent<K extends keyof Events.DetailMap>(k: K, detail: Events.DetailMap[K]) {
-  //   return this.dispatchEvent(new CustomEvent(k, { detail }));
-  // }
-
   get factory() { return this._factory }
   set factory(v) { this._factory = v }
 
@@ -703,7 +683,6 @@ export class Board {
     this._element.removeEventListener('wheel', this._wheel);
     window.removeEventListener('pointermove', this._pointermove);
     window.removeEventListener('pointerup', this._pointerup);
-
     this._layers.forEach(v => v.destory())
     if (this._own_element) this._element.remove();
   }
@@ -714,7 +693,7 @@ export class Board {
     for (const shape of shapes) {
       if (shape.locked) continue;
       const prev = { g: shape.groupId }
-      shape.data.groupId = groupId
+      shape.groupId = groupId
       shapeDatas.push([shape.data.copy(), prev] as const);
       changed_shapes.push(shape)
     }

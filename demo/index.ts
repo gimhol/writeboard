@@ -59,6 +59,8 @@ enum MenuKey {
   ExportResult = 'ExportResult',
   UnlockSelecteds = "UnlockSelecteds",
   LockSelecteds = "LockSelecteds",
+  GroupSelecteds = "GroupSelecteds",
+  UngroupSelecteds = "UngroupSelecteds",
 }
 
 function main() {
@@ -115,6 +117,14 @@ function main() {
   }, {
     key: MenuKey.UnlockSelecteds,
     label: '取消锁定'
+  }, {
+    divider: true
+  }, {
+    key: MenuKey.GroupSelecteds,
+    label: '组合'
+  }, {
+    key: MenuKey.UngroupSelecteds,
+    label: '取消组合'
   }, {
     divider: true
   }, {
@@ -199,6 +209,14 @@ function main() {
       }
       case MenuKey.UnlockSelecteds: {
         board.selects.forEach(v => v.locked = false)
+        break;
+      }
+      case MenuKey.GroupSelecteds: {
+        board.group(board.selects)
+        break;
+      }
+      case MenuKey.UngroupSelecteds: {
+        board.ungroup(board.selects)
         break;
       }
     }
