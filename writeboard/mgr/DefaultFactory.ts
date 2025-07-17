@@ -66,10 +66,10 @@ export class DefaultFactory implements IFactory {
     }
     return ret;
   }
-  newId(data: IShapeData): string {
+  newShapeId(data: IShapeData): string {
     return data.t + '_' + Date.now() + (++this._time);
   }
-  newZ(data: IShapeData): number {
+  newShapeZ(data: IShapeData): number {
     return Date.now() + (++this._z);
   }
   newShape(shapeType: ShapeType): Shape;
@@ -81,8 +81,8 @@ export class DefaultFactory implements IFactory {
     const template = isNew ? this.shapeTemplate(v) : v
     data.read(template);
     if (isNew) {
-      data.id = this.newId(data);
-      data.z = this.newZ(data);
+      data.id = this.newShapeId(data);
+      data.z = this.newShapeZ(data);
     }
     return Gaia.shape(type)?.(data) ?? new Shape(data, ShapeData);
   }

@@ -93,7 +93,7 @@ export class EraserTool implements ITool {
     for (const [pen, dots_arr] of this._breakings) {
       for (let dots of dots_arr) {
         const new_data = pen.data.copy();
-        new_data.id = this.board.factory.newId(new_data)
+        new_data.id = this.board.factory.newShapeId(new_data)
         new_data.rotation = 0
         new_data.x = 0;
         new_data.y = 0;

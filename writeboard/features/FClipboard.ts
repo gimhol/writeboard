@@ -57,8 +57,8 @@ export class FClipboard {
     const board = this.board
     const factory = board.factory
     const shapes = raws.sort((a, b) => a.z - b.z).map(raw => {
-      raw.i = factory.newId(raw)
-      raw.z = factory.newZ(raw)
+      raw.i = factory.newShapeId(raw)
+      raw.z = factory.newShapeZ(raw)
       raw.b && (raw.b.f = void 0)
       raw.x = raw.x + 10
       raw.y = raw.y + 10

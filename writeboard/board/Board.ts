@@ -670,23 +670,25 @@ export class Board {
     if (this._own_element) this._element.remove();
   }
 
-  group(shapes: Shape[], opts?: EmitOpts): string {
-    const groupId: string = this.factory.newGroupId(shapes);
+  group(shapes: Shape[], groupId: string = this.factory.newGroupId(shapes), opts?: EmitOpts): this {
+    const changed_shapes: Shape[] = []
     const shapeDatas: [Readonly<Partial<IShapeData>>, Readonly<Partial<IShapeData>>][] = []
     for (const shape of shapes) {
       if (shape.locked) continue;
       const prev = { g: shape.groupId }
-      shape.groupId = groupId
-      shapeDatas.push([shape.data.copy(), prev] as const)
+      shape.data.groupId = groupId
+      shapeDatas.push([shape.data.copy(), prev] as const);
+      changed_shapes.push(shape)
     }
+    this.update_items_group(changed_shapes)
     this.read_emit_opts(opts, (operator) => {
       if (shapeDatas.length) this.emitEvent(EventEnum.ShapesChanged, { operator, shapeDatas })
     })
-    return groupId;
+    return this;
   }
 
-  ungroup(): this {
-    return this;
+  ungroup(shapes: Shape[], opts?: EmitOpts): this {
+    return this.group(shapes, '', opts);
   }
 
   raise(shapes: Shape[], opts: EmitOpts): this {
