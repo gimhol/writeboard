@@ -1,0 +1,15 @@
+#root {
+  display: flex;
+}
+
+#tools {
+  display: flex;
+  flex-direction: column;
+}
+
+#container {
+  border: 1px black solid;
+  width: 500px;
+  height: 500px;
+  position: relative;
+}

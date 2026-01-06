@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=no">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../lib/writeboard.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="../lib/writeboard.js" type="module"></script>
+</head>
+
+<body>
+  <div id="root">
+    <div id="tools"></div>
+    <div id="container"></div>
+  </div>
+  <script type="module">
+    import { Gaia, FactoryEnum, ToolEnum } from "../lib/writeboard.js"
+
+    // 步骤1：创建一个默认工厂
+    // step 1: create a factory.
+    const factory = Gaia.factory(FactoryEnum.Default)();
+
+    // 步骤2：通过工厂创建一个“板子”
+    // step 2: create board in container element.
+    const board = factory.newBoard({
+      element: document.getElementById('container'),
+      width: 500,
+      height: 500,
+    });
+
+    // 切换到内置工具“笔”，然后你就可以在“板子”上画东西了
+    // switch to built-in tool "pen", then you can draw something on board.
+    board.setToolType(ToolEnum.Pen);
+    for (const k in ToolEnum) {
+      if (!ToolEnum[k]) continue;
+      const btn = document.createElement("button")
+      btn.onclick = () => board.setToolType(ToolEnum[k])
+      btn.innerText = k
+      document.getElementById('tools').append(btn)
+    }
+  </script>
+</body>
+
+</html>
