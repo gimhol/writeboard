@@ -18,8 +18,10 @@ npm install --save @fimagine/writeboard
 
 ### 最简示例 Simplest Example
 
+[simplest](https://github.com/gimhol/writeboard/blob/main/examples/simplest/index.html)
+
 ``` javascript
-import { Gaia, FactoryEnum, ToolEnum } from '@fimagine/writeboard'
+import { Gaia, FactoryEnum, ToolEnum } from "../lib/writeboard.js"
 
 // 步骤1：创建一个默认工厂
 // step 1: create a factory.
@@ -29,8 +31,8 @@ const factory = Gaia.factory(FactoryEnum.Default)();
 // step 2: create board in container element.
 const board = factory.newBoard({
   element: document.getElementById('container'),
-  width: 500;
-  height: 500;
+  width: 500,
+  height: 500,
 });
 
 // 切换到内置工具“笔”，然后你就可以在“板子”上画东西了

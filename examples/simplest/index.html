@@ -32,6 +32,7 @@
     // 切换到内置工具“笔”，然后你就可以在“板子”上画东西了
     // switch to built-in tool "pen", then you can draw something on board.
     board.setToolType(ToolEnum.Pen);
+    
     for (const k in ToolEnum) {
       if (!ToolEnum[k]) continue;
       const btn = document.createElement("button")
