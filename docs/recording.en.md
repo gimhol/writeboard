@@ -74,6 +74,45 @@ const slim = {
 
 Measured: a 32-point pen stroke is ~7.1KB, of which `TOOL_DRAW` × 30 alone is 4.5KB (64%); dropping `TOOL_*` leaves ~2.2KB and dropping `SHAPES_DONE` too leaves ~1.1KB. The bundled example screenplays: 12s "hello world" = 142 events / 102KB, 24s "rect & oval" = 204 events / 40KB.
 
+### Size & capacity planning
+
+Freehand writing is dominated by one thing: the board re-sends the whole stroke roughly every 33ms. `SHAPES_CHANGING` carries the pair `[curr, prev]` — `curr` holds only the newly landed points, while `prev` holds **every point of the stroke so far** — so a stroke gets heavier as it grows.
+
+Measured (real browser, 1024×1024 board, pen tool, 60Hz pointer input, 1.5s strokes + 0.2s gaps, 21s recorded then extrapolated to one hour):
+
+| Scenario | Points/s | 21s recording | Extrapolated 1 hour |
+|---|---|---|---|
+| 60Hz input, raw float coordinates | 50 | 833KB | ≈ 143MB |
+| 60Hz input, coordinates quantized to 0.25px (closer to real hardware) | 50 | 564KB | ≈ 96MB |
+| 60Hz input, 0.6s strokes (quick small strokes) | 44 | 557KB | ≈ 95MB |
+| 120Hz input (high-refresh pen) | 74 | 1.14MB | ≈ 194MB |
+
+**Order of magnitude: one hour of handwriting ≈ 100MB**; coordinate precision and input rate stretch that to 95 ~ 145MB, and high-refresh input to about 190MB. Of that, only ≈ 2.5MB (2.6%) is the final picture — everything else is process data.
+
+Slimming the same 60Hz / 0.25px recording step by step (every step verified to replay identically):
+
+| Variant | 21s | 1 hour |
+|---|---|---|
+| As recorded | 564KB | 96MB |
+| `prev` dropped from each pair (coordinate deltas only) | 314KB | 53MB |
+| Also drop `TOOL_*` / `SHAPES_DONE` | 155KB | 26MB |
+| Previous variant + gzip | 15KB | 2.6MB |
+
+`prev` exists for the library's own undo / redo (`ActionQueue` builds the inverse operation from it). Playback never needs it: `Player.seek()` backwards rebuilds from the snapshot and replays forward, and every event is applied from `curr` only. Drop it on export:
+
+```ts
+/** Collapse each [curr, prev] pair to [curr] while serializing */
+const json = JSON.stringify(screenplay, (key, value) =>
+  key === 'shapeDatas' && Array.isArray(value)
+    ? value.map((d: unknown) => (Array.isArray(d) && d.length === 2 ? [d[0]] : d))
+    : value
+)
+```
+
+Capacity: localStorage's 5MB limit holds only ≈ 3 minutes as recorded, but ≈ 2 hours slimmed + gzipped. For long sessions store chunks in IndexedDB or let the server persist them.
+
+The same transform applies to the bundled examples: `demo_helloworld.json` 102KB → 46KB (131 pairs) and `demo_rect_n_oval.json` 40KB → 30KB, both replaying to a final picture identical to the originals, shape by shape.
+
 ## 2. Playback
 
 ```ts
