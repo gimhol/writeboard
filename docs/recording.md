@@ -59,11 +59,49 @@ interface IScreenplay {
 | `SHAPES_CHANGING` / `SHAPES_CHANGED` | 合并图形数据（画笔的坐标增量就靠它一点点累积） |
 | `SHAPES_GEO_CHANGING` / `SHAPES_GEO_CHANGED` | 合并几何（x / y / w / h / r） |
 | `WORLD_RECT_CHANGED` / `VIEWPORT_CHANGED` | 还原滚动位置与视口 |
-| `TOOL_*`、`TOOL_CHANGED`、`SHAPES_SELECTED` / `SHAPES_DESELECTED`、`LAYER_ADDED` / `LAYER_REMOVED`、`SHAPES_DONE` | 会录进剧本，但**不影响回放画面** |
+| `TOOL_*`、`TOOL_CHANGED`、`SHAPES_SELECTED` / `SHAPES_DESELECTED`、`LAYER_ADDED` / `LAYER_REMOVED`、`SHAPES_DONE` | 当前 `Player` 不回放，但**是回放其它表现的数据来源，默认不要裁**（见下） |
 
-### 让剧本更小
+### 保留事件：回放不止「把图形画出来」
 
-上表最后一行的事件占了相当比重，导出前裁掉即可：
+除画面本身，剧本里的这些事件还能支撑更多回放表现，所以 `Recorder` 默认**全量记录**，建议保持：
+
+| 事件 | 现 `Player` | 保留它能做出的回放表现 |
+|---|---|---|
+| `TOOL_DOWN` / `TOOL_MOVE` / `TOOL_DRAW` / `TOOL_UP` | 忽略 | 回放光标 / 笔尖跟随（含悬停轨迹）、笔压 `p`、当前工具名 `tool`；坐标是 **world 系**，可直接换算成屏幕位置叠在画布上 |
+| `TOOL_CHANGED` | 忽略 | 回放时同步工具栏选中态 |
+| `SHAPES_DONE` | 忽略 | 逐笔索引（第 N 笔）、单笔重绘 / 循环重放、以及这一笔的最终几何 |
+| 配对事件里的 `prev` | 只用 `curr` | 逐帧精确回退（不必从快照重建）、差分高亮 |
+| `SHAPES_SELECTED` / `SHAPES_DESELECTED` | 忽略 | 复现选择框 / 高亮动画 |
+| `LAYER_ADDED` / `LAYER_REMOVED` | 忽略 | 分层回放（逐层显隐、按层播放） |
+
+用 `TOOL_*` 驱动一个回放光标的例子（`TOOL_DRAW` 在 60Hz 输入下约 50 条/秒，坐标已是 world 系，这里用的是 [Board.map2world](../writeboard/board/Board.ts) 的逆运算）：
+
+```ts
+/** TOOL_* 事件带的是 world 坐标 */
+type IDotEvent = { timestamp: number, x: number, y: number, p?: number }
+const trail = screenplay.events
+  .filter(e => e.type.startsWith('TOOL_'))                       // TOOL_MOVE 是未按下时的悬停轨迹
+  .filter((e): e is typeof e & IDotEvent => Number.isFinite((e as Partial<IDotEvent>).x))
+const cursor = document.getElementById('cursor')!
+let i = 0
+
+new Player().play(board, screenplay, {
+  onProgress: (p) => {
+    while (i < trail.length && trail[i].timestamp <= p.time) {
+      const { x, y } = trail[i++]
+      // world → 屏幕：加上画布滚动偏移（画布缩放为 1、且画布左上角在视口原点时成立）
+      cursor.style.transform = `translate(${x + board.world.x}px, ${y + board.world.y}px)`
+    }
+    if (p.state === 'ended') cursor.style.opacity = '0'
+  },
+})
+```
+
+### 让剧本更小（有损，按需）
+
+> 裁剪会永久丢掉上表这些能力，只建议用于**只需要「重放画面」的存档副本**；原始录制文件请保留全量。
+
+需要更小的存档时，再按下面的顺序裁（越往下越有损）：
 
 ```ts
 const slim = {
@@ -89,7 +127,7 @@ const slim = {
 
 **量级：手写 1 小时 ≈ 100MB**；坐标精度和输入频率会把区间拉到 95 ~ 145MB，高刷输入约 190MB。其中真正属于最终画面的坐标只有 ≈ 2.5MB（2.6%），剩余都是过程数据。
 
-按体积逐级瘦身（同一段 60Hz / 0.25px 录制，每一级都验证过回放画面一致）：
+按体积逐级瘦身（同一段 60Hz / 0.25px 录制，每一级都验证过**画面**一致 —— 注意被丢掉的 `TOOL_*` / `SHAPES_DONE` / `prev` 正是「回放光标 / 逐笔重绘 / 逐帧回退」的数据来源，见上一节）：
 
 | 版本 | 21s | 1 小时 |
 |---|---|---|

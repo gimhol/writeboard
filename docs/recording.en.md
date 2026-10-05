@@ -59,11 +59,49 @@ interface IScreenplay {
 | `SHAPES_CHANGING` / `SHAPES_CHANGED` | Merge shape data (pen coordinate deltas accumulate through this) |
 | `SHAPES_GEO_CHANGING` / `SHAPES_GEO_CHANGED` | Merge geometry (x / y / w / h / r) |
 | `WORLD_RECT_CHANGED` / `VIEWPORT_CHANGED` | Restore scroll position and viewport |
-| `TOOL_*`, `TOOL_CHANGED`, `SHAPES_SELECTED` / `SHAPES_DESELECTED`, `LAYER_ADDED` / `LAYER_REMOVED`, `SHAPES_DONE` | Recorded, but **do not affect the replayed picture** |
+| `TOOL_*`, `TOOL_CHANGED`, `SHAPES_SELECTED` / `SHAPES_DESELECTED`, `LAYER_ADDED` / `LAYER_REMOVED`, `SHAPES_DONE` | Not replayed by the current `Player`, but they are the source for **other playback presentations — don't strip them by default** (see below) |
 
-### Making screenplays smaller
+### Keep the extra events: playback is more than repainting shapes
 
-The events in that last row are a large share of the payload while playback ignores them:
+Besides the picture itself, the recorded stream supports richer playback presentations, so `Recorder` records **everything** by default and you should keep it that way:
+
+| Event | Current `Player` | Playback presentation it enables |
+|---|---|---|
+| `TOOL_DOWN` / `TOOL_MOVE` / `TOOL_DRAW` / `TOOL_UP` | ignored | A replay cursor / pen tip that follows the stroke (plus hover path), pen pressure `p`, active tool `tool`; coordinates are in **world space**, ready to be mapped onto the canvas |
+| `TOOL_CHANGED` | ignored | Keep the toolbar's selected tool in sync while replaying |
+| `SHAPES_DONE` | ignored | Stroke indexing (the n-th stroke), per-stroke redraw / looping a single stroke, final geometry of that stroke |
+| `prev` inside paired events | `curr` only | Exact frame-by-frame rewind (no snapshot rebuild needed), difference highlighting |
+| `SHAPES_SELECTED` / `SHAPES_DESELECTED` | ignored | Reproduce selection boxes / highlight animations |
+| `LAYER_ADDED` / `LAYER_REMOVED` | ignored | Layer-aware playback (reveal layer by layer) |
+
+Driving a replay cursor from `TOOL_*` (about 50 events/s at 60Hz input; coordinates are already world space — this is the inverse of [Board.map2world](../writeboard/board/Board.ts)):
+
+```ts
+/** TOOL_* events carry world coordinates */
+type IDotEvent = { timestamp: number, x: number, y: number, p?: number }
+const trail = screenplay.events
+  .filter(e => e.type.startsWith('TOOL_'))                       // TOOL_MOVE is the hover path while the button is up
+  .filter((e): e is typeof e & IDotEvent => Number.isFinite((e as Partial<IDotEvent>).x))
+const cursor = document.getElementById('cursor')!
+let i = 0
+
+new Player().play(board, screenplay, {
+  onProgress: (p) => {
+    while (i < trail.length && trail[i].timestamp <= p.time) {
+      const { x, y } = trail[i++]
+      // world -> screen: add the canvas scroll offset (valid for scale 1 with the canvas at the viewport origin)
+      cursor.style.transform = `translate(${x + board.world.x}px, ${y + board.world.y}px)`
+    }
+    if (p.state === 'ended') cursor.style.opacity = '0'
+  },
+})
+```
+
+### Making screenplays smaller (lossy, opt-in)
+
+> Stripping events permanently removes the capabilities listed above. Only do it for **archive copies that merely need the picture replayed** — keep the original recording in full.
+
+When you really need smaller archives, strip in this order (the further down, the more you lose):
 
 ```ts
 const slim = {
@@ -89,7 +127,7 @@ Measured (real browser, 1024×1024 board, pen tool, 60Hz pointer input, 1.5s str
 
 **Order of magnitude: one hour of handwriting ≈ 100MB**; coordinate precision and input rate stretch that to 95 ~ 145MB, and high-refresh input to about 190MB. Of that, only ≈ 2.5MB (2.6%) is the final picture — everything else is process data.
 
-Slimming the same 60Hz / 0.25px recording step by step (every step verified to replay identically):
+Slimming the same 60Hz / 0.25px recording step by step (every step verified to replay the same **picture** — note that the dropped `TOOL_*` / `SHAPES_DONE` / `prev` are exactly the data behind the replay cursor / per-stroke redraw / frame-exact rewind, see the previous section):
 
 | Variant | 21s | 1 hour |
 |---|---|---|
