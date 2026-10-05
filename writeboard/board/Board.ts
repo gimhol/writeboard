@@ -678,14 +678,20 @@ export class Board {
     delete this._dirty
   }
 
-  destory() {
+  destroy() {
     this._element.removeEventListener('pointerdown', this._pointerdown);
     this._element.removeEventListener('wheel', this._wheel);
     window.removeEventListener('pointermove', this._pointermove);
     window.removeEventListener('pointerup', this._pointerup);
-    this._layers.forEach(v => v.destory())
+    this._layers.forEach(v => v.destroy())
     if (this._own_element) this._element.remove();
   }
+
+  /**
+   * @deprecated 拼写错误，请使用 destroy()
+   * @deprecated misspelled, use destroy() instead
+   */
+  destory() { this.destroy(); }
 
   group(shapes: Shape[], groupId: string = this.factory.newGroupId(shapes), opts?: EmitOpts): this {
     const changed_shapes: Shape[] = []

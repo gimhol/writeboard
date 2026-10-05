@@ -62,11 +62,9 @@ export class Gaia {
         console.warn(`[${Tag}::registerFont] font info already exists, family: "${info.family}"`);
         continue;
       }
-      const t = Date.now()
       const ok = this.checkFont(info.family)
       if (ok) this._fonts.set(info.family, info)
       else console.warn(`[${Tag}::registerFont] font not supported, family: "${info.family}", name: "${info.name}", desc: "${info.desc}"`)
-      console.log(`[${Tag}::registerFont] checking, family: "${info.family}", duration: ${Date.now() - t}ms`)
     };
   }
 

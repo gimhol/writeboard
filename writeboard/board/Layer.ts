@@ -42,7 +42,10 @@ export class Layer implements ILayer {
   get offscreen() { return this._offscreen };
   get ctx() { return this._ctx };
   get octx() { return this._octx };
-  get opacity() { return Number(this._offscreen.style.opacity) };
+  get opacity() {
+    const v = this._onscreen.style.opacity;
+    return v === '' ? 1 : Number(v);
+  };
   set opacity(v) { this._onscreen.style.opacity = '' + v };
   get id() { return this._info.id; }
 
@@ -87,8 +90,14 @@ export class Layer implements ILayer {
     this._onscreen.height = v;
     this._offscreen.height = v;
   }
-  destory() {
+  destroy() {
     if (this._own_onscreen) this._onscreen.remove();
     if (this._own_offscreen) this._offscreen.remove();
   }
+
+  /**
+   * @deprecated 拼写错误，请使用 destroy()
+   * @deprecated misspelled, use destroy() instead
+   */
+  destory() { this.destroy(); }
 }

@@ -2160,13 +2160,11 @@ class Gaia {
                 console.warn(`[${Tag$3}::registerFont] font info already exists, family: "${info.family}"`);
                 continue;
             }
-            const t = Date.now();
             const ok = this.checkFont(info.family);
             if (ok)
                 this._fonts.set(info.family, info);
             else
                 console.warn(`[${Tag$3}::registerFont] font not supported, family: "${info.family}", name: "${info.name}", desc: "${info.desc}"`);
-            console.log(`[${Tag$3}::registerFont] checking, family: "${info.family}", duration: ${Date.now() - t}ms`);
         }
     }
     /**
@@ -3541,7 +3539,19 @@ class TextSelection {
     }
 }
 
-const measurer = document.createElement('canvas').getContext('2d');
+let _measurer;
+/**
+ * 延迟创建文本测量用的画布上下文，
+ * 避免在非 DOM 环境（如 Node）中引入本模块时抛错
+ *
+ * Creates the canvas context for text measuring lazily,
+ * so importing this module in non-DOM environments (e.g. Node) does not throw.
+ */
+const getMeasurer = () => {
+    if (!_measurer)
+        _measurer = document.createElement('canvas').getContext('2d');
+    return _measurer;
+};
 class ShapeText extends Shape {
     get text() { return this.data.s; }
     set text(v) { this.setText(v); }
@@ -3622,6 +3632,7 @@ class ShapeText extends Shape {
         dirty && this.endDirty();
     }
     _calculateLines() {
+        const measurer = getMeasurer();
         this._applyStyle(measurer);
         let totalH = this.data.p;
         let totalW = 0;
@@ -3640,6 +3651,7 @@ class ShapeText extends Shape {
         this.resize(totalW, totalH);
     }
     _calculateSectionRects() {
+        const measurer = getMeasurer();
         this._applyStyle(measurer);
         const selection = this._selection;
         let lineStart = 0;
@@ -3923,7 +3935,10 @@ class Layer {
     ;
     get octx() { return this._octx; }
     ;
-    get opacity() { return Number(this._offscreen.style.opacity); }
+    get opacity() {
+        const v = this._onscreen.style.opacity;
+        return v === '' ? 1 : Number(v);
+    }
     ;
     set opacity(v) { this._onscreen.style.opacity = '' + v; }
     ;
@@ -3967,12 +3982,17 @@ class Layer {
         this._onscreen.height = v;
         this._offscreen.height = v;
     }
-    destory() {
+    destroy() {
         if (this._own_onscreen)
             this._onscreen.remove();
         if (this._own_offscreen)
             this._offscreen.remove();
     }
+    /**
+     * @deprecated 拼写错误，请使用 destroy()
+     * @deprecated misspelled, use destroy() instead
+     */
+    destory() { this.destroy(); }
 }
 
 const { floor: floor$1, ceil } = Math;
@@ -4560,15 +4580,20 @@ class Board {
         });
         delete this._dirty;
     }
-    destory() {
+    destroy() {
         this._element.removeEventListener('pointerdown', this._pointerdown);
         this._element.removeEventListener('wheel', this._wheel);
         window.removeEventListener('pointermove', this._pointermove);
         window.removeEventListener('pointerup', this._pointerup);
-        this._layers.forEach(v => v.destory());
+        this._layers.forEach(v => v.destroy());
         if (this._own_element)
             this._element.remove();
     }
+    /**
+     * @deprecated 拼写错误，请使用 destroy()
+     * @deprecated misspelled, use destroy() instead
+     */
+    destory() { this.destroy(); }
     group(shapes, groupId = this.factory.newGroupId(shapes), opts) {
         const changed_shapes = [];
         const shapeDatas = [];
@@ -6195,9 +6220,14 @@ class Recorder {
         this._actor = v;
         return this;
     }
-    destory() {
-        console.log('[Recorder] destory()');
+    destroy() {
+        console.log('[Recorder] destroy()');
     }
+    /**
+     * @deprecated 拼写错误，请使用 destroy()
+     * @deprecated misspelled, use destroy() instead
+     */
+    destory() { this.destroy(); }
     stop() {
         console.log('[Recorder] stop()');
         if (this._screenplay) {

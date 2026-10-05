@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES5",
+    "downlevelIteration": true,
     "lib": [
       "ES2015",
       "DOM",
@@ -11,9 +12,7 @@
     "rootDirs": [
       "./writeboard",
     ],
-    "typeRoots": [
-      "./src/whiteBoard/types/"
-    ],
+    "types": [],
     "allowJs": false,
     "checkJs": false,
     "sourceMap": true,

@@ -6,7 +6,18 @@ import { Rect } from "../../utils/Rect"
 import { IRect } from "../../utils/IRect"
 import { TextSelection, ITextSelection } from "./TextSelection"
 
-const measurer = document.createElement('canvas').getContext('2d')!
+let _measurer: CanvasRenderingContext2D | undefined
+/**
+ * 延迟创建文本测量用的画布上下文，
+ * 避免在非 DOM 环境（如 Node）中引入本模块时抛错
+ *
+ * Creates the canvas context for text measuring lazily,
+ * so importing this module in non-DOM environments (e.g. Node) does not throw.
+ */
+const getMeasurer = (): CanvasRenderingContext2D => {
+  if (!_measurer) _measurer = document.createElement('canvas').getContext('2d')!
+  return _measurer
+}
 export interface ILineInfo extends TextMetrics {
   x: number
   y: number
@@ -101,6 +112,7 @@ export class ShapeText extends Shape<TextData> {
   }
 
   private _calculateLines() {
+    const measurer = getMeasurer()
     this._applyStyle(measurer)
     let totalH = this.data.p
     let totalW = 0
@@ -120,6 +132,7 @@ export class ShapeText extends Shape<TextData> {
   }
 
   private _calculateSectionRects() {
+    const measurer = getMeasurer()
     this._applyStyle(measurer)
     const selection = this._selection
     let lineStart = 0

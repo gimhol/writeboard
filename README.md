@@ -16,6 +16,16 @@ npm install --save @fimagine/writeboard
 
 ## 使用说明 Usage
 
+### 引入样式 Import the stylesheet
+
+板子的画布布局依赖包内的样式文件，使用前请引入：
+
+The canvas layout relies on the stylesheet shipped in the package, import it before use:
+
+``` javascript
+import "@fimagine/writeboard/dist/es6/cjs/writeboard.css"
+```
+
 ### 最简示例 Simplest Example
 
 [simplest](https://github.com/gimhol/writeboard/blob/main/examples/simplest/index.html)
@@ -38,6 +48,16 @@ const board = factory.newBoard({
 // 切换到内置工具“笔”，然后你就可以在“板子”上画东西了
 // switch to built-in tool "pen", then you can draw something on board.
 board.setToolType(ToolEnum.Pen);
+```
+
+## 开发 Development
+
+``` shell
+npm install        # 安装依赖 install dependencies
+npm run build      # 构建 dist/ 下的库产物 build library bundles into dist/
+npm test           # 构建后运行单测 build & run unit tests
+npm start          # 以 watch 模式构建 demo 到 output/ build demo into output/ in watch mode
+npm run doc        # 生成 typedoc generate typedoc
 ```
 
 ## 参与贡献 Participate

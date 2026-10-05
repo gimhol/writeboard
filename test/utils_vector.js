@@ -1,4 +1,4 @@
-const { Vector } = require('../dist/utils/Vector')
+const { Vector } = require('../dist/es5/cjs/writeboard.js')
 
 const assert = require('assert');
 describe('class Vector', () => {

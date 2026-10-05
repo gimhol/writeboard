@@ -1,6 +1,7 @@
 import html from "@rollup/plugin-html";
 import image from "@rollup/plugin-image";
 import fs from "fs";
+import copy from "rollup-plugin-copy";
 import { dts } from "rollup-plugin-dts";
 import postcss from "rollup-plugin-postcss";
 import typescript from 'rollup-plugin-typescript2';
@@ -16,6 +17,9 @@ const demo_config = {
   },
   plugins: [
     image(),
+    copy({
+      targets: [{ src: 'demo/assets', dest: 'output' }],
+    }),
     postcss({
       extensions: ['.scss'],
       extract: true,
@@ -58,13 +62,12 @@ const demo_config = {
 }
 
 const targets = [
-  { dir: 'dist/es6', tsconfig: "./tsconfig.lib.es6.json" },
-  { dir: 'dist/es5', tsconfig: "./tsconfig.lib.es5.json" }
+  { dir: 'dist/es6', tsconfig: "./tsconfig.lib.es6.json", formats: ['es', 'cjs', 'umd'] },
+  { dir: 'dist/es5', tsconfig: "./tsconfig.lib.es5.json", formats: ['cjs', 'umd'] }
 ]
-const formats = ['module', 'amd', 'cjs', 'es', 'iife', 'system', 'umd', 'commonjs', 'esm', 'systemjs']
 const configs = [];
-for (const format of formats) {
-  for (const { dir, tsconfig } of targets) {
+for (const { dir, tsconfig, formats } of targets) {
+  for (const format of formats) {
     const bundle_js_config = {
       input: 'writeboard/index.ts',
       output: {

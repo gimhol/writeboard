@@ -1,11 +1,40 @@
 {
   "name": "@fimagine/writeboard",
   "version": "0.2.0",
-  "description": "",
+  "description": "Extensible whiteboard for writing, with zero runtime dependencies. 可扩展的书写用白板，不依赖任何第三方库。",
   "main": "dist/es6/cjs/writeboard.js",
-  "types": "dist/es6/cjs/writeboard.ts",
+  "module": "dist/es6/es/writeboard.js",
+  "types": "dist/es6/cjs/writeboard.d.ts",
+  "style": "dist/es6/cjs/writeboard.css",
+  "unpkg": "dist/es6/umd/writeboard.js",
+  "jsdelivr": "dist/es6/umd/writeboard.js",
+  "exports": {
+    ".": {
+      "types": "./dist/es6/cjs/writeboard.d.ts",
+      "import": "./dist/es6/es/writeboard.js",
+      "require": "./dist/es6/cjs/writeboard.js",
+      "default": "./dist/es6/cjs/writeboard.js"
+    },
+    "./dist/*": "./dist/*",
+    "./writeboard/*": "./writeboard/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "writeboard"
+  ],
+  "keywords": [
+    "whiteboard",
+    "canvas",
+    "drawing",
+    "handwriting",
+    "白板",
+    "画板",
+    "typescript"
+  ],
   "scripts": {
     "start": "npm run demo",
+    "pretest": "npm run build",
     "test": "mocha",
     "demo": "rollup -c -w --environment output_format:cjs",
     "build": "rollup -c",
@@ -14,7 +43,7 @@
     "flow": "npm run build && npm run deploy"
   },
   "author": "Gim",
-  "license": "Apache License 2.0",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@fimagine/frontend_deployer": "^1.0.7",
     "@rollup/plugin-html": "^2.0.0",

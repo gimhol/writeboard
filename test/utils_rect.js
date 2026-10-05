@@ -1,4 +1,4 @@
-const { Rect } = require('../dist/utils/Rect')
+const { Rect } = require('../dist/es5/cjs/writeboard.js')
 
 const assert = require('assert');
 describe('class Rect', () => {

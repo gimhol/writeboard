@@ -44,9 +44,15 @@ export class Recorder {
     return this;
   }
 
-  destory(): void {
-    console.log('[Recorder] destory()');
+  destroy(): void {
+    console.log('[Recorder] destroy()');
   }
+
+  /**
+   * @deprecated 拼写错误，请使用 destroy()
+   * @deprecated misspelled, use destroy() instead
+   */
+  destory(): void { this.destroy(); }
 
   stop(): this {
     console.log('[Recorder] stop()');
