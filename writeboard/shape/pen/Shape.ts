@@ -48,8 +48,11 @@ export class ShapePen extends Shape<PenData> {
   }
 
   private updatePath(x: number, y: number, type: 'first' | 'mid' | 'last') {
-    if (type === 'first') {
+    // 载入时就带坐标的笔画（快照 / SHAPES_ADDED 里已有点）之后再追加点时，
+    // prev_dot 早就被上一段末尾的 'last' 清掉了，这里按新段起点处理，避免回放中断
+    if (type === 'first' || !this.prev_dot) {
       this.prev_dot = { x, y }
+      this.prev_t = undefined
       this._path2D = new Path2D()
       this._path2D.moveTo(x, y)
       return

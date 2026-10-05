@@ -211,6 +211,36 @@ describe('class Player', () => {
     assert.deepStrictEqual([...restored.data.u], [...pen.data.u], 'JSON 往返后坐标与录制时一致')
   });
 
+  it('已含坐标的笔画再追加增量时回放不会中断', () => {
+    // 快照 / SHAPES_ADDED 里就带点的笔画（例如从"书写中途开始的检查点"恢复），
+    // 之后再收到 Append 增量：旧的 updatePath 假设 prev_dot 存在会抛异常，整场回放中断
+    const screenplay = {
+      startTime: 0,
+      endTime: 100,
+      events: [
+        {
+          type: EventEnum.ShapesAdded, operator: 'local', timestamp: 0,
+          shapeDatas: [{ t: ShapeEnum.Pen, i: 'pen-1', l: 'layer-1', u: [10, 10, 20, 20], v: 1, x: 10, y: 10, w: 10, h: 10 }],
+        },
+        {
+          type: EventEnum.ShapesChanging, operator: 'local', timestamp: 50,
+          shapeDatas: [[{ t: ShapeEnum.Pen, i: 'pen-1', v: 2, u: [30, 30] }]],
+        },
+      ],
+    }
+
+    const target = createBoard()
+    const player = new Player()
+    assert.doesNotThrow(() => {
+      player.begin(target, screenplay)
+      player.update_once(Infinity)
+    }, '追加增量不应该抛错')
+    const pen = target.find('pen-1')
+    assert.ok(pen)
+    assert.deepStrictEqual([...pen.data.u], [10, 10, 20, 20, 30, 30], '增量被追加，而不是丢掉整场回放')
+    assert.strictEqual(player.eventIndex, 2, '后续事件仍被应用')
+  });
+
   it('play() 先应用快照，再按时间轴回放事件', () => {
     const source = createBoard()
     const rect = drawRect(source, { x: 5, y: 5 }, { x: 25, y: 25 })
