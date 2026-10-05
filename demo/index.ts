@@ -11,6 +11,8 @@ import {
   ShapeText,
   TextData,
   ToolEnum,
+  type IPlayerProgress,
+  type IScreenplay,
 } from "../writeboard";
 import img_logo from './assets/img/logo.png';
 import img_header_0 from "./assets/img/calendar_phrases/main_pics/header_0.jpg";
@@ -504,6 +506,63 @@ function main() {
     board.selects.forEach(shape => shape.rotateBy(Math.PI / 10))
   })
 
+  // ---- 录制 / 回放 ----------------------------------------------------------
+  const recordBarFill = new View('i');
+  recordBarFill.styles.apply('', { display: 'block', width: '0%', height: '100%', background: '#ff5722' })
+  const recordBar = View.get('div').styles.addCls('g_cp_record_bar').view;
+  recordBar.addChild(recordBarFill);
+
+  let lastScreenplay: IScreenplay | undefined
+  const stopRecording = () => {
+    if (!rec.running) { return }
+    rec.stop()
+    lastScreenplay = rec.getScreenplay() ?? undefined
+    btnRecord.content = '⏺️';
+    btnRecord.inner.title = '开始录制'
+  }
+  const showProgress = (p: IPlayerProgress) => {
+    recordBar.inner.style.display = 'block'
+    recordBarFill.inner.style.width = `${p.progress * 100}%`
+  }
+
+  const btnRecord = new Button().init({ content: '⏺️', size: SizeType.Large, title: '开始录制' });
+  btnRecord.addEventListener('click', () => {
+    if (rec.running) {
+      stopRecording()
+      return
+    }
+    sc.stop()
+    lastScreenplay = undefined
+    rec.stop().start()          // Recorder.start() 会重置剧本，重新开始记录
+    btnRecord.content = '⏹️';
+    btnRecord.inner.title = '停止录制'
+    recordBar.inner.style.display = 'none'
+  })
+
+  const btnPlayback = new Button().init({ content: '▶️', size: SizeType.Large, title: '回放上一次录制' });
+  btnPlayback.addEventListener('click', () => {
+    stopRecording()
+    lastScreenplay = lastScreenplay ?? rec.getScreenplay() ?? undefined
+    if (!lastScreenplay) { return }
+    recordBarFill.inner.style.width = '0%'
+    sc.play(board, lastScreenplay, {
+      rate: 2,                  // 回放用 2 倍速
+      onProgress: showProgress,
+      onEnd: () => { recordBarFill.inner.style.width = '100%' },
+    })
+  })
+
+  const btnPausePlayback = new Button().init({ content: '⏸️', size: SizeType.Large, title: '暂停 / 继续' });
+  btnPausePlayback.addEventListener('click', () => {
+    if (sc.playing) {
+      sc.pause()
+      btnPausePlayback.content = '▶️'
+    } else if (sc.paused) {
+      sc.resume()
+      btnPausePlayback.content = '⏸️'
+    }
+  })
+
   const bottomRow = new View('div');
   bottomRow.styles.addCls('g_cp_content_bottom_row')
   bottomRow.addChild(
@@ -519,12 +578,16 @@ function main() {
     btnLineWidthDown,
     btnRotate1,
     btnRotate2,
+    btnRecord,
+    btnPlayback,
+    btnPausePlayback,
     btnNext,
     btnExport,
   )
 
   bottomRow.addEventListener('pointerdown', e => e.stopPropagation())
   mainView.current!.addChild(bottomRow);
+  mainView.current!.addChild(recordBar);
 
   const download = () => {
     board.deselect(true);

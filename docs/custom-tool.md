@@ -245,10 +245,45 @@ Gaia.registAction(MyEvent.Stamped, {
 
 ### 4.4 录制回放
 
-`Recorder` 在 `start()` 时订阅的是 **`EventEnum` 的全部内置事件**，所以：
+**录制**：`Recorder` 在 `start()` 时订阅的是 **`EventEnum` 的全部内置事件**，所以：
 
 - 复用内置事件的工具（含 `SimpleTool`）天然支持录制/回放（`Recorder` → `getJson()` → `Player`）；
-- 只广播自定义事件的操作**不会被自动录进剧本**（演示见 [demo/RecorderView.ts](../demo/RecorderView.ts)）。
+- 只广播自定义事件的操作**不会被自动录进剧本**（演示见 [demo/RecorderView.ts](../demo/RecorderView.ts)）；
+- 剧本格式是 `{ startTime, endTime, snapshot, events[] }`：`snapshot` 是录制开始那一刻的板子状态，每个事件带相对时间戳 `timestamp`，其中 `tool` 已替换成类型字符串，所以整份剧本可以安全地 `JSON.stringify`。
+
+**回放**：`Player` 先把目标板子还原成 `snapshot`，再按时间戳逐个重演事件。
+
+```ts
+import { Player, type IPlayerProgress } from "@fimagine/writeboard"
+
+const player = new Player()
+
+player.play(board, screenplay, {
+  rate: 2,                                    // 倍速：>1 快放、<1 慢放、负数倒放
+  onProgress: (p: IPlayerProgress) => {       // 每帧回调，用来画进度条
+    bar.style.width = `${p.progress * 100}%`  // p = { state, time, duration, progress, eventIndex, eventCount, rate }
+  },
+  onEnd: () => console.log('播放完毕'),        // 只有自然播完才触发，stop() 不触发
+})
+
+player.pause()        // 暂停：画面与时间都停住，resume() 接着放
+player.seek(1500)     // 跳到 1.5s（ms，剧本相对时间）；往回跳会从快照重建后重放
+player.backward()     // 倒放；player.forward() 恢复正放
+player.rate = 0.5     // 也可以随时改倍速
+player.stop()         // 停止并取消时间轴，画面停在当前位置
+
+player.time           // 当前回放时间（ms）
+player.progress       // 0 ~ 1
+player.state          // 'idle' | 'playing' | 'paused' | 'ended' | 'stopped'
+player.duration       // 剧本时长；旧剧本没有 endTime 时按最后一个事件的时间戳推断
+```
+
+要点：
+
+- `play()` 内部会先 `stop()`，重复调用不会叠加时间轴；
+- 不想跑 `requestAnimationFrame` 时可以手动驱动：`player.begin(board, screenplay)` 之后用 `player.update_once(ms)` / `player.seek(ms)` 逐步应用（单元测试就是这么做的）；
+- 真正影响重放画面的是 `SHAPES_ADDED` / `SHAPES_REMOVED` / `SHAPES_CHANGING` / `SHAPES_GEO_CHANGING` / `WORLD_RECT_CHANGED` / `VIEWPORT_CHANGED`；`TOOL_*`、选择态、图层事件只记录、不重放；
+- 想让剧本更小：导出前过滤掉 `TOOL_*`、`SHAPES_DONE` 这类回放用不到的事件（实测一条 32 点笔画约 7KB，其中 64% 是 `TOOL_DRAW`）。
 
 ## 5. 注册与信息
 

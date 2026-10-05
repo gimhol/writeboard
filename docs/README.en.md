@@ -10,6 +10,7 @@ Back to [project README](../README.en.md)
 |---|---|
 | [Custom Shape](./custom-shape.en.md) ([简体中文](./custom-shape.md)) | Define a new shape with `ShapeData` + `Shape` and register it in `Gaia`, so that `factory.newShape()`, snapshots and undo/redo can all handle it |
 | [Custom Tool](./custom-tool.en.md) ([简体中文](./custom-tool.md)) | Define a new tool with `ITool` (or reuse `SimpleTool`), handle pointer events, and hook into undo/redo and recording/playback |
+| [Recording & playback](./recording.en.md) ([简体中文](./recording.md)) | Record board events with `Recorder` and replay them with `Player`: speed / progress bar / pause / seeking, screenplay format, legacy migration |
 
 ## Core concepts
 
@@ -24,7 +25,7 @@ Back to [project README](../README.en.md)
 | Tool | `ITool` implementation | Translates pointer events into shape operations (create, select, edit, erase …) |
 | Decoration | `IShapeDecoration` | Draws the selection box, handles, locked and ghost visuals centrally |
 | Undo/redo | `ActionQueue` + `Gaia.registAction()` | Registers undo/redo handlers per event type; driven by `ActionQueue` |
-| Recording/playback | `Recorder` / `Player` | Records and replays the **built-in events** happening on a board |
+| Recording/playback | `Recorder` / `Player` | Records and replays the **built-in events** happening on a board ([guide](./recording.en.md)) |
 
 ## Registry API cheat-sheet
 

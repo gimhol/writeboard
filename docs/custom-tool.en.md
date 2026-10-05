@@ -246,10 +246,45 @@ Gaia.registAction(MyEvent.Stamped, {
 
 ### 4.4 Recording & playback
 
-`Recorder.start()` subscribes to **every built-in event in `EventEnum`**, therefore:
+**Recording** — `Recorder.start()` subscribes to **every built-in event in `EventEnum`**, therefore:
 
 - Tools built on built-in events (including `SimpleTool`) are recordable/playable out of the box (`Recorder` → `getJson()` → `Player`);
-- Operations that only emit custom events are **not recorded into screenplays** (see [demo/RecorderView.ts](../demo/RecorderView.ts)).
+- Operations that only emit custom events are **not recorded into screenplays** (see [demo/RecorderView.ts](../demo/RecorderView.ts));
+- A screenplay is `{ startTime, endTime, snapshot, events[] }`: `snapshot` is the board state at the moment recording started, every event carries a relative `timestamp`, and `tool` is stored as a type string — so the whole screenplay is safe to `JSON.stringify`.
+
+**Playback** — `Player` first restores the target board from `snapshot`, then replays the events by their timestamps.
+
+```ts
+import { Player, type IPlayerProgress } from "@fimagine/writeboard"
+
+const player = new Player()
+
+player.play(board, screenplay, {
+  rate: 2,                                    // speed: >1 faster, <1 slower, negative = rewind
+  onProgress: (p: IPlayerProgress) => {       // called every frame — draw your progress bar here
+    bar.style.width = `${p.progress * 100}%`  // p = { state, time, duration, progress, eventIndex, eventCount, rate }
+  },
+  onEnd: () => console.log('playback finished'), // only fires on natural completion, not on stop()
+})
+
+player.pause()        // freeze both time and canvas; resume() continues
+player.seek(1500)     // jump to 1.5s (ms, screenplay-relative); seeking backwards rebuilds from the snapshot
+player.backward()     // rewind; player.forward() goes forward again
+player.rate = 0.5     // change speed at any time
+player.stop()         // cancel the timeline, keep the canvas where it is
+
+player.time           // current playback time (ms)
+player.progress       // 0 ~ 1
+player.state          // 'idle' | 'playing' | 'paused' | 'ended' | 'stopped'
+player.duration       // screenplay length; falls back to the last event timestamp when endTime is missing
+```
+
+Notes:
+
+- `play()` calls `stop()` internally, so calling it twice never stacks timelines;
+- to drive playback without `requestAnimationFrame`: `player.begin(board, screenplay)` then step with `player.update_once(ms)` / `player.seek(ms)` (this is how the unit tests do it);
+- the events that actually repaint the board are `SHAPES_ADDED` / `SHAPES_REMOVED` / `SHAPES_CHANGING` / `SHAPES_GEO_CHANGING` / `WORLD_RECT_CHANGED` / `VIEWPORT_CHANGED`; `TOOL_*`, selection and layer events are recorded but not replayed;
+- to shrink a screenplay, filter out events playback ignores (`TOOL_*`, `SHAPES_DONE`, …) — measured on a 32-point stroke: ~7KB total, 64% of it `TOOL_DRAW`.
 
 ## 5. Registry
 

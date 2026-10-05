@@ -47,3 +47,16 @@
 .g_cp_main_view .g_cp_content_bottom_row button:first-child {
   margin-left: 0px;
 }
+
+/* 回放进度条：贴在按钮行下方 */
+.g_cp_main_view .g_cp_record_bar {
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  bottom: 20px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, .15);
+  display: none;
+}

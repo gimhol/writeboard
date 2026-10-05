@@ -113,6 +113,7 @@ board.setToolType(ToolEnum.Pen);
 | [docs/](./docs/README.md) 文档目录：核心概念与注册 API 速查 | [docs/README.en.md](./docs/README.en.md) |
 | [docs/custom-shape.md](./docs/custom-shape.md) 自定义图形：`ShapeData` + `Shape`，含三角形/星形完整示例与常见坑 | [docs/custom-shape.en.md](./docs/custom-shape.en.md) |
 | [docs/custom-tool.md](./docs/custom-tool.md) 自定义工具：`ITool` / `SimpleTool`，指针坐标、撤销重做与录制回放 | [docs/custom-tool.en.md](./docs/custom-tool.en.md) |
+| [docs/recording.md](./docs/recording.md) 录制与回放：`Recorder` / `Player`，倍速、进度条、暂停、跳转与旧剧本迁移 | [docs/recording.en.md](./docs/recording.en.md) |
 
 ## 开发
 

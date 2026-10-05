@@ -85,13 +85,28 @@ window.HTMLCanvasElement.prototype.getBoundingClientRect = function () {
 
 /** requestAnimationFrame：不自动执行，测试里用 __flushRaf() 手动触发，保证可预测 */
 const rafQueue = []
-globalThis.requestAnimationFrame = (cb) => rafQueue.push(cb)
-globalThis.cancelAnimationFrame = () => { }
+let rafId = 0
+globalThis.requestAnimationFrame = (cb) => {
+  rafQueue.push({ id: ++rafId, cb })
+  return rafId
+}
+globalThis.cancelAnimationFrame = (id) => {
+  const idx = rafQueue.findIndex((it) => it.id === id)
+  if (idx >= 0) rafQueue.splice(idx, 1)
+}
 globalThis.__rafQueue = rafQueue
+
+/** 可控的 rAF 时钟：默认跟随 performance.now()，需要精确驱动时间轴时用 __setRafTime/__advanceRaf */
+let rafTime = null
+globalThis.__setRafTime = (ms) => (rafTime = ms)
+globalThis.__advanceRaf = (ms = 16) => (rafTime = (rafTime === null ? performance.now() : rafTime) + ms)
+globalThis.__resetRafTime = () => (rafTime = null)
+
 globalThis.__flushRaf = () => {
   const queue = rafQueue.splice(0, rafQueue.length)
+  const time = rafTime === null ? performance.now() : rafTime
   // 与浏览器一致：回调参数使用 performance.now() 时钟（Player 依赖它推进时间轴）
-  queue.forEach((cb) => cb(performance.now()))
+  queue.forEach((it) => it.cb(time))
   return queue.length
 }
 

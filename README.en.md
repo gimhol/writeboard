@@ -113,6 +113,7 @@ Simplified Chinese is the default; English versions live in the matching `.en.md
 | [docs/](./docs/README.en.md) Docs index: core concepts and the registry API cheat-sheet | [docs/README.md](./docs/README.md) |
 | [docs/custom-shape.en.md](./docs/custom-shape.en.md) Custom shape: `ShapeData` + `Shape`, with full triangle/star examples and gotchas | [docs/custom-shape.md](./docs/custom-shape.md) |
 | [docs/custom-tool.en.md](./docs/custom-tool.en.md) Custom tool: `ITool` / `SimpleTool`, pointer coordinates, undo/redo and recording | [docs/custom-tool.md](./docs/custom-tool.md) |
+| [docs/recording.en.md](./docs/recording.en.md) Recording & playback: `Recorder` / `Player`, speed, progress bar, pause, seeking and legacy migration | [docs/recording.md](./docs/recording.md) |
 
 ## Development
 

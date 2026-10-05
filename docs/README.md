@@ -10,6 +10,7 @@
 |---|---|
 | [自定义图形](./custom-shape.md)（[English](./custom-shape.en.md)） | 用 `ShapeData` + `Shape` 定义新图形并注册到 `Gaia`，让 `factory.newShape()`、快照、撤销都能认识它 |
 | [自定义工具](./custom-tool.md)（[English](./custom-tool.en.md)） | 用 `ITool`（或复用 `SimpleTool`）定义新工具，处理指针事件，接入撤销重做与录制回放 |
+| [录制与回放](./recording.md)（[English](./recording.en.md)） | 用 `Recorder` 录下板子事件、用 `Player` 按时间轴回放：倍速 / 进度条 / 暂停 / 跳转、剧本格式、旧剧本迁移 |
 
 ## 核心概念
 
@@ -24,7 +25,7 @@
 | 工具 | `ITool` 实现 | 把指针事件翻译成对图形的操作（创建、选择、编辑、擦除…） |
 | 装饰 | `IShapeDecoration` | 统一绘制「选中框 / 控制点 / 锁定 / ghost」等，图形自身不必关心 |
 | 撤销重做 | `ActionQueue` + `Gaia.registAction()` | 按事件登记 undo/redo 处理器，由 `ActionQueue` 驱动 |
-| 录制回放 | `Recorder` / `Player` | 记录并重放板子上发生的**内置事件** |
+| 录制回放 | `Recorder` / `Player` | 记录并重放板子上发生的**内置事件**（[指南](./recording.md)） |
 
 ## 注册 API 速查
 

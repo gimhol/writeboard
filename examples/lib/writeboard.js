@@ -6037,86 +6037,236 @@ class FClipboard {
 
 class Player {
     constructor() {
-        this.eventIdx = 0;
-        this._backwarding = false;
+        this._eventIdx = 0;
+        this._options = {};
+        this._rate = 1;
+        this._state = 'idle';
         this._req_id = 0;
+        /** 当前回放时间（剧本相对时间，ms） */
         this._time = 0;
-        this._start_time = 0;
-        this._prev_time = 0;
+        /** 已经应用到画布的时间，-1 表示还没应用过 */
+        this._applied = -1;
+        /** 上一帧的时间戳，0 表示下一帧只对表、不推进时间 */
+        this._last_ts = 0;
+        this._frame = (ts) => {
+            this._req_id = 0;
+            if (this._state !== 'playing')
+                return;
+            const duration = this.duration;
+            if (this._last_ts)
+                this._time += (ts - this._last_ts) * this._rate;
+            this._last_ts = ts;
+            const finished = this._rate >= 0 ? this._time >= duration : this._time <= 0;
+            if (finished) {
+                this._time = this._rate >= 0 ? duration : 0;
+                this._applyTo(this._time);
+                this._finish();
+                return;
+            }
+            this._applyTo(this._time);
+            this._emitProgress();
+            this._req_id = requestAnimationFrame(this._frame);
+        };
     }
-    play(actor, screenplay) {
-        console.log('[Player]play()', screenplay);
+    get state() { return this._state; }
+    get playing() { return this._state === 'playing'; }
+    get paused() { return this._state === 'paused'; }
+    get actor() { return this._actor; }
+    get screenplay() { return this._screenplay; }
+    get rate() { return this._rate; }
+    set rate(v) { this._rate = Number.isFinite(v) ? v : 1; }
+    /** 当前回放时间（剧本相对时间，ms） */
+    get time() { return this._time; }
+    /** 剧本总时长（ms）；旧格式剧本没有 endTime 时按最后一个事件的时间戳推断 */
+    get duration() {
+        const screenplay = this._screenplay;
+        if (!screenplay)
+            return 0;
+        const start = screenplay.startTime || 0;
+        let end = screenplay.endTime || 0;
+        if (!(end >= start)) {
+            const last = screenplay.events[screenplay.events.length - 1];
+            end = start + Math.max(0, (last === null || last === void 0 ? void 0 : last.timestamp) || 0);
+        }
+        return end - start;
+    }
+    /** 回放进度，0 ~ 1 */
+    get progress() {
+        const duration = this.duration;
+        if (duration <= 0)
+            return this._state === 'idle' ? 0 : 1;
+        return Math.min(1, Math.max(0, this._time / duration));
+    }
+    /** 已应用的事件下标 */
+    get eventIndex() { return this._eventIdx; }
+    get eventCount() { var _a, _b; return (_b = (_a = this._screenplay) === null || _a === void 0 ? void 0 : _a.events.length) !== null && _b !== void 0 ? _b : 0; }
+    getProgress() {
+        return {
+            state: this._state,
+            time: this._time,
+            duration: this.duration,
+            progress: this.progress,
+            eventIndex: this._eventIdx,
+            eventCount: this.eventCount,
+            rate: this._rate,
+        };
+    }
+    /**
+     * 从剧本起点开始回放
+     *
+     * @description 内部会先 stop()，所以重复调用不会叠加时间轴
+     */
+    play(actor, screenplay, options = {}) {
+        this.stop();
+        this._options = Object.assign({}, options);
+        if (options.rate !== undefined)
+            this.rate = options.rate;
         this.begin(actor, screenplay);
-        this.tick(this._start_time);
+        this._applyTo(0); // 立刻呈现「第 0 帧」：快照 + 零时刻的事件
+        this._state = 'playing';
+        this._emitProgress();
+        this._req_id = requestAnimationFrame(this._frame);
+        return this;
     }
+    /**
+     * 准备回放：只还原快照、不启动时间轴
+     *
+     * @description 之后可用 update_once() / seek() 手动驱动，或在测试里逐步应用
+     */
     begin(actor, screenplay) {
-        console.log('[Player]begin()', screenplay);
-        this.eventIdx = 0;
-        this.actor = actor;
-        this.screenplay = {
+        this._cancelFrame();
+        this._actor = actor;
+        this._screenplay = {
             startTime: screenplay.startTime || 0,
             endTime: screenplay.endTime || 0,
             snapshot: screenplay.snapshot,
             events: screenplay.events || [],
         };
-        if (screenplay.snapshot) {
+        this._eventIdx = 0;
+        this._time = 0;
+        this._applied = -1;
+        this._last_ts = 0;
+        this._state = 'idle';
+        if (screenplay.snapshot)
             actor.fromSnapshot(screenplay.snapshot);
-        }
-        this._time = this._prev_time = this._start_time = performance.now();
+        return this;
     }
+    /** 暂停，保留当前位置，可用 resume() 继续 */
+    pause() {
+        if (this._state !== 'playing')
+            return this;
+        this._cancelFrame();
+        this._state = 'paused';
+        this._last_ts = 0;
+        this._emitProgress();
+        return this;
+    }
+    /** 继续播放 */
+    resume() {
+        if (this._state !== 'paused')
+            return this;
+        this._state = 'playing';
+        this._last_ts = 0;
+        this._req_id = requestAnimationFrame(this._frame);
+        this._emitProgress();
+        return this;
+    }
+    /** 停止：取消时间轴，画面停在当前位置；不会触发 onEnd */
     stop() {
-        console.log('[Player]stop()');
+        this._cancelFrame();
+        this._last_ts = 0;
+        if (this._state !== 'ended')
+            this._state = 'stopped';
+        return this;
+    }
+    /**
+     * 跳到指定回放时间（ms）
+     *
+     * @description 往前跳是增量应用；往回跳会先从快照重建，再重放到目标时间
+     */
+    seek(time) {
+        if (!this._screenplay)
+            return this;
+        const { min, max } = Math;
+        const to = max(0, min(time, this.duration));
+        this._time = to;
+        this._last_ts = 0;
+        this._applyTo(to);
+        this._emitProgress();
+        return this;
+    }
+    /** 倒放（把倍速取负） */
+    backward() {
+        this._rate = -Math.abs(this._rate || 1);
+        return this;
+    }
+    /** 正放（把倍速取正） */
+    forward() {
+        this._rate = Math.abs(this._rate || 1);
+        return this;
+    }
+    /**
+     * 应用到指定时间为止的所有事件
+     *
+     * @description 只推进事件、不改变播放状态，也不会启动时间轴
+     * @param {number} time 剧本相对时间（ms），传 Infinity 表示全部应用
+     */
+    update_once(time) {
+        const screenplay = this._screenplay;
+        if (!screenplay)
+            return;
+        while (this._eventIdx < screenplay.events.length) {
+            const event = screenplay.events[this._eventIdx];
+            if (!event || event.timestamp > time) {
+                break;
+            }
+            this._applyEvent(event);
+            ++this._eventIdx;
+        }
+    }
+    /** 推进一帧（平时由 requestAnimationFrame 驱动，测试里可以手动调用） */
+    tick(time) {
+        this._frame(time);
+    }
+    _finish() {
+        var _a, _b;
+        this._cancelFrame();
+        this._state = 'ended';
+        const progress = this.getProgress();
+        this._emitProgress();
+        (_b = (_a = this._options).onEnd) === null || _b === void 0 ? void 0 : _b.call(_a, progress);
+    }
+    _emitProgress() {
+        var _a, _b;
+        (_b = (_a = this._options).onProgress) === null || _b === void 0 ? void 0 : _b.call(_a, this.getProgress());
+    }
+    _cancelFrame() {
         if (this._req_id) {
             cancelAnimationFrame(this._req_id);
             this._req_id = 0;
         }
     }
-    update_once(time) {
-        const { screenplay } = this;
-        if (!screenplay)
+    /** 把画布推进（或回退）到指定时间；回退时从快照重建，保证状态精确 */
+    _applyTo(time) {
+        if (time < this._applied) {
+            this._rebuildTo(time);
             return;
-        while (this.eventIdx < screenplay.events.length) {
-            const event = screenplay.events[this.eventIdx];
-            if (!event) {
-                return this.stop();
-            }
-            const event_time = event.timestamp;
-            if (event_time > time) {
-                break;
-            }
-            this._applyEvent(event);
-            ++this.eventIdx;
         }
+        this.update_once(time);
+        this._applied = time;
     }
-    tick(time) {
-        const { screenplay } = this;
-        if (!screenplay) {
-            return this.stop();
-        }
-        const dt = time - this._prev_time;
-        if (this._backwarding)
-            this._time -= dt;
+    _rebuildTo(time) {
+        const actor = this._actor;
+        const screenplay = this._screenplay;
+        if (!actor || !screenplay)
+            return;
+        this._eventIdx = 0;
+        if (screenplay.snapshot)
+            actor.fromSnapshot(screenplay.snapshot);
         else
-            this._time += dt;
-        const { min, max } = Math;
-        const duration = screenplay.endTime - screenplay.startTime;
-        const now = this._time - this._start_time;
-        if (now <= duration) {
-            this.update_once(max(0, min(now, duration)));
-            this._req_id = requestAnimationFrame(time => this.tick(time));
-            this._prev_time = time;
-        }
-        else {
-            this.stop();
-        }
-    }
-    backward() {
-        this._backwarding = true;
-        return this;
-    }
-    forward() {
-        this._backwarding = false;
-        return this;
+            actor.removeAll(false);
+        this.update_once(time);
+        this._applied = time;
     }
     _applyEvent(e) {
         switch (e.type) {
@@ -6126,7 +6276,9 @@ class Player {
                 break;
             }
             case EventEnum.ShapesGeoChanging:
-            case EventEnum.ShapesChanging: {
+            case EventEnum.ShapesGeoChanged:
+            case EventEnum.ShapesChanging:
+            case EventEnum.ShapesChanged: {
                 const { shapeDatas } = e;
                 this._changeShapes(shapeDatas, 0);
                 break;
@@ -6138,49 +6290,29 @@ class Player {
             }
             case EventEnum.WorldRectChanged: {
                 const { to } = e;
-                this.actor.set_world_rect(to);
+                this._actor.set_world_rect(to);
                 break;
             }
             case EventEnum.ViewportChanged: {
                 const { to } = e;
-                this.actor.set_viewport(to);
-            }
-        }
-    }
-    _undoEvent(e) {
-        switch (e.type) {
-            case EventEnum.ShapesAdded: {
-                const { shapeDatas } = e;
-                this._removeShape(shapeDatas);
-                break;
-            }
-            case EventEnum.ShapesGeoChanging:
-            case EventEnum.ShapesChanging: {
-                const { shapeDatas } = e;
-                this._changeShapes(shapeDatas, 1);
-                break;
-            }
-            case EventEnum.ShapesRemoved: {
-                const { shapeDatas } = e;
-                this._addShape(shapeDatas);
-                break;
+                this._actor.set_viewport(to);
             }
         }
     }
     _addShape(shapeDatas) {
-        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(v => this.actor.factory.newShape(v));
-        shapes && this.actor.add(shapes, false);
+        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(v => this._actor.factory.newShape(v));
+        shapes && this._actor.add(shapes, false);
     }
     _removeShape(shapeDatas) {
-        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(data => this.actor.find(data.i)).filter(v => v);
-        shapes && this.actor.remove(shapes, false);
+        const shapes = shapeDatas === null || shapeDatas === void 0 ? void 0 : shapeDatas.map(data => this._actor.find(data.i)).filter(v => v);
+        shapes && this._actor.remove(shapes, false);
     }
     _changeShapes(shapeDatas, which) {
         shapeDatas.forEach((currAndPrev) => {
             var _a;
             const data = currAndPrev[which];
             const id = data.i;
-            id && ((_a = this.actor.find(id)) === null || _a === void 0 ? void 0 : _a.merge(data));
+            id && ((_a = this._actor.find(id)) === null || _a === void 0 ? void 0 : _a.merge(data));
         });
     }
 }
