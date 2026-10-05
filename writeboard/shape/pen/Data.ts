@@ -116,11 +116,12 @@ export class PenData extends ShapeData implements IPenData {
   override merge(other: Partial<PenData>) {
     super.read(other)
 
-    const { u = other.coords } = other
+    // 序列化出的负载只有短键 u / v，dotsType 是原型 getter，JSON 往返后取不到，必须回退
+    const { u = other.coords, v = other.dotsType } = other
     if (!Array.isArray(u)) {
       return this
     }
-    switch (other.dotsType) {
+    switch (v) {
       case ChangeType.Subtract:
         this.coords = this.coords.slice(0, -u.length);
         break;

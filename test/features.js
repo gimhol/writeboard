@@ -181,6 +181,36 @@ describe('class Player', () => {
     assert.doesNotThrow(() => player.stop())
   });
 
+  it('剧本经 JSON 往返（保存 / 载入）后画笔坐标仍逐段累积', async () => {
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+    const source = createBoard()
+    const recorder = new Recorder()
+    recorder.setActor(source).start()
+    source.setToolType(ToolEnum.Pen)
+
+    __firePointer(source.element, 'pointerdown', { x: 0, y: 0 })
+    for (let i = 1; i <= 4; i++) {
+      await sleep(40)   // 等一个节流周期，让每条 SHAPES_CHANGING 都带上自己的增量点
+      __firePointer(window, 'pointermove', { x: i * 10, y: i * 10 })
+    }
+    await sleep(40)
+    __firePointer(window, 'pointerup', { x: 50, y: 50 })
+    await sleep(40)
+    recorder.stop()
+
+    const pen = source.shapes().find((s) => s.type === ShapeEnum.Pen)
+    assert.ok(pen.data.u.length > 6, '录制时坐标逐点累积')
+
+    const target = createBoard()
+    const player = new Player()
+    player.begin(target, JSON.parse(JSON.stringify(recorder.getScreenplay())))
+    player.update_once(Infinity)
+
+    const restored = target.find(pen.data.id)
+    assert.ok(restored)
+    assert.deepStrictEqual([...restored.data.u], [...pen.data.u], 'JSON 往返后坐标与录制时一致')
+  });
+
   it('play() 先应用快照，再按时间轴回放事件', () => {
     const source = createBoard()
     const rect = drawRect(source, { x: 5, y: 5 }, { x: 25, y: 25 })
