@@ -1,0 +1,9 @@
+{
+  "require": [
+    "./test/helpers/dom.js"
+  ],
+  "spec": [
+    "test/*.js"
+  ],
+  "timeout": 10000
+}

@@ -22,7 +22,8 @@ export class ActionQueue {
           return;
         }
         if (this._actionsIdx < this._actions.length - 1) {
-          this._actions = this._actions.slice(0, this._actionsIdx);
+          /* 丢弃被撤销的分支，保留仍然生效的 [0, _actionsIdx] */
+          this._actions = this._actions.slice(0, this._actionsIdx + 1);
         }
         this._actions.push([
           () => handler.undo(actor, detail),
@@ -100,9 +101,7 @@ Gaia.registAction(EventEnum.ShapesRemoved, {
 })
 Gaia.registAction(EventEnum.ShapesGeoChanged, {
   isAction: (board, detail) => {
-    const ret = detail.tool === ToolEnum.Selector
-    console.log("isAction:", ret)
-    return ret
+    return detail.tool === ToolEnum.Selector
   },
   undo: (board, detail) => {
     const { shapeDatas } = detail;

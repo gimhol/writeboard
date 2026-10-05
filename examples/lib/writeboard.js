@@ -1970,7 +1970,7 @@ class ShapeData {
             this.l = o.l;
         if (isNum(o.c))
             this.c = o.c;
-        if (isStr(o.d))
+        if (isNum(o.d))
             this.d = o.d;
         this.r = isNum(o.r) ? o.r : void 0;
         const { style, status } = o;
@@ -5872,7 +5872,8 @@ class ActionQueue {
                     return;
                 }
                 if (this._actionsIdx < this._actions.length - 1) {
-                    this._actions = this._actions.slice(0, this._actionsIdx);
+                    /* 丢弃被撤销的分支，保留仍然生效的 [0, _actionsIdx] */
+                    this._actions = this._actions.slice(0, this._actionsIdx + 1);
                 }
                 this._actions.push([
                     () => handler.undo(actor, detail),
@@ -5947,9 +5948,7 @@ Gaia.registAction(EventEnum.ShapesRemoved, {
 });
 Gaia.registAction(EventEnum.ShapesGeoChanged, {
     isAction: (board, detail) => {
-        const ret = detail.tool === ToolEnum.Selector;
-        console.log("isAction:", ret);
-        return ret;
+        return detail.tool === ToolEnum.Selector;
     },
     undo: (board, detail) => {
         const { shapeDatas } = detail;
@@ -6193,6 +6192,13 @@ class Player {
  * @date   2023/07/02 23:31
  * @desc   事件记录器
  ******************************************************************/
+/** 工具事件里的 tool 是工具实例（循环引用），导出前替换成它的类型字符串 */
+function pickTool(detail) {
+    const tool = detail.tool;
+    if (tool === void 0 || tool === null)
+        return {};
+    return { tool: typeof tool === 'string' ? tool : tool.type };
+}
 class Recorder {
     get running() { return this._running; }
     get actor() { return this._actor; }
@@ -6258,8 +6264,9 @@ class Recorder {
         for (const key in EventEnum) {
             const v = EventEnum[key];
             const func = (detail) => {
-                screenplay.events.push(Object.assign(Object.assign({}, detail), { timestamp: performance.now() - start_time }));
-                screenplay.endTime = detail.timestamp;
+                const now = performance.now();
+                screenplay.events.push(Object.assign(Object.assign(Object.assign({}, detail), pickTool(detail)), { timestamp: now - start_time }));
+                screenplay.endTime = now;
             };
             this._cancellers.push(actor.on(v, func));
         }

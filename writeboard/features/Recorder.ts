@@ -8,7 +8,16 @@
 
 import type { Board } from "../board";
 import { EventEnum, type Events } from "../event";
+import type { ITool } from "../tools/base/Tool";
+import type { ToolType } from "../tools/ToolEnum";
 import type { IScreenplay } from "./Screenplay";
+
+/** 工具事件里的 tool 是工具实例（循环引用），导出前替换成它的类型字符串 */
+function pickTool(detail: Events.IBaseDetail): { tool?: ToolType } {
+  const tool = (detail as { tool?: ToolType | ITool }).tool
+  if (tool === void 0 || tool === null) return {}
+  return { tool: typeof tool === 'string' ? tool : tool.type }
+}
 
 export class Recorder {
   private _actor?: Board;
@@ -87,8 +96,13 @@ export class Recorder {
     for (const key in EventEnum) {
       const v = (EventEnum as any)[key]
       const func = (detail: Events.IBaseDetail) => {
-        screenplay.events.push({ ...detail, timestamp: performance.now() - start_time })
-        screenplay.endTime = detail.timestamp
+        const now = performance.now()
+        screenplay.events.push({
+          ...detail,
+          ...pickTool(detail),
+          timestamp: now - start_time,
+        })
+        screenplay.endTime = now
       }
       this._cancellers.push(actor.on(v, func));
     }

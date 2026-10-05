@@ -174,7 +174,7 @@ export class ShapeData implements IShapeData {
     if (isNum(o.h)) this.h = o.h
     if (isStr(o.l)) this.l = o.l
     if (isNum(o.c)) this.c = o.c
-    if (isStr(o.d)) this.d = o.d
+    if (isNum(o.d)) this.d = o.d
     this.r = isNum(o.r) ? o.r : void 0
 
     const { style, status } = o as any;
