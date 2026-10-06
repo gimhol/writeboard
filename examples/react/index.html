@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=no">
+  <title>又是在线课堂</title>
+  <link rel="stylesheet" href="../lib/writeboard.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+  <script>
+    /*
+     * 免构建的模块加载器：代码和正常项目一样分文件写（import / export），
+     * 这里用 fetch 取回源文件、交给 Babel standalone 把 JSX 与 import 转成 CommonJS，
+     * 再按依赖顺序执行 —— 不用打包器也能跑。
+     * 只是示例用途：生产项目请直接用 Vite / Rollup / esbuild 打包。
+     */
+    (async () => {
+      const modules = new Map()                       // url -> { exports }
+
+      async function load(url) {
+        if (modules.has(url)) return modules.get(url).exports
+        const mod = { exports: {} }
+        modules.set(url, mod)                         // 先登记，循环依赖也不会卡死
+        /* no-store：改完源码刷新就能看到，别让浏览器缓存旧模块 */
+        const source = await (await fetch(url, { cache: 'no-store' })).text()
+        const { code } = Babel.transform(source, {
+          filename: url,
+          presets: ['react'],
+          plugins: ['transform-modules-commonjs'],
+          sourceMaps: 'inline',
+        })
+        /* 转成 CommonJS 之后依赖都长这样：require("...") */
+        const specs = [...code.matchAll(/require\((['"])(.+?)\1\)/g)].map((m) => m[2])
+        for (const spec of specs) await load(new URL(spec, url).href)
+        const require = (spec) => {
+          const dep = modules.get(new URL(spec, url).href)
+          if (!dep) throw new Error('找不到模块 ' + spec + '（来自 ' + url + '）')
+          return dep.exports
+        }
+        new Function('require', 'module', 'exports', 'React', 'ReactDOM', code)(
+          require, mod, mod.exports, React, ReactDOM,
+        )
+        return mod.exports
+      }
+
+      await load(new URL('./main.jsx', document.baseURI).href)
+    })().catch((err) => {
+      console.error(err)
+      const box = document.createElement('pre')
+      box.style.cssText = 'position:fixed;left:0;top:0;z-index:99;max-width:100%;margin:0;padding:12px;background:#2b0f12;color:#ffb4b4;font:12px/1.5 monospace;white-space:pre-wrap'
+      box.textContent = String((err && (err.stack || err.message)) || err)
+      document.body.appendChild(box)
+    })
+  </script>
+</body>
+
+</html>
