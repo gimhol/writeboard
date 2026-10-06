@@ -1,4 +1,4 @@
-import { CAM_SIZE, CAM_DOCK_SCALE } from '../constants.js'
+import { CAM_SIZE, CAM_DOCK_SCALE } from './config.js'
 
 /** 停靠边 / 对齐（对应 blogim Chatroom 的 DockType / DockAlign） */
 export const CAM_EDGES = [

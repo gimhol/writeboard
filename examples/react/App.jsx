@@ -1,5 +1,8 @@
 import { CameraLayer } from './camera/CameraLayer.jsx'
-import { PAGES, DESIGN_W, DESIGN_H, DESIGN_K, CAM_PLACES, CAM_DEFAULT_EDGE, CAM_DEFAULT_ALIGN, CAM_DEFAULT, CAM_MAX, makeCam, cascadeRect, COLORS, WIDTHS, STROKE_SHAPES, FILL_SHAPES, TRANSPARENT } from './constants.js'
+import { CameraSolution } from './camera/solution.js'
+import { useSolution } from './camera/use-solution.js'
+import { PAGES, DESIGN_W, DESIGN_H, DESIGN_K, COLORS, WIDTHS, STROKE_SHAPES, FILL_SHAPES, TRANSPARENT } from './constants.js'
+import { CAM_PLACES } from './camera/config.js'
 import { EventEnum, ShapeEnum, ToolEnum, useCallback, useEffect, useReducer, useRef, useState } from './deps.js'
 import { useWriteboard, useElementSize } from './hooks.js'
 import { BoardScrollbar } from './ui/BoardScrollbar.jsx'
@@ -14,48 +17,23 @@ export function App() {
   const frameSize = useElementSize(frameRef)
   const [, forceRender] = useReducer((x) => x + 1, 0)
 
-  /* 可见窗口管理：工具栏收起状态 + 摄像头窗口列表（每个窗口自己的形态 / 位置） */
+  /*
+   * 可见窗口管理：工具栏收起状态 + 摄像头窗口的「方案」（CameraSolution）。
+   * 窗口列表 / 形态 / 布局都在 solution 里，React 这边只订阅它重渲染。
+   */
   const [collapsed, setCollapsed] = useState(false)
-  const [camEdge, setCamEdge] = useState(CAM_DEFAULT_EDGE)
-  const [camAlign, setCamAlign] = useState(CAM_DEFAULT_ALIGN)
-  const [cams, setCams] = useState(() => [makeCam(1, '老师')])
-  const camSeq = useRef(1)
-  /* 叠放次序：和 demo 的 raise() 一样，点哪个窗口哪个就到最上层 */
-  const zSeq = useRef(1)
+  const [solution] = useState(() => new CameraSolution({ views: ['老师'] }))
+  useSolution(solution)
+  const cams = solution.views
 
-  const updateCam = useCallback((id, patch) => {
-    setCams((list) => list.map((c) => (c.id === id ? { ...c, ...patch } : c)))
-  }, [])
-  const raiseCam = useCallback((id) => {
-    setCams((list) => {
-      const cam = list.find((c) => c.id === id)
-      if (!cam || cam.z === zSeq.current) return list   /* 已经在最上面了 */
-      const z = ++zSeq.current
-      return list.map((c) => (c.id === id ? { ...c, z } : c))
-    })
-  }, [])
-  const closeCam = useCallback((id) => setCams((list) => list.filter((c) => c.id !== id)), [])
-  const addCam = useCallback(() => {
-    setCams((list) => {
-      if (list.length >= CAM_MAX) return list
-      const id = ++camSeq.current
-      zSeq.current = Math.max(zSeq.current, id)
-      return [...list, makeCam(id, `摄像头 ${id}`)]
-    })
-  }, [])
-  /* 一起悬浮时按序号错开，别叠在一起；停靠 / 最大化的位置由布局排 */
-  const setAllPlace = useCallback((place) => {
-    setCams((list) => list.map((c, i) => (c.place === place ? c : {
-      ...c,
-      place,
-      rect: place === CAM_PLACES.Floating ? cascadeRect(i) : c.rect,
-    })))
-  }, [])
-  const resetCams = useCallback(() => {
-    setCamEdge(CAM_DEFAULT_EDGE)
-    setCamAlign(CAM_DEFAULT_ALIGN)
-    setCams((list) => list.map((c) => ({ ...c, place: CAM_PLACES.Docked, rect: CAM_DEFAULT })))
-  }, [])
+  /* 黑板尺寸喂给 solution（窗口尺寸 / 停靠带都按黑板比例算） */
+  useEffect(() => {
+    solution.setFrame({ x: 0, y: 0, w: frameSize.w, h: frameSize.h })
+  }, [solution, frameSize.w, frameSize.h])
+
+  const dockedCount = cams.filter((c) => c.place === CAM_PLACES.Docked).length
+  const allDocked = cams.length > 0 && dockedCount === cams.length
+  const allFloating = cams.length > 0 && cams.every((c) => c.place === CAM_PLACES.Floating)
 
   const [toolType, setToolType] = useState(ToolEnum.Pen)
   const [color, setColor] = useState(COLORS[0])
@@ -201,10 +179,6 @@ export function App() {
   const canRedo = !!(actions && actions.canRedo)
   const empty = shapeCount === 0
 
-  const dockedCount = cams.filter((c) => c.place === CAM_PLACES.Docked).length
-  const allDocked = cams.length > 0 && dockedCount === cams.length
-  const allFloating = cams.length > 0 && cams.every((c) => c.place === CAM_PLACES.Floating)
-
   return (
     <div className="app">
       <header className="topbar">
@@ -219,13 +193,14 @@ export function App() {
           dockedCount={dockedCount}
           allDocked={allDocked}
           allFloating={allFloating}
-          onAddCam={addCam}
-          onCloseAllCams={() => setCams([])}
-          onSetAllPlace={setAllPlace}
-          camEdge={camEdge} camAlign={camAlign}
-          onCamEdge={setCamEdge} onCamAlign={setCamAlign}
+          onAddCam={() => solution.add()}
+          onCloseAllCams={() => solution.removeAll()}
+          onSetAllPlace={(place) => solution.setAllPlace(place)}
+          camEdge={solution.edge} camAlign={solution.align}
+          onCamEdge={(edge) => solution.setDock({ edge })}
+          onCamAlign={(align) => solution.setDock({ align })}
           toolbarCollapsed={collapsed} onToolbarCollapsed={setCollapsed}
-          onResetCams={resetCams}
+          onResetCams={() => solution.reset()}
         />
       </header>
 
@@ -242,15 +217,7 @@ export function App() {
           />
           <PageOverlay view={view} page={page} empty={empty} scaleY={ky} />
           <BoardScrollbar view={view} onScrollTo={scrollTo} scaleY={ky} />
-          <CameraLayer
-            frameSize={frameSize}
-            cams={cams}
-            onUpdate={updateCam}
-            onClose={closeCam}
-            onRaise={raiseCam}
-            edge={camEdge}
-            align={camAlign}
-          />
+          <CameraLayer solution={solution} />
           <Toolbar
             frameRef={frameRef}
             collapsed={collapsed} onToggleCollapsed={() => setCollapsed((v) => !v)}
@@ -261,7 +228,7 @@ export function App() {
             canUndo={canUndo} canRedo={canRedo}
             onUndo={undo} onRedo={redo}
             empty={empty} onClear={clearAll}
-            side={camEdge === 'right' ? 'left' : 'right'}
+            side={solution.edge === 'right' ? 'left' : 'right'}
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { RESIZE_DIRS } from './dock.js'
-import { CAM_PLACES } from '../constants.js'
+import { CAM_PLACES } from './config.js'
 import { useEffect, useRef, useState } from '../deps.js'
 import { Icon } from '../icons.jsx'
 

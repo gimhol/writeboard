@@ -5,4 +5,6 @@
  */
 export { ActionQueue, EventEnum, FactoryEnum, Gaia, ShapeEnum, ToolEnum } from '../lib/writeboard.js'
 
-export const { useCallback, useEffect, useReducer, useRef, useState } = React
+export const {
+  useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore,
+} = React

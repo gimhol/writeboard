@@ -76,17 +76,28 @@ board.setToolType(ToolEnum.Pen);
 | `index.html` | 页面壳 + 免构建的模块加载器（CDN 引入 React / Babel standalone） |
 | `main.jsx` | 入口：渲染 `<App />` |
 | `App.jsx` | 应用状态与组合：舞台、黑板、顶栏、工具栏、摄像头窗口层 |
-| `constants.js` | 设计尺寸、工具 / 颜色 / 粗细、摄像头常量与「透明」等配置 |
+| `constants.js` | 设计尺寸、工具 / 颜色 / 粗细、「透明」等配置 |
 | `hooks.js` | `useWriteboard`（板子生命周期 + 事件同步）、`useElementSize` |
 | `icons.jsx` / `deps.js` | 图标组件 / 依赖汇总（React 全局 + writeboard 的 ESM 导出） |
 | `ui/Toolbar.jsx` | 悬浮工具栏 + 描边 / 填充 / 粗细浮层 |
 | `ui/WindowMenu.jsx` | 顶栏「窗口」菜单（添加 / 关闭窗口、停靠边、对齐、形态） |
 | `ui/PageOverlay.jsx`、`ui/BoardScrollbar.jsx` | 分页线 / 页码 / 空板提示、贴边滚动条 |
-| `camera/CameraLayer.jsx` | 摄像头窗口层：拖动停靠、点击抬升、双击放大与均分自由区 |
+| `camera/config.js` | 摄像头窗口的配置（形态 / 默认停靠边与对齐 / 尺寸比例） |
+| `camera/solution.js` | **CameraSolution**：窗口列表、形态、停靠带 / 自由区、拖动与拉伸的状态机（无 React / DOM 依赖） |
+| `camera/use-solution.js` | React 侧桥接：`useSolution`（`useSyncExternalStore` 订阅 solution）+ `trackPointer` 指针接线 |
+| `camera/CameraLayer.jsx` | 摄像头窗口层：只负责把 `solution` 的矩形画出来、把指针事件接给 `solution` |
 | `camera/CameraWindow.jsx` | 单个摄像头窗口（视频 / 占位 + 头栏 + 8 向把手） |
 | `camera/dock.js` | 停靠边 / 对齐枚举、尺寸换算、停靠带与命中判定 |
 | `camera/distribution.js` | 自由区与均分算法（对应 demo 的 `get_distributions.ts`） |
 | `styles.css` | 全部样式 |
+
+摄像头窗口这块刻意做成「方案 + 桥接」两层，和生产代码里的 `ViewsSolution/Solution.ts` + `Bridging_HTMLElement.tsx` 对应：
+
+- `camera/config.js` / `dock.js` / `distribution.js` / `solution.js` 是一组**纯粹的方案代码**：不引 React、不碰 DOM，只用一个 `full` 矩形描述黑板，算出每个窗口的矩形、停靠带与自由区，并对外提供 `subscribe` / `setFrame` / `beginDrag` / `moveDrag` / `endDrag` / `beginResize` / `toggleMaximized` 等方法。
+- 渲染层（`CameraLayer.jsx`）只做两件事：把 `solution.rects` 画成窗口、把指针事件喂回 `solution`。React 里用 `useSolution(solution)`（`useSyncExternalStore`）订阅 —— 这样首帧到订阅之间不会漏事件，也不用把布局状态复制一份到 React state 里。
+- 好处是布局与交互只有一处真源：Node 22.7+ 自带 module 语法探测（`.js` 里写 ESM 也能直接 import），所以可以直接 import `camera/solution.js` 在 Node 里跑单测，换成 DOM / Canvas / Vue 渲染也只需要换桥接层。
+
+窗口尺寸都按黑板比例记（`camSizePx` / `fracBox`），停靠带里的小画面是标准尺寸 × `CAM_DOCK_SCALE` 缩放显示；从停靠带拖出来时会回到标准尺寸，并且按下时抓住的那个点在指针下不跳。
 
 示例免构建：`index.html` 里有一小段加载器，用 fetch 取模块、交给 Babel standalone 把 JSX 与 `import` 转成 CommonJS 再按依赖执行 —— 所以源码可以正常分模块，又不用打包器（生产项目请直接用 Vite / Rollup / esbuild）。
 

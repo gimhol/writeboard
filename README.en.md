@@ -76,17 +76,28 @@ The code is split by responsibility, using plain `import` / `export` like a norm
 | `index.html` | Page shell + the no-build module loader (React / Babel standalone from a CDN) |
 | `main.jsx` | Entry: renders `<App />` |
 | `App.jsx` | Application state and composition: stage, board, top bar, toolbar, camera layer |
-| `constants.js` | Design size, tools / colors / widths, camera constants, the “transparent” value |
+| `constants.js` | Design size, tools / colors / widths, the “transparent” value |
 | `hooks.js` | `useWriteboard` (board lifecycle + event sync) and `useElementSize` |
 | `icons.jsx` / `deps.js` | Icon component / shared dependency re-exports (React globals + writeboard ESM) |
 | `ui/Toolbar.jsx` | Floating toolbar + the stroke / fill / width flyout |
 | `ui/WindowMenu.jsx` | Top-bar “windows” menu (add / close windows, dock edge, alignment, placement) |
 | `ui/PageOverlay.jsx`, `ui/BoardScrollbar.jsx` | Page dividers / page number / empty hint, and the edge-hugging scrollbar |
-| `camera/CameraLayer.jsx` | Camera window layer: drag-to-dock, click-to-raise, double-click maximize and splitting |
+| `camera/config.js` | Camera window config (placements, default dock edge / alignment, size ratios) |
+| `camera/solution.js` | **CameraSolution**: window list, placements, dock strip / free area, drag and resize state machine (no React / DOM) |
+| `camera/use-solution.js` | The React bridge: `useSolution` (`useSyncExternalStore` on the solution) + `trackPointer` |
+| `camera/CameraLayer.jsx` | Camera layer: renders the rects the solution computes and feeds pointer events back into it |
 | `camera/CameraWindow.jsx` | A single camera window (video / placeholder + header + 8-way handles) |
 | `camera/dock.js` | Dock edge / alignment enums, size conversion, dock strip and hit test |
 | `camera/distribution.js` | Free-area and equal-split maths (mirrors the demo's `get_distributions.ts`) |
 | `styles.css` | All styles |
+
+The camera windows are deliberately split into a *solution* and a *bridge*, mirroring `ViewsSolution/Solution.ts` + `Bridging_HTMLElement.tsx` in the production code base:
+
+- `camera/config.js` / `dock.js` / `distribution.js` / `solution.js` are plain, framework-free logic: no React import, no DOM access — the blackboard is just one `full` rect, and the solution derives every window rect, the dock strip and the free area while exposing `subscribe` / `setFrame` / `beginDrag` / `moveDrag` / `endDrag` / `beginResize` / `toggleMaximized` and friends.
+- The render layer (`CameraLayer.jsx`) only does two things: draw `solution.rects` and feed pointer events back. React subscribes through `useSolution(solution)` (`useSyncExternalStore`), so no update between the first render and the subscription can be missed and no layout state is duplicated into React state.
+- The payoff is a single source of truth for layout and interaction: `camera/solution.js` can be imported and unit-tested straight from Node, and swapping the renderer (DOM / Canvas / Vue) only means writing another bridge.
+
+Window sizes are stored as blackboard ratios (`camSizePx` / `fracBox`); a docked thumbnail is rendered as the standard size × `CAM_DOCK_SCALE`, so dragging one out of the strip returns it to the standard size while keeping the grabbed point under the pointer.
 
 There is no build step: a small loader in `index.html` fetches each module and hands it to Babel standalone, which turns JSX and `import` into CommonJS and executes the graph in dependency order — so the source can be modular without a bundler (for production, use Vite / Rollup / esbuild instead).
 

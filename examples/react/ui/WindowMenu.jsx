@@ -1,5 +1,5 @@
 import { CAM_EDGES, CAM_ALIGNS } from '../camera/dock.js'
-import { CAM_PLACES, CAM_MAX } from '../constants.js'
+import { CAM_PLACES, CAM_MAX } from '../camera/config.js'
 import { useEffect, useRef, useState } from '../deps.js'
 import { Icon } from '../icons.jsx'
 
