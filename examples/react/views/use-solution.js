@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from '../deps.js'
 
 /**
- * React 侧的「桥」：订阅 CameraSolution，有变化就重渲染（对应 blogim 里
+ * React 侧的「桥」：订阅 ViewSolution，有变化就重渲染（对应 blogim 里
  * Bridging_HTMLElement 把 solution 的矩形同步到 DOM 元素）。
  * 状态本身存在 solution 里，React 只负责画出来。
  *
@@ -26,7 +26,8 @@ export function trackPointer({ onMove, onEnd }) {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', end)
     window.removeEventListener('pointercancel', end)
-    onEnd(e)
+    /* 松手要带上指针位置：停靠 / 悬浮是按「指针最后在哪」判定的（和 demo 一致） */
+    onEnd(e && typeof e.clientX === 'number' ? e : null)
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', end)

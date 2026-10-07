@@ -1,10 +1,10 @@
-import { CameraLayer } from './camera/CameraLayer.jsx'
-import { CameraSolution } from './camera/solution.js'
-import { useSolution } from './camera/use-solution.js'
-import { PAGES, DESIGN_W, DESIGN_H, DESIGN_K, COLORS, WIDTHS, STROKE_SHAPES, FILL_SHAPES, TRANSPARENT } from './constants.js'
-import { CAM_PLACES } from './camera/config.js'
-import { EventEnum, ShapeEnum, ToolEnum, useCallback, useEffect, useReducer, useRef, useState } from './deps.js'
-import { useWriteboard, useElementSize } from './hooks.js'
+import { ViewLayer } from './views/ViewLayer.jsx'
+import { ViewSolution } from './views/solution.js'
+import { useSolution } from './views/use-solution.js'
+import { PAGES, DESIGN_W, DESIGN_H, DESIGN_K, COLORS, WIDTHS, TRANSPARENT } from './constants.js'
+import { CAM_PLACES } from './views/config.js'
+import { EventEnum, ToolEnum, useCallback, useEffect, useReducer, useRef, useState } from './deps.js'
+import { useBoardStyle, useBoardTool, useWriteboard, useElementSize } from './hooks.js'
 import { BoardScrollbar } from './ui/BoardScrollbar.jsx'
 import { PageOverlay } from './ui/PageOverlay.jsx'
 import { Toolbar } from './ui/Toolbar.jsx'
@@ -18,22 +18,27 @@ export function App() {
   const [, forceRender] = useReducer((x) => x + 1, 0)
 
   /*
-   * 可见窗口管理：工具栏收起状态 + 摄像头窗口的「方案」（CameraSolution）。
-   * 窗口列表 / 形态 / 布局都在 solution 里，React 这边只订阅它重渲染。
+   * 可见窗口管理：工具栏收起状态 + 窗口的「方案」（ViewSolution）。
+   * 窗口列表 / 种类 / 形态 / 布局都在 solution 里，React 这边只订阅它重渲染。
+   * 顶栏的撤销 / 重做作用于「最后碰过的那块黑板」，所以草稿窗口被点亮时要把自己的
+   * board / actions 交给 App（默认就是主黑板）。
    */
   const [collapsed, setCollapsed] = useState(false)
-  const [solution] = useState(() => new CameraSolution({ views: ['老师'] }))
+  const [solution] = useState(() => new ViewSolution({ views: ['老师'] }))
   useSolution(solution)
-  const cams = solution.views
+  useEffect(() => () => solution.release(), [solution])
+  const views = solution.views
+  const [activeId, setActiveId] = useState(null)
+  const boardCtxRef = useRef({})
 
   /* 黑板尺寸喂给 solution（窗口尺寸 / 停靠带都按黑板比例算） */
   useEffect(() => {
     solution.setFrame({ x: 0, y: 0, w: frameSize.w, h: frameSize.h })
   }, [solution, frameSize.w, frameSize.h])
 
-  const dockedCount = cams.filter((c) => c.place === CAM_PLACES.Docked).length
-  const allDocked = cams.length > 0 && dockedCount === cams.length
-  const allFloating = cams.length > 0 && cams.every((c) => c.place === CAM_PLACES.Floating)
+  const dockedCount = views.filter((c) => c.place === CAM_PLACES.Docked).length
+  const allDocked = views.length > 0 && dockedCount === views.length
+  const allFloating = views.length > 0 && views.every((c) => c.place === CAM_PLACES.Floating)
 
   const [toolType, setToolType] = useState(ToolEnum.Pen)
   const [color, setColor] = useState(COLORS[0])
@@ -49,46 +54,22 @@ export function App() {
   const kx = frameSize.w ? frameSize.w / DESIGN_W : 1
   const ky = frameSize.h ? frameSize.h / DESIGN_H : 1
 
-  /* 工具与状态双向同步：状态驱动板子；板子内部切换（如文本编辑结束）时回写状态 */
-  useEffect(() => {
-    board?.setToolType(toolType)
-  }, [board, toolType])
-
-  useEffect(() => {
-    if (!board) return
-    return board.on(EventEnum.ToolChanged, ({ to }) => setToolType(to ?? ToolEnum.Selector))
-  }, [board])
+  /* 工具 / 颜色 / 填充 / 粗细：主黑板和草稿里那块黑板用的是同一套（见 hooks.js） */
+  useBoardTool(board, toolType, setToolType, DESIGN_K)
+  useBoardStyle(board, { color, fill, lineWidth, k: DESIGN_K })
 
   /*
-   * 颜色 / 粗细：直接改图形模板，之后新建的图形就使用新样式。
-   * 粗细 / 字号都乘 DESIGN_K —— 工具面板上的数字是“参考尺寸”下的值，
-   * 落到 1.5 倍的设计画布上要放大同样的倍数，视觉粗细才和以前一致。
+   * 哪块黑板在“当前手边”：默认主黑板；点过草稿窗口里的板子就换成它，
+   * 顶栏的撤销 / 重做 / 清空 都跟着走（配好的草稿窗口被关掉时自动落回主黑板）。
    */
-  useEffect(() => {
-    if (!board) return
-    const factory = board.factory
-    const width = lineWidth * DESIGN_K
-    STROKE_SHAPES.forEach((type) => {
-      const data = factory.shapeTemplate(type)
-      data.strokeStyle = color
-      data.lineWidth = width
-      /* 矩形 / 椭圆支持填充；选「透明」就是不填充 */
-      if (FILL_SHAPES.includes(type)) data.fillStyle = fill
-    })
-    const text = factory.shapeTemplate(ShapeEnum.Text)
-    text.fillStyle = color
-    text.font_family = '"Microsoft YaHei", "PingFang SC", Arial, sans-serif'
-    text.font_size = 28 * DESIGN_K
-  }, [board, color, fill, lineWidth])
-
-  /* 橡皮擦的“擦除范围”同样按设计尺寸换算 */
-  useEffect(() => {
-    const indicator = board?.tools?.get(ToolEnum.Eraser)?.indicator
-    if (!indicator) return
-    indicator.data.w = 100 * DESIGN_K
-    indicator.data.h = 100 * DESIGN_K
-    indicator.markDirty()
-  }, [board, toolType])
+  const draftAlive = activeId != null && views.some((v) => v.id === activeId)
+  const activeCtx = (draftAlive && boardCtxRef.current[activeId]) || { board, actions }
+  const activeBoard = activeCtx.board
+  const activeActions = activeCtx.actions
+  const focusBoard = useCallback((id, ctx) => {
+    if (ctx) boardCtxRef.current[id] = ctx
+    setActiveId(id)
+  }, [])
 
   /*
    * 滚轮：画布坐标是设计尺寸的，滚轮量是屏幕像素，
@@ -145,15 +126,15 @@ export function App() {
     if (board) board.scroll_to(0, y, true)
   }, [board])
 
-  const undo = useCallback(() => actions?.undo(), [actions])
-  const redo = useCallback(() => actions?.redo(), [actions])
+  const undo = useCallback(() => activeActions?.undo(), [activeActions])
+  const redo = useCallback(() => activeActions?.redo(), [activeActions])
 
   const clearAll = useCallback(() => {
-    if (!board || !board.shapes().length) return
-    if (!window.confirm('清空整块黑板？（可用 Ctrl+Z 撤销）')) return
-    board.removeAll(true)
-    board.scroll_to(0, 0, true)
-  }, [board])
+    if (!activeBoard || !activeBoard.shapes().length) return
+    if (!window.confirm('清空这块黑板？（可用 Ctrl+Z 撤销）')) return
+    activeBoard.removeAll(true)
+    if (activeBoard === board) board.scroll_to(0, 0, true)
+  }, [activeBoard, board])
 
   /* Ctrl+Z / Ctrl+Y（文本编辑框内不拦截，交给输入框自己处理） */
   useEffect(() => {
@@ -164,20 +145,21 @@ export function App() {
       const key = e.key.toLowerCase()
       if (key === 'z' && !e.shiftKey) {
         e.preventDefault()
-        actions?.undo()
+        activeActions?.undo()
       } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
         e.preventDefault()
-        actions?.redo()
+        activeActions?.redo()
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [actions])
+  }, [activeActions])
 
   const page = view.viewportH ? Math.min(PAGES, Math.floor(view.scrollTop / view.viewportH) + 1) : 1
-  const canUndo = !!(actions && actions.canUndo)
-  const canRedo = !!(actions && actions.canRedo)
+  const canUndo = !!(activeActions && activeActions.canUndo)
+  const canRedo = !!(activeActions && activeActions.canRedo)
   const empty = shapeCount === 0
+  const boardStyle = { tool: toolType, color, fill, lineWidth }
 
   return (
     <div className="app">
@@ -189,16 +171,16 @@ export function App() {
         <span className="chip chip-hint">滚轮 / 拖动滚动条 / 中键拖拽 滚动黑板</span>
         <span className="chip">第 <b>{page}</b> / {PAGES} 页</span>
         <WindowMenu
-          camCount={cams.length}
+          views={views}
           dockedCount={dockedCount}
           allDocked={allDocked}
           allFloating={allFloating}
-          onAddCam={() => solution.add()}
+          onAddView={(kind) => solution.add(kind)}
           onCloseAllCams={() => solution.removeAll()}
           onSetAllPlace={(place) => solution.setAllPlace(place)}
-          camEdge={solution.edge} camAlign={solution.align}
-          onCamEdge={(edge) => solution.setDock({ edge })}
-          onCamAlign={(align) => solution.setDock({ align })}
+          dockEdge={solution.edge} dockAlign={solution.align}
+          onDockEdge={(edge) => solution.setDock({ edge })}
+          onDockAlign={(align) => solution.setDock({ align })}
           toolbarCollapsed={collapsed} onToolbarCollapsed={setCollapsed}
           onResetCams={() => solution.reset()}
         />
@@ -209,6 +191,8 @@ export function App() {
           <div
             className="blackboard"
             ref={boardElRef}
+            /* 在主黑板上按下 = 把「手边的黑板」切回主黑板（撤销 / 重做跟着走） */
+            onPointerDown={() => setActiveId(null)}
             style={{
               color, caretColor: color,
               width: DESIGN_W, height: DESIGN_H,
@@ -217,7 +201,14 @@ export function App() {
           />
           <PageOverlay view={view} page={page} empty={empty} scaleY={ky} />
           <BoardScrollbar view={view} onScrollTo={scrollTo} scaleY={ky} />
-          <CameraLayer solution={solution} />
+          <ViewLayer
+            solution={solution}
+            frameRef={frameRef}
+            boardStyle={boardStyle}
+            onToolChange={setToolType}
+            onFocusBoard={focusBoard}
+            onDirty={forceRender}
+          />
           <Toolbar
             frameRef={frameRef}
             collapsed={collapsed} onToggleCollapsed={() => setCollapsed((v) => !v)}

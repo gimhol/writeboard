@@ -50,15 +50,13 @@ export function dockStrip(edge, cell, fw, fh) {
 /**
  * 是否算停靠（和 demo 的 Solution.should_dock 一致）：
  * 只有当前停靠边那一条停靠带才认，不看别的边；
- * 判定用窗口中心 —— 中心进了停靠带就停靠，否则回自由区。
+ * 判定用**指针**位置（不是窗口中心）—— 指针在带里就算停靠，这也是 demo 的手感。
  */
-export function dockHit(edge, box, cell, fw, fh) {
-  const cx = box.x + box.w / 2
-  const cy = box.y + box.h / 2
-  if (edge === 'top') return cy <= cell.h
-  if (edge === 'bottom') return cy >= fh - cell.h
-  if (edge === 'left') return cx <= cell.w
-  return cx >= fw - cell.w
+export function dockHit(edge, point, cell, fw, fh) {
+  if (edge === 'top') return point.y < cell.h
+  if (edge === 'bottom') return point.y > fh - cell.h
+  if (edge === 'left') return point.x < cell.w
+  return point.x > fw - cell.w
 }
 
 /** 窗口 8 个方向的拉伸把手（对应 demo 里的 resizer_l / _r / _t / _b / _lt / _rt / _lb / _rb） */

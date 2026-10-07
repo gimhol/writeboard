@@ -49,6 +49,20 @@ body {
   box-shadow: 0 0 0 1px #ffffff12, 0 24px 80px #000000b3;
   /* 用 clip 而不是 hidden：hidden 会让容器可被程序化滚动（scrollIntoView 等），把内部元素整体挪走 */
   overflow: clip;
+  /*
+   * 界面上的文字（顶栏 / 工具栏 / 窗口名字 / 各种提示）都不该被选中 ——
+   * 拖窗口、点按钮时顺手选中一片文字很难看。只有输入框 / 文本编辑框里例外，
+   * 见下面那条（书写的文字编辑器是库建的 textarea）。
+   */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app input,
+.app textarea,
+.app [contenteditable='true'] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* ---------- 顶栏 ---------- */
@@ -391,6 +405,29 @@ body {
   text-overflow: ellipsis;
 }
 
+/*
+ * 操作按钮（最小化 / 放大 / 关闭）：摄像头窗口没有头栏，按钮浮在右上角。
+ * 平时完全透明（鼠标移上去才显形），按钮本身不带底色 —— 只有 hover 到某个按钮上，
+ * 那个按钮才亮出自己的背景色（.cam-btn:hover）。
+ */
+.cam-actions {
+  position: absolute;
+  z-index: 2;
+  top: calc(4 * var(--wu));
+  right: calc(4 * var(--wu));
+  display: flex;
+  gap: calc(2 * var(--wu));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .14s ease;
+}
+
+.cam-window:hover .cam-actions,
+.cam-window:focus-within .cam-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .cam-btn {
   width: calc(22 * var(--wu));
   height: calc(22 * var(--wu));
@@ -434,43 +471,36 @@ body {
   object-fit: cover;
 }
 
+/* 没开摄像头时的占位：只有一个图标（点一下尝试开启；打不开就变红） */
 .cam-ph {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: calc(8 * var(--wu));
+  display: grid;
+  place-items: center;
   background: radial-gradient(120% 120% at 70% 20%, #2b303a, #14161a);
-  color: #ffffff73;
-  font-size: max(9px, calc(12 * var(--wu)));
-}
-
-.cam-ph svg {
-  width: calc(26 * var(--wu));
-  height: calc(26 * var(--wu));
-}
-
-.cam-open {
-  padding: calc(3 * var(--wu)) calc(10 * var(--wu));
-  border: 0;
-  border-radius: 3px;
-  background: #ffffff1a;
-  color: #ffffffcc;
-  font: inherit;
-  font-size: max(9px, calc(12 * var(--wu)));
+  color: #ffffff59;
   cursor: pointer;
 }
 
-.cam-open:hover {
-  background: #ffffff2b;
+.cam-ph:hover {
+  color: #ffffffa6;
 }
 
-.cam-tip {
-  color: #ff8b8f;
+.cam-ph.error {
+  color: #ff8b8fb3;
 }
 
+.cam-ph svg {
+  width: calc(28 * var(--wu));
+  height: calc(28 * var(--wu));
+}
+
+/* 驼标被右上角的按钮压住时，把图标稍微挪开一点 */
+.cam-window:hover .cam-ph svg {
+  transform: translateY(calc(2 * var(--wu)));
+}
+
+/* 名字贴在画面底部（照 demo 的 _name 那样） */
 .cam-name {
   position: absolute;
   left: 0;
@@ -1008,4 +1038,68 @@ body {
 
 .width-btn.active i {
   background: #fff;
+}
+
+/*
+ * 草稿窗口：内容区里是另一块黑板（自己一个 writeboard 实例）。
+ * 画布画在 600×400 的设计坐标里，外层按窗口大小整体缩放 —— 所以窗口怎么拉，
+ * 笔迹相对窗口宽度的比例都不变，和主黑板一个道理。
+ */
+.cam-body.is-draft {
+  /* 和主黑板一个底色，看起来就是一块小黑板 */
+  background: #202329;
+}
+
+.draft-board {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+}
+
+/* 内容等比缩放 + 居中，多出来的地方露出和黑板一样的底色（看起来就是一块完整的小黑板） */
+.draft-board>.blackboard {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  background: #202329;
+}
+
+.draft-board canvas {
+  cursor: crosshair;
+}
+
+/* 文本编辑框同样嵌在草稿的黑板上：文字由画布渲染，编辑框只要透明 */
+.draft-board textarea {
+  background: transparent;
+  color: transparent;
+}
+
+/* 草稿里的滚动条细一点，别抢小窗口的地方 */
+.draft-board .scrollbar {
+  top: calc(4 * var(--u));
+  bottom: calc(4 * var(--u));
+  right: calc(1 * var(--u));
+  width: calc(6 * var(--u));
+}
+
+/*
+ * 停在停靠带里的小草稿：整个窗口都要能拖着走，
+ * 所以画布不接指针事件（不然拖动会在小画面上留下一笔），滚动条也收起来。
+ */
+.cam-window.docked .draft-board canvas {
+  pointer-events: none;
+}
+
+.cam-window.docked .draft-board .scrollbar {
+  display: none;
+}
+
+/*
+ * 画布的 pointer-events 是库用行内样式设的，所以这里必须 !important 才盖得住：
+ * 停靠的小画面整个都是「抓手」，不能让画布吃掉指针事件（否则点一下会留下一笔，
+ * 而且库自己会 stopPropagation，窗口就收不到按下事件、拖不出来）。
+ */
+.cam-window.docked .draft-board canvas {
+  pointer-events: none !important;
 }

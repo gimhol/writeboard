@@ -1,17 +1,18 @@
-import { CAM_EDGES, CAM_ALIGNS } from '../camera/dock.js'
-import { CAM_PLACES, CAM_MAX } from '../camera/config.js'
+import { CAM_EDGES, CAM_ALIGNS } from '../views/dock.js'
+import { CAM_PLACES, CAM_MAX, VIEW_KINDS } from '../views/config.js'
 import { useEffect, useRef, useState } from '../deps.js'
 import { Icon } from '../icons.jsx'
 
 /** 可见窗口管理：统一开关浮在黑板上的窗口 / 面板 */
 export function WindowMenu({
-  camCount, dockedCount, allDocked, allFloating,
-  onAddCam, onCloseAllCams, onSetAllPlace,
-  camEdge, camAlign, onCamEdge, onCamAlign,
+  views, dockedCount, allDocked, allFloating,
+  onAddView, onCloseAllCams, onSetAllPlace,
+  dockEdge, dockAlign, onDockEdge, onDockAlign,
   toolbarCollapsed, onToolbarCollapsed, onResetCams,
 }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
+  const countOf = (kind) => views.filter((v) => v.kind === kind).length
 
   useEffect(() => {
     if (!open) return
@@ -36,13 +37,20 @@ export function WindowMenu({
       </button>
       {open && <div className="win-panel">
         <div className="win-panel-title">可见窗口</div>
-        <button className="win-item" disabled={camCount >= CAM_MAX} onClick={onAddCam}>
-          <Icon name="plus" size={16} />
-          添加摄像头窗口（{camCount}/{CAM_MAX}）
-        </button>
-        <button className="win-item" disabled={camCount === 0} onClick={onCloseAllCams}>
+        {Object.entries(VIEW_KINDS).map(([kind, { label, icon }]) => (
+          <button
+            key={kind}
+            className="win-item"
+            disabled={views.length >= CAM_MAX}
+            onClick={() => onAddView(kind)}
+          >
+            <Icon name="plus" size={16} />
+            添加{label}窗口{countOf(kind) ? `（${countOf(kind)} 个）` : ''}
+          </button>
+        ))}
+        <button className="win-item" disabled={views.length === 0} onClick={onCloseAllCams}>
           <Icon name="close" size={16} />
-          关闭全部摄像头窗口
+          关闭全部窗口（{views.length}/{CAM_MAX}）
         </button>
         <button className="win-item" onClick={() => onToolbarCollapsed(!toolbarCollapsed)}>
           <span className={toolbarCollapsed ? '' : 'checked'}>
@@ -58,8 +66,8 @@ export function WindowMenu({
             {CAM_EDGES.map(({ key, label }) => (
               <button
                 key={key}
-                className={dockedCount > 0 && camEdge === key ? 'on' : ''}
-                onClick={() => onCamEdge(key)}
+                className={dockedCount > 0 && dockEdge === key ? 'on' : ''}
+                onClick={() => onDockEdge(key)}
               >{label}</button>
             ))}
           </div>
@@ -70,8 +78,8 @@ export function WindowMenu({
             {CAM_ALIGNS.map(({ key, label }) => (
               <button
                 key={key}
-                className={dockedCount > 0 && camAlign === key ? 'on' : ''}
-                onClick={() => onCamAlign(key)}
+                className={dockedCount > 0 && dockAlign === key ? 'on' : ''}
+                onClick={() => onDockAlign(key)}
               >{label}</button>
             ))}
           </div>
@@ -90,8 +98,8 @@ export function WindowMenu({
           </div>
         </div>
         <div className="win-hint">
-          双击停靠的小画面 / 窗口头栏 → 放大到自由区；再双击另一个就均分自由区。
-          窗口拖进停靠带会停靠，其他位置松手则是悬浮。
+          双击小画面 / 窗口头栏 → 放大到自由区；再双击另一个就均分自由区。
+          只有摄像头窗口会停靠（拖进停靠带即停靠，其他位置松手是悬浮）；草稿窗口始终悬浮，拖动只认头栏。
         </div>
         <div className="tb-divider" />
         <button className="win-item" onClick={() => { onResetCams(); setOpen(false) }}>

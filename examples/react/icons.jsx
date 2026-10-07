@@ -35,6 +35,15 @@ export const ICONS = {
     <rect x="2.5" y="6.5" width="13" height="11" rx="2.5" />
     <path d="M15.5 10.5 21 7.5v9l-5.5-3z" />
   </>,
+  'camera-off': <>
+    <rect x="2.5" y="6.5" width="13" height="11" rx="2.5" />
+    <path d="M15.5 10.5 21 7.5v9l-5.5-3z" />
+    <path d="M3.5 20.5 20.5 3.5" />
+  </>,
+  draft: <>
+    <rect x="3.5" y="5" width="17" height="14" rx="2" />
+    <path d="M7 15.5c2-4.5 4.5 1 9.5-5.5" />
+  </>,
   minimize: <path d="M6 12h12" />,
   maximize: <rect x="6" y="6" width="12" height="12" rx="1.5" />,
   restore: <>
