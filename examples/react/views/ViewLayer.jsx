@@ -88,27 +88,27 @@ export function ViewLayer({
   /* 只有摄像头会停靠：拖草稿时不提示停靠带 */
   const dockable = !!drag && drag.kind === 'camera'
   /*
-   * 拖到哪儿就只亮哪一块（对应 demo 在 on_drag_begin / on_drag_move 里对两个指示器的处理）：
-   *   - 拖**停靠**的窗口：指针在自由区 → 亮自由区（会变成悬浮 / 加入拼接）；进停靠带 → 亮停靠带 + 落点预览。
-   *   - 拖**悬浮**的窗口：自由区一律不亮（松手只是换个位置，什么都没变），只有指针进停靠带才亮带。
+   * 亮哪一块、亮到什么程度 —— 照 demo 实测出来的两个指示器行为（0.3 = 暗提示，1 = 就是这里）：
+   *   - 拖**停靠带里**的窗口（可停靠的摄像头）：只显示**自由区**；指针还在停靠带里时压暗 ——
+   *     回带里等于什么都没变，出了带才亮起来（松手就悬浮 / 加入拼接）。
+   *   - 拖**悬浮**的窗口：只显示**停靠带**；指针进带才亮，在自由区时压暗（那里松手只是换个位置）。
+   *   - 草稿两边都不显示（它不能停靠，落哪儿都一样）。
    */
-  const canFloatHere = !!drag && drag.from === CAM_PLACES.Docked
-  const dropTarget = !drag ? null : dockable && drag.dock ? 'dock' : canFloatHere ? 'free' : null
+  const dropZone = !drag || !dockable ? null
+    : drag.from === CAM_PLACES.Docked
+      ? { rect: free, on: !drag.dock, dock: false }
+      : { rect: strip, on: !!drag.dock, dock: true }
 
   return (
     <>
       {drag && <>
-        {dropTarget === 'dock' && <div
-          className="drop-zone drop-zone-dock active"
-          style={{ left: strip.x, top: strip.y, width: strip.w, height: strip.h }}
+        {dropZone && <div
+          className={`drop-zone${dropZone.dock ? ' drop-zone-dock' : ''}${dropZone.on ? ' active' : ''}`}
+          style={{ left: dropZone.rect.x, top: dropZone.rect.y, width: dropZone.rect.w, height: dropZone.rect.h }}
         >
-          <span className="drop-zone-text">在此停靠窗口</span>
-        </div>}
-        {dropTarget === 'free' && <div
-          className="drop-zone active"
-          style={{ left: free.x, top: free.y, width: free.w, height: free.h }}
-        >
-          <span className="drop-zone-text">{maxed.length ? '在此加入拼接画面' : '在此悬浮窗口'}</span>
+          <span className="drop-zone-text">{dropZone.dock
+            ? '在此停靠窗口'
+            : maxed.length ? '在此加入拼接画面' : '在此悬浮窗口'}</span>
         </div>}
         {preview && <div
           className="dock-preview"

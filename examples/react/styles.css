@@ -311,7 +311,7 @@ body {
 }
 
 /* 命中停靠带时会画出落点预览，停靠带自己的说明文字就先让开 */
-.drop-zone-dock .drop-zone-text {
+.drop-zone-dock.active .drop-zone-text {
   opacity: 0;
 }
 
