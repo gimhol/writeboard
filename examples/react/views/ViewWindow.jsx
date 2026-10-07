@@ -12,7 +12,7 @@ import { Icon } from '../icons.jsx'
  */
 export function ViewWindow({
   view, box, scale, dragging, resizing, docked, boardStyle,
-  onDown, onDoubleClick, onResize, onMinimize, onToggleMax, onClose,
+  onDown, onDoubleClick, onClickCapture, onResize, onMinimize, onToggleMax, onClose,
   onToolChange, onFocusBoard, onDirty,
 }) {
   const isMax = view.place === CAM_PLACES.Maximized
@@ -52,6 +52,7 @@ export function ViewWindow({
           : `${view.name}：拖动移动 / 停靠，双击放大到自由区`}
       onPointerDown={onDown}
       onDoubleClick={onDoubleClick}
+      onClickCapture={onClickCapture}
     >
       {isDraft
         ? <div className="cam-head">

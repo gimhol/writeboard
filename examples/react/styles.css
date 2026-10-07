@@ -310,8 +310,8 @@ body {
   box-shadow: 0 0 0 1px #2f71ff80, 0 0 28px #2f71ff4d;
 }
 
-/* 命中停靠带时会画出落点预览，区域自带说明文字就先让开 */
-.drop-zone.active .drop-zone-text {
+/* 命中停靠带时会画出落点预览，停靠带自己的说明文字就先让开 */
+.drop-zone-dock .drop-zone-text {
   opacity: 0;
 }
 
@@ -590,24 +590,25 @@ body {
   display: none;
 }
 
-/* 最小化后的小胶囊：多个排成一行（压在摄像头窗口之上） */
+/*
+ * 最小化后的小胶囊：排成一行，落点在自由区左下角（left / bottom / max-width 由
+ * ViewSolution.miniBar 按黑板坐标算好传下来）—— 自由区已经扣掉停靠带，
+ * 所以停靠边在左 / 下时也不会被小画面压住。
+ */
 .cam-mini-bar {
   position: absolute;
   z-index: 50;
-  left: calc(16 * var(--u));
-  bottom: calc(16 * var(--u));
   display: flex;
   flex-wrap: wrap;
-  gap: calc(8 * var(--u));
-  max-width: calc(100% - 32px);
+  gap: calc(6 * var(--u));
 }
 
 .cam-mini {
   display: inline-flex;
   align-items: center;
-  gap: calc(8 * var(--u));
+  gap: calc(5 * var(--u));
   height: calc(32 * var(--u));
-  padding: 0 calc(12 * var(--u));
+  padding: 0 calc(6 * var(--u));
   border: 0;
   border-radius: 3px;
   background: var(--panel-glass);
@@ -616,7 +617,7 @@ body {
   font: inherit;
   font-size: max(11px, calc(12 * var(--u)));
   cursor: pointer;
-  box-shadow: 0 12px 30px #00000066, 0 0 0 1px #ffffff14;
+  box-shadow: 0 4px 12px #00000040, 0 0 0 1px #ffffff14;
 }
 
 .cam-mini svg {

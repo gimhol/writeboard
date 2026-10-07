@@ -19,6 +19,9 @@ const defaultTicker = {
   stop(id) { clearInterval(id) },
 }
 
+/** 最小化胶囊离自由区边缘的空隙（按黑板宽度等比：1280 宽的板子上是 10px —— 胶囊贴着角排，尽量少占地方） */
+const MINI_PAD = 10 / 1280
+
 /** 窗口最小尺寸：按黑板比例算（demo 里是最小 100 × 100） */
 const minSize = (fw, fh) => ({
   w: Math.max(72, Math.round((100 * fw) / 1280)),
@@ -54,6 +57,7 @@ export class ViewSolution {
     this.views = []
     /* 正在拖的窗口：偏离的 offset / 开始时的位置 begin / 目标位置 target / 缓动出来的 preview */
     this.drag = null
+    this.afterDrag = false  // 上一次拖动真的移动过？（渲染层读它吞掉紧跟其后的 click）
     this.resizing = null    // { id, dir, px, py, box }
     this.zone = null        // 布局算出来的停靠带 / 自由区 / 各种矩形
     this.rects = {}         // id -> { x, y, w, h }
@@ -115,6 +119,22 @@ export class ViewSolution {
         this.rects[view.id] = view.kind === 'draft' ? fitRatio(rect, DRAFT_W / DRAFT_H) : rect
       }
     })
+  }
+
+  /**
+   * 最小化后那排小胶囊的落点：**自由区**（= 黑板减去停靠带）的左下角，四周留一点空隙。
+   * 自由区本身就是扣掉停靠带之后剩下的地方，所以不管停靠边在哪一侧，胶囊都不会压在停靠带上。
+   * 给渲染层的是 CSS 要的三段值（都按黑板像素）：x → left、bottom → 距黑板底边的距离、w → max-width。
+   */
+  get miniBar() {
+    if (!this.zone) return null
+    const { free } = this.zone
+    const pad = Math.round(MINI_PAD * free.w)
+    return {
+      x: free.x + pad,
+      bottom: this.full.h - (free.y + free.h) + pad,
+      w: Math.max(0, free.w - pad * 2),
+    }
   }
 
   /** 拖动时预览的落点（对齐方式决定的位置） */
@@ -413,6 +433,9 @@ export class ViewSolution {
         view.rect = boxFrac({ x: d.target.x, y: d.target.y, w: d.preview.w, h: d.preview.h }, this.full.w, this.full.h)
       }
     }
+    /* 拖动（真的移动过）松手后浏览器还会补一个 click —— 渲染层用它把这个 click 吞掉，
+       免得「拖窗口」被画面里的按钮当成「点了一下」（比如顺手把摄像头点开了） */
+    this.afterDrag = !!d.moved
     this.drag = null
     this.followId = null
     this.emit()

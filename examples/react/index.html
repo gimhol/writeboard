@@ -5,8 +5,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=no">
   <title>又是在线课堂</title>
-  <link rel="stylesheet" href="../lib/writeboard.css">
-  <link rel="stylesheet" href="./styles.css">
+  <script>
+    /*
+     * 免构建示例没有打包器帮忙给样式表算 hash，所以这里自己给样式表带个时间戳：
+     * 否则改完 CSS 刷新，浏览器（尤其 IDE 内置浏览器）可能还在用缓存里的旧样式 ——
+     * 摄像头窗口那三个按钮就会退化成压在画面上的“顶栏”。
+     * 和下面加载模块时的 fetch(url, { cache: 'no-store' }) 是一个意思。
+     */
+    for (const href of ['../lib/writeboard.css', './styles.css']) {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = `${href}?v=${Date.now()}`
+      document.head.appendChild(link)
+    }
+  </script>
 </head>
 
 <body>

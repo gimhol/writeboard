@@ -23,7 +23,7 @@ export function ViewLayer({
   solution, frameRef, boardStyle,
   onToolChange, onFocusBoard, onDirty,
 }) {
-  const { views, rects, drag, resizing, zone } = solution
+  const { views, rects, drag, resizing, zone, miniBar } = solution
   if (!zone) return null
   const { strip, free, maxed } = zone
 
@@ -36,6 +36,8 @@ export function ViewLayer({
   /** 窗口上的按下：先抬到最上层，再决定这次是不是拖动 */
   const onWinDown = (view, e) => {
     solution.raise(view.id)
+    /* 这一次按下就是「新的交互」，上一次拖动留下的 click 标记在这里清掉 */
+    solution.afterDrag = false
     if (e.button !== 0) return
     if (e.target.closest('.cam-btn, .cam-resize')) return
     /* 摄像头整块都能拖（没有头栏）；草稿里是一块能写的黑板，只认头栏 */
@@ -53,6 +55,18 @@ export function ViewLayer({
     /* 草稿同上：只有头栏能触发；摄像头整块都行 */
     if (!draggableFromBody(view) && !e.target.closest('.cam-head')) return
     solution.toggleMaximized(view.id)
+  }
+
+  /**
+   * 拖完松手时浏览器还会补一个 click（按下和抬起的目标有共同祖先就会补）——
+   * 于是「拖窗口」会被窗口里的按钮/占位当成「点了一下」（比如顺手把摄像头点开了）。
+   * 所以拖动真的动过之后，把紧跟其后的这个 click 吞掉；标记由 solution.afterDrag 给。
+   */
+  const swallowAfterDrag = (e) => {
+    if (!solution.afterDrag) return
+    solution.afterDrag = false
+    e.stopPropagation()
+    e.preventDefault()
   }
 
   const onResizeDown = (view, e, dir) => {
@@ -73,22 +87,29 @@ export function ViewLayer({
   }
   /* 只有摄像头会停靠：拖草稿时不提示停靠带 */
   const dockable = !!drag && drag.kind === 'camera'
+  /*
+   * 拖到哪儿就只亮哪一块（对应 demo 在 on_drag_begin / on_drag_move 里对两个指示器的处理）：
+   *   - 拖**停靠**的窗口：指针在自由区 → 亮自由区（会变成悬浮 / 加入拼接）；进停靠带 → 亮停靠带 + 落点预览。
+   *   - 拖**悬浮**的窗口：自由区一律不亮（松手只是换个位置，什么都没变），只有指针进停靠带才亮带。
+   */
+  const canFloatHere = !!drag && drag.from === CAM_PLACES.Docked
+  const dropTarget = !drag ? null : dockable && drag.dock ? 'dock' : canFloatHere ? 'free' : null
 
   return (
     <>
       {drag && <>
-        {dockable && <div
-          className={`drop-zone${drag.dock ? ' active' : ''}`}
+        {dropTarget === 'dock' && <div
+          className="drop-zone drop-zone-dock active"
           style={{ left: strip.x, top: strip.y, width: strip.w, height: strip.h }}
         >
           <span className="drop-zone-text">在此停靠窗口</span>
         </div>}
-        <div
-          className={`drop-zone${drag.dock ? '' : ' active'}`}
+        {dropTarget === 'free' && <div
+          className="drop-zone active"
           style={{ left: free.x, top: free.y, width: free.w, height: free.h }}
         >
           <span className="drop-zone-text">{maxed.length ? '在此加入拼接画面' : '在此悬浮窗口'}</span>
-        </div>
+        </div>}
         {preview && <div
           className="dock-preview"
           style={{ left: preview.x, top: preview.y, width: preview.w, height: preview.h }}
@@ -108,6 +129,7 @@ export function ViewLayer({
           boardStyle={boardStyle}
           onDown={(e) => onWinDown(view, e)}
           onDoubleClick={(e) => onWinDoubleClick(view, e)}
+          onClickCapture={swallowAfterDrag}
           onResize={(e, dir) => onResizeDown(view, e, dir)}
           onMinimize={() => solution.minimize(view.id)}
           onToggleMax={() => solution.toggleMaximized(view.id)}
@@ -117,7 +139,10 @@ export function ViewLayer({
           onDirty={onDirty}
         />
       ))}
-      {views.some((view) => view.place === CAM_PLACES.Minimized) && <div className="cam-mini-bar">
+      {views.some((view) => view.place === CAM_PLACES.Minimized) && <div
+        className="cam-mini-bar"
+        style={miniBar ? { left: miniBar.x, bottom: miniBar.bottom, maxWidth: miniBar.w } : undefined}
+      >
         {views.filter((view) => view.place === CAM_PLACES.Minimized).map((view) => (
           <button
             key={view.id}
