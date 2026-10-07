@@ -63,12 +63,9 @@ Notes:
 - The `import` above uses a relative path to the build output inside this repo; when installed from npm, import from `"@fimagine/writeboard"` instead, and add the stylesheet plus the `position: relative` container shown in the section above.
 - In TypeScript, `document.getElementById('container')` returns `HTMLElement | null`, so write `document.getElementById('container')!`.
 
-### React example (ClassIn-like layout)
+### React example (online classroom)
 
-Full example: [examples/react/](./examples/react) — a ClassIn-like layout: a 16:9 stage, a dark scrollable blackboard, a collapsible floating toolbar, and several camera / draft windows that can be docked, floated, maximized or minimized. The window part is split into a framework-free *solution* plus a React *bridge*, mirroring `ViewsSolution`.
-
-- Documentation for the example itself (module table, window / drag rules, the no-build loader, React integration notes): [examples/react/README.en.md](./examples/react/README.en.md) ([简体中文](./examples/react/README.md))
-- To run it: serve the repository root with a static server (`npx serve`, `python -m http.server`, …) and open `examples/react/index.html` (it must be served over http — `fetch` of the modules is blocked on `file://`).
+The complete React example for an online classroom (a 16:9 stage, a dark scrollable blackboard, a collapsible floating toolbar, and several camera / draft windows that can be docked, floated, maximized or minimized; the window part is a framework-free *solution* plus a React *bridge*, mirroring `ViewsSolution`) now lives as the standalone `classroom2` project (Vite + React + TypeScript) and is no longer shipped with this repository.
 
 ### No bundler
 

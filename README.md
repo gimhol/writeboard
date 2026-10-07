@@ -63,12 +63,9 @@ board.setToolType(ToolEnum.Pen);
 - 示例中的 `import` 是相对路径，指向仓库内的构建产物；通过 npm 安装后请改成从包导入：`import { Gaia, FactoryEnum, ToolEnum } from "@fimagine/writeboard"`，并按上一节引入样式、让容器保持 `position: relative`。
 - TypeScript 中 `document.getElementById('container')` 返回 `HTMLElement | null`，可写成 `document.getElementById('container')!`。
 
-### React 示例
+### React 示例（在线课堂）
 
-完整示例：[examples/react/](./examples/react) —— 仿 ClassIn 布局：16:9 舞台、深色可滚动黑板、可收起的悬浮工具栏，以及多个可以停靠 / 悬浮 / 最大化 / 最小化的摄像头窗口与草稿窗口（窗口那部分是「纯方案 + React 桥接」两层，结构照 `ViewsSolution` 写的）。
-
-- 示例自己的说明（模块表、窗口与拖动规则、免构建加载器、与 React 集成的注意点）：[examples/react/README.md](./examples/react/README.md)（[English](./examples/react/README.en.md)）
-- 运行：在仓库根目录起一个静态服务器（`npx serve`、`python -m http.server` 等），打开 `examples/react/index.html`（要用 http 打开，`file://` 下 fetch 模块会被浏览器拦掉）。
+在线课堂的 React 完整示例（16:9 舞台、深色可滚动黑板、可收起的悬浮工具栏，以及多个可以停靠 / 悬浮 / 最大化 / 最小化的摄像头窗口与草稿窗口；窗口那部分是「纯方案 + React 桥接」两层，结构照 `ViewsSolution` 写的）已拆分为独立工程 `classroom2`（Vite + React + TypeScript），不再随本仓库分发。
 
 ### 不用打包器
 
