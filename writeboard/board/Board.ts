@@ -199,6 +199,23 @@ export class Board {
   }
   get layers(): Layer[] { return Array.from(this._layers.values()) }
   get element(): HTMLElement { return this._element }
+
+  /** 画布在屏幕上的显示比例（CSS 像素 ÷ 设计单位）：窗口 / 舞台缩小时会小于 1 */
+  get screenScale(): number {
+    const w = this._viewport?.w || 0
+    const cw = this._element ? this._element.getBoundingClientRect().width : 0
+    if (w <= 0 || cw <= 0) return 1
+    return cw / w
+  }
+
+  /**
+   * 屏幕修正后的线宽（设计单位）：画布被缩小时设计单位的线会被等比缩小，
+   * 选框等 1 设计单位的细线在小窗口里会细到看不见——这里保证它在屏幕上至少还有 minPx 像素
+   */
+  screenLineWidth(base: number = 1, minPx: number = 1): number {
+    const s = this.screenScale
+    return s > 0 ? Math.max(base, minPx / s) : base
+  }
   constructor(factory: IFactory, options: BoardOptions) {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();

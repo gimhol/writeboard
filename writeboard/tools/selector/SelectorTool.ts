@@ -64,6 +64,9 @@ export class SelectorTool implements ITool {
     this._picking.board = v;
     v.on(EventEnum.ShapesSelected, this.onSelectChanged)
     v.on(EventEnum.ShapesDeselected, this.onSelectChanged)
+    /* 立即同步当前选中状态：Ctrl+A 之类「先用别的工具选中、再切到选择器」的场景，
+       选中事件在工具实例创建前就播完了——不同步的话多选的组合框永远不会显示 */
+    this.onSelectChanged()
   }
   private onSelectChanged = () => {
     this._picking.reset();
@@ -427,6 +430,8 @@ export class SelectorTool implements ITool {
         break;
       }
     }
+    /* 拖拽选框 / 调节被恢复前先按旧范围清脏：不标脏会留下残留的选框线 */
+    if (this._selector.visible) this._selector.markDirty()
     this._selector.visible = false;
     this._rectHelper.clear();
     this._resizer.reset();

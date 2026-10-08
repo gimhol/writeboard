@@ -63,11 +63,12 @@ export class DefaultShapeDecoration implements IShapeDecoration {
   locked(shape: Shape, ctx: CanvasRenderingContext2D) {
     /* 选择多个图形时，图形本身的矩形示意框不展示 */
     // if (this.is_mutiply_selected(shape)) return;
-    const lineWidth = 2
+    /* 线宽按屏幕比例修正（至少 1 屏幕像素），并向内绘制（见 selected） */
+    const lineWidth = this.board?.screenLineWidth(2) ?? 2
     ctx.lineWidth = lineWidth
     let { x, y, w, h } = shape.selectorRect()
     ctx.beginPath()
-    ctx.rect(x + 1, y + 1, w - 1, h - 1)
+    ctx.rect(x + lineWidth / 2, y + lineWidth / 2, Math.max(0, w - lineWidth), Math.max(0, h - lineWidth))
     ctx.closePath()
     this.dash_stroke(ctx, [lineWidth * 8])
     ctx.translate(w - this.lock_icon_w - 5, 5)
@@ -76,12 +77,14 @@ export class DefaultShapeDecoration implements IShapeDecoration {
   }
 
   selected(shape: Shape, ctx: CanvasRenderingContext2D) {
+    /* 线宽按屏幕比例修正：画布缩小时（如小小的草稿窗口）保证选框至少 1 屏幕像素，不会细到看不见 */
+    const lineWidth = this.board?.screenLineWidth(1) ?? 1
     if (shape.groupId) {
-      const lineWidth = 1
       ctx.lineWidth = lineWidth
       const { x, y, w, h } = shape.selectorRect()
       ctx.beginPath()
-      ctx.rect(x, y, w, h)
+      /* 向内绘制：线完全落在选框内，取消选中时（按图形包围盒清脏）不会留下半像素残影 */
+      ctx.rect(x + lineWidth / 2, y + lineWidth / 2, Math.max(0, w - lineWidth), Math.max(0, h - lineWidth))
       ctx.closePath()
       ctx.stroke()
       return;
@@ -89,11 +92,11 @@ export class DefaultShapeDecoration implements IShapeDecoration {
 
     /* 选择多个图形时，图形本身的矩形示意框不展示 */
     if (this.is_mutiply_selected(shape)) return;
-    const lineWidth = 1
     ctx.lineWidth = lineWidth
     const { x, y, w, h } = shape.selectorRect()
     ctx.beginPath()
-    ctx.rect(x, y, w, h)
+    /* 向内绘制（同上） */
+    ctx.rect(x + lineWidth / 2, y + lineWidth / 2, Math.max(0, w - lineWidth), Math.max(0, h - lineWidth))
     ctx.closePath()
     this.dash_stroke(ctx, [lineWidth * 4])
   }

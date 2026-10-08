@@ -28,6 +28,8 @@ export class ShapeGroup extends ShapeRect {
   }
 
   reset(): void {
+    /* 旧选框先清脏：选框线可能在图形包围盒之外，不标脏会留下残影 */
+    if (this.visible) this.markDirty()
     this._members = [];
     this.visible = false;
     this._geo.x = Number.MAX_SAFE_INTEGER;
