@@ -8,6 +8,7 @@ import type { ShapeData } from "../shape/base/ShapeData";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { ITool, ToolType } from "../tools";
 import type { FactoryType } from "./FactoryEnum";
+import type { IPenInfo } from "./IPenInfo";
 import type { IResizerInfo } from "./IResizerInfo";
 import type { IRotatorInfo } from "./IRotatorInfo";
 import type { IShapesMgr } from "./IShapesMgr";
@@ -22,6 +23,7 @@ export interface IFactory {
   get type(): FactoryType;
   get resizer(): IResizerInfo;
   get rotator(): IRotatorInfo;
+  get pen(): IPenInfo;
   shapeTemplate(shapeType: ShapeType): ShapeData;
   setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
   newBoard(options: BoardOptions): Board;

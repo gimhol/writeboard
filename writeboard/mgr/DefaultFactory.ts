@@ -17,6 +17,7 @@ import { IFactory } from "./IFactory";
 import { IResizerInfo } from "./IResizerInfo";
 import { IRotatorInfo } from "./IRotatorInfo";
 import { IShapesMgr } from "./IShapesMgr";
+import type { IPenInfo } from "./IPenInfo";
 
 const Tag = '[DefaultFactory]';
 export class DefaultFactory implements IFactory {
@@ -28,6 +29,7 @@ export class DefaultFactory implements IFactory {
   }
   resizer: IResizerInfo = { size: 10 };
   rotator: IRotatorInfo = { size: 10, distance: 30 };
+  pen: IPenInfo = { stabilizer: 0 };
   shapeTemplate(type: ShapeType): ShapeData {
     const ret = this._shapeTemplates[type] || this.newShapeData(type)
     this._shapeTemplates[type] = ret
