@@ -1,7 +1,8 @@
 
 import type { Board } from "../board";
 import { EventEnum } from "../event/EventType";
-import type { IShapeData } from "../shape";
+import { ShapeEnum } from "../shape";
+import type { IShapeData, ShapeText } from "../shape";
 
 export class FClipboard {
   private shapesMark = "write_board_shapes:"
@@ -50,7 +51,30 @@ export class FClipboard {
     if (txt.startsWith(this.shapesMark))
       this.pasteShapes(JSON.parse(txt.substring(this.shapesMark.length)))
     else
-      console.log("TODO: handlePasteTxt")
+      this.pasteTextShape(txt)
+  }
+
+  /** 把纯文本粘贴成文本图形（样式取黑板当前的文本模板，位置取视口中心） */
+  private pasteTextShape = (txt: string) => {
+    const text = txt.replace(/\r\n?/g, '\n').replace(/\n+$/, '')
+    if (!text.trim()) return
+
+    const board = this.board
+    const shape = board.factory.newShape(ShapeEnum.Text) as ShapeText
+    shape.data.layer = board.layer().id
+    shape.setText(text, false)
+
+    const { x, y } = board.world
+    const { w, h } = board.viewport
+    shape.move(-x + (w - shape.w) / 2, -y + (h - shape.h) / 2)
+
+    shape.selected = true
+    board.deselect(false)
+    board.add(shape, true)
+    board.emit(EventEnum.ShapesDone, {
+      operator: board.whoami,
+      shapeDatas: [shape.data.copy()]
+    })
   }
 
   private pasteShapes = (raws: IShapeData[]) => {
