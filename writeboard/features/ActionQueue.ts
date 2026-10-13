@@ -35,6 +35,11 @@ export class ActionQueue {
     })
     return this;
   }
+  clear(): this {
+    this._actions = [];
+    this._actionsIdx = -1;
+    return this;
+  }
   undo(): this {
     if (this._actionsIdx < 0) {
       console.log('[ActionQueue] no more undo.')
