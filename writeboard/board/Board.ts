@@ -421,8 +421,7 @@ export class Board {
 
     if (!shapes.length) return 0
 
-    const remains = shapes.filter(a => !this.selects.find(b => a === b))
-    this.setSelects(remains, opts);
+    this.setSelects(this._selects.filter(a => !shapes.find(b => a === b)), opts);
 
     this.read_emit_opts(opts, (operator) => {
       this.emit(EventEnum.ShapesRemoved, {
@@ -512,9 +511,12 @@ export class Board {
     }
 
     const next_desecteds = this._selects.filter(a => !next_selecteds.find(b => a === b))
+    const affected = new Set(this._selects)
+    selected_shapes.forEach(v => affected.add(v))
     next_desecteds.forEach(v => v.selected = false)
     next_selecteds.forEach(v => v.selected = true)
     this._selects = Array.from(selected_shapes)
+    affected.forEach(v => this.markDirty(v.aabb()))
 
     this.read_emit_opts(opts, (operator) => {
       next_selecteds.length && this.emit(EventEnum.ShapesSelected, {
@@ -570,6 +572,9 @@ export class Board {
         const dot = this.getDot(e)
         const d: Events.IEmit<Events.IToolDetail> = { operator: this.whoami, tool: this.tool, ...dot }
         this.emit(EventEnum.ToolDown, d)
+        if (this._toolType !== ToolEnum.Selector && this._selects.length) {
+          this.deselect(true)
+        }
         this.tool.pointerDown?.(dot)
         e.stopPropagation()
       }
@@ -666,6 +671,9 @@ export class Board {
       v.render(layer.octx)
     })
     this.tool?.render?.(this.layer().octx)
+    if (this._toolType !== ToolEnum.Selector && this._selects.length > 1) {
+      this.render_group_selected(this.layer().octx)
+    }
     this._layers.forEach(layer => {
       const { ctx, octx, offscreen } = layer
       ctx.save()
@@ -693,6 +701,33 @@ export class Board {
       octx.restore()
     })
     delete this._dirty
+  }
+
+  private render_group_selected(ctx: CanvasRenderingContext2D): void {
+    let minX = Number.POSITIVE_INFINITY
+    let minY = Number.POSITIVE_INFINITY
+    let maxX = Number.NEGATIVE_INFINITY
+    let maxY = Number.NEGATIVE_INFINITY
+    for (const shape of this._selects) {
+      const { x, y, w, h } = shape.aabb()
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x + w)
+      maxY = Math.max(maxY, y + h)
+    }
+    const lineWidth = this.screenLineWidth(1)
+    ctx.save()
+    ctx.lineWidth = lineWidth
+    ctx.beginPath()
+    ctx.rect(minX + lineWidth / 2, minY + lineWidth / 2, Math.max(0, maxX - minX - lineWidth), Math.max(0, maxY - minY - lineWidth))
+    ctx.closePath()
+    ctx.strokeStyle = 'white'
+    ctx.setLineDash([])
+    ctx.stroke()
+    ctx.strokeStyle = 'black'
+    ctx.setLineDash([lineWidth * 4])
+    ctx.stroke()
+    ctx.restore()
   }
 
   destroy() {

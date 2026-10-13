@@ -7,6 +7,7 @@ import type { IShapeData, ShapeText } from "../shape";
 export class FClipboard {
   private shapesMark = "write_board_shapes:"
   private board: Board
+  private pasteAt: { x: number; y: number } | undefined = void 0
   constructor(board: Board) {
     this.board = board
   }
@@ -24,7 +25,8 @@ export class FClipboard {
     })
   }
 
-  paste() {
+  paste(at?: { x: number; y: number }) {
+    this.pasteAt = at
     navigator.clipboard.read()
       .then(items => items.forEach(this.handleClipboardItem))
       .catch(e => console.error(e))
@@ -68,9 +70,8 @@ export class FClipboard {
     const { w, h } = board.viewport
     shape.move(-x + (w - shape.w) / 2, -y + (h - shape.h) / 2)
 
-    shape.selected = true
-    board.deselect(false)
     board.add(shape, true)
+    board.setSelects([shape], true)
     board.emit(EventEnum.ShapesDone, {
       operator: board.whoami,
       shapeDatas: [shape.data.copy()]
@@ -80,18 +81,32 @@ export class FClipboard {
   private pasteShapes = (raws: IShapeData[]) => {
     const board = this.board
     const factory = board.factory
+    const at = this.pasteAt
+    this.pasteAt = void 0
+    let dx = 10
+    let dy = 10
+    if (at && raws.length) {
+      let minX = Number.POSITIVE_INFINITY
+      let minY = Number.POSITIVE_INFINITY
+      for (const raw of raws) {
+        minX = Math.min(minX, raw.x)
+        minY = Math.min(minY, raw.y)
+      }
+      dx = at.x - minX
+      dy = at.y - minY
+    }
     const shapes = raws.sort((a, b) => a.z - b.z).map(raw => {
       raw.i = factory.newShapeId(raw)
       raw.z = factory.newShapeZ(raw)
       raw.b && (raw.b.f = void 0)
-      raw.x = raw.x + 10
-      raw.y = raw.y + 10
+      raw.x = raw.x + dx
+      raw.y = raw.y + dy
       const shape = factory.newShape(raw)
-      shape.selected = true
+      shape.selected = false
       return shape
     })
-    board.deselect(false)
     board.add(shapes, true)
+    board.setSelects(shapes, true)
     board.emit(EventEnum.ShapesDone, {
       operator: board.whoami,
       shapeDatas: raws
