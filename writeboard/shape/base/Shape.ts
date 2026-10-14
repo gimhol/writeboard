@@ -187,6 +187,9 @@ export class Shape<D extends ShapeData = ShapeData> {
     const prev = this.data.copy()
     this.beginDirty(prev)
     this.data.merge(data)
+    const board = this._b
+    const l = this._d.l
+    if (board && (!l || !board.layer(l))) this._d.l = board.layer()?.id
     this.endDirty(prev)
   }
 

@@ -655,6 +655,8 @@ export class Board {
     const ret = this._shapesMgr.add(shapes)
     shapes.forEach(item => {
       item.board = this
+      const l = item.data.layer
+      if (!l || !this._layers.has(l)) item.data.layer = this._editingLayerId
       if (item.selected) this._selects.push(item)
       this.markDirty(item.aabb())
     })
