@@ -7,7 +7,7 @@ import { IDot, IRect, IVector, Rect } from "../utils"
 import { IShapeDecoration } from "./IShapeDecoration"
 import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
-const { floor, ceil } = Math;
+const { floor, ceil, min, max } = Math;
 export type EmitOpts = boolean | { operator: string }
 export interface BoardOptions {
   element?: HTMLElement;
@@ -869,7 +869,7 @@ export class Board {
       if (this.lb_down) {
         this.emit(EventEnum.ToolDraw, d)
         this.tool.pointerDraw?.(dot);
-      } else if (this._element.contains(e.target as Node)) {
+      } else if (!(e.target instanceof Node) || this._element.contains(e.target)) {
         this.emit(EventEnum.ToolMove, d)
         this.tool.pointerMove?.(dot)
       }
@@ -894,7 +894,7 @@ export class Board {
       e.stopPropagation();
     }
     this._mousebuttons[e.button] = 0
-    if (e.button === 0 && !this._element.contains(e.target as Node)) {
+    if (e.button === 0 && e.target instanceof Node && !this._element.contains(e.target)) {
       this.tool?.pointerLeave?.()
     }
   }
@@ -945,23 +945,48 @@ export class Board {
    * @memberof Board
    */
   render(): void {
-    const dirty = this._dirty
-    if (!dirty)
+    const requested = this._dirty
+    if (!requested)
       return
+    const first = this._layers.values().next().value
+    if (!first) {
+      delete this._dirty
+      return
+    }
+    const tx = this._viewport.x + this._world.x
+    const ty = this._viewport.y + this._world.y
+    const { width: lw, height: lh } = first
+    const x = max(requested.x, floor(-tx))
+    const y = max(requested.y, floor(-ty))
+    const w = min(requested.x + requested.w, ceil(lw - tx)) - x
+    const h = min(requested.y + requested.h, ceil(lh - ty)) - y
+    if (w <= 0 || h <= 0) {
+      delete this._dirty
+      return
+    }
+    const bx0 = max(0, floor(x + tx))
+    const by0 = max(0, floor(y + ty))
+    const bw = min(lw, ceil(x + tx + w)) - bx0
+    const bh = min(lh, ceil(y + ty + h)) - by0
+    if (bw <= 0 || bh <= 0) {
+      delete this._dirty
+      return
+    }
 
     this._layers.forEach(layer => {
       const { octx } = layer
       octx.save()
-      octx.translate(
-        this._viewport.x + this._world.x,
-        this._viewport.y + this._world.y
-      )
-      octx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h)
+      octx.clearRect(bx0, by0, bw, bh)
+      octx.translate(tx, ty)
+      octx.beginPath()
+      octx.rect(bx0 - tx, by0 - ty, bw, bh)
+      octx.clip()
     })
 
+    const hit = { x: x - 2, y: y - 2, w: w + 4, h: h + 4 }
     this._shapesMgr.shapes().forEach(v => {
       const br = v.aabb();
-      if (!Rect.hit(br, dirty)) return;
+      if (!Rect.hit(br, hit)) return;
       const layer = this._layers.get(v.data.layer || '');
       if (!layer) return;
       v.render(layer.octx)
@@ -972,28 +997,8 @@ export class Board {
     }
     this._layers.forEach(layer => {
       const { ctx, octx, offscreen } = layer
-      ctx.save()
-      const tx = this._viewport.x + this._world.x
-      const ty = this._viewport.y + this._world.y
-      ctx.translate(tx, ty)
-      ctx.clearRect(
-        dirty.x,
-        dirty.y,
-        dirty.w,
-        dirty.h
-      )
-      ctx.drawImage(
-        offscreen,
-        dirty.x + tx,
-        dirty.y + ty,
-        dirty.w,
-        dirty.h,
-        dirty.x,
-        dirty.y,
-        dirty.w,
-        dirty.h
-      )
-      ctx.restore()
+      ctx.clearRect(bx0, by0, bw, bh)
+      ctx.drawImage(offscreen, bx0, by0, bw, bh, bx0, by0, bw, bh)
       octx.restore()
     })
     delete this._dirty

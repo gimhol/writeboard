@@ -14,6 +14,7 @@ export class Indicator extends Shape<ShapeData> {
   constructor() {
     super(new ShapeData, ShapeData)
     this.data.ghost = true
+    this.data.visible = false
   }
   press(): void {
     if (this._pressed) return
@@ -75,7 +76,9 @@ export function placeIndicator(indicator: Indicator, board: Board | undefined, s
   indicator.len = len
   indicator.data.lineWidth = lw
   indicator.data.strokeStyle = cursor.color || template.strokeStyle || '#000000'
-  const half = radius + gap + len + lw
+  /* 脏矩形在笔迹外多留 2 屏幕像素：高 DPI / 页面缩放下抗锯齿光晕会超出笔画本体，
+     清完重绘盖不满时会在光标轨迹上留下与背景同色的残影 */
+  const half = radius + gap + len + lw + 2 / s
   indicator.geo(dot.x - half, dot.y - half, half * 2, half * 2)
   if (!indicator.visible) indicator.visible = true
 }

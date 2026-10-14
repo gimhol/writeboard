@@ -15,7 +15,7 @@ const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
 const { window } = dom
 
 for (const key of [
-  'window', 'document', 'navigator', 'HTMLElement', 'HTMLCanvasElement', 'Element',
+  'window', 'document', 'navigator', 'HTMLElement', 'HTMLCanvasElement', 'Element', 'Node',
   'Event', 'CustomEvent', 'MouseEvent', 'KeyboardEvent',
 ]) {
   globalThis[key] = window[key]
@@ -34,6 +34,7 @@ function createContext2D(canvas) {
     save: noop, restore: noop, translate: noop, rotate: noop, scale: noop,
     clearRect: noop, fillRect: noop, strokeRect: noop, fill: noop, stroke: noop,
     beginPath: noop, closePath: noop, moveTo: noop, lineTo: noop, rect: noop, arc: noop,
+    clip: noop,
     bezierCurveTo: noop, quadraticCurveTo: noop, setLineDash: noop, drawImage: noop,
     fillText: noop, strokeText: noop,
     measureText: (text) => ({
