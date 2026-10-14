@@ -112,7 +112,7 @@ export class FClipboard {
     board.setSelects(shapes, true)
     board.emit(EventEnum.ShapesDone, {
       operator: board.whoami,
-      shapeDatas: raws
+      shapeDatas: shapes.map((v) => v.data.copy())
     })
   }
 }
