@@ -96,6 +96,12 @@ export class Board {
     this._world.w = to.w;
     this._world.h = to.h;
     this.markViewDirty();
+    /** 滚动时自绘光标要继续钉在指针的屏幕位置上：按世界坐标偏移反向修正 */
+    const indicator = this._tool?.indicator;
+    if (indicator?.visible) {
+      const { x, y, w, h } = indicator.data;
+      indicator.geo(x + form.x - to.x, y + form.y - to.y, w, h);
+    }
     this.read_emit_opts(opts, (operator) => {
       this.emit(EventEnum.WorldRectChanged, { operator, form, to: this._world.pure() })
     })
