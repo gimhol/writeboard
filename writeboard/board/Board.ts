@@ -452,7 +452,7 @@ export class Board {
     set.add(listener);
     return () => this.off(type, listener);
   }
-  =
+
   /**
    * 移除事件监听
    *
