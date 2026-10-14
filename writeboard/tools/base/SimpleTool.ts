@@ -7,6 +7,7 @@ import type { IDot } from "../../utils/Dot"
 import { RectHelper } from "../../utils/RectHelper"
 import type { ToolType } from "../ToolEnum"
 import type { ITool } from "./Tool"
+import { Indicator, placeIndicator } from "../Indicator"
 
 type FnKeys = 'Control' | 'Alt' | 'Shift';
 export class SimpleTool implements ITool {
@@ -18,6 +19,9 @@ export class SimpleTool implements ITool {
     this._shapeType = shapeType
   }
   protected _keys = new Map<FnKeys, boolean>()
+
+  private _indicator: Indicator | undefined
+  get indicator(): Indicator { return this._indicator ?? (this._indicator = new Indicator()) }
 
   protected keydown = (e: KeyboardEvent) => {
     switch (e.key) {
@@ -48,6 +52,7 @@ export class SimpleTool implements ITool {
     return true;
   }
   start(): void {
+    this.indicator.visible = false
     window.addEventListener('keydown', this.keydown);
     window.addEventListener('keyup', this.keyup)
   }
@@ -55,19 +60,27 @@ export class SimpleTool implements ITool {
     window.removeEventListener('keydown', this.keydown);
     window.removeEventListener('keyup', this.keyup)
     delete this._curShape
+    this.indicator.visible = false
+    this.indicator.markDirty()
   }
-  render(): void { }
+  render(ctx: CanvasRenderingContext2D): void { this.indicator.render(ctx) }
   get board(): Board | undefined {
     return this._board
   }
   set board(v: Board | undefined) {
     this._board = v
+    this._indicator = v?.factory.newIndicator()
+    if (this._indicator) this._indicator.board = v
   }
-  pointerMove(dot: IDot): void { }
+  pointerMove(dot: IDot): void {
+    this.updateIndicator(dot)
+  }
   pointerDown(dot: IDot): void {
     const { x, y } = dot
     const board = this.board
     if (!board) return
+    this.updateIndicator(dot)
+    this.indicator.press()
     this._curShape = board.factory.newShape(this._shapeType)
     this._curShape.data.layer = board.layer().id;
     const shape = this._curShape
@@ -77,6 +90,7 @@ export class SimpleTool implements ITool {
     this.updateGeo(0)
   }
   pointerDraw(dot: IDot): void {
+    this.updateIndicator(dot)
     const { x, y } = dot
     this._rect.end(x, y)
     this.updateGeo(1)
@@ -86,6 +100,14 @@ export class SimpleTool implements ITool {
     this._rect.end(x, y)
     this.updateGeo(2)
     delete this._curShape
+    this.updateIndicator(dot)
+    this.indicator.release()
+  }
+  pointerLeave(): void {
+    this.indicator.visible = false
+  }
+  private updateIndicator(dot: IDot): void {
+    placeIndicator(this.indicator, this.board, this._shapeType, dot)
   }
   protected applyRect() {
     const { x, y, w, h } = this._rect.gen()

@@ -7,8 +7,11 @@ import { LinesData } from "./Data"
 import { IDot } from "../../utils/Dot"
 import { ITool } from "../../tools/base/Tool"
 import { EventEnum, Events } from "../../event"
+import { Indicator, placeIndicator } from "../../tools/Indicator"
 const Tag = '[LinesTool]'
 export class LinesTool implements ITool {
+  private _indicator: Indicator | undefined
+  get indicator(): Indicator { return this._indicator ?? (this._indicator = new Indicator()) }
   private _pressingShift = false;
   private _pressingControl = false;
   private _keydown = (e: KeyboardEvent) => {
@@ -30,6 +33,7 @@ export class LinesTool implements ITool {
     this._pressingControl = false;
   }
   start(): void {
+    this.indicator.visible = false
     window.addEventListener('keydown', this._keydown, true);
     window.addEventListener('keyup', this._keyup, true);
     window.addEventListener('blur', this._blur, true);
@@ -38,16 +42,20 @@ export class LinesTool implements ITool {
     window.removeEventListener('keydown', this._keydown, true);
     window.removeEventListener('keyup', this._keyup, true);
     window.removeEventListener('blur', this._blur, true);
+    this.indicator.visible = false
+    this.indicator.markDirty()
   }
 
   get type(): string { return ToolEnum.Lines }
 
-  render(): void { }
+  render(ctx: CanvasRenderingContext2D): void { this.indicator.render(ctx) }
   get board(): Board | undefined {
     return this._board
   }
   set board(v: Board | undefined) {
     this._board = v
+    this._indicator = v?.factory.newIndicator()
+    if (this._indicator) this._indicator.board = v
   }
   addDot(dot: IDot, type?: 'first') {
     const shape = this._curShape
@@ -138,6 +146,7 @@ export class LinesTool implements ITool {
   }
 
   pointerMove(dot: IDot): void {
+    this.updateIndicator(dot)
     if (this._curShape) {
       this.moveDot(dot);
     }
@@ -145,6 +154,8 @@ export class LinesTool implements ITool {
   pointerDown(dot: IDot): void {
     const board = this.board
     if (!board) { return; }
+    this.updateIndicator(dot)
+    this.indicator.press()
     if (!this._curShape) {
       this._curShape = board.factory.newShape(ShapeEnum.Lines) as ShapeLines
       this._curShape.data.layer = board.layer().id;
@@ -155,9 +166,12 @@ export class LinesTool implements ITool {
     }
   }
   pointerDraw(dot: IDot): void {
+    this.updateIndicator(dot)
     this.moveDot(dot);
   }
   pointerUp(dot: IDot): void {
+    this.updateIndicator(dot)
+    this.indicator.release()
     const shape = this._curShape;
     if (!shape) { return; }
     if (!this._pressingShift) {
@@ -174,6 +188,13 @@ export class LinesTool implements ITool {
   private _prevData: LinesData | undefined
   private _curShape: ShapeLines | undefined
   private _board: Board | undefined
+
+  pointerLeave(): void {
+    this.indicator.visible = false
+  }
+  private updateIndicator(dot: IDot): void {
+    placeIndicator(this.indicator, this.board, ShapeEnum.Lines, dot)
+  }
 }
 
 Gaia.registerTool(ToolEnum.Lines,

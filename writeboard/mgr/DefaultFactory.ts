@@ -17,6 +17,8 @@ import { IFactory } from "./IFactory";
 import { IResizerInfo } from "./IResizerInfo";
 import { IRotatorInfo } from "./IRotatorInfo";
 import { IShapesMgr } from "./IShapesMgr";
+import { Indicator } from "../tools/Indicator";
+import type { ICursorInfo } from "./ICursorInfo";
 import type { IPenInfo } from "./IPenInfo";
 
 const Tag = '[DefaultFactory]';
@@ -30,6 +32,7 @@ export class DefaultFactory implements IFactory {
   resizer: IResizerInfo = { size: 10 };
   rotator: IRotatorInfo = { size: 10, distance: 30 };
   pen: IPenInfo = { stabilizer: 0 };
+  cursor: ICursorInfo = { tickLen: 6, tickGap: 3, minRadius: 1, lineWidth: 1 };
   shapeTemplate(type: ShapeType): ShapeData {
     const ret = this._shapeTemplates[type] || this.newShapeData(type)
     this._shapeTemplates[type] = ret
@@ -105,6 +108,10 @@ export class DefaultFactory implements IFactory {
 
   newShapeDecoration(board: Board): IShapeDecoration {
     return new DefaultShapeDecoration(board)
+  }
+
+  newIndicator(): Indicator {
+    return new Indicator()
   }
 
   overbound(_: Shape<ShapeData>): number { return 1 }

@@ -7,6 +7,7 @@ import { IDot } from "../../utils/Dot"
 import { ShapeEnum } from "../ShapeEnum"
 import { ChangeType, PenData } from "./Data"
 import { ShapePen } from "./Shape"
+import { Indicator, placeIndicator } from "../../tools/Indicator"
 const Tag = '[PenTool]'
 /** 平滑拖尾上限（屏幕像素）：写快时平滑点离输入太远就收紧，保证笔画不会大幅落后于笔尖 */
 const STABILIZER_MAX_LAG = 12
@@ -14,13 +15,26 @@ const STABILIZER_MAX_LAG = 12
 const STABILIZER_RAMP = 5
 export class PenTool implements ITool {
   readonly type: string = ToolEnum.Pen
-  board: Board | undefined = void 0;
+
+  private _indicator: Indicator | undefined
+  get indicator(): Indicator { return this._indicator ?? (this._indicator = new Indicator()) }
+
+  get board(): Board | undefined { return this._board }
+  set board(v: Board | undefined) {
+    this._board = v
+    this._indicator = v?.factory.newIndicator()
+    if (this._indicator) this._indicator.board = v
+  }
+  private _board: Board | undefined = void 0;
 
   /** 平滑（防抖）的跟随点（设计 / 世界坐标）：原始输入先滤一道再进笔画 */
   protected _stabilized: { x: number; y: number } | undefined
   /** 起笔以来已滤过的点数（供斜坡用） */
   protected _stabCount = 0
 
+  start(): void {
+    this.indicator.visible = false
+  }
   end(): void {
     const shape = this._curShape
     if (shape && shape.data.coords.length >= 2) {
@@ -32,11 +46,15 @@ export class PenTool implements ITool {
       })
     }
     delete this._curShape;
+    this.indicator.visible = false
+    this.indicator.markDirty()
   }
 
   pointerDown(dot: IDot): void {
     const board = this.board
     if (!board) return;
+    this.updateIndicator(dot)
+    this.indicator.press()
     this._stabilized = { x: dot.x, y: dot.y }
     this._stabCount = 0
     this._curShape = board.factory.newShape(ShapeEnum.Pen) as ShapePen
@@ -46,6 +64,7 @@ export class PenTool implements ITool {
     this.addDot(dot, 'first')
   }
   pointerDraw(dot: IDot): void {
+    this.updateIndicator(dot)
     this.addDot(this.stabilize(dot), 'mid')
   }
   pointerUp(dot: IDot): void {
@@ -60,6 +79,21 @@ export class PenTool implements ITool {
       delete this._curShape;
     }
     this._stabilized = undefined
+    this.updateIndicator(dot)
+    this.indicator.release()
+  }
+  pointerMove(dot: IDot): void {
+    this.updateIndicator(dot)
+  }
+  pointerLeave(): void {
+    this.indicator.visible = false
+  }
+  render(ctx: CanvasRenderingContext2D): void {
+    this.indicator.render(ctx)
+  }
+
+  private updateIndicator(dot: IDot): void {
+    placeIndicator(this.indicator, this.board, ShapeEnum.Pen, dot)
   }
 
   /**

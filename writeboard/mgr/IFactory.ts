@@ -7,7 +7,9 @@ import type { Shape } from "../shape/base/Shape";
 import type { ShapeData } from "../shape/base/ShapeData";
 import type { ShapeType } from "../shape/ShapeEnum";
 import type { ITool, ToolType } from "../tools";
+import type { Indicator } from "../tools/Indicator";
 import type { FactoryType } from "./FactoryEnum";
+import type { ICursorInfo } from "./ICursorInfo";
 import type { IPenInfo } from "./IPenInfo";
 import type { IResizerInfo } from "./IResizerInfo";
 import type { IRotatorInfo } from "./IRotatorInfo";
@@ -24,6 +26,7 @@ export interface IFactory {
   get resizer(): IResizerInfo;
   get rotator(): IRotatorInfo;
   get pen(): IPenInfo;
+  get cursor(): ICursorInfo;
   shapeTemplate(shapeType: ShapeType): ShapeData;
   setShapeTemplate(shapeType: ShapeType, template: ShapeData): void;
   newBoard(options: BoardOptions): Board;
@@ -38,6 +41,7 @@ export interface IFactory {
   newLayerName(): string;
   newLayer(inits?: Partial<ILayerInits>): Layer;
   newShapeDecoration(board: Board): IShapeDecoration;
+  newIndicator(): Indicator;
   overbound(shape: Shape): number;
   newGroupId(shapes: Shape<ShapeData>[]): string;
 
