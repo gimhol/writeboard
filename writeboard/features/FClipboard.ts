@@ -25,20 +25,22 @@ export class FClipboard {
     })
   }
 
-  paste(at?: { x: number; y: number }) {
+  paste(at?: { x: number; y: number }): Promise<void> {
     this.pasteAt = at
-    navigator.clipboard.read()
-      .then(items => items.forEach(this.handleClipboardItem))
+    return navigator.clipboard.read()
+      .then(items => Promise.all(items.map(this.handleClipboardItem)))
+      .then(() => { })
       .catch(e => console.error(e))
   }
 
   private handleClipboardItem = (item: ClipboardItem) => {
     if (item.types.indexOf("image/png") >= 0)
-      item.getType("image/png").then(this.pastePNG)
+      return item.getType("image/png").then(this.pastePNG)
     else if (item.types.indexOf("image/jpeg") >= 0)
-      item.getType("image/jpeg").then(this.pasteJPG)
+      return item.getType("image/jpeg").then(this.pasteJPG)
     else if (item.types.indexOf("text/plain") >= 0)
-      item.getType("text/plain").then(it => it.text()).then(this.pasteTXT)
+      return item.getType("text/plain").then(it => it.text()).then(this.pasteTXT)
+    return Promise.resolve()
   }
 
   private pastePNG = (blob: Blob) => {

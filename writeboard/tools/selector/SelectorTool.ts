@@ -54,6 +54,7 @@ export class SelectorTool implements ITool {
     prevData: Events.IShapeGeoData,
     startData: Events.IShapeGeoData,
   }[] = []
+  private _rightPick: Shape | null = null
 
   get picking() { return this._picking }
   get resizer() { return this._resizer }
@@ -160,11 +161,21 @@ export class SelectorTool implements ITool {
     return this;
   }
 
-  pointerDown(dot: IDot): void {
+  pointerDown(dot: IDot, button?: number): void {
     const { board, _status } = this
-    if (_status !== SelectorStatus.Idle) return;
+    if (_status !== SelectorStatus.Idle) return
 
     const { x, y } = dot
+    if (button === 2) {
+      this._rectHelper.start(x, y)
+      this.updateGeo()
+      this._prevPos = { x, y }
+      const [hit] = board.hits({ x, y, w: 0, h: 0 })
+      this._rightPick = hit && !hit.locked ? hit : null
+      this._status = SelectorStatus.ReadyForSelecting
+      this._selector.visible = true
+      return
+    }
     if (this._rotator.pointerDown(dot)) {
       this._status = SelectorStatus.ReadyForRotating;
       this.connect([this._rotator.target!], x, y);
@@ -408,8 +419,14 @@ export class SelectorTool implements ITool {
     }
   }
 
-  pointerUp(): void {
-    switch (this._status) {
+  pointerUp(_dot?: IDot, button?: number): void {
+    if (button === 2) {
+      const hit = this._rightPick
+      if (this._status === SelectorStatus.ReadyForSelecting && hit && !hit.selected) {
+        this.board.setSelects([hit], true)
+      }
+      this._rightPick = null
+    } else switch (this._status) {
       case SelectorStatus.ReadyForDragging: {
         // 双击判定
         if (!this._doubleClickTimer) {

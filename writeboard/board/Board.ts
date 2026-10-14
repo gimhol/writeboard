@@ -35,6 +35,8 @@ export class Board {
   protected _viewport = new Rect(0, 0, 600, 600)
   protected _world = new Rect(0, 0, 1600, 1600)
   protected _world_drag_start_pos: IVector = { x: 0, y: 0 };
+  private _selectorPrev: ToolType | undefined = void 0
+  private _secondary = false
 
   readonly shapeDecoration: IShapeDecoration;
 
@@ -598,6 +600,7 @@ export class Board {
     }
     const from = this._toolType
     this._toolType = to
+    if (to !== ToolEnum.Selector) this._selectorPrev = void 0
     this.emit(EventEnum.ToolChanged, {
       operator: this._whoami,
       from, to
@@ -614,6 +617,25 @@ export class Board {
     this._tools.set(to, this._tool)
     this._tool.start?.()
 
+  }
+  /**
+   * 临时切换到选择工具：记住当前工具，选择被清空后自动切回
+   *
+   * 右键框选 / 全选等程序性选中都走它；用户主动切换到别的工具则作废记忆
+   *
+   * @memberof Board
+   */
+  tempSelect(): void {
+    if (this._toolType !== ToolEnum.Selector) {
+      this._selectorPrev = this._toolType
+    }
+    this.setToolType(ToolEnum.Selector)
+  }
+  private _restoreSelector(): void {
+    if (this._selectorPrev === void 0 || this._selects.length) return
+    const back = this._selectorPrev
+    this._selectorPrev = void 0
+    this.setToolType(back)
   }
   get selects() {
     return this._selects
@@ -781,6 +803,8 @@ export class Board {
       });
     })
 
+    if (!this.lb_down && !this._mousebuttons[2]) this._restoreSelector()
+
     return [next_selecteds, next_desecteds]
   }
 
@@ -852,6 +876,15 @@ export class Board {
         y: -this._world.y + e.y,
       }
       e.stopPropagation()
+    } else if (e.button === 2) {
+      e.preventDefault()
+      e.stopPropagation()
+      this.tempSelect()
+      const tool = this.tool
+      if (tool) {
+        this._secondary = true
+        tool.pointerDown?.(this.getDot(e), e.button)
+      }
     } else {
       e.preventDefault()
       e.stopPropagation()
@@ -866,7 +899,9 @@ export class Board {
     if (this.tool) {
       const dot = this.getDot(e)
       const d: Events.IEmit<Events.IToolDetail> = { operator: this.whoami, tool: this.tool, ...dot }
-      if (this.lb_down) {
+      if (this._secondary) {
+        this.tool.pointerDraw?.(dot)
+      } else if (this.lb_down) {
         this.emit(EventEnum.ToolDraw, d)
         this.tool.pointerDraw?.(dot);
       } else if (!(e.target instanceof Node) || this._element.contains(e.target)) {
@@ -884,7 +919,11 @@ export class Board {
 
 
   protected _pointerup = (e: PointerEvent) => {
-    if (e.button == 0) {
+    if (this._secondary && e.button === 2) {
+      this._secondary = false
+      this.tool?.pointerUp?.(this.getDot(e), e.button)
+      this._restoreSelector()
+    } else if (e.button == 0) {
       if (this.tool) {
         const dot = this.getDot(e)
         const d: Events.IEmit<Events.IToolDetail> = { operator: this.whoami, tool: this.tool, ...dot }
@@ -892,6 +931,7 @@ export class Board {
         this.tool?.pointerUp?.(dot)
       }
       e.stopPropagation();
+      this._restoreSelector()
     }
     this._mousebuttons[e.button] = 0
     if (e.button === 0 && e.target instanceof Node && !this._element.contains(e.target)) {
@@ -992,9 +1032,6 @@ export class Board {
       v.render(layer.octx)
     })
     this.tool?.render?.(this.layer().octx)
-    if (this._toolType !== ToolEnum.Selector && this._selects.length > 1) {
-      this.render_group_selected(this.layer().octx)
-    }
     this._layers.forEach(layer => {
       const { ctx, octx, offscreen } = layer
       ctx.clearRect(bx0, by0, bw, bh)
@@ -1004,39 +1041,17 @@ export class Board {
     delete this._dirty
   }
 
-  private render_group_selected(ctx: CanvasRenderingContext2D): void {
-    let minX = Number.POSITIVE_INFINITY
-    let minY = Number.POSITIVE_INFINITY
-    let maxX = Number.NEGATIVE_INFINITY
-    let maxY = Number.NEGATIVE_INFINITY
-    for (const shape of this._selects) {
-      const { x, y, w, h } = shape.aabb()
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x + w)
-      maxY = Math.max(maxY, y + h)
-    }
-    const lineWidth = this.screenLineWidth(1)
-    ctx.save()
-    ctx.lineWidth = lineWidth
-    ctx.beginPath()
-    ctx.rect(minX + lineWidth / 2, minY + lineWidth / 2, Math.max(0, maxX - minX - lineWidth), Math.max(0, maxY - minY - lineWidth))
-    ctx.closePath()
-    ctx.strokeStyle = 'white'
-    ctx.setLineDash([])
-    ctx.stroke()
-    ctx.strokeStyle = 'black'
-    ctx.setLineDash([lineWidth * 4])
-    ctx.stroke()
-    ctx.restore()
-  }
-
   /**
    * 销毁画布（移除全部事件监听与图层；自建的元素一并移除）
    *
    * @memberof Board
    */
   destroy() {
+    if (this._selectorPrev !== void 0) {
+      const back = this._selectorPrev
+      this._selectorPrev = void 0
+      this.emit(EventEnum.ToolChanged, { operator: this._whoami, from: this._toolType, to: back })
+    }
     this._element.removeEventListener('pointerdown', this._pointerdown);
     this._element.removeEventListener('pointerleave', this._pointerleave);
     this._element.removeEventListener('wheel', this._wheel);

@@ -33,11 +33,11 @@ export interface ITool {
 
   pointerLeave?(): void;
 
-  pointerDown?(dot: IDot): void;
+  pointerDown?(dot: IDot, button?: number): void;
 
   pointerDraw?(dot: IDot): void;
 
-  pointerUp?(dot: IDot): void;
+  pointerUp?(dot: IDot, button?: number): void;
   
   render?(ctx: CanvasRenderingContext2D): void
 }
