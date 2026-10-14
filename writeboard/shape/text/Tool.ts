@@ -45,6 +45,11 @@ export class TextTool implements ITool {
           operator: this._board.whoami,
           shapeDatas: [preShape.data.copy()]
         })
+      } else {
+        this._board?.emit(EventEnum.ShapesChanged, {
+          operator: this._board.whoami,
+          shapeDatas: [[preShape.data.copy(), this._prevData!.copy()]]
+        })
       }
     }
 
