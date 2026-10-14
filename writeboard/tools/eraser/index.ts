@@ -11,11 +11,13 @@ export class EraserTool implements ITool {
   readonly indicator = new Indicator()
   get board(): Board { return this.indicator.board!; }
   set board(v: Board) { this.indicator.board = v; }
-  start(): void { console.log('[EraserTool::start]') }
+  start(): void { console.log('[EraserTool::start]'); this.indicator.visible = false }
   end(): void {
+    this.indicator.visible = false
     this.indicator.markDirty();
   }
   update_geo(dot: IDot) {
+    if (!this.indicator.visible) this.indicator.visible = true
     this.indicator.move(
       dot.x - this.indicator.w / 2,
       dot.y - this.indicator.h / 2
@@ -27,6 +29,9 @@ export class EraserTool implements ITool {
   }
   pointerUp(dot: IDot): void {
     this.indicator.release();
+  }
+  pointerLeave(): void {
+    this.indicator.visible = false
   }
   protected _breakings: [ShapePen, IVector[][]][] = []
   protected _predicate_and_calc = (shape: Shape): boolean => {

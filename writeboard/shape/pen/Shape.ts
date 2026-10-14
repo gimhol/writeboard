@@ -2,7 +2,7 @@ import { Gaia } from "../../mgr/Gaia"
 import { IVector } from "../../utils/IVector"
 import { Shape, ShapeData } from "../base"
 import { ShapeEnum } from "../ShapeEnum"
-import { PenData } from "./Data"
+import { ChangeType, PenData } from "./Data"
 
 export class ShapePen extends Shape<PenData> {
   static is(shape: Shape<ShapeData>): shape is ShapePen {
@@ -17,17 +17,7 @@ export class ShapePen extends Shape<PenData> {
 
   constructor(data: Partial<PenData>) {
     super(data, PenData)
-    let x, y: number
-    for (let i = 0; i < this.data.coords.length; i += 2) {
-      x = this.data.coords[i]
-      y = this.data.coords[i + 1]
-      if (i === 0)
-        this.updatePath(x, y, 'first')
-      else if (i >= this.data.coords.length - 2)
-        this.updatePath(x, y, 'last')
-      else
-        this.updatePath(x, y, 'mid')
-    }
+    this.rebuildPath()
   }
   override merge(data: Partial<PenData>) {
     const prev = this.data.copy()
@@ -35,16 +25,33 @@ export class ShapePen extends Shape<PenData> {
     const startIdx = this.data.coords.length
     this.data.merge(data)
     const endIdx = this.data.coords.length - 1
-    if (startIdx !== endIdx) {
-      let x, y: number
-      for (let i = startIdx; i <= endIdx; i += 2) {
-        x = this.data.coords[i]
-        y = this.data.coords[i + 1]
-        const t = i === 0 ? 'first' : (!this.data.editing && i === endIdx) ? 'last' : 'mid'
-        this.updatePath(x, y, t)
+    if (this.data.coords.length !== startIdx) {
+      if (data.v === ChangeType.Append && this.prev_dot) {
+        let x, y: number
+        for (let i = startIdx; i <= endIdx; i += 2) {
+          x = this.data.coords[i]
+          y = this.data.coords[i + 1]
+          const t = i === 0 ? 'first' : (!this.data.editing && i === endIdx) ? 'last' : 'mid'
+          this.updatePath(x, y, t)
+        }
+      } else {
+        this.rebuildPath()
       }
     }
     this.endDirty(prev)
+  }
+
+  private rebuildPath(): void {
+    this.prev_dot = undefined
+    this.prev_t = undefined
+    this._path2D = undefined
+    const { coords } = this.data
+    if (coords.length < 2) return
+    const last = coords.length - 2
+    this.updatePath(coords[0], coords[1], 'first')
+    for (let i = 2; i <= last; i += 2) {
+      this.updatePath(coords[i], coords[i + 1], i === last && !this.data.editing ? 'last' : 'mid')
+    }
   }
 
   private updatePath(x: number, y: number, type: 'first' | 'mid' | 'last') {

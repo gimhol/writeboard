@@ -28,6 +28,8 @@ export interface ITool {
 
   pointerMove?(dot: IDot): void;
 
+  pointerLeave?(): void;
+
   pointerDown?(dot: IDot): void;
 
   pointerDraw?(dot: IDot): void;

@@ -248,6 +248,7 @@ export class Board {
     this.addLayers(layers);
     this.editLayer(layers[0].id)
     this._element.addEventListener('pointerdown', this._pointerdown);
+    this._element.addEventListener('pointerleave', this._pointerleave);
     this._element.addEventListener('wheel', this._wheel);
     this._element.tabIndex = 0;
     this._element.style.outline = 'none';
@@ -601,12 +602,17 @@ export class Board {
       if (this.lb_down) {
         this.emit(EventEnum.ToolDraw, d)
         this.tool.pointerDraw?.(dot);
-      } else {
+      } else if (this._element.contains(e.target as Node)) {
         this.emit(EventEnum.ToolMove, d)
         this.tool.pointerMove?.(dot)
       }
       e.stopPropagation();
     }
+  }
+
+  protected _pointerleave = () => {
+    if (this.lb_down) return
+    this.tool?.pointerLeave?.()
   }
 
 
@@ -621,6 +627,9 @@ export class Board {
       e.stopPropagation();
     }
     this._mousebuttons[e.button] = 0
+    if (e.button === 0 && !this._element.contains(e.target as Node)) {
+      this.tool?.pointerLeave?.()
+    }
   }
 
   private _dirty: Readonly<IRect> | undefined;
@@ -732,6 +741,7 @@ export class Board {
 
   destroy() {
     this._element.removeEventListener('pointerdown', this._pointerdown);
+    this._element.removeEventListener('pointerleave', this._pointerleave);
     this._element.removeEventListener('wheel', this._wheel);
     window.removeEventListener('pointermove', this._pointermove);
     window.removeEventListener('pointerup', this._pointerup);
