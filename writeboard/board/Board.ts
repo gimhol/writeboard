@@ -123,6 +123,14 @@ export class Board {
     );
   }
 
+  /**
+   * 添加图层
+   *
+   * @param {ILayerInits | Layer | undefined} layer 图层初始化参数 / 图层实例（缺省新建）
+   * @param {EmitOpts} [opts] 事件发射选项
+   * @return {boolean} 是否添加成功
+   * @memberof Board
+   */
   addLayer(layer: ILayerInits | Layer | undefined, opts?: EmitOpts): boolean {
     if (!layer) {
       layer = this.factory.newLayer();
@@ -151,6 +159,12 @@ export class Board {
     return true;
   }
 
+  /**
+   * 标记整个视口为脏（触发重绘）
+   *
+   * @return {this} 便于链式调用
+   * @memberof Board
+   */
   markViewDirty(): this {
     this.markDirty({
       x: -this.world.x,
@@ -161,6 +175,14 @@ export class Board {
     return this;
   }
 
+  /**
+   * 移除指定图层
+   *
+   * @param {string} layerId 图层ID
+   * @param {EmitOpts} [opts] 事件发射选项
+   * @return {boolean} 是否移除成功（不存在返回 false）
+   * @memberof Board
+   */
   removeLayer(layerId: string, opts?: EmitOpts): boolean {
     const layer = this._layers.get(layerId);
     if (!layer) {
@@ -175,6 +197,13 @@ export class Board {
     return true;
   }
 
+  /**
+   * 切换当前编辑的图层
+   *
+   * @param {string} layerId 图层ID
+   * @return {boolean} 是否切换成功（不存在返回 false）
+   * @memberof Board
+   */
   editLayer(layerId: string): boolean {
     if (!this._layers.has(layerId)) {
       console.error(`[${Tag}::editLayer] editLayer(): layer not found! id = ${layerId}`)
@@ -187,7 +216,21 @@ export class Board {
     return true;
   }
 
+  /**
+   * 获取当前编辑的图层
+   *
+   * @return {Layer | undefined}
+   * @memberof Board
+   */
   layer(): Layer;
+
+  /**
+   * 获取图层
+   *
+   * @param {string} id 图层ID
+   * @return {Layer | undefined}
+   * @memberof Board
+   */
   layer(id: string): Layer | undefined;
   layer(id: string = this._editingLayerId): Layer | undefined {
     return this._layers.get(id);
@@ -363,6 +406,12 @@ export class Board {
 
   get toolType() { return this._toolType }
   set toolType(v) { this.setToolType(v) }
+  /**
+   * 切换当前工具（触发 ToolChanged 事件）
+   *
+   * @param {ToolType | undefined} to 工具类型（undefined = 无工具）
+   * @memberof Board
+   */
   setToolType(to: ToolType | undefined) {
     if (this._toolType === to) {
       /* 
@@ -787,6 +836,11 @@ export class Board {
     ctx.restore()
   }
 
+  /**
+   * 销毁画布（移除全部事件监听与图层；自建的元素一并移除）
+   *
+   * @memberof Board
+   */
   destroy() {
     this._element.removeEventListener('pointerdown', this._pointerdown);
     this._element.removeEventListener('pointerleave', this._pointerleave);
@@ -922,6 +976,13 @@ export class Board {
     return this;
   }
 
+  /**
+   * 更新图形的分组索引
+   *
+   * @param {Shape[]} shapes 图形
+   * @return {this} 便于链式调用
+   * @memberof Board
+   */
   update_items_group(shapes: Shape[]): this {
     this._shapesMgr.update_items_group(shapes);
     return this;
