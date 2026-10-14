@@ -399,6 +399,15 @@ export class Board {
   get selects() {
     return this._selects
   }
+  /**
+   * 添加图形
+   *
+   * @note 同 id 已存在的图形会被跳过（不重复添加）
+   * @param {Shape[] | Shape} shapes 图形（单个或数组）
+   * @param {EmitOpts} [opts] 事件发射选项
+   * @return {number} 实际添加的图形数
+   * @memberof Board
+   */
   add(shapes: Shape[] | Shape, opts?: EmitOpts): number {
     shapes = Array.isArray(shapes) ? shapes : [shapes];
     if (!shapes.length) return 0;
@@ -417,6 +426,15 @@ export class Board {
     return ret
   }
 
+  /**
+   * 移除图形
+   *
+   * @note 被移除的图形若处于选中状态，会先取消选择
+   * @param {Shape[] | Shape} shapes 图形（单个或数组）
+   * @param {EmitOpts} [opts] 事件发射选项
+   * @return {number} 实际移除的图形数
+   * @memberof Board
+   */
   remove(shapes: Shape[] | Shape, opts?: EmitOpts): number {
     shapes = Array.isArray(shapes) ? shapes : [shapes];
 
@@ -436,10 +454,24 @@ export class Board {
     return ret
   }
 
+  /**
+   * 移除全部图形
+   *
+   * @param {EmitOpts} [emit] 事件发射选项
+   * @return {number} 实际移除的图形数
+   * @memberof Board
+   */
   removeAll(emit?: EmitOpts): number {
     return this.remove(this._shapesMgr.shapes(), emit)
   }
 
+  /**
+   * 移除被选中的图形
+   *
+   * @note 锁定图形会被跳过
+   * @param {EmitOpts} [emit] 事件发射选项
+   * @memberof Board
+   */
   removeSelected(emit?: EmitOpts) {
     this.remove(this._selects.filter(v => !v.locked), emit);
     this._selects = []
@@ -533,6 +565,14 @@ export class Board {
     return [next_selecteds, next_desecteds]
   }
 
+  /**
+   * 屏幕坐标转世界坐标
+   *
+   * @param {number} x 屏幕坐标x
+   * @param {number} y 屏幕坐标y
+   * @return {[number, number]} 世界坐标
+   * @memberof Board
+   */
   map2world(x: number, y: number): [number, number] {
     const layer = this.layer();
     const ele = layer.onscreen;
@@ -541,6 +581,14 @@ export class Board {
     const sh = ele.height / h
     return [sw * (x - left) - this._world.x, sh * (y - top) - this._world.y]
   }
+
+  /**
+   * 鼠标/指针事件转世界坐标点
+   *
+   * @param {MouseEvent | PointerEvent} ev 鼠标/指针事件
+   * @return {IDot} 世界坐标点（含压感，缺省 0.5）
+   * @memberof Board
+   */
   getDot(ev: MouseEvent | PointerEvent): IDot {
     const { pressure = 0.5 } = ev as any
     const [x, y] = this.map2world(ev.x, ev.y)
@@ -755,6 +803,16 @@ export class Board {
    */
   destory() { this.destroy(); }
 
+  /**
+   * 图形编组
+   * 
+   * @note 锁定图形会被跳过
+   * @param {Shape[]} shapes 图形
+   * @param {string} [groupId] 组合ID（缺省由工厂按图形生成）
+   * @param {EmitOpts} [opts] 事件发射选项
+   * @return {this} 便于链式调用
+   * @memberof Board
+   */
   group(shapes: Shape[], groupId: string = this.factory.newGroupId(shapes), opts?: EmitOpts): this {
     const changed_shapes: Shape[] = []
     const shapeDatas: [Readonly<Partial<IShapeData>>, Readonly<Partial<IShapeData>>][] = []
@@ -772,10 +830,27 @@ export class Board {
     return this;
   }
 
+  /**
+   * 图形解组
+   *
+   * @param {Shape[]} shapes 图形
+   * @param {EmitOpts} [opts] 事件发射选项
+   * @return {this} 便于链式调用
+   * @memberof Board
+   */
   ungroup(shapes: Shape[], opts?: EmitOpts): this {
     return this.group(shapes, '', opts);
   }
 
+  /**
+   * 图形置顶
+   *
+   * @note 锁定图形会被跳过；图形间的相对次序不变
+   * @param {Shape[]} shapes 图形
+   * @param {EmitOpts} opts 事件发射选项
+   * @return {this} 便于链式调用
+   * @memberof Board
+   */
   raise(shapes: Shape[], opts: EmitOpts): this {
     if (!shapes.length) return this;
     let zz = this._shapesMgr.maxZ()?.z ?? 0;
@@ -807,6 +882,15 @@ export class Board {
     return this;
   }
 
+  /**
+   * 图形置底
+   *
+   * @note 锁定图形会被跳过；图形间的相对次序不变
+   * @param {Shape[]} shapes 图形
+   * @param {EmitOpts} opts 事件发射选项
+   * @return {this} 便于链式调用
+   * @memberof Board
+   */
   sink(shapes: Shape[], opts: EmitOpts): this {
     if (!shapes.length) return this;
     let zz = this._shapesMgr.minZ()?.z ?? 0;
