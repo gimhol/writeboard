@@ -236,6 +236,12 @@ export class Board {
     return this._layers.get(id);
   }
 
+  /**
+   * 批量添加图层
+   *
+   * @param {ILayerInits[]} layers 图层初始化参数数组
+   * @memberof Board
+   */
   addLayers(layers: ILayerInits[]): void {
     if (!layers.length) return;
     layers.forEach(v => this.addLayer(v));
@@ -299,10 +305,23 @@ export class Board {
     window.addEventListener('pointerup', this._pointerup);
   }
 
+  /**
+   * 按 id 查找图形
+   *
+   * @param {string} id 图形ID
+   * @return {Shape | null} 图形（无则 null）
+   * @memberof Board
+   */
   find(id: string): Shape | null {
     return this._shapesMgr.find(id)
   }
 
+  /**
+   * 导出画布快照（尺寸 / 图层 / 图形数据）
+   *
+   * @return {ISnapshot} 快照数据
+   * @memberof Board
+   */
   toSnapshot(): ISnapshot {
     return {
       v: 0,
@@ -315,6 +334,12 @@ export class Board {
     }
   }
 
+  /**
+   * 载入画布快照（覆盖当前全部图层与图形）
+   *
+   * @param {ISnapshot} snapshot 快照数据
+   * @memberof Board
+   */
   fromSnapshot(snapshot: ISnapshot) {
     this.removeAll(false);
     Array.from(this._layers.keys()).forEach((layerId) => this.removeLayer(layerId))
@@ -325,25 +350,84 @@ export class Board {
     const shapes = snapshot.s.map((v: IShapeData) => this.factory.newShape(v))
     this.add(shapes, false);
   }
+
+  /**
+   * 导出画布快照 JSON
+   *
+   * @param {Function} [replacer] JSON.stringify 的 replacer
+   * @param {string | number} [space] JSON.stringify 的 space（缩进）
+   * @return {string} 快照 JSON
+   * @memberof Board
+   */
   toJson(replacer?: (this: any, key: string, value: any) => any, space?: string | number): string {
     return JSON.stringify(this.toSnapshot(), replacer, space)
   }
+
+  /**
+   * 载入画布快照 JSON（覆盖当前全部图层与图形）
+   *
+   * @param {string} json 快照 JSON
+   * @memberof Board
+   */
   fromJson(json: string) {
     this.fromSnapshot(JSON.parse(json))
   }
+
+  /**
+   * 全部图形（按 z 升序）
+   *
+   * @return {Shape[]}
+   * @memberof Board
+   */
   shapes(): Shape[] {
     return this._shapesMgr.shapes()
   }
+
+  /**
+   * 统计给定图形中已在画布上的数量（按图形 id 判定）
+   *
+   * @param {Shape[]} items 图形
+   * @return {number} 已在画布上的图形数
+   * @memberof Board
+   */
   exists(items: Shape[]): number {
     return this._shapesMgr.exists(items)
   }
+
+  /**
+   * 命中检测：取区域内最上层的图形
+   *
+   * @param {IRect} rect 区域（世界坐标）
+   * @param {IHitPredicate} [predicate] 筛选函数
+   * @return {Shape | null} 命中的图形（无则 null）
+   * @memberof Board
+   */
   hit(rect: IRect, predicate?: IHitPredicate): Shape | null {
     return this._shapesMgr.hit(rect, predicate)
   }
+
+  /**
+   * 命中检测：取区域内的全部图形（自上而下）
+   *
+   * @param {IRect} rect 区域（世界坐标）
+   * @param {IHitPredicate} [predicate] 筛选函数
+   * @return {Shape[]} 命中的图形（自上而下排列）
+   * @memberof Board
+   */
   hits(rect: IRect, predicate?: IHitPredicate): Shape[] {
     return this._shapesMgr.hits(rect, predicate)
   }
+
   private _listeners = new Map<any, Set<((p: any) => any) & { once?: boolean }>>();
+
+  /**
+   * 监听事件（仅触发一次，触发后自动移除）
+   *
+   * @param {string | keyof Events.IDetailMap} type 事件类型
+   * @param {Function} listener 事件回调
+   * @return {() => void} 解绑函数
+   * @memberof Board
+   */
   once(type: string, listener: (data: Events.IBaseDetail) => any): () => void
   once<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void
   once<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void {
@@ -351,6 +435,15 @@ export class Board {
     real_listener.once = true;
     return this.on(type, real_listener);
   }
+
+  /**
+   * 监听事件
+   *
+   * @param {string | keyof Events.IDetailMap} type 事件类型
+   * @param {Function} listener 事件回调
+   * @return {() => void} 解绑函数
+   * @memberof Board
+   */
   on(type: string, listener: (data: Events.IBaseDetail) => any): () => void
   on<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void;
   on<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void {
@@ -359,6 +452,14 @@ export class Board {
     set.add(listener);
     return () => this.off(type, listener);
   }
+  =
+  /**
+   * 移除事件监听
+   *
+   * @param {string | keyof Events.IDetailMap} type 事件类型
+   * @param {Function} listener 事件回调
+   * @memberof Board
+   */
   off<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): void {
     const set = this._listeners.get(type)
     if (!set) return
@@ -366,6 +467,14 @@ export class Board {
     if (!set.size) this._listeners.delete(type)
     return;
   }
+
+  /**
+   * 触发事件
+   *
+   * @param {keyof Events.IDetailMap} k 事件类型
+   * @param {Events.IEmit} detail 事件数据
+   * @memberof Board
+   */
   emit<K extends keyof Events.IDetailMap>(k: K, detail: Events.IEmit<Events.IDetailMap[K]>) {
     const set = this._listeners.get(k)
     if (!set) return;
@@ -380,25 +489,79 @@ export class Board {
   get factory() { return this._factory }
   set factory(v) { this._factory = v }
 
+  /**
+   * 当前编辑的图层屏幕画布的 2D 上下文
+   *
+   * @return {CanvasRenderingContext2D}
+   * @memberof Board
+   */
   ctx(): CanvasRenderingContext2D
+  /**
+   * 图层屏幕画布的 2D 上下文（缺省 = 当前编辑的图层）
+   *
+   * @param {string} layerId 图层ID
+   * @return {CanvasRenderingContext2D | null | undefined}
+   * @memberof Board
+   */
   ctx(layerId: string): CanvasRenderingContext2D | null | undefined
   ctx(layerId: string = this._editingLayerId): CanvasRenderingContext2D | null | undefined {
     return this.onscreen(layerId)?.getContext('2d');
   }
 
+  /**
+   * 当前编辑的图层离屏画布的 2D 上下文
+   *
+   * @return {CanvasRenderingContext2D}
+   * @memberof Board
+   */
   octx(): CanvasRenderingContext2D
+  /**
+   * 图层离屏画布的 2D 上下文
+   *
+   * @param {string} layerId 图层ID
+   * @return {CanvasRenderingContext2D | null | undefined}
+   * @memberof Board
+   */
   octx(layerId: string): CanvasRenderingContext2D | null | undefined
   octx(layerId: string = this._editingLayerId): CanvasRenderingContext2D | null | undefined {
     return this.offscreen(layerId)?.getContext('2d')
   }
 
+  /**
+   * 当前编辑图层屏幕画布
+   *
+   * @return {HTMLCanvasElement | undefined}
+   * @memberof Board
+   */
   onscreen(): HTMLCanvasElement;
+
+  /**
+   * 图层屏幕画布
+   *
+   * @param {string} layerId 图层ID
+   * @return {HTMLCanvasElement | undefined}
+   * @memberof Board
+   */
   onscreen(layerId: string): HTMLCanvasElement | undefined;
   onscreen(layerId: string = this._editingLayerId): HTMLCanvasElement | undefined {
     return this.layer(layerId)?.onscreen;
   }
 
+  /**
+   * 当前编辑图层离屏画布
+   *
+   * @return {HTMLCanvasElement}
+   * @memberof Board
+   */
   offscreen(): HTMLCanvasElement;
+
+  /**
+   * 图层离屏画布
+   *
+   * @param {string} layerId 图层ID
+   * @return {HTMLCanvasElement | undefined}
+   * @memberof Board
+   */
   offscreen(layerId: string): HTMLCanvasElement | undefined;
   offscreen(layerId: string = this._editingLayerId): HTMLCanvasElement | undefined {
     return this.layer(layerId)?.offscreen;
