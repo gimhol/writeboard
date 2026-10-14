@@ -86,6 +86,12 @@ for (const { dir, tsconfig, formats } of targets) {
           },
           use: ['sass']
         }),
+        ...(dir === 'dist/es6' && format === 'es'
+          ? [copy({
+              targets: [{ src: 'module.package.json', dest: `${dir}/${format}`, rename: 'package.json' }],
+              hook: 'writeBundle'
+            })]
+          : []),
       ],
     }
     const bundle_dts_config = {
