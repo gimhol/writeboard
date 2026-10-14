@@ -303,6 +303,7 @@ export class Board {
     this._element.style.outline = 'none';
     window.addEventListener('pointermove', this._pointermove);
     window.addEventListener('pointerup', this._pointerup);
+    window.addEventListener('keydown', this._keydown);
   }
 
   /**
@@ -892,6 +893,26 @@ export class Board {
     }
   }
 
+  /**
+   * 清除选择：ESC / Ctrl(Cmd)+Shift+A（输入框 / 文本编辑中不抢键）
+   *
+   * @protected
+   * @memberof Board
+   */
+  protected _keydown = (e: KeyboardEvent) => {
+    if (!this._selects.length || this.lb_down) return
+    const target = e.target as HTMLElement | null
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable) return
+    if (e.key === 'Escape') {
+      this.deselect(true)
+      return
+    }
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+      e.preventDefault()
+      this.deselect(true)
+    }
+  }
+
   private _dirty: Readonly<IRect> | undefined;
 
   /**
@@ -1010,6 +1031,7 @@ export class Board {
     this._element.removeEventListener('wheel', this._wheel);
     window.removeEventListener('pointermove', this._pointermove);
     window.removeEventListener('pointerup', this._pointerup);
+    window.removeEventListener('keydown', this._keydown);
     this._layers.forEach(v => v.destroy())
     if (this._own_element) this._element.remove();
   }
