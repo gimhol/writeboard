@@ -4,7 +4,21 @@ import { ShapeEnum, ShapePen, type Shape } from "../../shape";
 import { IVector, Rect, type IDot } from "../../utils";
 import type { ITool } from "../base";
 import { ToolEnum } from "../ToolEnum";
+import { worldPolylines } from "./geometry";
 import { Indicator } from "./Indicator";
+
+const is_same = (groups: IVector[][], polys: number[][]): boolean => {
+  if (groups.length !== polys.length) return false
+  for (let g = 0; g < groups.length; ++g) {
+    const pts = groups[g]
+    const coords = polys[g]
+    if (pts.length * 2 !== coords.length) return false
+    for (let i = 0, k = 0; i < pts.length; ++i, k += 2) {
+      if (pts[i].x !== coords[k] || pts[i].y !== coords[k + 1]) return false
+    }
+  }
+  return true
+}
 
 export class EraserTool implements ITool {
   readonly type = ToolEnum.Eraser
@@ -33,14 +47,21 @@ export class EraserTool implements ITool {
   pointerLeave(): void {
     this.indicator.visible = false
   }
-  protected _breakings: [ShapePen, IVector[][]][] = []
+  protected _breakings: [Shape, IVector[][]][] = []
   protected _predicate_and_calc = (shape: Shape): boolean => {
-    if (shape.type !== ShapeEnum.Pen)
+    const polys = worldPolylines(shape)
+    if (!polys)
       return false
-    const pen = shape as ShapePen
-    const coords = pen.data.coords2world;
     const coords_arr: IVector[][] = []
+    for (const coords of polys) this.split(coords, coords_arr)
+    if (is_same(coords_arr, polys))
+      return false;
+    this._breakings.push([shape, coords_arr]);
+    return true;
+  }
 
+  private split(coords: number[], coords_arr: IVector[][]): void {
+    const from = coords_arr.length
     let hit_1 = false;
     for (let i = 2; i < coords.length; i += 2) {
       const a = { x: coords[i - 2], y: coords[i - 1] }
@@ -64,7 +85,7 @@ export class EraserTool implements ITool {
         debugger;
 
       const append_prev_lines = (v: IVector) => {
-        if (coords_arr.length) coords_arr[coords_arr.length - 1].push(v)
+        if (coords_arr.length > from) coords_arr[coords_arr.length - 1].push(v)
         else coords_arr.push([a, v])
       }
       const create_next_lines = (v: IVector) => coords_arr.push([v, b])
@@ -83,10 +104,6 @@ export class EraserTool implements ITool {
       }
       hit_1 = hit_2;
     }
-    if (coords_arr.length === 1 && coords_arr[0].length === pen.data.coords.length)
-      return false;
-    this._breakings.push([pen as ShapePen, coords_arr]);
-    return true;
   }
 
   pointerDraw(dot: IDot): void {
@@ -95,9 +112,10 @@ export class EraserTool implements ITool {
     this.board.hits(this.indicator.data, this._predicate_and_calc);
     const add_pens: Shape[] = [];
     const del_pens: Shape[] = [];
-    for (const [pen, dots_arr] of this._breakings) {
+    for (const [shape, dots_arr] of this._breakings) {
       for (let dots of dots_arr) {
-        const new_data = pen.data.copy();
+        const new_data = shape.data.copy();
+        new_data.t = ShapeEnum.Pen
         new_data.id = this.board.factory.newShapeId(new_data)
         new_data.rotation = 0
         new_data.x = 0;
@@ -108,7 +126,7 @@ export class EraserTool implements ITool {
         new_pen.applyDots(dots)
         add_pens.push(new_pen)
       }
-      del_pens.push(pen);
+      del_pens.push(shape);
     }
     this.board.remove(del_pens, true)
     this.board.add(add_pens, true)
