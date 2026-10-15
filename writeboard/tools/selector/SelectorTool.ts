@@ -320,8 +320,20 @@ export class SelectorTool implements ITool {
       h: rect.h + lw,
       r: rect.r
     })
-    const { dots } = rect_r;
-    const { coords } = shape.data;
+    const data = shape.data;
+    const { coords, rotation = 0 } = data;
+    const src = data.src_rect;
+    const ox = shape.x - src.x;
+    const oy = shape.y - src.y;
+    const dots = rect_r.dots;
+    if (ox || oy || rotation) {
+      const { x: mx, y: my } = src.mid();
+      for (const dot of dots) {
+        const map = Vector.rotated2(dot.x - ox, dot.y - oy, mx, my, -rotation);
+        dot.x = map.x;
+        dot.y = map.y;
+      }
+    }
     for (let i = 2; i < coords.length; i += 2) {
       const a = coords[i - 2]
       const b = coords[i - 1]
@@ -335,7 +347,6 @@ export class SelectorTool implements ITool {
         return true
       }
     }
-    console.log('' + rect_r, '' + new Vector(coords[0], coords[1]))
     return false
   }
 
