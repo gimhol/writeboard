@@ -64,6 +64,10 @@ export class Indicator extends Shape<ShapeData> {
 
 export function placeIndicator(indicator: Indicator, board: Board | undefined, shapeType: ShapeType, dot: IDot): void {
   if (!board) return
+  if (!board.customCursor) {
+    indicator.visible = false
+    return
+  }
   const { cursor } = board.factory
   const template = board.factory.shapeTemplate(shapeType)
   const s = board.screenScale || 1

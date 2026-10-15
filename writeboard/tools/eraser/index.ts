@@ -31,6 +31,10 @@ export class EraserTool implements ITool {
     this.indicator.markDirty();
   }
   update_geo(dot: IDot) {
+    if (!this.board.customCursor) {
+      this.indicator.visible = false
+      return
+    }
     if (!this.indicator.visible) this.indicator.visible = true
     this.indicator.move(
       dot.x - this.indicator.w / 2,

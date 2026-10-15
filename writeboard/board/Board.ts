@@ -842,6 +842,14 @@ export class Board {
   get tools() { return this._tools }
   get tool() { return this._tool }
 
+  protected _customCursor: boolean = true
+  get customCursor(): boolean { return this._customCursor }
+  set customCursor(v: boolean) {
+    if (this._customCursor === v) return
+    this._customCursor = v
+    if (!v && this._tool?.indicator?.visible) this._tool.indicator.visible = false
+  }
+
   /**
    * 鼠标滚动事件
    *
