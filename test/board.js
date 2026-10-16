@@ -431,6 +431,113 @@ describe('class Board', () => {
     });
   });
 
+  describe('视口变更与重绘', () => {
+    function spyCtx(ctx) {
+      const calls = { clearRect: [], drawImage: [] }
+      for (const key of Object.keys(calls)) {
+        const raw = ctx[key].bind(ctx)
+        ctx[key] = (...args) => { calls[key].push(args); raw(...args) }
+      }
+      return calls
+    }
+
+    it('视口长高：只把新露出来的那条带标脏（世界坐标）', () => {
+      const board = createBoard({ width: 400, height: 300, scrollWidth: 400, scrollHeight: 1000 })
+      const above = addRect(board, { x: 0, y: 50, w: 50, h: 50 })
+      const below = addRect(board, { x: 0, y: 350, w: 50, h: 50 })
+      __flushRaf()
+      let aboveDrawn = 0
+      let belowDrawn = 0
+      above.render = () => aboveDrawn++
+      below.render = () => belowDrawn++
+
+      const onscreen = spyCtx(board.layer().ctx)
+      board.set_viewport({ x: 0, y: 0, w: 400, h: 400 })
+      assert.strictEqual(board.layer().onscreen.height, 400)
+      assert.strictEqual(onscreen.clearRect.length, 0, '重绘发生在 rAF 中')
+      __flushRaf()
+      assert.deepStrictEqual(onscreen.clearRect, [[0, 300, 400, 100]], '只重画多出来的 100 行')
+      assert.strictEqual(belowDrawn, 1, '带内的图形重画')
+      assert.strictEqual(aboveDrawn, 0, '带外的图形不动')
+    });
+
+    it('视口长高且已滚动时：带的世界坐标跟着偏移走', () => {
+      const board = createBoard({ width: 400, height: 300, scrollWidth: 400, scrollHeight: 1000 })
+      board.scroll_to(0, 120)
+      const hit = addRect(board, { x: 0, y: 460, w: 50, h: 50 })
+      __flushRaf()
+      let drawn = 0
+      hit.render = () => drawn++
+
+      const onscreen = spyCtx(board.layer().ctx)
+      board.set_viewport({ x: 0, y: 0, w: 400, h: 400 })
+      __flushRaf()
+      assert.deepStrictEqual(onscreen.clearRect, [[0, 300, 400, 100]])
+      assert.strictEqual(drawn, 1, '世界坐标 120+300=420 起算')
+    });
+
+    it('视口收缩：没有新露出来的区域，一点不重画', () => {
+      const board = createBoard({ width: 400, height: 300, scrollWidth: 400, scrollHeight: 1000 })
+      const shape = addRect(board, { x: 0, y: 50, w: 50, h: 50 })
+      __flushRaf()
+      let drawn = 0
+      shape.render = () => drawn++
+
+      const onscreen = spyCtx(board.layer().ctx)
+      const offscreen = spyCtx(board.layer().octx)
+      board.set_viewport({ x: 0, y: 0, w: 400, h: 200 })
+      assert.strictEqual(board.layer().onscreen.height, 200)
+      assert.strictEqual(__flushRaf(), 0, '没有脏矩形就不排队重绘')
+      assert.strictEqual(drawn, 0)
+      assert.strictEqual(offscreen.clearRect.length, 0)
+      assert.deepStrictEqual(offscreen.drawImage[0].slice(1), [0, 0, 400, 200, 0, 0, 400, 200], '离屏画布按重叠区保留旧内容')
+      assert.deepStrictEqual(onscreen.drawImage[0].slice(1), [0, 0, 400, 200, 0, 0, 400, 200], '屏幕画布铺上离屏内容')
+    });
+
+    it('尺寸取整后没变时不动画布，也不重绘', () => {
+      const board = createBoard({ width: 400, height: 300, scrollWidth: 400, scrollHeight: 1000 })
+      const onscreen = spyCtx(board.layer().ctx)
+      const offscreen = spyCtx(board.layer().octx)
+      board.set_viewport({ x: 0, y: 0, w: 400, h: 300.4 })
+      assert.strictEqual(board.layer().onscreen.height, 300)
+      assert.strictEqual(onscreen.drawImage.length, 0, '画布尺寸没变，不抄不贴')
+      assert.strictEqual(offscreen.drawImage.length, 0)
+      assert.strictEqual(__flushRaf(), 0)
+    });
+
+    it('反复改尺寸：每一次长出来的部分都会被补画', () => {
+      const board = createBoard({ width: 400, height: 300, scrollWidth: 400, scrollHeight: 2000 })
+      __flushRaf()
+      const offscreen = spyCtx(board.layer().octx)
+      let prev = 300
+      for (const h of [350, 320, 480, 300, 500]) {
+        offscreen.clearRect.length = 0
+        board.set_viewport({ x: 0, y: 0, w: 400, h })
+        __flushRaf()
+        if (h > prev) {
+          assert.deepStrictEqual(offscreen.clearRect, [[0, prev, 400, h - prev]], `${prev} → ${h} 只补新露出来的那一带`)
+        } else {
+          assert.deepStrictEqual(offscreen.clearRect, [], `${prev} → ${h} 收缩时不该补画`)
+        }
+        prev = h
+      }
+    });
+
+    it('视口原点变了（画布内世界坐标整体位移）：整幅重画', () => {
+      const board = createBoard({ width: 400, height: 300, scrollWidth: 800, scrollHeight: 800 })
+      const shape = addRect(board, { x: 0, y: 0, w: 50, h: 50 })
+      __flushRaf()
+      let drawn = 0
+      shape.render = () => drawn++
+
+      const onscreen = spyCtx(board.layer().ctx)
+      board.set_viewport({ x: 10, y: 0, w: 400, h: 300 })
+      __flushRaf()
+      assert.strictEqual(onscreen.clearRect.length, 1)
+      assert.strictEqual(drawn, 1, '保留不了旧内容，视口内图形全部重画')
+    });
+  });
+
   describe('销毁', () => {
     it('destroy 移除事件监听与图层画布', () => {
       const board = createBoard()

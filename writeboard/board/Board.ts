@@ -112,12 +112,34 @@ export class Board {
   set_viewport(to: IRect, opts?: EmitOpts) {
     if (Rect.equal(this._viewport, to)) return;
     const form = this._viewport.pure();
+    /**
+     * 视口原点没变时，画布内世界坐标的映射没变：画布上已有的内容在世界坐标里依然有效，
+     * 所以改尺寸不整幅重绘，只把新露出来的那条带标脏（尺寸没长出来就一点不画）
+     */
+    const keep = form.x === to.x && form.y === to.y;
+    const first = this._layers.values().next().value;
+    const ow = first ? first.width : 0;
+    const oh = first ? first.height : 0;
     this._viewport.read(to)
-    this._layers.forEach(l => {
-      l.width = this._viewport.w;
-      l.height = this._viewport.h
-    });
-    this.markViewDirty();
+    this._layers.forEach(l => l.resize(this._viewport.w, this._viewport.h, keep));
+    const nw = first ? first.width : 0;
+    const nh = first ? first.height : 0;
+    if (!keep) {
+      this.markViewDirty();
+    } else if (nw > ow || nh > oh) {
+      // markDirty 只留包围盒，两个方向一起长出来时按整块算
+      const both = nw > ow && nh > oh;
+      const bx = both || nw <= ow ? 0 : ow;
+      const by = both || nh <= oh ? 0 : oh;
+      const bw = both || nw <= ow ? nw : nw - ow;
+      const bh = both || nh <= oh ? nh : nh - oh;
+      this.markDirty({
+        x: bx - this._viewport.x - this._world.x,
+        y: by - this._viewport.y - this._world.y,
+        w: bw,
+        h: bh
+      })
+    }
     this.read_emit_opts(opts, (operator) => {
       this.emit(EventEnum.ViewportChanged, { operator, form, to: this._viewport.pure() })
     })
