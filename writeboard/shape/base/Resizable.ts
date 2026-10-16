@@ -6,20 +6,91 @@
  */
 
 export enum Resizable {
-  /** 禁止 */ None = 0,
+  /**
+   * 禁止拉伸
+   *
+   * Not resizable.
+   */
+  None = 0,
+  /**
+   * 左上角控制点
+   *
+   * Top left handle.
+   */
   TopLeft = 0b00000001,
+  /**
+   * 上边中点控制点
+   *
+   * Top middle handle.
+   */
   Top = 0b00000010,
+  /**
+   * 右上角控制点
+   *
+   * Top right handle.
+   */
   TopRight = 0b00000100,
+  /**
+   * 右边中点控制点
+   *
+   * Right middle handle.
+   */
   Right = 0b00001000,
+  /**
+   * 右下角控制点
+   *
+   * Bottom right handle.
+   */
   BottomRight = 0b00010000,
+  /**
+   * 下边中点控制点
+   *
+   * Bottom middle handle.
+   */
   Bottom = 0b00100000,
+  /**
+   * 左下角控制点
+   *
+   * Bottom left handle.
+   */
   BottomLeft = 0b01000000,
+  /**
+   * 左边中点控制点
+   *
+   * Left middle handle.
+   */
   Left = 0b10000000,
-  /** 水平 */ Horizontal = 0b10001000,
-  /** 垂直 */ Vertical = 0b00100010,
-  /** 四角 */ Corner = 0b01010101,
-  /** 八向 */ All = 0b11111111
+  /**
+   * 水平：只给左右两个中点控制点
+   *
+   * Horizontal: only the left / right middle handles.
+   */
+  Horizontal = 0b10001000,
+  /**
+   * 垂直：只给上下两个中点控制点
+   *
+   * Vertical: only the top / bottom middle handles.
+   */
+  Vertical = 0b00100010,
+  /**
+   * 四角：只给四个角控制点
+   *
+   * Corner: only the four corner handles.
+   */
+  Corner = 0b01010101,
+  /**
+   * 八向：四角 + 四边中点全都给
+   *
+   * All: the four corners plus the four middle handles.
+   */
+  All = 0b11111111
 }
+/**
+ * 各方向的反向方向表：拖左上角等同于拖右下角
+ *
+ * Opposite of every direction: dragging the top left handle is the same as dragging the
+ * bottom right one.
+ */
 export const opposites: Record<Resizable, Resizable> = {
   [Resizable.None]: Resizable.None,
   [Resizable.TopLeft]: Resizable.BottomRight,
@@ -35,6 +106,12 @@ export const opposites: Record<Resizable, Resizable> = {
   [Resizable.Corner]: Resizable.Corner,
   [Resizable.All]: Resizable.All,
 }
+/**
+ * 各方向对应的弧度角：0 为上、顺时针递增，非单一方向（组合值）为 NaN
+ *
+ * Angle in radians of every direction: 0 is up and the value grows clockwise, while the
+ * combined values are NaN.
+ */
 export const degrees: Record<Resizable, number> = {
   [Resizable.Top]: 0,
   [Resizable.TopRight]: 0.7853981633974483,

@@ -1,4 +1,10 @@
 import type { IFontInfo } from "./IFontInfo"
+/**
+ * 内置字体表：只在当前环境真的装了这个家族时才会被 Gaia 登记（见 Gaia.checkFont）
+ *
+ * Built-in font list: Gaia only registers the families the current environment really has
+ * (see Gaia.checkFont).
+ */
 export const BUILT_IN_FONTS: IFontInfo[] = [
   { family: "SimSun", name: "宋体", desc: "宋体" },
   { family: "SimHei", name: "黑体", desc: "黑体" },

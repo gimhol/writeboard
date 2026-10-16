@@ -3,10 +3,29 @@ import { Gaia } from "../../mgr/Gaia"
 import { TickData } from "./Data"
 import { ShapeNeedPath } from "../base/ShapeNeedPath"
 
+/**
+ * 钩（对号）图形：两段三次贝塞尔拼成的曲线
+ *
+ * Tick (check mark) shape: a curve made of two cubic bezier segments.
+ */
 export class ShapeTick extends ShapeNeedPath<TickData> {
+  /**
+   * 按数据建一个钩图形
+   *
+   * Builds a tick shape from the given data.
+   *
+   * @param {Partial<TickData>} data 图形数据 / Shape data
+   */
   constructor(data: Partial<TickData>) {
     super(data, TickData)
   }
+  /**
+   * 钩的路径：起笔 → 拐点 → 钩尖，两段贝塞尔过渡
+   *
+   * The tick path: the start, the turning point and the tip, joined by two bezier segments.
+   *
+   * @param {CanvasRenderingContext2D} ctx 画布上下文 / Canvas context
+   */
   path(ctx: CanvasRenderingContext2D) {
     const { x, y, w, h } = this.drawingRect()
     const a = { x: x, y: y + h * 0.7 }

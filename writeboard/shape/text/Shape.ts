@@ -18,22 +18,69 @@ const getMeasurer = (): CanvasRenderingContext2D => {
   if (!_measurer) _measurer = document.createElement('canvas').getContext('2d')!
   return _measurer
 }
+/**
+ * 排版后的一行文本：除 TextMetrics 外还记了绘制位置与原始字符串
+ *
+ * One laid out line of text: beyond TextMetrics it keeps the drawing position and the raw
+ * string.
+ */
 export interface ILineInfo extends TextMetrics {
+  /**
+   * 本行的绘制起点 x（局部坐标，已含左边距）
+   *
+   * Drawing x of this line (local coordinates, the left padding is included).
+   */
   x: number
+  /**
+   * 本行的行顶 y（局部坐标，已含上边距）
+   *
+   * Top y of this line (local coordinates, the top padding is included).
+   */
   y: number
+  /**
+   * 本行的基线 y
+   *
+   * Baseline y of this line.
+   */
   bl: number
+  /**
+   * 本行的文本（末尾带一个换行符，留作逐行排版用）
+   *
+   * The text of this line (a trailing newline is kept for the layout).
+   */
   str: string
 }
+/**
+ * 文本图形：自己排版（行 / 选区矩形），文字与光标都画在离屏画布上
+ *
+ * Text shape: it lays the text out itself (lines / selection rectangles) and draws both the
+ * text and the cursor onto an offscreen canvas.
+ */
 export class ShapeText extends Shape<TextData> {
   private _selection = new TextSelection;
   private _lines: ILineInfo[] = [];
   private _selectionRects: IRect[] = [];
   private _offscreen?: HTMLCanvasElement;
 
+  /**
+   * 文本内容
+   *
+   * The text.
+   */
   get text() { return this.data.s }
   set text(v) { this.setText(v) }
+  /**
+   * 当前选区（含光标位置：起终点相同时就是光标）
+   *
+   * The current selection (the cursor included: equal ends mean a plain cursor).
+   */
   get selection() { return this._selection }
   set selection(v) { this.setSelection(v) }
+  /**
+   * 选区的绘制矩形（局部坐标，逐行一段）
+   *
+   * The drawing rectangles of the selection (local coordinates, one per line).
+   */
   get selectionRects() { return this._selectionRects }
 
   private get offscreen(): HTMLCanvasElement {
@@ -41,14 +88,32 @@ export class ShapeText extends Shape<TextData> {
     return this._offscreen;
   }
 
+  /**
+   * 按数据建一个文本图形，并先把行与选区矩形算好
+   *
+   * Builds a text shape from the given data and lays the lines and the selection rectangles
+   * out first.
+   *
+   * @param {Partial<TextData>} data 图形数据 / Shape data
+   */
   constructor(data: Partial<TextData>) {
     super(data, TextData)
     this._calculateLines()
     this._calculateSectionRects()
   }
 
+  /**
+   * 字号（设计单位 px）
+   *
+   * The font size (in design px).
+   */
   get fontSize(): number { return this.data.font_size }
 
+  /**
+   * 设置字号并重新排版
+   *
+   * Sets the font size and lays the text out again.
+   */
   set fontSize(v) {
     const prev = {}
     this.beginDirty(prev)
@@ -58,6 +123,13 @@ export class ShapeText extends Shape<TextData> {
     this.endDirty(prev)
   }
 
+  /**
+   * 合并一份文本数据：数据落完后重新排版
+   *
+   * Merges a piece of text data: the text is laid out again once the data is in place.
+   *
+   * @param {Partial<TextData>} data 要合并的数据 / The data to merge
+   */
   override merge(data: Partial<TextData>) {
     const prev = this.data.copy()
     this.beginDirty(prev)
@@ -93,6 +165,14 @@ export class ShapeText extends Shape<TextData> {
     ctx.setLineDash([])
   }
 
+  /**
+   * 改文本内容并重新排版
+   *
+   * Changes the text and lays it out again.
+   *
+   * @param {string} v 新的文本 / The new text
+   * @param {boolean} [dirty=true] 是否标脏 / Whether to mark the dirty area
+   */
   setText(v: string, dirty: boolean = true) {
     if (this.data.s === v)
       return
@@ -101,6 +181,15 @@ export class ShapeText extends Shape<TextData> {
     dirty && this.endDirty()
   }
 
+  /**
+   * 改选区：重算选区矩形，两端相同时开光标闪烁、有选区时停闪
+   *
+   * Changes the selection: the selection rectangles are recomputed, the cursor starts blinking
+   * while both ends are equal and stops while there is a real selection.
+   *
+   * @param {ITextSelection} [v] 新的选区，默认 [-1, -1]（无选区）/ The new selection, [-1, -1] (none) by default
+   * @param {boolean} [dirty=true] 是否标脏 / Whether to mark the dirty area
+   */
   setSelection(v: ITextSelection = { start: -1, end: -1 }, dirty: boolean = true) {
     if (this._selection.equal(v))
       return
@@ -159,6 +248,14 @@ export class ShapeText extends Shape<TextData> {
     }
   }
 
+  /**
+   * 绘制文本：编辑中先画编辑框，再把离屏画布上的文字（含光标 / 选区底色）贴到板上
+   *
+   * Draws the text: the editing frame comes first while editing, then the offscreen canvas
+   * (carrying the text, the cursor and the selection background) is blitted onto the board.
+   *
+   * @param {CanvasRenderingContext2D} ctx 画布上下文 / Canvas context
+   */
   render(ctx: CanvasRenderingContext2D) {
     if (!this.visible) return
     const needStroke = this.data.strokeStyle && this.data.lineWidth

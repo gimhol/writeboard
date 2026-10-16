@@ -95,6 +95,17 @@ const lineWorldCoords = (data: LinesData): number[] | null => {
   return out
 }
 
+/**
+ * 把图形换算成「可擦几何」——世界坐标下的折线，可以有好几段；
+ * 目前只支持画笔 / 直线 / 钩 / 叉，其它图形返回 null（擦不掉）
+ *
+ * Turns a shape into the geometry the eraser can cut: world-coordinate polylines, one or
+ * more of them. Only pen / lines / tick / cross are supported for now and every other
+ * shape returns null (it can not be erased).
+ *
+ * @param {Shape} shape 要换算的图形 / The shape to convert
+ * @return {number[][] | null} 世界坐标折线（每段是一串 x, y, ... 坐标）/ World-coordinate polylines (each one a flat list of x, y, ... coordinates), or null
+ */
 export const worldPolylines = (shape: Shape): number[][] | null => {
   if (ShapePen.is(shape)) return [shape.data.coords2world]
   if (shape.type === ShapeEnum.Lines) {

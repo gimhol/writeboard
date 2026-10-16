@@ -5,7 +5,24 @@ import { Gaia } from "../mgr";
 import { IShapeData } from "../shape/base/IShapeData";
 import { ToolEnum } from "../tools";
 
+/**
+ * 撤回队列：按事件类型登记的 ActionHandler 把一次动作包成 [撤回, 重做] 存进栈里，
+ * 同一次手势（同一个 tx）的多个动作会并成一条记录，所以一次撤回 / 重做走完整段手势
+ *
+ * Undo queue: the ActionHandler registered per event type wraps an action into an
+ * [undo, redo] pair; the actions of one gesture (the same `tx`) are merged into a single
+ * record, so one undo / redo covers the whole gesture.
+ */
 export class ActionQueue {
+  /**
+   * 把队列挂到某块黑板上：先取消旧监听，再给每种已登记的可撤销事件类型各加一个监听
+   *
+   * Binds the queue to a board: the old listeners are cancelled first, then one listener
+   * is attached per registered undoable event type.
+   *
+   * @param {Board | undefined} actor 黑板（undefined 则只解绑） / The board (undefined just unbinds)
+   * @return {this} 便于链式调用 / The queue itself, for chaining
+   */
   setActor(actor: Board | undefined): this {
     this._cancellers.forEach(v => v())
     this._cancellers = [];
@@ -42,11 +59,25 @@ export class ActionQueue {
     })
     return this;
   }
+  /**
+   * 清空全部记录（光标回到起点）
+   *
+   * Clears every record (the cursor goes back to the start).
+   *
+   * @return {this} 便于链式调用 / The queue itself, for chaining
+   */
   clear(): this {
     this._actions = [];
     this._actionsIdx = -1;
     return this;
   }
+  /**
+   * 撤回一条记录：记录里的动作逆序执行，一条记录 = 一次完整的撤回
+   *
+   * Undoes one record: its actions run backwards, so one record is one complete undo.
+   *
+   * @return {this} 便于链式调用 / The queue itself, for chaining
+   */
   undo(): this {
     if (this._actionsIdx < 0) {
       console.log('[ActionQueue] no more undo.')
@@ -57,6 +88,13 @@ export class ActionQueue {
     --this._actionsIdx;
     return this;
   }
+  /**
+   * 重做一条记录：记录里的动作正序执行
+   *
+   * Redoes one record: its actions run forwards.
+   *
+   * @return {this} 便于链式调用 / The queue itself, for chaining
+   */
   redo(): this {
     if (this._actionsIdx >= this._actions.length - 1) {
       console.log('[ActionQueue] no more redo.')
@@ -67,9 +105,29 @@ export class ActionQueue {
     for (let i = 0, len = steps.length; i < len; ++i) steps[i][1]();
     return this;
   }
+  /**
+   * 当前所在的记录下标（-1 = 还没有任何记录生效）
+   *
+   * Index of the current record (-1 when no record is in effect yet).
+   */
   get index() { return this._actionsIdx }
+  /**
+   * 记录总数
+   *
+   * Total number of records.
+   */
   get length() { return this._actions.length }
+  /**
+   * 是否有可重做的记录
+   *
+   * Whether there is a record to redo.
+   */
   get canRedo() { return this._actionsIdx < this._actions.length - 1 }
+  /**
+   * 是否有可撤回的记录
+   *
+   * Whether there is a record to undo.
+   */
   get canUndo() { return this._actionsIdx >= 0 }
   private _maxLen: number | undefined;
   private _actionsIdx: number = -1;

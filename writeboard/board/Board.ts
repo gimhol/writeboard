@@ -15,16 +15,69 @@ const { floor, ceil, min, max } = Math;
  * transaction id (`tx`), which lets the ActionQueue merge one gesture into one record.
  */
 export type EmitOpts = boolean | { operator: string, tx?: string }
+/**
+ * 创建黑板时的初始化参数
+ *
+ * Options used to create a board.
+ */
 export interface BoardOptions {
+  /**
+   * 黑板挂载的元素（缺省时板子自建一个 div，销毁时一并移除）
+   *
+   * Element the board mounts on (when omitted the board creates its own div and removes
+   * it again on destroy).
+   */
   element?: HTMLElement;
+  /**
+   * 初始图层列表（缺省时建一个空图层）
+   *
+   * Initial layers (one empty layer is created when omitted).
+   */
   layers?: ILayerInits[];
+  /**
+   * 视口宽度（设计单位）
+   *
+   * Viewport width in design units.
+   *
+   * @default 600
+   */
   width?: number;
+  /**
+   * 视口高度（设计单位）
+   *
+   * Viewport height in design units.
+   *
+   * @default 600
+   */
   height?: number;
+  /**
+   * 可滚动区域宽度（设计单位，缺省同视口宽度）
+   *
+   * Scrollable area width in design units (defaults to the viewport width).
+   */
   scrollWidth?: number;
+  /**
+   * 可滚动区域高度（设计单位，缺省同视口高度）
+   *
+   * Scrollable area height in design units (defaults to the viewport height).
+   */
   scrollHeight?: number;
+  /**
+   * 初始工具类型（缺省无工具）
+   *
+   * Initial tool type (no tool when omitted).
+   */
   toolType?: ToolType;
 }
 const Tag = 'Board'
+/**
+ * 黑板：一块可绘制的画布，管着图层、图形、工具、选择与坐标换算，
+ * 并把每次改动以事件的形式广播出去（撤回队列 / 记录回放 / 房间同步都靠这些事件）
+ *
+ * Board: one drawable canvas that owns its layers, shapes, tools, selection and
+ * coordinate conversions, and broadcasts every change as events (the undo queue, the
+ * recorder / player and room synchronisation all rely on those events).
+ */
 export class Board {
   protected _factory: IFactory
   protected _toolType: ToolType | undefined = void 0
@@ -44,10 +97,20 @@ export class Board {
   private _selectorPrev: ToolType | undefined = void 0
   private _secondary = false
 
+  /**
+   * 图形装饰器：选中框 / 锁定框 / 缩放柄 / ghost 都由它绘制
+   *
+   * Shape decoration: it draws the selection frame, the lock frame, the resize handles
+   * and the ghost.
+   */
   readonly shapeDecoration: IShapeDecoration;
 
   /**
    * 是否允许用户拉伸图形
+   *
+   * Whether the user may resize shapes.
+   *
+   * @default true
    * 
    * @type {boolean}
    */
@@ -56,31 +119,93 @@ export class Board {
   /**
    * 是否允许用户旋转图形
    *
+   * Whether the user may rotate shapes.
+   *
+   * @default true
+   *
    * @type {boolean}
    */
   shapeRotatable: boolean = true;
 
+  /**
+   * 左键是否按下
+   *
+   * Whether the left button is down.
+   */
   get lb_down(): boolean { return !!this._mousebuttons[0] }
+  /**
+   * 中键是否按下（中键按住拖动 = 平移世界）
+   *
+   * Whether the middle button is down (holding it and dragging pans the world).
+   */
   get mb_down(): boolean { return !!this._mousebuttons[1] }
+  /**
+   * 视口矩形（只读）：画布在屏幕上可见的部分
+   *
+   * Viewport rect (read only): the part of the canvas that is visible on screen.
+   */
   get viewport(): Readonly<Rect> { return this._viewport; }
+  /**
+   * 世界矩形（只读）：可绘制的滚动区域，原点是滚动偏移（≤ 0 表示向右下滚动）
+   *
+   * World rect (read only): the scrollable drawing area, its origin being the scroll
+   * offset (a negative origin means the content is scrolled right / down).
+   */
   get world(): Readonly<Rect> { return this._world; }
+  /**
+   * 本端操作者标识：事件里的 operator 用它分辨改动是谁做的
+   *
+   * Identifier of the local actor: the `operator` of every event uses it to tell who
+   * made the change.
+   */
   get whoami() { return this._whoami }
+  /**
+   * 视口宽度（设计单位）
+   *
+   * Viewport width in design units.
+   */
   get width() { return this._viewport.w; }
 
+  /**
+   * 设置视口宽度（等价于 set_viewport，会触发 ViewportChanged）
+   *
+   * Sets the viewport width (same as set_viewport, emits ViewportChanged).
+   */
   set width(v: number) {
     const rect = this._viewport.pure()
     rect.w = v;
     this.set_viewport(rect);
   }
 
+  /**
+   * 视口高度（设计单位）
+   *
+   * Viewport height in design units.
+   */
   get height() { return this._viewport.h; }
 
+  /**
+   * 设置视口高度（等价于 set_viewport，会触发 ViewportChanged）
+   *
+   * Sets the viewport height (same as set_viewport, emits ViewportChanged).
+   */
   set height(v: number) {
     const rect = this._viewport.pure()
     rect.h = v;
     this.set_viewport(rect);
   }
 
+  /**
+   * 滚动到指定位置：世界偏移会换算成滚动偏移，并夹在可滚动范围内
+   *
+   * Scrolls to the given position: the world offset is converted into a scroll offset
+   * and clamped to the scrollable range.
+   *
+   * @param {number} x 横向滚动位置 / Horizontal scroll position
+   * @param {number} y 纵向滚动位置 / Vertical scroll position
+   * @param {EmitOpts} [opts] 事件发射选项 / Emit options
+   * @return {this} 便于链式调用 / The board itself, for chaining
+   */
   scroll_to(x: number, y: number, opts?: EmitOpts): this {
     const rect = this._world.pure();
     const { min, max } = Math
@@ -96,6 +221,15 @@ export class Board {
     fn(operator, typeof opts === 'boolean' ? void 0 : opts.tx)
   }
 
+  /**
+   * 设置世界矩形（可滚动区域）：只改原点就是滚动，改尺寸就是改可滚动范围
+   *
+   * Sets the world rect (the scrollable area): moving the origin scrolls, changing the
+   * size changes how far the content can be scrolled.
+   *
+   * @param {IRect} to 新的世界矩形 / New world rect
+   * @param {EmitOpts} [opts] 事件发射选项 / Emit options
+   */
   set_world_rect(to: IRect, opts?: EmitOpts) {
     if (Rect.equal(this._world, to)) return;
     const form = this._world.pure();
@@ -115,6 +249,17 @@ export class Board {
     })
   }
 
+  /**
+   * 设置视口矩形（画布的可见范围与位置）：原点不变、只是尺寸变化时只补画新露出来的一带，
+   * 原点变了才整幅重绘（重绘策略见 render）
+   *
+   * Sets the viewport rect (the visible area and position of the canvas): when only the
+   * size grows, just the newly exposed strip is repainted; when the origin moves, the
+   * whole viewport is repainted (see render for the repaint strategy).
+   *
+   * @param {IRect} to 新的视口矩形 / New viewport rect
+   * @param {EmitOpts} [opts] 事件发射选项 / Emit options
+   */
   set_viewport(to: IRect, opts?: EmitOpts) {
     if (Rect.equal(this._viewport, to)) return;
     const form = this._viewport.pure();
@@ -151,6 +296,16 @@ export class Board {
     })
   }
 
+  /**
+   * 相对当前位置滚动（正数向右 / 向下）
+   *
+   * Scrolls relative to the current position (positive values go right / down).
+   *
+   * @param {number} x 横向滚动量 / Horizontal delta
+   * @param {number} y 纵向滚动量 / Vertical delta
+   * @param {EmitOpts} [opts] 事件发射选项 / Emit options
+   * @return {this} 便于链式调用 / The board itself, for chaining
+   */
   scroll_by(x: number, y: number, opts?: EmitOpts): this {
     return this.scroll_to(
       -this.world.x + x,
@@ -161,6 +316,8 @@ export class Board {
 
   /**
    * 添加图层
+   *
+   * Adds a layer to the board, appending its on-screen canvas to the board element.
    *
    * @param {ILayerInits | Layer | undefined} layer 图层初始化参数 / 图层实例（缺省新建）
    * @param {EmitOpts} [opts] 事件发射选项
@@ -198,6 +355,8 @@ export class Board {
   /**
    * 标记整个视口为脏（触发重绘）
    *
+   * Marks the whole viewport dirty, which schedules a repaint.
+   *
    * @return {this} 便于链式调用
    * @memberof Board
    */
@@ -213,6 +372,8 @@ export class Board {
 
   /**
    * 移除指定图层
+   *
+   * Removes the layer with the given id and detaches its on-screen canvas.
    *
    * @param {string} layerId 图层ID
    * @param {EmitOpts} [opts] 事件发射选项
@@ -236,6 +397,9 @@ export class Board {
   /**
    * 切换当前编辑的图层
    *
+   * Switches the layer being edited; only the current layer keeps receiving the pointer
+   * events of its canvas.
+   *
    * @param {string} layerId 图层ID
    * @return {boolean} 是否切换成功（不存在返回 false）
    * @memberof Board
@@ -255,6 +419,8 @@ export class Board {
   /**
    * 获取当前编辑的图层
    *
+   * Gets the layer currently being edited (the overload without arguments).
+   *
    * @return {Layer | undefined}
    * @memberof Board
    */
@@ -262,6 +428,8 @@ export class Board {
 
   /**
    * 获取图层
+   *
+   * Gets a layer by id (undefined when no layer has that id).
    *
    * @param {string} id 图层ID
    * @return {Layer | undefined}
@@ -275,6 +443,8 @@ export class Board {
   /**
    * 批量添加图层
    *
+   * Adds every layer of the given list, one by one.
+   *
    * @param {ILayerInits[]} layers 图层初始化参数数组
    * @memberof Board
    */
@@ -282,10 +452,25 @@ export class Board {
     if (!layers.length) return;
     layers.forEach(v => this.addLayer(v));
   }
+  /**
+   * 全部图层（按加入顺序）
+   *
+   * All layers, in the order they were added.
+   */
   get layers(): Layer[] { return Array.from(this._layers.values()) }
+  /**
+   * 黑板挂载的元素
+   *
+   * The DOM element the board is mounted on.
+   */
   get element(): HTMLElement { return this._element }
 
-  /** 画布在屏幕上的显示比例（CSS 像素 ÷ 设计单位）：窗口 / 舞台缩小时会小于 1 */
+  /**
+   * 画布在屏幕上的显示比例（CSS 像素 ÷ 设计单位）：窗口 / 舞台缩小时会小于 1
+   *
+   * Display scale of the canvas on screen (CSS pixels ÷ design units), smaller than 1
+   * while the window / stage is scaled down.
+   */
   get screenScale(): number {
     const w = this._viewport?.w || 0
     const cw = this._element ? this._element.getBoundingClientRect().width : 0
@@ -296,11 +481,30 @@ export class Board {
   /**
    * 屏幕修正后的线宽（设计单位）：画布被缩小时设计单位的线会被等比缩小，
    * 选框等 1 设计单位的细线在小窗口里会细到看不见——这里保证它在屏幕上至少还有 minPx 像素
+   *
+   * Line width corrected for the screen scale (in design units): scaling the canvas down
+   * shrinks design units, and a hairline of 1 design unit becomes invisible inside a
+   * small window; this keeps it at least minPx screen pixels wide.
+   *
+   * @param {number} [base] 基础线宽（设计单位）/ Base width in design units
+   * @param {number} [minPx] 屏幕上至少要有的像素宽 / Minimum width in screen pixels
+   * @return {number} 修正后的线宽（设计单位）/ Corrected width in design units
    */
   screenLineWidth(base: number = 1, minPx: number = 1): number {
     const s = this.screenScale
     return s > 0 ? Math.max(base, minPx / s) : base
   }
+  /**
+   * 创建黑板：建图形管理器、装饰器与图层，并把全部事件监听挂上
+   *（元素上的 pointerdown / pointerleave / wheel，window 上的 pointermove / pointerup / keydown）
+   *
+   * Creates a board: builds the shape manager, the decoration and the layers, and wires
+   * up every listener (pointerdown / pointerleave / wheel on the element,
+   * pointermove / pointerup / keydown on the window).
+   *
+   * @param {IFactory} factory 工厂 / Factory
+   * @param {BoardOptions} options 初始化参数 / Board options
+   */
   constructor(factory: IFactory, options: BoardOptions) {
     this._factory = factory;
     this._shapesMgr = this._factory.newShapesMgr();
@@ -345,6 +549,8 @@ export class Board {
   /**
    * 按 id 查找图形
    *
+   * Finds a shape by id (null when there is no shape with that id).
+   *
    * @param {string} id 图形ID
    * @return {Shape | null} 图形（无则 null）
    * @memberof Board
@@ -355,6 +561,8 @@ export class Board {
 
   /**
    * 导出画布快照（尺寸 / 图层 / 图形数据）
+   *
+   * Exports a snapshot of the board: size, layers and shape data.
    *
    * @return {ISnapshot} 快照数据
    * @memberof Board
@@ -374,6 +582,8 @@ export class Board {
   /**
    * 载入画布快照（覆盖当前全部图层与图形）
    *
+   * Loads a snapshot, replacing every current layer and shape.
+   *
    * @param {ISnapshot} snapshot 快照数据
    * @memberof Board
    */
@@ -391,6 +601,9 @@ export class Board {
   /**
    * 导出画布快照 JSON
    *
+   * Exports the snapshot as JSON, with the same replacer / space arguments as
+   * JSON.stringify.
+   *
    * @param {Function} [replacer] JSON.stringify 的 replacer
    * @param {string | number} [space] JSON.stringify 的 space（缩进）
    * @return {string} 快照 JSON
@@ -403,6 +616,8 @@ export class Board {
   /**
    * 载入画布快照 JSON（覆盖当前全部图层与图形）
    *
+   * Loads a snapshot from JSON, replacing every current layer and shape.
+   *
    * @param {string} json 快照 JSON
    * @memberof Board
    */
@@ -413,6 +628,8 @@ export class Board {
   /**
    * 全部图形（按 z 升序）
    *
+   * Every shape, ordered by z (bottom to top).
+   *
    * @return {Shape[]}
    * @memberof Board
    */
@@ -422,6 +639,8 @@ export class Board {
 
   /**
    * 统计给定图形中已在画布上的数量（按图形 id 判定）
+   *
+   * Counts how many of the given shapes are already on the board (matched by id).
    *
    * @param {Shape[]} items 图形
    * @return {number} 已在画布上的图形数
@@ -434,6 +653,8 @@ export class Board {
   /**
    * 命中检测：取区域内最上层的图形
    *
+   * Hit test: returns the topmost shape inside the given area.
+   *
    * @param {IRect} rect 区域（世界坐标）
    * @param {IHitPredicate} [predicate] 筛选函数
    * @return {Shape | null} 命中的图形（无则 null）
@@ -445,6 +666,8 @@ export class Board {
 
   /**
    * 命中检测：取区域内的全部图形（自上而下）
+   *
+   * Hit test: returns every shape inside the given area, topmost first.
    *
    * @param {IRect} rect 区域（世界坐标）
    * @param {IHitPredicate} [predicate] 筛选函数
@@ -460,12 +683,25 @@ export class Board {
   /**
    * 监听事件（仅触发一次，触发后自动移除）
    *
+   * Listens to an event type given as a plain string: the listener is called at most
+   * once and is removed right after that.
+   *
    * @param {string | keyof Events.IDetailMap} type 事件类型
    * @param {Function} listener 事件回调
    * @return {() => void} 解绑函数
    * @memberof Board
    */
   once(type: string, listener: (data: Events.IBaseDetail) => any): () => void
+  /**
+   * 监听事件（仅触发一次，触发后自动移除）
+   *
+   * Same as above but for a known event type: the callback argument is narrowed down to
+   * the payload of that event type.
+   *
+   * @param {K} type 已知的事件类型 / A known event type
+   * @param {Function} listener 事件回调 / Event callback
+   * @return {() => void} 解绑函数 / Unbind function
+   */
   once<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void
   once<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void {
     const real_listener = (data: Events.IDetailMap[K]) => listener(data);
@@ -476,12 +712,25 @@ export class Board {
   /**
    * 监听事件
    *
+   * Listens to an event type given as a plain string; the callback receives the generic
+   * base payload, no matter which event type it is.
+   *
    * @param {string | keyof Events.IDetailMap} type 事件类型
    * @param {Function} listener 事件回调
    * @return {() => void} 解绑函数
    * @memberof Board
    */
   on(type: string, listener: (data: Events.IBaseDetail) => any): () => void
+  /**
+   * 监听事件
+   *
+   * Same as above but for a known event type: the callback argument is narrowed down to
+   * the payload of that event type.
+   *
+   * @param {K} type 已知的事件类型 / A known event type
+   * @param {Function} listener 事件回调 / Event callback
+   * @return {() => void} 解绑函数 / Unbind function
+   */
   on<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void;
   on<K extends keyof Events.IDetailMap>(type: K, listener: (data: Events.IDetailMap[K]) => any): () => void {
     const set = this._listeners.get(type) ?? new Set();
@@ -492,6 +741,9 @@ export class Board {
 
   /**
    * 移除事件监听
+   *
+   * Removes one listener of an event type; the type is dropped as soon as it has no
+   * listener left.
    *
    * @param {string | keyof Events.IDetailMap} type 事件类型
    * @param {Function} listener 事件回调
@@ -508,6 +760,9 @@ export class Board {
   /**
    * 触发事件
    *
+   * Dispatches an event to its listeners (type and timeStamp are filled in by the board,
+   * and listeners registered with `once` are removed afterwards).
+   *
    * @param {keyof Events.IDetailMap} k 事件类型
    * @param {Events.IEmit} detail 事件数据
    * @memberof Board
@@ -523,11 +778,23 @@ export class Board {
     for (const l of onces) set.delete(l)
   }
 
+  /**
+   * 工厂：图形 / 图层 / 工具 / 数据都由它创建
+   *
+   * Factory that creates shapes, layers, tools and shape data.
+   */
   get factory() { return this._factory }
+  /**
+   * 换一个工厂（已有的图层与图形保持不动）
+   *
+   * Replaces the factory (existing layers and shapes are kept as they are).
+   */
   set factory(v) { this._factory = v }
 
   /**
    * 当前编辑的图层屏幕画布的 2D 上下文
+   *
+   * 2D context of the on-screen canvas of the layer being edited.
    *
    * @return {CanvasRenderingContext2D}
    * @memberof Board
@@ -535,6 +802,8 @@ export class Board {
   ctx(): CanvasRenderingContext2D
   /**
    * 图层屏幕画布的 2D 上下文（缺省 = 当前编辑的图层）
+   *
+   * 2D context of the on-screen canvas of a layer (defaults to the layer being edited).
    *
    * @param {string} layerId 图层ID
    * @return {CanvasRenderingContext2D | null | undefined}
@@ -548,12 +817,17 @@ export class Board {
   /**
    * 当前编辑的图层离屏画布的 2D 上下文
    *
+   * 2D context of the off-screen canvas of the layer being edited (the off-screen canvas
+   * is the authoritative copy of what has been rendered).
+   *
    * @return {CanvasRenderingContext2D}
    * @memberof Board
    */
   octx(): CanvasRenderingContext2D
   /**
    * 图层离屏画布的 2D 上下文
+   *
+   * 2D context of the off-screen canvas of a layer (defaults to the layer being edited).
    *
    * @param {string} layerId 图层ID
    * @return {CanvasRenderingContext2D | null | undefined}
@@ -567,6 +841,8 @@ export class Board {
   /**
    * 当前编辑图层屏幕画布
    *
+   * The on-screen canvas of the layer being edited.
+   *
    * @return {HTMLCanvasElement | undefined}
    * @memberof Board
    */
@@ -574,6 +850,8 @@ export class Board {
 
   /**
    * 图层屏幕画布
+   *
+   * The on-screen canvas of a layer (defaults to the layer being edited).
    *
    * @param {string} layerId 图层ID
    * @return {HTMLCanvasElement | undefined}
@@ -587,6 +865,8 @@ export class Board {
   /**
    * 当前编辑图层离屏画布
    *
+   * The off-screen canvas of the layer being edited.
+   *
    * @return {HTMLCanvasElement}
    * @memberof Board
    */
@@ -594,6 +874,8 @@ export class Board {
 
   /**
    * 图层离屏画布
+   *
+   * The off-screen canvas of a layer (defaults to the layer being edited).
    *
    * @param {string} layerId 图层ID
    * @return {HTMLCanvasElement | undefined}
@@ -604,10 +886,23 @@ export class Board {
     return this.layer(layerId)?.offscreen;
   }
 
+  /**
+   * 当前工具类型（无工具时为 undefined）
+   *
+   * Type of the current tool (undefined when no tool is set).
+   */
   get toolType() { return this._toolType }
+  /**
+   * 切换当前工具（等价于 setToolType）
+   *
+   * Switches the current tool (same as setToolType).
+   */
   set toolType(v) { this.setToolType(v) }
   /**
    * 切换当前工具（触发 ToolChanged 事件）
+   *
+   * Switches the current tool: the old tool gets `end()`, the new one gets `start()`,
+   * and a ToolChanged event is emitted in between.
    *
    * @param {ToolType | undefined} to 工具类型（undefined = 无工具）
    * @memberof Board
@@ -651,6 +946,9 @@ export class Board {
    *
    * 右键框选 / 全选等程序性选中都走它；用户主动切换到别的工具则作废记忆
    *
+   * Programmatic selections (right-button marquee, select-all, ...) go through it; the
+   * remembered tool is dropped once the user switches to another tool on purpose.
+   *
    * @memberof Board
    */
   tempSelect(): void {
@@ -665,11 +963,20 @@ export class Board {
     this._selectorPrev = void 0
     this.setToolType(back)
   }
+  /**
+   * 当前被选中的图形
+   *
+   * The shapes that are currently selected.
+   */
   get selects() {
     return this._selects
   }
   /**
    * 添加图形
+   *
+   * Adds shapes to the board: the board is attached to them, a missing layer is filed
+   * into the layer being edited, and already selected shapes are taken into the selection
+   * list.
    *
    * @note 同 id 已存在的图形会被跳过（不重复添加）
    * @param {Shape[] | Shape} shapes 图形（单个或数组）
@@ -701,6 +1008,9 @@ export class Board {
   /**
    * 移除图形
    *
+   * Removes shapes from the board (the boards are detached from them and their areas are
+   * marked dirty).
+   *
    * @note 被移除的图形若处于选中状态，会先取消选择
    * @param {Shape[] | Shape} shapes 图形（单个或数组）
    * @param {EmitOpts} [opts] 事件发射选项
@@ -730,6 +1040,8 @@ export class Board {
   /**
    * 移除全部图形
    *
+   * Removes every shape on the board.
+   *
    * @param {EmitOpts} [emit] 事件发射选项
    * @return {number} 实际移除的图形数
    * @memberof Board
@@ -740,6 +1052,8 @@ export class Board {
 
   /**
    * 移除被选中的图形
+   *
+   * Removes the selected shapes and leaves an empty selection behind.
    *
    * @note 锁定图形会被跳过
    * @param {EmitOpts} [emit] 事件发射选项
@@ -753,6 +1067,8 @@ export class Board {
   /**
    * 全选图形
    *
+   * Selects every shape on the board.
+   *
    * @param {true} [emit] 是否发射事件
    * @return {Shape[]} 新选中的图形
    * @memberof Board
@@ -763,6 +1079,8 @@ export class Board {
 
   /**
    * 取消选择
+   *
+   * Clears the selection and returns the shapes that were deselected.
    * 
    * @param {true} [emit] 是否发射事件
    * @return {Shape[]} ？？？
@@ -774,6 +1092,8 @@ export class Board {
 
   /**
    * 选中指定区域内的图形，指定区域以外的会被取消选择
+   *
+   * Selects the shapes inside the given area and deselects everything else.
    *
    * @param {IRect} rect
    * @param {?EmitOpts} opts 事件发射选项
@@ -788,6 +1108,9 @@ export class Board {
 
   /**
    * 设置被选中的图形，原来被选中的图形数组将被取消选中
+   *
+   * Sets the selection: the shapes of a selected group are pulled in too, the previously
+   * selected ones are deselected, and both groups are returned to the caller.
    *
    * @param {Shape[]} shapes 被选中的图形
    * @param {(EmitOpts)} [opts]
@@ -843,6 +1166,8 @@ export class Board {
   /**
    * 屏幕坐标转世界坐标
    *
+   * Converts screen (CSS pixel) coordinates into world coordinates.
+   *
    * @param {number} x 屏幕坐标x
    * @param {number} y 屏幕坐标y
    * @return {[number, number]} 世界坐标
@@ -860,6 +1185,9 @@ export class Board {
   /**
    * 鼠标/指针事件转世界坐标点
    *
+   * Converts a mouse / pointer event into a world point (carrying its pressure, 0.5 by
+   * default).
+   *
    * @param {MouseEvent | PointerEvent} ev 鼠标/指针事件
    * @return {IDot} 世界坐标点（含压感，缺省 0.5）
    * @memberof Board
@@ -869,7 +1197,17 @@ export class Board {
     const [x, y] = this.map2world(ev.x, ev.y)
     return { x, y, p: pressure }
   }
+  /**
+   * 已经创建过的工具实例（按工具类型缓存）
+   *
+   * The tool instances created so far, cached by tool type.
+   */
   get tools() { return this._tools }
+  /**
+   * 当前工具实例（无工具时为 undefined）
+   *
+   * The current tool instance (undefined when no tool is set).
+   */
   get tool() { return this._tool }
 
   protected _customCursor: boolean = true
@@ -891,6 +1229,9 @@ export class Board {
   /**
    * 鼠标滚动事件
    *
+   * Wheel handler: vertical wheel scrolls the world, and holding Shift turns it into a
+   * horizontal scroll.
+   *
    * @protected
    * @param {WheelEvent} e
    * @memberof Board
@@ -901,6 +1242,15 @@ export class Board {
     this.scroll_by(sx, sy, true)
   }
 
+  /**
+   * 元素上的 pointerdown：左键交给当前工具并清选择，中键开始平移世界，右键临时切选择工具
+   *
+   * pointerdown on the element: the left button goes to the current tool and clears the
+   * selection, the middle button starts panning the world, the right button temporarily
+   * switches to the selector tool.
+   *
+   * @protected
+   */
   protected _pointerdown = (e: PointerEvent) => {
     this._mousebuttons[e.button] = 1
     if (e.button === 0) {
@@ -939,6 +1289,14 @@ export class Board {
     }
   }
 
+  /**
+   * window 上的 pointermove：中键拖动时平移世界，否则把点位转发给当前工具的绘制 / 移动回调
+   *
+   * pointermove on the window: while the middle button is held the world is panned,
+   * otherwise the point is forwarded to the draw / move callback of the current tool.
+   *
+   * @protected
+   */
   protected _pointermove = (e: PointerEvent) => {
     if (this.mb_down) {
       const { x, y } = this._world_drag_start_pos
@@ -960,12 +1318,28 @@ export class Board {
     }
   }
 
+  /**
+   * 指针离开画布：没有按下时通知当前工具（自绘光标等自己隐藏）
+   *
+   * Pointer left the canvas: the current tool is notified when no button is held (so
+   * that e.g. the custom cursor can hide itself).
+   *
+   * @protected
+   */
   protected _pointerleave = () => {
     if (this.lb_down) return
     this.tool?.pointerLeave?.()
   }
 
 
+  /**
+   * window 上的 pointerup：结束右键框选或左键绘制，随后在适当时机切回原工具
+   *
+   * pointerup on the window: finishes the right-button marquee or the left-button draw,
+   * and then switches back to the previous tool when that is due.
+   *
+   * @protected
+   */
   protected _pointerup = (e: PointerEvent) => {
     if (this._secondary && e.button === 2) {
       this._secondary = false
@@ -989,6 +1363,9 @@ export class Board {
 
   /**
    * 清除选择：ESC / Ctrl(Cmd)+Shift+A（输入框 / 文本编辑中不抢键）
+   *
+   * Clears the selection on ESC or Ctrl(Cmd)+Shift+A (keys are not stolen while an input
+   * box or a text editing session has the focus).
    *
    * @protected
    * @memberof Board
@@ -1014,6 +1391,10 @@ export class Board {
    * 若在重绘前，连续调用，将会将多个矩形合并一个大的矩形，并仅会触发一次重绘。
    * 
    * 脏矩形必须是整数，否则将导致画面有“脏东西”，所以传入浮点的矩形将被取整后再运算
+   *
+   * Marks a dirty region, which schedules a repaint: calls made before the repaint are
+   * merged into one bounding rect so that only one repaint happens. Dirty rects have to
+   * be integers (fractional ones smear the bitmap), so the given rect is rounded first.
    * 
    * @param {Readonly<IRect>} rect 新的脏矩形区域
    * @memberof Board
@@ -1029,6 +1410,9 @@ export class Board {
 
   /**
    * 绘制
+   *
+   * Repaints the dirty region: the off-screen canvases are cleared and the shapes inside
+   * the region are redrawn, then the result is copied onto the on-screen canvases.
    * 
    * @memberof Board
    */
@@ -1092,6 +1476,9 @@ export class Board {
   /**
    * 销毁画布（移除全部事件监听与图层；自建的元素一并移除）
    *
+   * Destroys the board: every listener is removed, the layers are destroyed, and an
+   * element created by the board itself is removed as well.
+   *
    * @memberof Board
    */
   destroy() {
@@ -1118,6 +1505,9 @@ export class Board {
 
   /**
    * 图形编组
+   *
+   * Groups shapes: they all get the same group id, and the event carries the
+   * [current, previous] group ids so that the change can be undone.
    * 
    * @note 锁定图形会被跳过
    * @param {Shape[]} shapes 图形
@@ -1146,6 +1536,8 @@ export class Board {
   /**
    * 图形解组
    *
+   * Ungroups shapes (an empty group id clears the grouping).
+   *
    * @param {Shape[]} shapes 图形
    * @param {EmitOpts} [opts] 事件发射选项
    * @return {this} 便于链式调用
@@ -1157,6 +1549,8 @@ export class Board {
 
   /**
    * 图形置顶
+   *
+   * Brings shapes to the top by assigning them the highest z values.
    *
    * @note 锁定图形会被跳过；图形间的相对次序不变
    * @param {Shape[]} shapes 图形
@@ -1198,6 +1592,8 @@ export class Board {
   /**
    * 图形置底
    *
+   * Sinks shapes to the bottom by assigning them the lowest z values.
+   *
    * @note 锁定图形会被跳过；图形间的相对次序不变
    * @param {Shape[]} shapes 图形
    * @param {EmitOpts} opts 事件发射选项
@@ -1237,6 +1633,9 @@ export class Board {
 
   /**
    * 更新图形的分组索引
+   *
+   * Refreshes the group index of the given shapes (call it after changing `groupId`
+   * behind the board's back).
    *
    * @param {Shape[]} shapes 图形
    * @return {this} 便于链式调用
