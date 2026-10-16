@@ -236,8 +236,6 @@ function main() {
   const board = factory.newBoard({
     width: resultWidth,
     height: resultHeight,
-    scrollWidth: 2 * resultWidth,
-    scrollHeight: 2 * resultHeight,
     element: blackboard.current!.inner,
   });
   const aq = new ActionQueue().setActor(board);
@@ -588,6 +586,15 @@ function main() {
   bottomRow.addEventListener('pointerdown', e => e.stopPropagation())
   mainView.current!.addChild(bottomRow);
   mainView.current!.addChild(recordBar);
+
+  /* API 文档入口：指向同站点的 typedoc 目录（npm run build:pages 会把它一起生成） */
+  const apiLink = View.get('a').styles.addCls('g_cp_api_link').view;
+  apiLink.inner.textContent = 'API 文档';
+  apiLink.inner.setAttribute('href', './typedoc/');
+  apiLink.inner.setAttribute('target', '_blank');
+  apiLink.inner.setAttribute('rel', 'noopener');
+  apiLink.inner.setAttribute('title', '查看 writeboard 的 API 文档');
+  mainView.current!.addChild(apiLink);
 
   const download = () => {
     board.deselect(true);

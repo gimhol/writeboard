@@ -6,7 +6,7 @@ import { dts } from "rollup-plugin-dts";
 import postcss from "rollup-plugin-postcss";
 import typescript from 'rollup-plugin-typescript2';
 
-const { output_format = 'cjs' } = process.env;
+const { output_format = 'cjs', target } = process.env;
 const demo_config = {
   input: "demo/index.ts",
   output: {
@@ -28,7 +28,17 @@ const demo_config = {
       },
       use: ['sass']
     }),
-    typescript({ tsconfig: './tsconfig.json' }),
+    typescript({
+      tsconfig: './tsconfig.json',
+      /* 站点目录里只留真正要发布的文件：TS 编译产物（逐文件的 js / d.ts）丢到缓存目录去 */
+      tsconfigOverride: {
+        compilerOptions: {
+          declaration: false,
+          declarationMap: false,
+          outDir: 'node_modules/.cache/writeboard-demo-ts'
+        }
+      }
+    }),
     html({
       template: (opts) => {
         let scripts_tags = "";
@@ -105,7 +115,7 @@ for (const { dir, tsconfig, formats } of targets) {
     configs.push(bundle_js_config, bundle_dts_config)
   }
 }
-if (process.argv.some(v => v === '-w')) {
+if (target === 'demo' || process.argv.some(v => v === '-w')) {
   configs.length = 0
   configs.push(demo_config);
 }

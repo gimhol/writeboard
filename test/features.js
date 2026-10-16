@@ -747,18 +747,39 @@ describe('class FClipboard', () => {
     assert.strictEqual(clipboard.items.length, 1)
   });
 
-  it('粘贴非本库内容时忽略', async () => {
+  it('粘贴纯文本会变成文本图形（落在视口里并选中）', async () => {
+    const board = createBoard()
+    const queue = new ActionQueue().setActor(board)
+    const clipboardApi = new FClipboard(board)
+    clipboard.items = [new ClipboardItem({ 'text/plain': Promise.resolve(new Blob(['hello\nworld'])) })]
+
+    clipboardApi.paste()
+    await flush()
+    await flush()
+
+    assert.strictEqual(board.shapes().length, 1)
+    const shape = board.shapes()[0]
+    assert.strictEqual(shape.type, ShapeEnum.Text)
+    assert.strictEqual(shape.data.text, 'hello\nworld')
+    assert.deepStrictEqual(board.selects, [shape], '粘贴后会选中新图形')
+    assert.ok(shape.data.x > 0 && shape.data.y > 0, '落在视口里')
+    assert.ok(shape.data.x + shape.w <= board.viewport.w, '不超出视口')
+    assert.ok(shape.data.y + shape.h <= board.viewport.h, '不超出视口')
+
+    assert.strictEqual(queue.length, 1, '文本落定会进撤回栈')
+    queue.undo()
+    assert.strictEqual(board.shapes().length, 0)
+  });
+
+  it('粘贴空白文本不产生任何图形', async () => {
     const board = createBoard()
     const clipboardApi = new FClipboard(board)
-    clipboard.items = [new ClipboardItem({ 'text/plain': Promise.resolve(new Blob(['hello'])) })]
-    const cap = __captureConsole('log')
-    try {
-      clipboardApi.paste()
-      await flush()
-      await flush()
-    } finally {
-      cap.restore()
-    }
+    clipboard.items = [new ClipboardItem({ 'text/plain': Promise.resolve(new Blob(['   \n\n'])) })]
+
+    clipboardApi.paste()
+    await flush()
+    await flush()
+
     assert.strictEqual(board.shapes().length, 0)
   });
 });
