@@ -1,6 +1,6 @@
 {
   "name": "@fimagine/writeboard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Extensible whiteboard for writing, with zero runtime dependencies. 可扩展的书写用白板，不依赖任何第三方库。",
   "main": "dist/es6/cjs/writeboard.js",
   "module": "dist/es6/es/writeboard.js",
