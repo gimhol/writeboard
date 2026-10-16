@@ -76,9 +76,31 @@ export class ActionQueue {
   private _actions: IActionRecord[] = [];
   private _cancellers: (() => void)[] = []
 }
+/**
+ * 单个动作：[撤回, 重做]（都是指向该事件载荷的闭包）
+ *
+ * One action: [undo, redo] (both are closures over that event payload).
+ */
 type ActionStep = [() => void, () => void]
+/**
+ * 撤回溯里的一条记录：同一手势（同一个 tx）的多个动作按发生顺序排在 steps 里
+ *
+ * One record in the undo stack: the actions of one gesture (the same `tx`) are kept in
+ * `steps`, in the order they happened.
+ */
 interface IActionRecord {
+  /**
+   * 事务 id（见 Events.IBaseDetail.tx）：与上一条记录相同则并入上一条
+   *
+   * Transaction id (see Events.IBaseDetail.tx): the same as the previous record means
+   * it merges into that record.
+   */
   tx?: string
+  /**
+   * 记录里的动作：撤回逆序执行、重做正序执行
+   *
+   * Actions of this record: undo runs them backwards, redo runs them forwards.
+   */
   steps: ActionStep[]
 }
 const _changeShapes = (board: Board, shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[], which: 0 | 1) => {

@@ -17,7 +17,12 @@ export interface ILayer {
   opacity: number;
 }
 
-/** 复用的临时画布：改 canvas.width / canvas.height 会清空位图，保留内容时先抄到它、改完尺寸再贴回 */
+/**
+ * 复用的临时画布：改 canvas.width / canvas.height 会清空位图，保留内容时先抄到它、改完尺寸再贴回
+ *
+ * Reusable scratch canvas: assigning canvas.width / canvas.height clears the bitmap, so
+ * the old content is copied here first and painted back after the resize.
+ */
 let scratch: HTMLCanvasElement | undefined
 
 export class LayerInfo implements ILayerInfo {
@@ -93,12 +98,19 @@ export class Layer implements ILayer {
   /**
    * 调整图层画布尺寸（屏幕画布与离屏画布一起）
    *
-   * @description 画布尺寸只能取整；尺寸真的变了才会动画布（同值赋值也会清空位图）
-   * @param {number} w 新宽度（画布像素）
-   * @param {number} h 新高度（画布像素）
+   * Resizes the on-screen and the off-screen canvas of this layer together.
+   * 画布尺寸只能取整；尺寸真的变了才会动画布（同值赋值也会清空位图）。
+   *
+   * Canvas sizes are integers and the canvases are only touched when the size really
+   * changes (assigning the same value clears the bitmap too).
+   *
+   * @param {number} w 新宽度（画布像素）/ New width in canvas pixels
+   * @param {number} h 新高度（画布像素）/ New height in canvas pixels
    * @param {boolean} [preserve] 是否保留旧内容：保留时先把旧内容抄到临时画布、改完尺寸再贴回，
    *   屏幕画布同步铺上离屏画布的对应区域（离屏画布是渲染结果的权威副本）
-   * @memberof Layer
+   *   Whether to keep the old pixels: they are copied to a scratch canvas before the
+   *   resize and painted back afterwards, and the on-screen canvas gets the matching
+   *   region of the off-screen one (the off-screen canvas is the authoritative copy)
    */
   resize(w: number, h: number, preserve = false) {
     const ow = this._onscreen.width

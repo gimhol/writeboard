@@ -58,7 +58,12 @@ export class EraserTool implements ITool {
     this.indicator.visible = false
   }
   protected _breakings: [Shape, IVector[][]][] = []
-  /** 当前手势的事务 id：结束时清空，不在手势中的增删按普通事件记录 */
+  /**
+   * 当前手势的事务 id：结束时清空，不在手势中的增删按普通事件记录
+   *
+   * Transaction id of the current gesture: cleared when the gesture ends, so add /
+   * remove outside a gesture are recorded as ordinary events.
+   */
   private _tx: string | undefined = void 0
   protected _predicate_and_calc = (shape: Shape): boolean => {
     const polys = worldPolylines(shape)

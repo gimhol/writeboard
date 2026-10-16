@@ -8,6 +8,12 @@ import { IShapeDecoration } from "./IShapeDecoration"
 import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 const { floor, ceil, min, max } = Math;
+/**
+ * 事件发射选项：true = 用 board.whoami 作为操作者；对象形式可指定操作者与事务 id
+ *
+ * Emit options: `true` uses board.whoami as the actor; the object form also carries the
+ * transaction id (`tx`), which lets the ActionQueue merge one gesture into one record.
+ */
 export type EmitOpts = boolean | { operator: string, tx?: string }
 export interface BoardOptions {
   element?: HTMLElement;
@@ -867,6 +873,14 @@ export class Board {
   get tool() { return this._tool }
 
   protected _customCursor: boolean = true
+  /**
+   * 是否由库自绘光标（默认 true）：关掉后工具不再画自己的指示器，交给浏览器原生光标
+   *
+   * Whether the library draws its own cursor (default `true`): when off, tools stop
+   * drawing their indicator and the browser cursor is used instead.
+   *
+   * @default true
+   */
   get customCursor(): boolean { return this._customCursor }
   set customCursor(v: boolean) {
     if (this._customCursor === v) return
