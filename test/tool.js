@@ -224,6 +224,59 @@ describe('工具（经 Board 派发指针事件）', () => {
       __firePointer(window, 'pointerup', { x: 105, y: 100 })
       assert.strictEqual(board.shapes().length, 0)
     });
+
+    it('一次按下至抬起只产生一条撤回记录，一次撤回还原原笔画', () => {
+      const board = createBoard()
+      const queue = new ActionQueue().setActor(board)
+      const pen = drawLongPen(board)
+      const penId = pen.data.id
+      queue.clear() // 画笔画本身记了一条，这里只看擦除
+
+      board.setToolType(ToolEnum.Eraser)
+      __firePointer(board.element, 'pointerdown', { x: 150, y: 100 })
+      for (let x = 160; x <= 340; x += 20) __firePointer(window, 'pointermove', { x, y: 100 })
+      __firePointer(window, 'pointerup', { x: 340, y: 100 })
+
+      const fragmented = board.shapes().length
+      assert.ok(fragmented > 1, '一路拖过来会被拆成多段')
+      assert.strictEqual(queue.length, 1, '整段手势只算一条记录')
+      assert.strictEqual(queue.index, 0)
+
+      queue.undo()
+      assert.strictEqual(board.shapes().length, 1, '一次撤回就还原成一条笔画')
+      assert.ok(board.find(penId), '原 id 的笔画回来了')
+      assert.strictEqual(queue.canUndo, false)
+
+      queue.redo()
+      assert.strictEqual(board.shapes().length, fragmented)
+      assert.strictEqual(board.find(penId), null)
+      assert.strictEqual(queue.canRedo, false)
+    });
+
+    it('两次手势分别记一条', () => {
+      const board = createBoard()
+      const queue = new ActionQueue().setActor(board)
+      drawLongPen(board)
+      queue.clear()
+
+      board.setToolType(ToolEnum.Eraser)
+      __firePointer(board.element, 'pointerdown', { x: 100, y: 100 })
+      __firePointer(window, 'pointermove', { x: 110, y: 100 })
+      __firePointer(window, 'pointerup', { x: 110, y: 100 })
+      assert.strictEqual(queue.length, 1)
+
+      __firePointer(board.element, 'pointerdown', { x: 300, y: 100 })
+      __firePointer(window, 'pointermove', { x: 310, y: 100 })
+      __firePointer(window, 'pointerup', { x: 310, y: 100 })
+      assert.strictEqual(queue.length, 2, '两次手势不会合并')
+
+      queue.undo()
+      assert.strictEqual(queue.canUndo, true)
+      queue.undo()
+      assert.strictEqual(queue.canUndo, false)
+      assert.strictEqual(board.shapes().length, 1, '两次撤回都还原成原笔画')
+      assert.strictEqual(board.shapes()[0].type, ShapeEnum.Pen)
+    });
   });
 
   describe('选择器工具', () => {

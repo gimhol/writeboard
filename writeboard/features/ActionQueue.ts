@@ -21,14 +21,21 @@ export class ActionQueue {
         if (!handler.isAction(actor, detail)) {
           return;
         }
-        if (this._actionsIdx < this._actions.length - 1) {
+        const step: ActionStep = [
+          () => handler.undo(actor, detail),
+          () => handler.redo(actor, detail),
+        ];
+        const atTip = this._actionsIdx === this._actions.length - 1;
+        const last = atTip ? this._actions[this._actionsIdx] : void 0;
+        if (detail.tx && last?.tx === detail.tx) {
+          last.steps.push(step);
+          return;
+        }
+        if (!atTip) {
           /* 丢弃被撤销的分支，保留仍然生效的 [0, _actionsIdx] */
           this._actions = this._actions.slice(0, this._actionsIdx + 1);
         }
-        this._actions.push([
-          () => handler.undo(actor, detail),
-          () => handler.redo(actor, detail),
-        ]);
+        this._actions.push({ tx: detail.tx, steps: [step] });
         this._actionsIdx = this._actions.length - 1;
       };
       this._cancellers.push(actor.on(eventType, func));
@@ -45,7 +52,8 @@ export class ActionQueue {
       console.log('[ActionQueue] no more undo.')
       return this;
     }
-    this._actions[this._actionsIdx][0]();
+    const { steps } = this._actions[this._actionsIdx];
+    for (let i = steps.length - 1; i >= 0; --i) steps[i][0]();
     --this._actionsIdx;
     return this;
   }
@@ -55,7 +63,8 @@ export class ActionQueue {
       return this;
     }
     ++this._actionsIdx;
-    this._actions[this._actionsIdx][1]();
+    const { steps } = this._actions[this._actionsIdx];
+    for (let i = 0, len = steps.length; i < len; ++i) steps[i][1]();
     return this;
   }
   get index() { return this._actionsIdx }
@@ -64,8 +73,13 @@ export class ActionQueue {
   get canUndo() { return this._actionsIdx >= 0 }
   private _maxLen: number | undefined;
   private _actionsIdx: number = -1;
-  private _actions: [() => void, () => void][] = [];
+  private _actions: IActionRecord[] = [];
   private _cancellers: (() => void)[] = []
+}
+type ActionStep = [() => void, () => void]
+interface IActionRecord {
+  tx?: string
+  steps: ActionStep[]
 }
 const _changeShapes = (board: Board, shapeDatas: (readonly [Partial<IShapeData>, Partial<IShapeData>])[], which: 0 | 1) => {
   shapeDatas.forEach((currAndPrev) => {

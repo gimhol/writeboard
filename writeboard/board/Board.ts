@@ -8,7 +8,7 @@ import { IShapeDecoration } from "./IShapeDecoration"
 import type { ISnapshot } from "./ISnapshot"
 import { ILayerInits, Layer } from "./Layer"
 const { floor, ceil, min, max } = Math;
-export type EmitOpts = boolean | { operator: string }
+export type EmitOpts = boolean | { operator: string, tx?: string }
 export interface BoardOptions {
   element?: HTMLElement;
   layers?: ILayerInits[];
@@ -84,10 +84,10 @@ export class Board {
     return this;
   }
 
-  private read_emit_opts = (opts: EmitOpts | null | undefined, fn: (operator: string) => any) => {
+  private read_emit_opts = (opts: EmitOpts | null | undefined, fn: (operator: string, tx?: string) => any) => {
     if (!opts) return;
     const operator = typeof opts === 'boolean' ? this.whoami : opts.operator;
-    fn(operator)
+    fn(operator, typeof opts === 'boolean' ? void 0 : opts.tx)
   }
 
   set_world_rect(to: IRect, opts?: EmitOpts) {
@@ -682,9 +682,10 @@ export class Board {
       if (item.selected) this._selects.push(item)
       this.markDirty(item.aabb())
     })
-    this.read_emit_opts(opts, (operator) => {
+    this.read_emit_opts(opts, (operator, tx) => {
       this.emit(EventEnum.ShapesAdded, {
         operator,
+        tx,
         shapeDatas: shapes.map(v => v.data.copy())
       })
     })
@@ -707,9 +708,10 @@ export class Board {
 
     this.setSelects(this._selects.filter(a => !shapes.find(b => a === b)), opts);
 
-    this.read_emit_opts(opts, (operator) => {
+    this.read_emit_opts(opts, (operator, tx) => {
       this.emit(EventEnum.ShapesRemoved, {
         operator,
+        tx,
         shapeDatas: shapes.map(v => v.data)
       })
     })

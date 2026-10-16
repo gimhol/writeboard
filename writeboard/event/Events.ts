@@ -11,6 +11,11 @@ export namespace Events {
     type: string;
     timestamp: number;
     operator: string;
+    /**
+     * 事务 id：同一次连续手势（例如一次擦除拖拽）里产生的事件共用它，
+     * ActionQueue 会把同一事务的动作合并成一条记录（一次撤回 / 重做走完整段手势）
+     */
+    tx?: string;
   }
   export interface IShapesDetail extends IBaseDetail {
     shapeDatas: IShapeData[];

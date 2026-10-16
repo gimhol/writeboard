@@ -1,4 +1,5 @@
 import type { Board } from "../../board";
+import { EventEnum } from "../../event";
 import { Gaia } from "../../mgr/Gaia";
 import { ShapeEnum, ShapePen, type Shape } from "../../shape";
 import { IVector, Rect, type IDot } from "../../utils";
@@ -20,6 +21,8 @@ const is_same = (groups: IVector[][], polys: number[][]): boolean => {
   return true
 }
 
+let strokeSeq = 0
+
 export class EraserTool implements ITool {
   readonly type = ToolEnum.Eraser
   readonly indicator = new Indicator()
@@ -27,6 +30,7 @@ export class EraserTool implements ITool {
   set board(v: Board) { this.indicator.board = v; }
   start(): void { console.log('[EraserTool::start]'); this.indicator.visible = false }
   end(): void {
+    this._tx = void 0
     this.indicator.visible = false
     this.indicator.markDirty();
   }
@@ -42,16 +46,20 @@ export class EraserTool implements ITool {
     )
   }
   pointerDown(dot: IDot): void {
+    this._tx = 'eraser:' + (++strokeSeq)
     this.indicator.press()
     this.pointerDraw(dot)
   }
   pointerUp(dot: IDot): void {
+    this._tx = void 0
     this.indicator.release();
   }
   pointerLeave(): void {
     this.indicator.visible = false
   }
   protected _breakings: [Shape, IVector[][]][] = []
+  /** 当前手势的事务 id：结束时清空，不在手势中的增删按普通事件记录 */
+  private _tx: string | undefined = void 0
   protected _predicate_and_calc = (shape: Shape): boolean => {
     const polys = worldPolylines(shape)
     if (!polys)
@@ -132,8 +140,19 @@ export class EraserTool implements ITool {
       }
       del_pens.push(shape);
     }
-    this.board.remove(del_pens, true)
-    this.board.add(add_pens, true)
+    this.board.remove(del_pens, this.emit_opts)
+    this.board.add(add_pens, this.emit_opts)
+    if (add_pens.length) {
+      this.board.emit(EventEnum.ShapesDone, {
+        operator: this.board.whoami,
+        tx: this._tx,
+        shapeDatas: add_pens.map(v => v.data.copy())
+      })
+    }
+  }
+  private get emit_opts() {
+    const { board, _tx } = this
+    return _tx ? { operator: board.whoami, tx: _tx } : true
   }
   pointerMove(dot: IDot): void {
     this.update_geo(dot);
